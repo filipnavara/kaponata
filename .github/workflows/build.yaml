@@ -10,10 +10,13 @@ jobs:
     runs-on: ubuntu-20.04	
     steps:
       - uses: actions/checkout@v2
-      
+        with:
+          fetch-depth: 0
+
       - uses: dotnet/nbgv@v0.4.0
         id: nbgv
-        working-directory: src
+        with:
+          path: src
 
       - name: Provision CI environment
         run: |
@@ -46,3 +49,21 @@ jobs:
           name: chart
           path: |
             ${{ github.workspace }}/bin/
+
+      - name: Create k3d cluster
+        run: |
+          set -e
+
+          k3d cluster create --api-port 6433 -p "80:80@loadbalancer"
+
+      - name: Deploy Helm chart
+        run: |
+          set -e
+
+          helm install kaponata ${{ github.workspace }}/bin/kaponata-${{ steps.nbgv.outputs.SemVer2 }}.tgz
+
+      - name: Delete k3d cluster
+        run: |
+          set -e
+
+          k3d cluster delete
