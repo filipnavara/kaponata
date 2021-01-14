@@ -1,0 +1,16 @@
+- hosts: all
+  become: yes
+
+  roles:
+    # Install rootless Docker
+    - role: geerlingguy.docker
+      vars:
+        docker_install_compose: false
+        docker_users:
+          - "vagrant"
+
+    # Install the k3d binary
+    - role: andrewrothstein.k3d
+
+    # Install kubectl
+    - role: andrewrothstein.kubectl
