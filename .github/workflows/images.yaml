@@ -1,0 +1,28 @@
+name: images
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-20.04
+    strategy:
+      matrix:
+        image:
+        - iproxy
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - uses: dotnet/nbgv@v0.4.0
+        id: nbgv
+        with:
+          path: src
+
+      - name: Build Docker image
+        run: |
+          make
+        working-directory: src/${{ matrix.image }}
