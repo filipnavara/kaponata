@@ -1,0 +1,7 @@
+apiVersion: v2
+name: kaponata
+description: Kaponata manages your mobile device test farm for you, so you can run Appium tests at scale on iOS and Android devices.
+
+type: application
+version: 0.1.0
+appVersion: "1.16.0"

@@ -1,0 +1,39 @@
+name: build
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-20.04	
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Provision CI environment
+        run: |
+          ansible-galaxy install geerlingguy.docker
+          ansible-galaxy install andrewrothstein.k3d
+          ansible-galaxy install andrewrothstein.kubectl
+          ansible-galaxy install andrewrothstein.kubernetes-helm
+
+          # Delete files which may cause conflicts
+          sudo rm /usr/local/bin/kubectl
+
+          ansible-playbook --version
+          ansible-playbook --connection=local --inventory "127.0.0.1," -e 'ansible_python_interpreter=/usr/bin/python3' ci/playbook.yml
+
+      - name: Create Helm chart
+        run: |
+          set -e
+          helm lint .
+          helm package . -d ${{ github.workspace }}/bin 
+        working-directory: src/chart
+
+      - name: Upload Helm chart
+        uses: actions/upload-artifact@v2
+        with:
+          name: chart
+          path: |
+            ${{ github.workspace }}/bin/
