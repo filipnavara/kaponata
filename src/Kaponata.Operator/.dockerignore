@@ -1,0 +1,3 @@
+bin/
+obj/
+!bin/Release/net5.0/publish/

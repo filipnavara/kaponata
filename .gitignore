@@ -1,0 +1,16 @@
+*.exe
+
+# Vagrant files
+.vagrant/
+
+# .NET build files
+.vs/
+bin/
+obj/
+
+# Helm charts
+*.tgz
+
+# Files used by the Docker-specific Makefiles
+*.docker-id
+.version
