@@ -46,6 +46,25 @@ FROM gcr.io/distroless/base-debian10
 ARG host=aarch64-linux-gnu
 ARG arch=arm64
 
+ARG GIT_COMMIT_DATE
+ARG GIT_COMMIT_ID
+ARG GIT_REF
+ARG GIT_REMOTE
+ARG VERSION
+
+LABEL org.opencontainers.image.title="iproxy"
+LABEL org.opencontainers.image.description="Proxy that enables tcp service access to iOS devices"
+LABEL org.opencontainers.image.licenses="GPL-2.0"
+
+LABEL org.opencontainers.image.created=$GIT_COMMIT_DATE
+LABEL org.opencontainers.image.authors="Frederik Carlier <frederik.carlier@quamotion.mobi>"
+LABEL org.opencontainers.image.vendor="Quamotion bv <info@quamotion.mobi>"
+LABEL org.opencontainers.image.url="https://www.kaponata.io/"
+LABEL org.opencontainers.image.source=$GIT_REMOTE
+LABEL org.opencontainers.image.version=$VERSION
+LABEL org.opencontainers.image.revision=$GIT_COMMIT_ID
+LABEL org.opencontainers.image.ref.name=$GIT_REF
+
 COPY --from=build /usr/lib/$host/libplist-2.0.so.3 /usr/lib/$host/
 COPY --from=build /usr/lib/$host/libusbmuxd-2.0.so.6 /usr/lib/$host/
 COPY --from=build /usr/bin/iproxy /usr/bin/
