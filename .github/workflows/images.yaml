@@ -12,6 +12,7 @@ jobs:
       matrix:
         image:
         - iproxy
+        - usbmuxd
     steps:
       - uses: actions/checkout@v2
         with:

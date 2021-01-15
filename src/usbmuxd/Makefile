@@ -1,5 +1,5 @@
 registry=quay.io/kaponata
-image=iproxy
+image=usbmuxd
 
 all: .arm64.docker-id .amd64.docker-id .version
 
@@ -10,7 +10,7 @@ push: all
 	docker manifest push $(registry)/$(image):$(shell cat .version)
 
 .version: .amd64.docker-id
-	docker run --rm -it $(shell cat .amd64.docker-id) /usr/bin/iproxy --version | awk '{ print $$2 }' | tee .version
+	docker run --rm -it $(shell cat .amd64.docker-id) /usr/bin/usbmuxd --version | awk '{ print $$2 }' | tee .version
 
 .amd64.docker-id: Dockerfile
 	docker buildx build --platform linux/amd64 --build-arg host= --build-arg arch= . -t $(registry)/$(image):latest-amd64
