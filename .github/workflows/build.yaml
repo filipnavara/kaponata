@@ -32,6 +32,21 @@ jobs:
           ansible-playbook --version
           ansible-playbook --connection=local --inventory "127.0.0.1," -e 'ansible_python_interpreter=/usr/bin/python3' ci/playbook.yml
 
+      - name: Build operator
+        run: |
+          set -e
+
+          dotnet build -c Release
+        working-directory: src/
+
+      - name: Package operator
+        run: |
+          set -e
+
+          dotnet publish -c Release
+          make
+        working-directory: src/Kaponata.Operator/
+
       - name: Create Helm chart
         run: |
           set -e
