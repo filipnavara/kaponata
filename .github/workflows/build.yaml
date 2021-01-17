@@ -21,6 +21,7 @@ jobs:
       - name: Provision CI environment
         run: |
           ansible-galaxy install geerlingguy.docker
+          ansible-galaxy install geerlingguy.nodejs
           ansible-galaxy install andrewrothstein.k3d
           ansible-galaxy install andrewrothstein.kubectl
           ansible-galaxy install andrewrothstein.kubernetes-helm
@@ -46,6 +47,16 @@ jobs:
           dotnet publish -c Release
           make
         working-directory: src/Kaponata.Operator/
+
+      - name: Package UI
+        run: |
+          set -e
+          export PATH="$PATH:/usr/local/lib/npm/bin/"
+
+          npm install
+          ng build --prod
+          make
+        working-directory: src/kaponata-ui/
 
       - name: Create Helm chart
         run: |

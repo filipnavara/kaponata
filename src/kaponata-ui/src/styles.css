@@ -1,0 +1,76 @@
+/* You can add global styles to this file, and also import other style files */
+@import "~bootstrap/dist/css/bootstrap.css";
+@import "@fontsource/open-sans/index.css";
+
+.navbar {
+    margin-bottom: 0px;
+}
+
+.clearfix {
+    clear: left;
+}
+
+
+body {
+    margin: unset;
+    font-family: Open Sans;
+}
+
+
+.navbar-brand {
+    padding-top: 7px;
+    padding-left: 0px;
+}
+
+    .navbar-brand img {
+        height: 40px;
+        padding-left: 20px;
+    }
+
+.navbar-collapse > ul > li > a {
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding-right: 40px;
+}
+
+.navbar-custom .navbar-nav > li > a:focus {
+    color: white;
+}
+
+.navbar-custom .navbar-nav > li > a:hover {
+    color: white;
+}
+
+.navbar-custom .navbar-brand {
+    color: white;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.navbar-brand > a:focus {
+    color: white;
+}
+
+.navbar-brand > a:hover {
+    color: white;
+}
+
+.navbar-custom {
+    background-color: #e06e50;
+    border-width: 0;
+    border-radius: 0;
+    height: 65px;
+}
+
+    .navbar-custom .navbar-nav > li > a {
+        color: white;
+    }
+
+    .navbar-custom > .container {
+        padding-top: 7px;
+    }
+
+.navbar-inverse .navbar-text {
+    color: white;
+}
