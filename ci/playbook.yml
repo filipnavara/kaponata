@@ -17,3 +17,10 @@
 
     # Install jq
     - role: andrewrothstein.yq
+
+    # Install nodejs, Angular CLI
+    - role: geerlingguy.nodejs
+      vars:
+        nodejs_version: "14.x"
+        nodejs_npm_global_packages:
+          - name: "@angular/cli"
