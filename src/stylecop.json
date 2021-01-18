@@ -5,7 +5,8 @@
       "companyName": "Quamotion bv"
     },
     "orderingRules": {
-      "usingDirectivesPlacement": "outsideNamespace"
+      "usingDirectivesPlacement": "outsideNamespace",
+      "systemUsingDirectivesFirst": false
     }
   }
 }
