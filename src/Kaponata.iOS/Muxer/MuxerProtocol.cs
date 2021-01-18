@@ -2,7 +2,10 @@
 // Copyright (c) Quamotion bv. All rights reserved.
 // </copyright>
 
+using Claunia.PropertyList;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+using Nerdbank.Streams;
 using System;
 using System.Buffers;
 using System.IO;
@@ -46,7 +49,18 @@ namespace Kaponata.iOS.Muxer
         }
 
         /// <summary>
-        /// Sends a message to the remote muxer.
+        /// Initializes a new instance of the <see cref="MuxerProtocol"/> class.
+        /// </summary>
+        /// <remarks>
+        /// This constructor is intended for unit testing purposes only.
+        /// </remarks>
+        protected MuxerProtocol()
+            : this(Stream.Null, false, NullLogger<MuxerProtocol>.Instance)
+        {
+        }
+
+        /// <summary>
+        /// Asynchronously sends a message to the remote muxer.
         /// </summary>
         /// <param name="message">
         /// The message to send.
@@ -94,8 +108,55 @@ namespace Kaponata.iOS.Muxer
             }
         }
 
+        /// <summary>
+        /// Asynchronously receives a message from the remote muxer.
+        /// </summary>
+        /// <param name="cancellationToken">
+        /// A <see cref="CancellationToken"/> which can be used to cancel the asynchronous operation.
+        /// </param>
+        /// <returns>
+        /// A <see cref="NSDictionary"/> object which represents the property list value received
+        /// from the remote muxer.
+        /// </returns>
+        public virtual async Task<NSDictionary> ReadMessageAsync(CancellationToken cancellationToken)
+        {
+            int read;
+            MuxerHeader header;
+
+            using (var headerBuffer = this.memoryPool.Rent(MuxerHeader.BinarySize))
+            {
+                if ((read = await this.stream.ReadBlockAsync(headerBuffer.Memory.Slice(0, MuxerHeader.BinarySize), cancellationToken).ConfigureAwait(false)) != MuxerHeader.BinarySize)
+                {
+                    this.logger.LogInformation("Could only read {read}/{total} bytes of the muxer header; exiting.", read, MuxerHeader.BinarySize);
+                    return null;
+                }
+
+                header = MuxerHeader.Read(headerBuffer.Memory.Slice(0, MuxerHeader.BinarySize).Span);
+            }
+
+            if (header.Message != MuxerMessageType.Plist)
+            {
+                throw new NotSupportedException($"Only Plist message types are supported; but a {header.Message} message was received");
+            }
+
+            int messageLength = (int)header.Length - MuxerHeader.BinarySize;
+            using (var messageBuffer = this.memoryPool.Rent(messageLength))
+            {
+                if ((read = await this.stream.ReadBlockAsync(messageBuffer.Memory.Slice(0, messageLength), cancellationToken).ConfigureAwait(false)) != messageLength)
+                {
+                    this.logger.LogInformation("Could only read {read}/{total} bytes of the muxer header; exiting.", read, messageLength);
+                    return null;
+                }
+
+                var propertyListData = messageBuffer.Memory.Slice(0, messageLength).ToArray();
+                var propertyList = (NSDictionary)XmlPropertyListParser.Parse(propertyListData);
+
+                return propertyList;
+            }
+        }
+
         /// <inheritdoc/>
-        public ValueTask DisposeAsync()
+        public virtual ValueTask DisposeAsync()
         {
             if (this.ownsStream)
             {

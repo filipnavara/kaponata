@@ -3,6 +3,7 @@
 // </copyright>
 
 using Claunia.PropertyList;
+using System;
 
 namespace Kaponata.iOS.Muxer
 {
@@ -27,6 +28,9 @@ namespace Kaponata.iOS.Muxer
         /// A <see cref="NSDictionary"/> which represents this <see cref="MuxerMessage"/>
         /// as a property list.
         /// </returns>
-        public abstract NSDictionary ToPropertyList();
+        public virtual NSDictionary ToPropertyList()
+        {
+            throw new NotSupportedException();
+        }
     }
 }

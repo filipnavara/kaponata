@@ -2,11 +2,13 @@
 // Copyright (c) Quamotion bv. All rights reserved.
 // </copyright>
 
+using Claunia.PropertyList;
 using Kaponata.iOS.Muxer;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using System;
 using System.IO;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
@@ -30,7 +32,7 @@ namespace Kaponata.iOS.Tests.Muxer
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
-        public async Task MuxerProtocol_DisposeAsync_DisposesStreamIfNeeded_Async(bool ownsStream)
+        public async Task DisposeAsync_DisposesStreamIfNeeded_Async(bool ownsStream)
         {
             var stream = new Mock<Stream>(MockBehavior.Strict);
 
@@ -49,7 +51,7 @@ namespace Kaponata.iOS.Tests.Muxer
         /// The <see cref="MuxerProtocol"/> constructor checks for <see langword="null"/> values.
         /// </summary>
         [Fact]
-        public void MuxerProtocol_ConstructorValidatesArguments()
+        public void Constructor_ValidatesArguments()
         {
             Assert.Throws<ArgumentNullException>("stream", () => new MuxerProtocol(null, ownsStream: true, NullLogger<MuxerProtocol>.Instance));
             Assert.Throws<ArgumentNullException>("logger", () => new MuxerProtocol(Stream.Null, ownsStream: true, null));
@@ -99,6 +101,149 @@ namespace Kaponata.iOS.Tests.Muxer
                 Assert.Equal(
                     expected,
                     actual);
+            }
+        }
+
+        /// <summary>
+        /// Tests the <see cref="MuxerProtocol.ReadMessageAsync(CancellationToken)"/> method for receiving
+        /// property list messages.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="Task"/> which represents the asynchronous test.
+        /// </returns>
+        [Fact]
+        public async Task ReadMessageAsync_CanReadPropertyList_Async()
+        {
+            await using (Stream stream = File.OpenRead("Muxer/list-response.bin"))
+            await using (var protocol = new MuxerProtocol(stream, ownsStream: true, NullLogger<MuxerProtocol>.Instance))
+            {
+                var value = await protocol.ReadMessageAsync(
+                    default).ConfigureAwait(false);
+
+                Assert.Collection(
+                    value.Keys,
+                    v => Assert.Equal("DeviceList", v));
+            }
+        }
+
+        /// <summary>
+        /// Tests the <see cref="MuxerProtocol.ReadMessageAsync(CancellationToken)"/> method and makes sure
+        /// it returns <see langword="null"/> when the header is truncated.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="Task"/> which represents the asynchronous test.
+        /// </returns>
+        [Fact]
+        public async Task ReadMessageAsync_NoHeader_ReturnsNull_Async()
+        {
+            await using (Stream stream = new MemoryStream())
+            await using (var protocol = new MuxerProtocol(stream, ownsStream: true, NullLogger<MuxerProtocol>.Instance))
+            {
+                var value = await protocol.ReadMessageAsync(
+                    default).ConfigureAwait(false);
+
+                Assert.Null(value);
+            }
+        }
+
+        /// <summary>
+        /// Tests the <see cref="MuxerProtocol.ReadMessageAsync(CancellationToken)"/> method and makes sure
+        /// an exception is thrown when a message is received which is not a property list message.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="Task"/> which represents the asynchronous test.
+        /// </returns>
+        [Fact]
+        public async Task ReadMessageAsync_NotAPropertyListMessage_Throws_Async()
+        {
+            await using (Stream stream = new MemoryStream())
+            await using (var protocol = new MuxerProtocol(stream, ownsStream: true, NullLogger<MuxerProtocol>.Instance))
+            {
+                byte[] headerData = new byte[MuxerHeader.BinarySize];
+
+                new MuxerHeader()
+                {
+                    Length = 0x100,
+                    Message = MuxerMessageType.Attached,
+                    Tag = 1,
+                    Version = 1,
+                }.Write(headerData);
+
+                stream.Write(headerData);
+                stream.Position = 0;
+
+                await Assert.ThrowsAsync<NotSupportedException>(() => protocol.ReadMessageAsync(default)).ConfigureAwait(false);
+            }
+        }
+
+        /// <summary>
+        /// Tests the <see cref="MuxerProtocol.ReadMessageAsync(CancellationToken)"/> method and makes sure
+        /// it returns <see langword="null"/> when the message truncated.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="Task"/> which represents the asynchronous test.
+        /// </returns>
+        [Fact]
+        public async Task ReadMessageAsync_MessageTruncated_ReturnsNull_Async()
+        {
+            await using (Stream stream = new MemoryStream())
+            await using (var protocol = new MuxerProtocol(stream, ownsStream: true, NullLogger<MuxerProtocol>.Instance))
+            {
+                byte[] headerData = new byte[MuxerHeader.BinarySize];
+
+                new MuxerHeader()
+                {
+                    Length = 0x100,
+                    Message = MuxerMessageType.Plist,
+                    Tag = 1,
+                    Version = 1,
+                }.Write(headerData);
+
+                stream.Write(headerData);
+                stream.Position = 0;
+
+                var value = await protocol.ReadMessageAsync(
+                    default).ConfigureAwait(false);
+
+                Assert.Null(value);
+            }
+        }
+
+        /// <summary>
+        /// Tests the <see cref="MuxerProtocol.ReadMessageAsync(CancellationToken)"/> method and makes sure
+        /// it returns the serialized data.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="Task"/> which represents the asynchronous test.
+        /// </returns>
+        [Fact]
+        public async Task ReadMessageAsync_Works_Async()
+        {
+            await using (Stream stream = new MemoryStream())
+            await using (var protocol = new MuxerProtocol(stream, ownsStream: true, NullLogger<MuxerProtocol>.Instance))
+            {
+                var payload = new NSDictionary();
+                payload.Add("Hello", new NSString("World"));
+
+                byte[] payloadData = Encoding.UTF8.GetBytes(payload.ToXmlPropertyList());
+                byte[] headerData = new byte[MuxerHeader.BinarySize];
+
+                new MuxerHeader()
+                {
+                    Length = (uint)(MuxerHeader.BinarySize + payloadData.Length),
+                    Message = MuxerMessageType.Plist,
+                    Tag = 1,
+                    Version = 1,
+                }.Write(headerData);
+
+                stream.Write(headerData);
+                stream.Write(payloadData);
+                stream.Position = 0;
+
+                var value = await protocol.ReadMessageAsync(
+                    default).ConfigureAwait(false);
+
+                Assert.Equal(new NSString("World"), value.Get("Hello"));
             }
         }
     }
