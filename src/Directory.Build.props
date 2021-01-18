@@ -3,6 +3,9 @@
     <PackageReference Include="Nerdbank.GitVersioning" Version="3.4.165-alpha" PrivateAssets="all" />
     <PackageReference Include="StyleCop.Analyzers" Version="1.1.118" PrivateAssets="all" />
     <AdditionalFiles Include="$(MSBuildThisFileDirectory)\stylecop.json" />
+
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="5.0.0" />
+    <PackageReference Include="NerdBank.Streams" Version="2.6.81" />
   </ItemGroup>
 
   <PropertyGroup>
