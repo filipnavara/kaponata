@@ -4,6 +4,7 @@
 
 using Kaponata.iOS.Muxer;
 using Moq;
+using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Runtime.InteropServices;
@@ -37,12 +38,20 @@ namespace Kaponata.iOS.Tests.Muxer
             }
             else
             {
-                Assert.Equal(ProtocolType.Unspecified, socket.ProtocolType);
-                Assert.Equal(AddressFamily.Unix, socket.AddressFamily);
-                Assert.Equal(SocketType.Stream, socket.SocketType);
+                if (!File.Exists("/var/run/usbmuxd"))
+                {
+                    Assert.Null(socket);
+                    Assert.Null(endPoint);
+                }
+                else
+                {
+                    Assert.Equal(ProtocolType.Unspecified, socket.ProtocolType);
+                    Assert.Equal(AddressFamily.Unix, socket.AddressFamily);
+                    Assert.Equal(SocketType.Stream, socket.SocketType);
 
-                var unixEndPoint = Assert.IsType<UnixDomainSocketEndPoint>(endPoint);
-                Assert.Equal("/var/run/usbmuxd", unixEndPoint.ToString());
+                    var unixEndPoint = Assert.IsType<UnixDomainSocketEndPoint>(endPoint);
+                    Assert.Equal("/var/run/usbmuxd", unixEndPoint.ToString());
+                }
             }
         }
 

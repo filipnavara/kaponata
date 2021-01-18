@@ -4,6 +4,7 @@
 
 using Claunia.PropertyList;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Nerdbank.Streams;
 using System;
 using System.Buffers;
@@ -45,6 +46,17 @@ namespace Kaponata.iOS.Muxer
             this.stream = stream ?? throw new ArgumentNullException(nameof(stream));
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
             this.ownsStream = ownsStream;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MuxerProtocol"/> class.
+        /// </summary>
+        /// <remarks>
+        /// This constructor is intended for unit testing purposes only.
+        /// </remarks>
+        protected MuxerProtocol()
+            : this(Stream.Null, false, NullLogger<MuxerProtocol>.Instance)
+        {
         }
 
         /// <summary>
@@ -144,7 +156,7 @@ namespace Kaponata.iOS.Muxer
         }
 
         /// <inheritdoc/>
-        public ValueTask DisposeAsync()
+        public virtual ValueTask DisposeAsync()
         {
             if (this.ownsStream)
             {
