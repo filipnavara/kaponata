@@ -20,8 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="**/*.bin">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
+    <None Update="**/*.bin" CopyToOutputDirectory="PreserveNewest" />
+    <None Update="**/*.xml" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>
