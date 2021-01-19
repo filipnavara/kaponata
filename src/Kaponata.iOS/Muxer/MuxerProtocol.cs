@@ -115,10 +115,10 @@ namespace Kaponata.iOS.Muxer
         /// A <see cref="CancellationToken"/> which can be used to cancel the asynchronous operation.
         /// </param>
         /// <returns>
-        /// A <see cref="NSDictionary"/> object which represents the property list value received
+        /// A <see cref="DeviceListMessage"/> object which represents the property list value received
         /// from the remote muxer.
         /// </returns>
-        public virtual async Task<NSDictionary> ReadMessageAsync(CancellationToken cancellationToken)
+        public virtual async Task<MuxerMessage> ReadMessageAsync(CancellationToken cancellationToken)
         {
             int read;
             MuxerHeader header;
@@ -151,7 +151,7 @@ namespace Kaponata.iOS.Muxer
                 var propertyListData = messageBuffer.Memory.Slice(0, messageLength).ToArray();
                 var propertyList = (NSDictionary)XmlPropertyListParser.Parse(propertyListData);
 
-                return propertyList;
+                return MuxerMessage.ReadAny(propertyList);
             }
         }
 

@@ -96,7 +96,9 @@ namespace Kaponata.iOS.Tests.Muxer
 
             protocol
                 .Setup(p => p.ReadMessageAsync(default))
-                .ReturnsAsync((NSDictionary)PropertyListParser.Parse("Muxer/devicelist-wifi.xml"));
+                .ReturnsAsync(
+                    DeviceListMessage.Read(
+                        (NSDictionary)PropertyListParser.Parse("Muxer/devicelist-wifi.xml")));
 
             var clientMock = new Mock<MuxerClient>(NullLogger<MuxerClient>.Instance, NullLoggerFactory.Instance)
             {

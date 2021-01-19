@@ -45,7 +45,7 @@ namespace Kaponata.iOS.Muxer
                     cancellationToken).ConfigureAwait(false);
 
                 var response = await protocol.ReadMessageAsync(cancellationToken).ConfigureAwait(false);
-                var deviceList = DeviceListMessage.Read(response);
+                var deviceList = (DeviceListMessage)response;
 
                 foreach (var device in deviceList.DeviceList)
                 {
