@@ -8,6 +8,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
@@ -36,7 +37,7 @@ namespace Kaponata.iOS.Tests.Muxer
 
         /// <summary>
         /// <see cref="MuxerClient.TryConnectToMuxerAsync(CancellationToken)"/> returns <see langword="null"/> if
-        /// <see cref="MuxerSocketLocator.GetMuxerSocket"/> returns <see langword="null"/>.
+        /// <see cref="MuxerSocketLocator.ConnectToMuxerAsync(CancellationToken)"/> returns <see langword="null"/>.
         /// </summary>
         /// <returns>
         /// A <see cref="Task"/> which represents the asynchronous test.
@@ -45,7 +46,7 @@ namespace Kaponata.iOS.Tests.Muxer
         public async Task TryConnectToMuxerAsync_ReturnsNull_Async()
         {
             var locator = new Mock<MuxerSocketLocator>();
-            locator.Setup(l => l.GetMuxerSocket()).Returns((null, null));
+            locator.Setup(l => l.ConnectToMuxerAsync(default)).ReturnsAsync((Stream)null);
 
             var client = new MuxerClient(NullLogger<MuxerClient>.Instance, NullLoggerFactory.Instance, locator.Object);
             Assert.Null(await client.TryConnectToMuxerAsync(default).ConfigureAwait(false));
@@ -62,7 +63,7 @@ namespace Kaponata.iOS.Tests.Muxer
         public async Task ListDevicesAsync_NoSocket_ReturnsEmptyList_Async()
         {
             var locator = new Mock<MuxerSocketLocator>();
-            locator.Setup(l => l.GetMuxerSocket()).Returns((null, null));
+            locator.Setup(l => l.ConnectToMuxerAsync(default)).ReturnsAsync((Stream)null);
 
             var client = new MuxerClient(NullLogger<MuxerClient>.Instance, NullLoggerFactory.Instance, locator.Object);
             var result = await client.ListDevicesAsync(default).ConfigureAwait(false);
