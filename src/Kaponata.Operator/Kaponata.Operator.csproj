@@ -5,6 +5,9 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Kaponata.iOS\Kaponata.iOS.csproj" />
+
     <PackageReference Include="KubernetesClient" Version="4.0.5" />
   </ItemGroup>
+
 </Project>
