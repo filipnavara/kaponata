@@ -29,7 +29,7 @@ namespace Kaponata.iOS.Muxer
             }
 
             ResultMessage value = new ResultMessage();
-            value.MessageType = (MuxerMessageType)data.Get(nameof(MessageType)).ToObject();
+            value.MessageType = Enum.Parse<MuxerMessageType>((string)data.Get(nameof(MessageType)).ToObject());
             value.Number = (MuxerError)data.Get(nameof(Number)).ToObject();
             return value;
         }
