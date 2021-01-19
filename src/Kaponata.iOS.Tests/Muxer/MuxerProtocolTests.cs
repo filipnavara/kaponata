@@ -120,9 +120,7 @@ namespace Kaponata.iOS.Tests.Muxer
                 var value = await protocol.ReadMessageAsync(
                     default).ConfigureAwait(false);
 
-                Assert.Collection(
-                    value.Keys,
-                    v => Assert.Equal("DeviceList", v));
+                Assert.IsType<DeviceListMessage>(value);
             }
         }
 
@@ -223,7 +221,8 @@ namespace Kaponata.iOS.Tests.Muxer
             await using (var protocol = new MuxerProtocol(stream, ownsStream: true, NullLogger<MuxerProtocol>.Instance))
             {
                 var payload = new NSDictionary();
-                payload.Add("Hello", new NSString("World"));
+                payload.Add("MessageType", new NSString(nameof(MuxerMessageType.Result)));
+                payload.Add("Number", new NSNumber((int)MuxerError.Success));
 
                 byte[] payloadData = Encoding.UTF8.GetBytes(payload.ToXmlPropertyList());
                 byte[] headerData = new byte[MuxerHeader.BinarySize];
@@ -243,7 +242,7 @@ namespace Kaponata.iOS.Tests.Muxer
                 var value = await protocol.ReadMessageAsync(
                     default).ConfigureAwait(false);
 
-                Assert.Equal(new NSString("World"), value.Get("Hello"));
+                Assert.IsType<ResultMessage>(value);
             }
         }
     }

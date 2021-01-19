@@ -10,7 +10,7 @@ namespace Kaponata.iOS.Muxer
     /// <summary>
     /// Represents a message which is sent to, or received from, <c>usbmuxd</c>.
     /// </summary>
-    public abstract class MuxerMessage
+    public abstract partial class MuxerMessage
     {
         /// <summary>
         /// Gets or sets the type of message which was sent or received.
