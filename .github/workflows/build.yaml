@@ -133,10 +133,10 @@ jobs:
           k3d cluster create --api-port 6433 -p "80:80@loadbalancer"
 
       - name: Deploy Helm chart
-        run: |
-          set -e
-
-          helm install --wait kaponata ${{ github.workspace }}/bin/kaponata-${{ steps.nbgv.outputs.SemVer2 }}.tgz
+        run: >
+          helm install
+          --wait
+          kaponata ${{ github.workspace }}/bin/kaponata-${{ steps.nbgv.outputs.SemVer2 }}.tgz
 
       - name: Test chart
         run: >
@@ -157,3 +157,10 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           files: "bin/*.TestResults.xml"
+
+      - name: Upload Test Results
+        uses: actions/upload-artifact@v2
+        with:
+          name: test
+          path: |
+            ${{ github.workspace }}/bin/Kaponata.TestResults/
