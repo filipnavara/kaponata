@@ -28,29 +28,35 @@ namespace Kaponata.iOS.Muxer
                 throw new ArgumentNullException(nameof(data));
             }
 
-            if (!data.ContainsKey(nameof(MessageType)))
+            if (data.ContainsKey(nameof(MessageType)))
+            {
+                var messageType = Enum.Parse<MuxerMessageType>((string)data.Get(nameof(MessageType)).ToObject());
+
+                switch (messageType)
+                {
+                    case MuxerMessageType.Attached:
+                        return DeviceAttachedMessage.Read(data);
+
+                    case MuxerMessageType.Detached:
+                        return DeviceDetachedMessage.Read(data);
+
+                    case MuxerMessageType.Paired:
+                        return DevicePairedMessage.Read(data);
+
+                    case MuxerMessageType.Result:
+                        return ResultMessage.Read(data);
+
+                    default:
+                        throw new ArgumentOutOfRangeException(nameof(data));
+                }
+            }
+            else if (data.ContainsKey("DeviceList"))
+            {
+                return DeviceListMessage.Read(data);
+            }
+            else
             {
                 throw new ArgumentOutOfRangeException(nameof(data));
-            }
-
-            var messageType = Enum.Parse<MuxerMessageType>((string)data.Get(nameof(MessageType)).ToObject());
-
-            switch (messageType)
-            {
-                case MuxerMessageType.Attached:
-                    return DeviceAttachedMessage.Read(data);
-
-                case MuxerMessageType.Detached:
-                    return DeviceDetachedMessage.Read(data);
-
-                case MuxerMessageType.Paired:
-                    return DevicePairedMessage.Read(data);
-
-                case MuxerMessageType.Result:
-                    return ResultMessage.Read(data);
-
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(data));
             }
         }
     }
