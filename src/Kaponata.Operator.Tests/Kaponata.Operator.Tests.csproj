@@ -13,6 +13,7 @@
     <PackageReference Include="coverlet.collector" Version="3.0.1" PrivateAssets="all" />
     <PackageReference Include="JunitXml.TestLogger" Version="2.1.81" />
     <PackageReference Include="Nerdbank.Streams" Version="2.6.81" />
+    <PackageReference Include="Moq" Version="4.16.0" />
   </ItemGroup>
 
   <ItemGroup>
@@ -20,9 +21,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="Kubernetes\Polyfill\kubeconfig.yml">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
+    <None Update="Kubernetes\Polyfill\kubeconfig.yml" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>
