@@ -1,0 +1,4 @@
+usbmuxd:
+  image:
+    repository: quay.io/kaponata/usbmuxd
+    tag: 1.1.2
