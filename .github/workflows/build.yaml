@@ -133,11 +133,17 @@ jobs:
 
           k3d cluster create --api-port 6433 -p "80:80@loadbalancer"
 
+      # Override the usbmuxd image tag in the usbmuxd subchart to
+      # latest-udev-amd64. This fixes an issue where usbmuxd will fail
+      # to start on a VM with no USB stack (because libusb fails to
+      # initialize.)
       - name: Deploy Helm chart
         run: >
           helm install
+          --set usbmuxd.usbmuxd.image.tag=latest-udev-amd64
           --wait
-          kaponata ${{ github.workspace }}/bin/kaponata-${{ steps.nbgv.outputs.SemVer2 }}.tgz
+          kaponata
+          ${{ github.workspace }}/bin/kaponata-${{ steps.nbgv.outputs.SemVer2 }}.tgz
 
       - name: Run chart tests and integration tests
         run: >
