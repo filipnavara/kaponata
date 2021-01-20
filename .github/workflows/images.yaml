@@ -23,6 +23,13 @@ jobs:
         with:
           path: src
 
+      - name: Install gomplate
+        run: |
+          # Install gomplate, used by some Dockerfile templates
+          sudo curl -L https://github.com/hairyhenderson/gomplate/releases/download/v3.8.0/gomplate_linux-amd64 -o /usr/local/bin/gomplate -s
+          sudo chmod +x /usr/local/bin/gomplate
+          gomplate --version
+
       - name: Build Docker image
         run: |
           make

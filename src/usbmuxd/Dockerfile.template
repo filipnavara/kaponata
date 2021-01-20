@@ -11,6 +11,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 ENV build=x86_64-linux-gnu
 ARG host=aarch64-linux-gnu
 ARG arch=arm64
+ARG with_udev=no
 
 # Add the host architecture if needed
 RUN if [ -n "$arch" ]; then dpkg --add-architecture $arch; fi
@@ -24,6 +25,9 @@ RUN if [ -n "$host" ]; then apt-get install -y g++-$host; fi
 
 # Install libssl for the host architecture
 RUN apt-get install -y libssl-dev:$arch
+
+# Install libudev
+RUN apt-get install -y libudev-dev
 
 WORKDIR /src
 RUN curl -L https://github.com/libusb/libusb/archive/v${libusb_version}.tar.gz --output libusb-${libusb_version}.tar.gz
@@ -40,7 +44,7 @@ RUN tar -xvzf usbmuxd-${usbmuxd_version}.tar.gz
 
 WORKDIR /src/libusb-${libusb_version}
 
-RUN ./autogen.sh enable_udev=no --build=$build --host=$host --prefix=/usr --libdir=/usr/lib/$host \
+RUN ./autogen.sh --enable-udev=$with_udev --build=$build --host=$host --prefix=/usr --libdir=/usr/lib/$host \
 && make \
 && make install
 
@@ -68,7 +72,7 @@ RUN ./autogen.sh --build=$build --host=$host --prefix=/usr --libdir=/usr/lib/$ho
 && make \
 && make install
 
-FROM gcr.io/distroless/base-debian10
+FROM {{ (ds "config").image }}
 
 ARG host=aarch64-linux-gnu
 ARG arch=arm64
@@ -103,5 +107,11 @@ COPY --from=build /usr/bin/ideviceinfo /usr/bin/
 COPY --from=build /usr/sbin/usbmuxd /usr/sbin/usbmuxd
 
 ENV USBMUXD_SOCKET_ADDRESS=127.0.0.1:27015
+
+{{- if (ds "config").install_packages }}
+RUN apt-get update \
+&& apt-get install -y libudev1 libssl1.1 \
+&& rm -rf /var/lib/apt/lists/*
+{{- end }}
 
 ENTRYPOINT [ "/usr/sbin/usbmuxd", "-v", "-f", "-S", "0.0.0.0:27015" ]
