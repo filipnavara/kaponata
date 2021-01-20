@@ -32,7 +32,7 @@ namespace Kaponata.iOS.Tests.Muxer
             var dict = message.ToPropertyList();
             var xml = dict.ToXmlPropertyList();
 
-            Assert.Equal(File.ReadAllText("Muxer/listen.xml"), xml);
+            Assert.Equal(File.ReadAllText("Muxer/listen.xml"), xml, ignoreLineEndingDifferences: true);
         }
     }
 }
