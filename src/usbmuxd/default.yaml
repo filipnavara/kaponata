@@ -1,0 +1,2 @@
+image: gcr.io/distroless/base-debian10
+install_packages: false

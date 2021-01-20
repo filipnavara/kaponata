@@ -1,0 +1,2 @@
+image: debian:10
+install_packages: true
