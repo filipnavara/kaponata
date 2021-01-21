@@ -5,6 +5,7 @@
 using k8s;
 using k8s.Models;
 using Kaponata.Operator.Kubernetes.Polyfill;
+using Microsoft.Extensions.Logging.Abstractions;
 using Nerdbank.Streams;
 using Newtonsoft.Json;
 using System;
@@ -32,7 +33,7 @@ namespace Kaponata.Operator.Tests.Kubernetes.Polyfill
         [Fact]
         public async Task WatchPodAsync_ValidatesArguments_Async()
         {
-            var client = new KubernetesClient(new DummyHandler());
+            var client = new KubernetesClient(new DummyHandler(), NullLogger<KubernetesClient>.Instance, NullLoggerFactory.Instance);
             await Assert.ThrowsAsync<ArgumentNullException>("pod", () => client.WatchPodAsync(null, (eventType, result) => Task.FromResult(WatchResult.Continue), default)).ConfigureAwait(false);
             await Assert.ThrowsAsync<ArgumentNullException>("eventHandler", () => client.WatchPodAsync(new V1Pod(), null, default)).ConfigureAwait(false);
         }
@@ -57,7 +58,7 @@ namespace Kaponata.Operator.Tests.Kubernetes.Polyfill
 
             Collection<(WatchEventType, V1Pod)> events = new Collection<(WatchEventType, V1Pod)>();
 
-            var client = new KubernetesClient(handler);
+            var client = new KubernetesClient(handler, NullLogger<KubernetesClient>.Instance, NullLoggerFactory.Instance);
             var result = await client.WatchPodAsync(
                 new V1Pod()
                 {
@@ -103,7 +104,7 @@ namespace Kaponata.Operator.Tests.Kubernetes.Polyfill
 
             Collection<(WatchEventType, V1Pod)> events = new Collection<(WatchEventType, V1Pod)>();
 
-            var client = new KubernetesClient(handler);
+            var client = new KubernetesClient(handler, NullLogger<KubernetesClient>.Instance, NullLoggerFactory.Instance);
             var cts = new CancellationTokenSource();
 
             var watchTask = client.WatchPodAsync(
@@ -156,7 +157,7 @@ namespace Kaponata.Operator.Tests.Kubernetes.Polyfill
 
             Collection<(WatchEventType, V1Pod)> events = new Collection<(WatchEventType, V1Pod)>();
 
-            var client = new KubernetesClient(handler);
+            var client = new KubernetesClient(handler, NullLogger<KubernetesClient>.Instance, NullLoggerFactory.Instance);
             var cts = new CancellationTokenSource();
 
             var ex = await Assert.ThrowsAsync<KubernetesException>(
@@ -198,7 +199,7 @@ namespace Kaponata.Operator.Tests.Kubernetes.Polyfill
 
             Collection<(WatchEventType, V1Pod)> events = new Collection<(WatchEventType, V1Pod)>();
 
-            var client = new KubernetesClient(handler);
+            var client = new KubernetesClient(handler, NullLogger<KubernetesClient>.Instance, NullLoggerFactory.Instance);
             var cts = new CancellationTokenSource();
 
             var watchTask = client.WatchPodAsync(
