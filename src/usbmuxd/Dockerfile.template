@@ -4,7 +4,7 @@ ARG libusb_version=1.0.23
 ARG libplist_version=2.2.0
 ARG libusbmuxd_version=2.0.2
 ARG libimobiledevice_version=1.3.0
-ARG usbmuxd_version=1248a070f872e15a15b348150ff8bfb96491ddc3
+ARG usbmuxd_version=b1a7c7ebf110aece7175b0c4d032608a00a7b55b
 
 ENV DEBIAN_FRONTEND=noninteractive
 
