@@ -7,6 +7,8 @@ using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Runtime.InteropServices;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Kaponata.iOS.Muxer
 {
@@ -44,6 +46,29 @@ namespace Kaponata.iOS.Muxer
         public MuxerSocketLocator()
         {
             this.isWindowsSubsystemForLinux = new Lazy<bool>(this.GetIsWindowsSubsystemForLinux);
+        }
+
+        /// <summary>
+        /// Gets a <see cref="Stream"/> which represents a connection to the usbmuxd daemon.
+        /// </summary>
+        /// <param name="cancellationToken">
+        /// A <see cref="CancellationToken"/> which can be used to cancel the asynchronous operation.
+        /// </param>
+        /// <returns>
+        /// A <see cref="Task"/> which represents the asynchronous operation.
+        /// </returns>
+        public virtual async Task<Stream> ConnectToMuxerAsync(CancellationToken cancellationToken)
+        {
+            (var socket, var endPoint) = this.GetMuxerSocket();
+
+            if (socket == null)
+            {
+                return null;
+            }
+
+            await socket.ConnectAsync(endPoint, cancellationToken).ConfigureAwait(false);
+
+            return new NetworkStream(socket, ownsSocket: true);
         }
 
         /// <summary>

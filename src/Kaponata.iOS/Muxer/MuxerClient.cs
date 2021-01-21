@@ -4,8 +4,6 @@
 
 using Microsoft.Extensions.Logging;
 using System;
-using System.Net;
-using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -65,17 +63,15 @@ namespace Kaponata.iOS.Muxer
         /// </returns>
         public virtual async Task<MuxerProtocol> TryConnectToMuxerAsync(CancellationToken cancellationToken)
         {
-            (Socket socket, EndPoint endPoint) = this.socketLocator.GetMuxerSocket();
+            var stream = await this.socketLocator.ConnectToMuxerAsync(cancellationToken).ConfigureAwait(false);
 
-            if (socket == null || endPoint == null)
+            if (stream == null)
             {
                 return null;
             }
 
-            await socket.ConnectAsync(endPoint, cancellationToken).ConfigureAwait(false);
-
             return new MuxerProtocol(
-                new NetworkStream(socket, ownsSocket: true),
+                stream,
                 ownsStream: true,
                 this.loggerFactory.CreateLogger<MuxerProtocol>());
         }
