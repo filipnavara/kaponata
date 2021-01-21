@@ -38,17 +38,11 @@ jobs:
           dotnet test
           --results-directory ${{ github.workspace }}/bin/Kaponata.TestResults/
           --collect:"XPlat Code Coverage"
-          --logger "junit;LogFileName=${{ github.workspace }}/bin/{assembly}.TestResults.xml"
+          --logger "junit;LogFileName=${{ github.workspace }}/bin/operator-{assembly}.TestResults.xml"
+          --filter FullyQualifiedName\!~Kaponata.Chart.Tests
           --
           DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=cobertura
         working-directory: src/
-
-      - name: Publish Operator Test Results
-        uses: EnricoMi/publish-unit-test-result-action@v1.7
-        if: always()
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          files: "bin/*.TestResults.xml"
 
       - name: Generate Code Coverage Report
         uses: danielpalme/ReportGenerator-GitHub-Action@4.8.4
@@ -139,13 +133,34 @@ jobs:
           k3d cluster create --api-port 6433 -p "80:80@loadbalancer"
 
       - name: Deploy Helm chart
-        run: |
-          set -e
+        run: >
+          helm install
+          --wait
+          kaponata ${{ github.workspace }}/bin/kaponata-${{ steps.nbgv.outputs.SemVer2 }}.tgz
 
-          helm install kaponata ${{ github.workspace }}/bin/kaponata-${{ steps.nbgv.outputs.SemVer2 }}.tgz
+      - name: Test chart
+        run: >
+          dotnet test
+          --logger "junit;LogFileName=${{ github.workspace }}/bin/chart-{assembly}.TestResults.xml"
+          --filter FullyQualifiedName~Kaponata.Chart.Tests
+        working-directory: src/
 
       - name: Delete k3d cluster
         run: |
           set -e
 
           k3d cluster delete
+
+      - name: Publish Test Results
+        uses: EnricoMi/publish-unit-test-result-action@v1.7
+        if: always()
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          files: "bin/*.TestResults.xml"
+
+      - name: Upload Test Results
+        uses: actions/upload-artifact@v2
+        with:
+          name: test
+          path: |
+            ${{ github.workspace }}/bin/Kaponata.TestResults/
