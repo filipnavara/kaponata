@@ -2,6 +2,7 @@
 // Copyright (c) Quamotion bv. All rights reserved.
 // </copyright>
 
+using Microsoft.Extensions.Logging;
 using System;
 using System.Net.Http;
 
@@ -13,14 +14,26 @@ namespace Kaponata.Operator.Kubernetes.Polyfill
     /// </summary>
     public partial class KubernetesClient : k8s.Kubernetes, IKubernetesClient
     {
+        private readonly ILogger<KubernetesClient> logger;
+        private readonly ILoggerFactory loggerFactory;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="KubernetesClient"/> class.
         /// </summary>
         /// <param name="handler">
         /// The <see cref="HttpMessageHandler"/> which is used to send HTTP requests.
         /// </param>
-        public KubernetesClient(HttpMessageHandler handler)
+        /// <param name="logger">
+        /// A logger which is used when logging.
+        /// </param>
+        /// <param name="loggerFactory">
+        /// A logger factory which is used to create new logger objects.
+        /// </param>
+        public KubernetesClient(HttpMessageHandler handler, ILogger<KubernetesClient> logger, ILoggerFactory loggerFactory)
         {
+            this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            this.loggerFactory = loggerFactory ?? throw new ArgumentNullException(nameof(loggerFactory));
+
             this.HttpClient = new HttpClient(handler);
         }
 
@@ -30,9 +43,18 @@ namespace Kaponata.Operator.Kubernetes.Polyfill
         /// <param name="config">
         /// The Kubernetes client configuration.
         /// </param>
-        public KubernetesClient(k8s.KubernetesClientConfiguration config)
+        /// <param name="logger">
+        /// A logger which is used when logging.
+        /// </param>
+        /// <param name="loggerFactory">
+        /// A logger factory which is used to create new logger objects.
+        /// </param>
+        public KubernetesClient(k8s.KubernetesClientConfiguration config, ILogger<KubernetesClient> logger, ILoggerFactory loggerFactory)
             : base(config)
         {
+            this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            this.loggerFactory = loggerFactory ?? throw new ArgumentNullException(nameof(loggerFactory));
+
             this.FirstMessageHandler = this.HttpClientHandler = CreateRootHandler();
             this.FirstMessageHandler = new WatchHandler(this.HttpClientHandler);
 

@@ -2,7 +2,10 @@
 // Copyright (c) Quamotion bv. All rights reserved.
 // </copyright>
 
+using k8s;
+using k8s.Exceptions;
 using Kaponata.Operator.Kubernetes.Polyfill;
+using Microsoft.Extensions.Logging.Abstractions;
 using System;
 using System.Linq;
 using System.Net.Http;
@@ -17,13 +20,30 @@ namespace Kaponata.Operator.Tests.Kubernetes.Polyfill
     public partial class KubernetesClientTests
     {
         /// <summary>
+        /// The <see cref="KubernetesClient"/> constructor should validate its arguments.
+        /// </summary>
+        [Fact]
+        public void Constructor_ValidatesArguments()
+        {
+            Assert.Throws<ArgumentNullException>(() => new KubernetesClient((HttpMessageHandler)null, NullLogger<KubernetesClient>.Instance, NullLoggerFactory.Instance));
+            Assert.Throws<ArgumentNullException>("logger", () => new KubernetesClient(new SocketsHttpHandler(), null, NullLoggerFactory.Instance));
+            Assert.Throws<ArgumentNullException>("loggerFactory", () => new KubernetesClient(new SocketsHttpHandler(), NullLogger<KubernetesClient>.Instance, null));
+
+            Assert.Throws<KubeConfigException>(() => new KubernetesClient((KubernetesClientConfiguration)null, NullLogger<KubernetesClient>.Instance, NullLoggerFactory.Instance));
+            Assert.Throws<ArgumentNullException>("logger", () => new KubernetesClient(KubernetesClientConfiguration.BuildConfigFromConfigFile("Kubernetes/Polyfill/kubeconfig.yml"), null, NullLoggerFactory.Instance));
+            Assert.Throws<ArgumentNullException>("loggerFactory", () => new KubernetesClient(KubernetesClientConfiguration.BuildConfigFromConfigFile("Kubernetes/Polyfill/kubeconfig.yml"), NullLogger<KubernetesClient>.Instance, null));
+        }
+
+        /// <summary>
         /// The <see cref="KubernetesClient"/> class reads its configuration from the Kubernetes config file.
         /// </summary>
         [Fact]
         public void KubernetesClient_IsConfigured()
         {
             using (var client = new KubernetesClient(
-                k8s.KubernetesClientConfiguration.BuildConfigFromConfigFile("Kubernetes/Polyfill/kubeconfig.yml")))
+                KubernetesClientConfiguration.BuildConfigFromConfigFile("Kubernetes/Polyfill/kubeconfig.yml"),
+                NullLogger<KubernetesClient>.Instance,
+                NullLoggerFactory.Instance))
             {
                 Assert.Collection(
                     client.HttpMessageHandlers,
