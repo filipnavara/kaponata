@@ -2,10 +2,11 @@
 // Copyright (c) Quamotion bv. All rights reserved.
 // </copyright>
 
+using Divergic.Logging.Xunit;
 using k8s;
 using k8s.Models;
 using Kaponata.Operator.Kubernetes.Polyfill;
-using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Logging;
 using Nerdbank.Streams;
 using Newtonsoft.Json;
 using System;
@@ -16,6 +17,7 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Kaponata.Operator.Tests.Kubernetes.Polyfill
 {
@@ -24,6 +26,21 @@ namespace Kaponata.Operator.Tests.Kubernetes.Polyfill
     /// </summary>
     public partial class KubernetesProtocolTests
     {
+        private readonly ITestOutputHelper output;
+        private readonly ILoggerFactory loggerFactory;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="KubernetesProtocolTests"/> class.
+        /// </summary>
+        /// <param name="output">
+        /// The test output helper which will be used to log to xunit.
+        /// </param>
+        public KubernetesProtocolTests(ITestOutputHelper output)
+        {
+            this.loggerFactory = LogFactory.Create(output);
+            this.output = output;
+        }
+
         /// <summary>
         /// The <see cref="KubernetesProtocol.WatchPodAsync"/> method validates the parameters passed to it.
         /// </summary>
@@ -33,7 +50,7 @@ namespace Kaponata.Operator.Tests.Kubernetes.Polyfill
         [Fact]
         public async Task WatchPodAsync_ValidatesArguments_Async()
         {
-            var client = new KubernetesProtocol(new DummyHandler(), NullLogger<KubernetesProtocol>.Instance, NullLoggerFactory.Instance);
+            var client = new KubernetesProtocol(new DummyHandler(), this.loggerFactory.CreateLogger<KubernetesProtocol>(), this.loggerFactory);
             await Assert.ThrowsAsync<ArgumentNullException>("pod", () => client.WatchPodAsync(null, (eventType, result) => Task.FromResult(WatchResult.Continue), default)).ConfigureAwait(false);
             await Assert.ThrowsAsync<ArgumentNullException>("eventHandler", () => client.WatchPodAsync(new V1Pod(), null, default)).ConfigureAwait(false);
         }
@@ -58,7 +75,7 @@ namespace Kaponata.Operator.Tests.Kubernetes.Polyfill
 
             Collection<(WatchEventType, V1Pod)> events = new Collection<(WatchEventType, V1Pod)>();
 
-            var client = new KubernetesProtocol(handler, NullLogger<KubernetesProtocol>.Instance, NullLoggerFactory.Instance);
+            var client = new KubernetesProtocol(handler, this.loggerFactory.CreateLogger<KubernetesProtocol>(), this.loggerFactory);
             var result = await client.WatchPodAsync(
                 new V1Pod()
                 {
@@ -90,39 +107,40 @@ namespace Kaponata.Operator.Tests.Kubernetes.Polyfill
         [Fact]
         public async Task WatchPodAsync_CancelsIfNeeded_Async()
         {
-            var stream = new SimplexStream();
-            var writer = new StreamWriter(stream);
+            using (var stream = new SimplexStream())
+            using (var writer = new StreamWriter(stream))
+            {
+                var handler = new DummyHandler();
+                handler.Responses.Enqueue(
+                    new HttpResponseMessage()
+                    {
+                        StatusCode = HttpStatusCode.OK,
+                        Content = new WatchHttpContent(
+                            new StreamContent(stream)),
+                    });
 
-            var handler = new DummyHandler();
-            handler.Responses.Enqueue(
-                new HttpResponseMessage()
-                {
-                    StatusCode = HttpStatusCode.OK,
-                    Content = new WatchHttpContent(
-                        new StreamContent(stream)),
-                });
+                Collection<(WatchEventType, V1Pod)> events = new Collection<(WatchEventType, V1Pod)>();
 
-            Collection<(WatchEventType, V1Pod)> events = new Collection<(WatchEventType, V1Pod)>();
+                var client = new KubernetesProtocol(handler, this.loggerFactory.CreateLogger<KubernetesProtocol>(), this.loggerFactory);
+                var cts = new CancellationTokenSource();
 
-            var client = new KubernetesProtocol(handler, NullLogger<KubernetesProtocol>.Instance, NullLoggerFactory.Instance);
-            var cts = new CancellationTokenSource();
+                var watchTask = client.WatchPodAsync(
+                    new V1Pod()
+                    {
+                        Metadata = new V1ObjectMeta(name: "pod", namespaceProperty: "default", resourceVersion: "1"),
+                    },
+                    (eventType, result) =>
+                    {
+                        events.Add((eventType, result));
+                        return Task.FromResult(WatchResult.Continue);
+                    },
+                    cts.Token);
 
-            var watchTask = client.WatchPodAsync(
-                new V1Pod()
-                {
-                    Metadata = new V1ObjectMeta(name: "pod", namespaceProperty: "default", resourceVersion: "1"),
-                },
-                (eventType, result) =>
-                {
-                    events.Add((eventType, result));
-                    return Task.FromResult(WatchResult.Continue);
-                },
-                cts.Token);
+                Assert.True(!watchTask.IsCompleted);
+                cts.Cancel();
 
-            Assert.True(!watchTask.IsCompleted);
-            cts.Cancel();
-
-            await Assert.ThrowsAsync<TaskCanceledException>(() => watchTask).ConfigureAwait(false);
+                await Assert.ThrowsAsync<TaskCanceledException>(() => watchTask).ConfigureAwait(false);
+            }
         }
 
         /// <summary>
@@ -157,7 +175,7 @@ namespace Kaponata.Operator.Tests.Kubernetes.Polyfill
 
             Collection<(WatchEventType, V1Pod)> events = new Collection<(WatchEventType, V1Pod)>();
 
-            var client = new KubernetesProtocol(handler, NullLogger<KubernetesProtocol>.Instance, NullLoggerFactory.Instance);
+            var client = new KubernetesProtocol(handler, this.loggerFactory.CreateLogger<KubernetesProtocol>(), this.loggerFactory);
             var cts = new CancellationTokenSource();
 
             var ex = await Assert.ThrowsAsync<KubernetesException>(
@@ -185,90 +203,91 @@ namespace Kaponata.Operator.Tests.Kubernetes.Polyfill
         [Fact]
         public async Task WatchPodAsync_ClientCanStopLoop_Async()
         {
-            var stream = new SimplexStream();
-            var writer = new StreamWriter(stream);
-
-            var handler = new DummyHandler();
-            handler.Responses.Enqueue(
-                new HttpResponseMessage()
-                {
-                    StatusCode = HttpStatusCode.OK,
-                    Content = new WatchHttpContent(
-                        new StreamContent(stream)),
-                });
-
-            Collection<(WatchEventType, V1Pod)> events = new Collection<(WatchEventType, V1Pod)>();
-
-            var client = new KubernetesProtocol(handler, NullLogger<KubernetesProtocol>.Instance, NullLoggerFactory.Instance);
-            var cts = new CancellationTokenSource();
-
-            var watchTask = client.WatchPodAsync(
-                new V1Pod()
-                {
-                    Metadata = new V1ObjectMeta(name: "pod", namespaceProperty: "default", resourceVersion: "1"),
-                },
-                (eventType, result) =>
-                {
-                    events.Add((eventType, result));
-                    return Task.FromResult(events.Count == 1 ? WatchResult.Continue : WatchResult.Stop);
-                },
-                cts.Token);
-
-            Assert.True(!watchTask.IsCompleted);
-
-            await writer.WriteAsync(
-                JsonConvert.SerializeObject(
-                    new V1WatchEvent()
+            using (var stream = new SimplexStream())
+            using (var writer = new StreamWriter(stream))
+            {
+                var handler = new DummyHandler();
+                handler.Responses.Enqueue(
+                    new HttpResponseMessage()
                     {
-                        Type = nameof(WatchEventType.Deleted),
-                        ObjectProperty = new V1Pod()
-                        {
-                            Metadata = new V1ObjectMeta()
-                            {
-                                NamespaceProperty = "some-namespace",
-                                Name = "some-name",
-                            },
-                        },
-                    }));
-            await writer.WriteAsync('\n').ConfigureAwait(false);
-            await writer.FlushAsync().ConfigureAwait(false);
+                        StatusCode = HttpStatusCode.OK,
+                        Content = new WatchHttpContent(
+                            new StreamContent(stream)),
+                    });
 
-            Assert.True(!watchTask.IsCompleted);
+                Collection<(WatchEventType, V1Pod)> events = new Collection<(WatchEventType, V1Pod)>();
 
-            await writer.WriteAsync(
-                JsonConvert.SerializeObject(
-                    new V1WatchEvent()
+                var client = new KubernetesProtocol(handler, this.loggerFactory.CreateLogger<KubernetesProtocol>(), this.loggerFactory);
+                var cts = new CancellationTokenSource();
+
+                var watchTask = client.WatchPodAsync(
+                    new V1Pod()
                     {
-                        Type = nameof(WatchEventType.Deleted),
-                        ObjectProperty = new V1Pod()
+                        Metadata = new V1ObjectMeta(name: "pod", namespaceProperty: "default", resourceVersion: "1"),
+                    },
+                    (eventType, result) =>
+                    {
+                        events.Add((eventType, result));
+                        return Task.FromResult(events.Count == 1 ? WatchResult.Continue : WatchResult.Stop);
+                    },
+                    cts.Token);
+
+                Assert.True(!watchTask.IsCompleted);
+
+                await writer.WriteAsync(
+                    JsonConvert.SerializeObject(
+                        new V1WatchEvent()
                         {
-                            Metadata = new V1ObjectMeta()
+                            Type = nameof(WatchEventType.Deleted),
+                            ObjectProperty = new V1Pod()
                             {
-                                NamespaceProperty = "some-namespace2",
-                                Name = "some-name2",
+                                Metadata = new V1ObjectMeta()
+                                {
+                                    NamespaceProperty = "some-namespace",
+                                    Name = "some-name",
+                                },
                             },
-                        },
-                    }));
-            await writer.WriteAsync('\n').ConfigureAwait(false);
-            await writer.FlushAsync().ConfigureAwait(false);
+                        }));
+                await writer.WriteAsync('\n').ConfigureAwait(false);
+                await writer.FlushAsync().ConfigureAwait(false);
 
-            var result = await watchTask;
-            Assert.Equal(WatchExitReason.ClientDisconnected, result);
+                Assert.True(!watchTask.IsCompleted);
 
-            Assert.Collection(
-                events,
-                e =>
-                {
-                    Assert.Equal(WatchEventType.Deleted, e.Item1);
-                    Assert.Equal("some-namespace", e.Item2.Metadata.NamespaceProperty);
-                    Assert.Equal("some-name", e.Item2.Metadata.Name);
-                },
-                e =>
-                {
-                    Assert.Equal(WatchEventType.Deleted, e.Item1);
-                    Assert.Equal("some-namespace2", e.Item2.Metadata.NamespaceProperty);
-                    Assert.Equal("some-name2", e.Item2.Metadata.Name);
-                });
+                await writer.WriteAsync(
+                    JsonConvert.SerializeObject(
+                        new V1WatchEvent()
+                        {
+                            Type = nameof(WatchEventType.Deleted),
+                            ObjectProperty = new V1Pod()
+                            {
+                                Metadata = new V1ObjectMeta()
+                                {
+                                    NamespaceProperty = "some-namespace2",
+                                    Name = "some-name2",
+                                },
+                            },
+                        }));
+                await writer.WriteAsync('\n').ConfigureAwait(false);
+                await writer.FlushAsync().ConfigureAwait(false);
+
+                var result = await watchTask;
+                Assert.Equal(WatchExitReason.ClientDisconnected, result);
+
+                Assert.Collection(
+                    events,
+                    e =>
+                    {
+                        Assert.Equal(WatchEventType.Deleted, e.Item1);
+                        Assert.Equal("some-namespace", e.Item2.Metadata.NamespaceProperty);
+                        Assert.Equal("some-name", e.Item2.Metadata.Name);
+                    },
+                    e =>
+                    {
+                        Assert.Equal(WatchEventType.Deleted, e.Item1);
+                        Assert.Equal("some-namespace2", e.Item2.Metadata.NamespaceProperty);
+                        Assert.Equal("some-name2", e.Item2.Metadata.Name);
+                    });
+            }
         }
     }
 }
