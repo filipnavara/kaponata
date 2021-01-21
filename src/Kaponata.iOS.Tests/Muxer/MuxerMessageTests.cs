@@ -4,6 +4,7 @@
 
 using Claunia.PropertyList;
 using Kaponata.iOS.Muxer;
+using Moq;
 using System;
 using Xunit;
 
@@ -57,6 +58,32 @@ namespace Kaponata.iOS.Tests.Muxer
             Assert.IsType<DevicePairedMessage>(MuxerMessage.ReadAny((NSDictionary)PropertyListParser.Parse("Muxer/paired.xml")));
             Assert.IsType<ResultMessage>(MuxerMessage.ReadAny((NSDictionary)PropertyListParser.Parse("Muxer/result.xml")));
             Assert.IsType<DeviceListMessage>(MuxerMessage.ReadAny((NSDictionary)PropertyListParser.Parse("Muxer/devicelist.xml")));
+        }
+
+        /// <summary>
+        /// The <see cref="MuxerMessage.ReadAny(NSDictionary)"/> method throws an exception when an unexpected
+        /// message type is encountered.
+        /// </summary>
+        [Fact]
+        public void ReadAny_ThrowsOnUnknownType()
+        {
+            var dictionary = new NSDictionary();
+            dictionary.Add(nameof(MuxerMessage.MessageType), nameof(MuxerMessageType.None));
+            Assert.Throws<ArgumentOutOfRangeException>(() => MuxerMessage.ReadAny(dictionary));
+        }
+
+        /// <summary>
+        /// The default <see cref="MuxerMessage.ToPropertyList"/> implementation throws an exception.
+        /// </summary>
+        [Fact]
+        public void ToPropertyList_ThrowsException()
+        {
+            var message = new Mock<MuxerMessage>()
+            {
+                CallBase = true,
+            };
+
+            Assert.Throws<NotSupportedException>(() => message.Object.ToPropertyList());
         }
     }
 }

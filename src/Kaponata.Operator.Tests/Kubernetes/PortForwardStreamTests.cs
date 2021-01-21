@@ -180,7 +180,7 @@ namespace Kaponata.Operator.Tests.Kubernetes
         }
 
         /// <summary>
-        /// Calls to <see cref="PortForwardStream.WriteAsync(byte[], int, int, CancellationToken)"/> are handled correctly;
+        /// Calls to <see cref="PortForwardStream.WriteAsync(ReadOnlyMemory{byte}, CancellationToken)"/> are handled correctly;
         /// the data is encapsulated in the Kubernetes-specific protocol and forwarded to the remote end.
         /// </summary>
         /// <returns>
@@ -207,6 +207,59 @@ namespace Kaponata.Operator.Tests.Kubernetes
             using (var stream = new PortForwardStream(socket.Object, NullLogger<PortForwardStream>.Instance))
             {
                 await stream.WriteAsync(data.AsMemory(), default).ConfigureAwait(false);
+            }
+
+            socket.Verify();
+        }
+
+        /// <summary>
+        /// Calls to <see cref="PortForwardStream.WriteAsync(byte[], int, int, CancellationToken)"/> are handled correctly;
+        /// the data is encapsulated in the Kubernetes-specific protocol and forwarded to the remote end.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="Task"/> which represents the asynchronous test.
+        /// </returns>
+        [Fact]
+        public async Task WriteAsync_Buffer_Works_Async()
+        {
+            byte[] data = new byte[] { 1, 2, 3 };
+            byte[] encapsulatedData = new byte[] { 0, 1, 2, 3 };
+
+            var socket = new Mock<WebSocket>(MockBehavior.Strict);
+            socket.Setup(s => s.Dispose()).Verifiable();
+            socket
+                .Setup(s => s.SendAsync(It.IsAny<ReadOnlyMemory<byte>>(), WebSocketMessageType.Binary, false, default))
+                .Callback<ReadOnlyMemory<byte>, WebSocketMessageType, bool, CancellationToken>(
+                    (buffer, messageType, endOfMessage, cancellationToken)
+                    =>
+                    {
+                        Assert.Equal(encapsulatedData, buffer.ToArray());
+                    })
+                .Returns(ValueTask.CompletedTask);
+
+            using (var stream = new PortForwardStream(socket.Object, NullLogger<PortForwardStream>.Instance))
+            {
+                await stream.WriteAsync(data, 0, data.Length, default).ConfigureAwait(false);
+            }
+
+            socket.Verify();
+        }
+
+        /// <summary>
+        /// Calls to <see cref="PortForwardStream.Flush"/> are no-ops.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="Task"/> which represents the asynchronous test.
+        /// </returns>
+        [Fact]
+        public async Task Flush_IsNoOp_Async()
+        {
+            var socket = new Mock<WebSocket>(MockBehavior.Strict);
+            socket.Setup(s => s.Dispose()).Verifiable();
+
+            using (var stream = new PortForwardStream(socket.Object, NullLogger<PortForwardStream>.Instance))
+            {
+                await stream.FlushAsync().ConfigureAwait(false);
             }
 
             socket.Verify();

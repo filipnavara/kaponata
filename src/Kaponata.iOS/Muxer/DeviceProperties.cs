@@ -134,10 +134,10 @@ namespace Kaponata.iOS.Muxer
                 switch (this.NetworkAddress[0])
                 {
                     case AF_INET:
-                        return new IPAddress(BitConverter.ToInt64(this.NetworkAddress, 4));
+                        return new IPAddress(this.NetworkAddress.AsSpan(4, 4));
 
                     case AF_INET6:
-                        return new IPAddress(this.NetworkAddress.AsSpan(4, 4));
+                        return new IPAddress(this.NetworkAddress.AsSpan(4, 16));
 
                     default:
                         return null;
