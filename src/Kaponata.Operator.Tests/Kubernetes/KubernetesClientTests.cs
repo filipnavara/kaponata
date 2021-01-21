@@ -374,5 +374,149 @@ namespace Kaponata.Operator.Tests.Kubernetes
 
             protocol.Verify();
         }
+
+        /// <summary>
+        /// <see cref="KubernetesClient.DeletePodAsync"/> returns when the pod is deleted.
+        /// </summary>
+        /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
+        [Fact]
+        public async Task DeletePodAsync_PodDeleted_Returns_Async()
+        {
+            var pod =
+                new V1Pod()
+                {
+                    Metadata = new V1ObjectMeta()
+                    {
+                        Name = "my-pod",
+                    },
+                    Status = new V1PodStatus()
+                    {
+                        Phase = "Pending",
+                    },
+                };
+
+            Func<WatchEventType, V1Pod, Task<WatchResult>> callback = null;
+            TaskCompletionSource<WatchExitReason> watchTask = new TaskCompletionSource<WatchExitReason>();
+
+            var protocol = new Mock<IKubernetesProtocol>(MockBehavior.Strict);
+            protocol.Setup(p => p.Dispose()).Verifiable();
+            protocol
+                .Setup(p => p.WatchPodAsync(pod, It.IsAny<Func<WatchEventType, V1Pod, Task<WatchResult>>>(), It.IsAny<CancellationToken>()))
+                .Returns<V1Pod, Func<WatchEventType, V1Pod, Task<WatchResult>>, CancellationToken>((pod, watcher, ct) =>
+                {
+                    callback = watcher;
+                    return watchTask.Task;
+                });
+
+            using (var client = new KubernetesClient(protocol.Object, NullLogger<KubernetesClient>.Instance))
+            {
+                var task = client.DeletePodAsync(pod, TimeSpan.FromMinutes(1), default);
+                Assert.NotNull(callback);
+
+                // The callback continues watching until the pod is deleted
+                Assert.Equal(WatchResult.Continue, await callback(WatchEventType.Modified, pod).ConfigureAwait(false));
+                Assert.Equal(WatchResult.Stop, await callback(WatchEventType.Deleted, pod).ConfigureAwait(false));
+                watchTask.SetResult(WatchExitReason.ClientDisconnected);
+
+                await task.ConfigureAwait(false);
+            }
+
+            protocol.Verify();
+        }
+
+        /// <summary>
+        /// <see cref="KubernetesClient.DeletePodAsync"/> errors when the API server disconnects.
+        /// </summary>
+        /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
+        [Fact]
+        public async Task DeletePodAsync_ApiDisconnects_Errors_Async()
+        {
+            var pod =
+                new V1Pod()
+                {
+                    Metadata = new V1ObjectMeta()
+                    {
+                        Name = "my-pod",
+                    },
+                    Status = new V1PodStatus()
+                    {
+                        Phase = "Pending",
+                    },
+                };
+
+            Func<WatchEventType, V1Pod, Task<WatchResult>> callback = null;
+            TaskCompletionSource<WatchExitReason> watchTask = new TaskCompletionSource<WatchExitReason>();
+
+            var protocol = new Mock<IKubernetesProtocol>(MockBehavior.Strict);
+            protocol.Setup(p => p.Dispose()).Verifiable();
+            protocol
+                .Setup(p => p.WatchPodAsync(pod, It.IsAny<Func<WatchEventType, V1Pod, Task<WatchResult>>>(), It.IsAny<CancellationToken>()))
+                .Returns<V1Pod, Func<WatchEventType, V1Pod, Task<WatchResult>>, CancellationToken>((pod, watcher, ct) =>
+                {
+                    callback = watcher;
+                    return watchTask.Task;
+                });
+
+            using (var client = new KubernetesClient(protocol.Object, NullLogger<KubernetesClient>.Instance))
+            {
+                var task = client.DeletePodAsync(pod, TimeSpan.FromMinutes(1), default);
+                Assert.NotNull(callback);
+
+                // Simulate the watch task stopping
+                watchTask.SetResult(WatchExitReason.ServerDisconnected);
+
+                // The watch completes with an exception.
+                var ex = await Assert.ThrowsAsync<KubernetesException>(() => task).ConfigureAwait(false);
+                Assert.Equal("The API server unexpectedly closed the connection while watching pod my-pod.", ex.Message);
+            }
+
+            protocol.Verify();
+        }
+
+        /// <summary>
+        /// <see cref="KubernetesClient.DeletePodAsync"/> respects the time out passed.
+        /// </summary>
+        /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
+        [Fact]
+        public async Task DeletePodAsync_RespectsTimeout_Async()
+        {
+            var pod =
+                new V1Pod()
+                {
+                    Metadata = new V1ObjectMeta()
+                    {
+                        Name = "my-pod",
+                    },
+                    Status = new V1PodStatus()
+                    {
+                        Phase = "Pending",
+                    },
+                };
+
+            Func<WatchEventType, V1Pod, Task<WatchResult>> callback = null;
+            TaskCompletionSource<WatchExitReason> watchTask = new TaskCompletionSource<WatchExitReason>();
+
+            var protocol = new Mock<IKubernetesProtocol>(MockBehavior.Strict);
+            protocol.Setup(p => p.Dispose()).Verifiable();
+            protocol
+                .Setup(p => p.WatchPodAsync(pod, It.IsAny<Func<WatchEventType, V1Pod, Task<WatchResult>>>(), It.IsAny<CancellationToken>()))
+                .Returns<V1Pod, Func<WatchEventType, V1Pod, Task<WatchResult>>, CancellationToken>((pod, watcher, ct) =>
+                {
+                    callback = watcher;
+                    return watchTask.Task;
+                });
+
+            using (var client = new KubernetesClient(protocol.Object, NullLogger<KubernetesClient>.Instance))
+            {
+                var task = client.DeletePodAsync(pod, TimeSpan.Zero, default);
+                Assert.NotNull(callback);
+
+                // The watch completes with an exception.
+                var ex = await Assert.ThrowsAsync<KubernetesException>(() => task).ConfigureAwait(false);
+                Assert.Equal("The pod my-pod was not deleted within a timeout of 0 seconds.", ex.Message);
+            }
+
+            protocol.Verify();
+        }
     }
 }

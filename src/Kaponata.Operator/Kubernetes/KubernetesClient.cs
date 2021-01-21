@@ -114,6 +114,58 @@ namespace Kaponata.Operator.Kubernetes
             return pod;
         }
 
+        /// <summary>
+        /// Asynchronously deletes a pod.
+        /// </summary>
+        /// <param name="pod">
+        /// The pod to delete.
+        /// </param>
+        /// <param name="timeout">
+        /// The amount of time in which the pod should be deleted.
+        /// </param>
+        /// <param name="cancellationToken">
+        /// A <see cref="CancellationToken"/> which can be used to cancel the asynchronous operation.
+        /// </param>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+        public virtual async Task DeletePodAsync(V1Pod pod, TimeSpan timeout, CancellationToken cancellationToken)
+        {
+            if (pod == null)
+            {
+                throw new ArgumentNullException(nameof(pod));
+            }
+
+            CancellationTokenSource cts = new CancellationTokenSource();
+            cancellationToken.Register(cts.Cancel);
+
+            var watchTask = this.protocol.WatchPodAsync(
+                pod,
+                onEvent: (type, updatedPod) =>
+                {
+                    pod = updatedPod;
+
+                    if (type == WatchEventType.Deleted)
+                    {
+                        return Task.FromResult(WatchResult.Stop);
+                    }
+
+                    return Task.FromResult(WatchResult.Continue);
+                },
+                cts.Token);
+
+            if (await Task.WhenAny(watchTask, Task.Delay(timeout)).ConfigureAwait(false) != watchTask)
+            {
+                cts.Cancel();
+                throw new KubernetesException($"The pod {pod.Metadata.Name} was not deleted within a timeout of {timeout.TotalSeconds} seconds.");
+            }
+
+            var result = await watchTask.ConfigureAwait(false);
+
+            if (result != WatchExitReason.ClientDisconnected)
+            {
+                throw new KubernetesException($"The API server unexpectedly closed the connection while watching pod {pod.Metadata.Name}.");
+            }
+        }
+
         /// <inheritdoc/>
         public void Dispose()
         {
@@ -122,7 +174,7 @@ namespace Kaponata.Operator.Kubernetes
 
         private static bool IsRunning(V1Pod pod)
         {
-            return pod != null && pod.Status.Phase == "Running";
+            return pod.Status.Phase == "Running";
         }
 
         private static bool HasFailed(V1Pod pod, out Exception ex)
