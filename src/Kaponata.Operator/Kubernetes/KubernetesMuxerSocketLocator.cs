@@ -67,7 +67,6 @@ namespace Kaponata.Operator.Kubernetes
 
             this.logger.LogInformation("Connected to port {port} on pod {pod}", DefaultMuxerPort, this.pod.Metadata.Name);
             return new PortForwardStream(webSocket, this.loggerFactory.CreateLogger<PortForwardStream>());
-
         }
 
         /// <inheritdoc/>

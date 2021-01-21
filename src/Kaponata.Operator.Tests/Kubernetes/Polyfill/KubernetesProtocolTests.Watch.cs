@@ -19,6 +19,8 @@ using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
 
+#pragma warning disable VSTHRD003 // Avoid awaiting foreign Tasks
+
 namespace Kaponata.Operator.Tests.Kubernetes.Polyfill
 {
     /// <summary>

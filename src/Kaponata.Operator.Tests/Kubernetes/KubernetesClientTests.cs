@@ -16,6 +16,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 
+#pragma warning disable VSTHRD003 // Avoid awaiting foreign Tasks
+
 namespace Kaponata.Operator.Tests.Kubernetes
 {
     /// <summary>
