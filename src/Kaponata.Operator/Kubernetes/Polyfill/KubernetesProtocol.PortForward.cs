@@ -12,9 +12,9 @@ using System.Threading.Tasks;
 namespace Kaponata.Operator.Kubernetes.Polyfill
 {
     /// <summary>
-    /// Implements the <see cref="KubernetesClient.ConnectToPodPortAsync(V1Pod, int, CancellationToken)"/> method.
+    /// Implements the <see cref="KubernetesProtocol.ConnectToPodPortAsync(V1Pod, int, CancellationToken)"/> method.
     /// </summary>
-    public partial class KubernetesClient
+    public partial class KubernetesProtocol
     {
         /// <inheritdoc/>
         public async Task<Stream> ConnectToPodPortAsync(V1Pod pod, int port, CancellationToken cancellationToken)

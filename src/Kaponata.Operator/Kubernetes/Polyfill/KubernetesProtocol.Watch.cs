@@ -13,9 +13,9 @@ using System.Threading.Tasks;
 namespace Kaponata.Operator.Kubernetes.Polyfill
 {
     /// <summary>
-    /// Implements the watch methods on the <see cref="KubernetesClient"/> class.
+    /// Implements the watch methods on the <see cref="KubernetesProtocol"/> class.
     /// </summary>
-    public partial class KubernetesClient
+    public partial class KubernetesProtocol
     {
         /// <inheritdoc/>
         public async Task<WatchExitReason> WatchPodAsync(

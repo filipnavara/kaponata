@@ -1,4 +1,4 @@
-﻿// <copyright file="KubernetesClientTests.Watch.cs" company="Quamotion bv">
+﻿// <copyright file="KubernetesProtocolTests.Watch.cs" company="Quamotion bv">
 // Copyright (c) Quamotion bv. All rights reserved.
 // </copyright>
 
@@ -20,12 +20,12 @@ using Xunit;
 namespace Kaponata.Operator.Tests.Kubernetes.Polyfill
 {
     /// <summary>
-    /// Tests the <see cref="KubernetesClient.WatchPodAsync"/> method.
+    /// Tests the <see cref="KubernetesProtocol.WatchPodAsync"/> method.
     /// </summary>
-    public partial class KubernetesClientTests
+    public partial class KubernetesProtocolTests
     {
         /// <summary>
-        /// The <see cref="KubernetesClient.WatchPodAsync"/> method validates the parameters passed to it.
+        /// The <see cref="KubernetesProtocol.WatchPodAsync"/> method validates the parameters passed to it.
         /// </summary>
         /// <returns>
         /// A <see cref="Task"/> which represents the asynchronous test.
@@ -33,13 +33,13 @@ namespace Kaponata.Operator.Tests.Kubernetes.Polyfill
         [Fact]
         public async Task WatchPodAsync_ValidatesArguments_Async()
         {
-            var client = new KubernetesClient(new DummyHandler(), NullLogger<KubernetesClient>.Instance, NullLoggerFactory.Instance);
+            var client = new KubernetesProtocol(new DummyHandler(), NullLogger<KubernetesProtocol>.Instance, NullLoggerFactory.Instance);
             await Assert.ThrowsAsync<ArgumentNullException>("pod", () => client.WatchPodAsync(null, (eventType, result) => Task.FromResult(WatchResult.Continue), default)).ConfigureAwait(false);
             await Assert.ThrowsAsync<ArgumentNullException>("eventHandler", () => client.WatchPodAsync(new V1Pod(), null, default)).ConfigureAwait(false);
         }
 
         /// <summary>
-        /// The <see cref="KubernetesClient.WatchPodAsync"/> method immediately exists if it receives empty content.
+        /// The <see cref="KubernetesProtocol.WatchPodAsync"/> method immediately exists if it receives empty content.
         /// </summary>
         /// <returns>
         /// A <see cref="Task"/> which represents the asynchronous test.
@@ -58,7 +58,7 @@ namespace Kaponata.Operator.Tests.Kubernetes.Polyfill
 
             Collection<(WatchEventType, V1Pod)> events = new Collection<(WatchEventType, V1Pod)>();
 
-            var client = new KubernetesClient(handler, NullLogger<KubernetesClient>.Instance, NullLoggerFactory.Instance);
+            var client = new KubernetesProtocol(handler, NullLogger<KubernetesProtocol>.Instance, NullLoggerFactory.Instance);
             var result = await client.WatchPodAsync(
                 new V1Pod()
                 {
@@ -82,7 +82,7 @@ namespace Kaponata.Operator.Tests.Kubernetes.Polyfill
         }
 
         /// <summary>
-        /// The <see cref="KubernetesClient.WatchPodAsync"/> method can be cancelled.
+        /// The <see cref="KubernetesProtocol.WatchPodAsync"/> method can be cancelled.
         /// </summary>
         /// <returns>
         /// A <see cref="Task"/> which represents the asynchronous test.
@@ -104,7 +104,7 @@ namespace Kaponata.Operator.Tests.Kubernetes.Polyfill
 
             Collection<(WatchEventType, V1Pod)> events = new Collection<(WatchEventType, V1Pod)>();
 
-            var client = new KubernetesClient(handler, NullLogger<KubernetesClient>.Instance, NullLoggerFactory.Instance);
+            var client = new KubernetesProtocol(handler, NullLogger<KubernetesProtocol>.Instance, NullLoggerFactory.Instance);
             var cts = new CancellationTokenSource();
 
             var watchTask = client.WatchPodAsync(
@@ -126,7 +126,7 @@ namespace Kaponata.Operator.Tests.Kubernetes.Polyfill
         }
 
         /// <summary>
-        /// The <see cref="KubernetesClient.WatchPodAsync"/> method throws an exception when a Kubernetes
+        /// The <see cref="KubernetesProtocol.WatchPodAsync"/> method throws an exception when a Kubernetes
         /// error occurs.
         /// </summary>
         /// <returns>
@@ -157,7 +157,7 @@ namespace Kaponata.Operator.Tests.Kubernetes.Polyfill
 
             Collection<(WatchEventType, V1Pod)> events = new Collection<(WatchEventType, V1Pod)>();
 
-            var client = new KubernetesClient(handler, NullLogger<KubernetesClient>.Instance, NullLoggerFactory.Instance);
+            var client = new KubernetesProtocol(handler, NullLogger<KubernetesProtocol>.Instance, NullLoggerFactory.Instance);
             var cts = new CancellationTokenSource();
 
             var ex = await Assert.ThrowsAsync<KubernetesException>(
@@ -176,7 +176,7 @@ namespace Kaponata.Operator.Tests.Kubernetes.Polyfill
         }
 
         /// <summary>
-        /// The <see cref="KubernetesClient.WatchPodAsync"/> method returns when the client
+        /// The <see cref="KubernetesProtocol.WatchPodAsync"/> method returns when the client
         /// returns <see cref="WatchResult.Stop"/>.
         /// </summary>
         /// <returns>
@@ -199,7 +199,7 @@ namespace Kaponata.Operator.Tests.Kubernetes.Polyfill
 
             Collection<(WatchEventType, V1Pod)> events = new Collection<(WatchEventType, V1Pod)>();
 
-            var client = new KubernetesClient(handler, NullLogger<KubernetesClient>.Instance, NullLoggerFactory.Instance);
+            var client = new KubernetesProtocol(handler, NullLogger<KubernetesProtocol>.Instance, NullLoggerFactory.Instance);
             var cts = new CancellationTokenSource();
 
             var watchTask = client.WatchPodAsync(

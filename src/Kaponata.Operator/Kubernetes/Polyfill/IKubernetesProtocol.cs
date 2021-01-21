@@ -1,4 +1,4 @@
-﻿// <copyright file="IKubernetesClient.cs" company="Quamotion bv">
+﻿// <copyright file="IKubernetesProtocol.cs" company="Quamotion bv">
 // Copyright (c) Quamotion bv. All rights reserved.
 // </copyright>
 
@@ -13,9 +13,9 @@ using System.Threading.Tasks;
 namespace Kaponata.Operator.Kubernetes.Polyfill
 {
     /// <summary>
-    /// Extens the <see cref="k8s.IKubernetes"/> client with polyfill methods.
+    /// Extends the <see cref="k8s.IKubernetes"/> client with polyfill methods.
     /// </summary>
-    public interface IKubernetesClient : IKubernetes
+    public interface IKubernetesProtocol : IKubernetes
     {
         /// <summary>
         /// Gets the <see cref="HttpClient"/> used to send HTTP requests.

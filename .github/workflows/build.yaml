@@ -39,7 +39,7 @@ jobs:
           --results-directory ${{ github.workspace }}/bin/Kaponata.TestResults/
           --collect:"XPlat Code Coverage"
           --logger "junit;LogFileName=${{ github.workspace }}/bin/operator-{assembly}.TestResults.xml"
-          --filter FullyQualifiedName\!~Kaponata.Chart.Tests
+          --filter "TestCategory!=IntegrationTest"
           --
           DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=cobertura
         working-directory: src/
@@ -138,11 +138,11 @@ jobs:
           --wait
           kaponata ${{ github.workspace }}/bin/kaponata-${{ steps.nbgv.outputs.SemVer2 }}.tgz
 
-      - name: Test chart
+      - name: Run chart tests and integration tests
         run: >
           dotnet test
           --logger "junit;LogFileName=${{ github.workspace }}/bin/chart-{assembly}.TestResults.xml"
-          --filter FullyQualifiedName~Kaponata.Chart.Tests
+          --filter "TestCategory=IntegrationTest"
         working-directory: src/
 
       - name: Delete k3d cluster
