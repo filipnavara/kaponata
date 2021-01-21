@@ -7,8 +7,11 @@ using k8s.Models;
 using Kaponata.Operator.Kubernetes;
 using Kaponata.Operator.Kubernetes.Polyfill;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Rest;
 using Moq;
 using System;
+using System.Net;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
@@ -376,6 +379,24 @@ namespace Kaponata.Operator.Tests.Kubernetes
         }
 
         /// <summary>
+        /// <see cref="KubernetesClient.DeletePodAsync"/> validates its arguments.
+        /// </summary>
+        /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
+        [Fact]
+        public async Task DeletePodAsync_ValidatesArguments_Async()
+        {
+            var protocol = new Mock<IKubernetesProtocol>(MockBehavior.Strict);
+            protocol.Setup(p => p.Dispose()).Verifiable();
+
+            using (var client = new KubernetesClient(protocol.Object, NullLogger<KubernetesClient>.Instance))
+            {
+                await Assert.ThrowsAsync<ArgumentNullException>("pod", () => client.DeletePodAsync(null, TimeSpan.FromMinutes(1), default)).ConfigureAwait(false);
+            }
+
+            protocol.Verify();
+        }
+
+        /// <summary>
         /// <see cref="KubernetesClient.DeletePodAsync"/> returns when the pod is deleted.
         /// </summary>
         /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
@@ -400,6 +421,10 @@ namespace Kaponata.Operator.Tests.Kubernetes
 
             var protocol = new Mock<IKubernetesProtocol>(MockBehavior.Strict);
             protocol.Setup(p => p.Dispose()).Verifiable();
+            protocol
+                .Setup(p => p.DeleteNamespacedPodWithHttpMessagesAsync(pod.Metadata.Name, pod.Metadata.NamespaceProperty, null, null, null, null, null, null, null, default))
+                .Returns(Task.FromResult(new HttpOperationResponse<V1Pod>() { Body = pod, Response = new HttpResponseMessage(HttpStatusCode.OK) })).Verifiable();
+
             protocol
                 .Setup(p => p.WatchPodAsync(pod, It.IsAny<Func<WatchEventType, V1Pod, Task<WatchResult>>>(), It.IsAny<CancellationToken>()))
                 .Returns<V1Pod, Func<WatchEventType, V1Pod, Task<WatchResult>>, CancellationToken>((pod, watcher, ct) =>
@@ -450,6 +475,10 @@ namespace Kaponata.Operator.Tests.Kubernetes
             var protocol = new Mock<IKubernetesProtocol>(MockBehavior.Strict);
             protocol.Setup(p => p.Dispose()).Verifiable();
             protocol
+                .Setup(p => p.DeleteNamespacedPodWithHttpMessagesAsync(pod.Metadata.Name, pod.Metadata.NamespaceProperty, null, null, null, null, null, null, null, default))
+                .Returns(Task.FromResult(new HttpOperationResponse<V1Pod>() { Body = pod, Response = new HttpResponseMessage(HttpStatusCode.OK) })).Verifiable();
+
+            protocol
                 .Setup(p => p.WatchPodAsync(pod, It.IsAny<Func<WatchEventType, V1Pod, Task<WatchResult>>>(), It.IsAny<CancellationToken>()))
                 .Returns<V1Pod, Func<WatchEventType, V1Pod, Task<WatchResult>>, CancellationToken>((pod, watcher, ct) =>
                 {
@@ -498,6 +527,10 @@ namespace Kaponata.Operator.Tests.Kubernetes
 
             var protocol = new Mock<IKubernetesProtocol>(MockBehavior.Strict);
             protocol.Setup(p => p.Dispose()).Verifiable();
+            protocol
+                .Setup(p => p.DeleteNamespacedPodWithHttpMessagesAsync(pod.Metadata.Name, pod.Metadata.NamespaceProperty, null, null, null, null, null, null, null, default))
+                .Returns(Task.FromResult(new HttpOperationResponse<V1Pod>() { Body = pod, Response = new HttpResponseMessage(HttpStatusCode.OK) })).Verifiable();
+
             protocol
                 .Setup(p => p.WatchPodAsync(pod, It.IsAny<Func<WatchEventType, V1Pod, Task<WatchResult>>>(), It.IsAny<CancellationToken>()))
                 .Returns<V1Pod, Func<WatchEventType, V1Pod, Task<WatchResult>>, CancellationToken>((pod, watcher, ct) =>

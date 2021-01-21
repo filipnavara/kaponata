@@ -152,6 +152,11 @@ namespace Kaponata.Operator.Kubernetes
                 },
                 cts.Token);
 
+            await this.protocol.DeleteNamespacedPodAsync(
+                pod.Metadata.Name,
+                pod.Metadata.NamespaceProperty,
+                cancellationToken: cancellationToken).ConfigureAwait(false);
+
             if (await Task.WhenAny(watchTask, Task.Delay(timeout)).ConfigureAwait(false) != watchTask)
             {
                 cts.Cancel();
