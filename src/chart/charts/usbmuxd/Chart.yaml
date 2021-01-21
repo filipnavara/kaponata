@@ -1,0 +1,12 @@
+apiVersion: v2
+name: usbmuxd
+description: USB multiplexing daemon, in charge of multiplexing connections over USB to an iOS device
+home: https://github.com/libimobiledevice/usbmuxd/
+
+type: application
+version: 1.0.0
+appVersion: "1.1.2"
+
+maintainers:
+  - name: Frederik Carlier
+    email: frederik.carlier@quamotion.mobi

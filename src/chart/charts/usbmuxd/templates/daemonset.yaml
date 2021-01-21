@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: {{ template "usbmuxd.fullname" . }}
+  labels:
+    {{- include "usbmuxd.labels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      {{- include "usbmuxd.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "usbmuxd.selectorLabels" . | nindent 8 }}
+    spec:
+      nodeSelector:
+        kubernetes.io/os: linux
+      containers:
+      - name: usbmuxd
+        image: {{ .Values.usbmuxd.image.repository }}:{{ .Values.usbmuxd.image.tag }}
+        securityContext:
+          privileged: true
+        volumeMounts: 
+          - mountPath: /dev/bus/usb
+            name: usb
+          - mountPath: /var/lib/lockdown
+            name: lockdown
+        command: [ "/usr/sbin/usbmuxd" ]
+        args:
+        # Verbose logging
+        - "-v"
+        # foreground
+        - "-f"
+        # Listen on 0.0.0.0:27015
+        - "-S"
+        - "0.0.0.0:27015"
+
+      # Required volumes
+      volumes:
+      - name: usb
+        hostPath:
+            path: /dev/bus/usb
+      - name: lockdown
+        hostPath:
+          path: /var/lib/lockdown
+          type: DirectoryOrCreate
