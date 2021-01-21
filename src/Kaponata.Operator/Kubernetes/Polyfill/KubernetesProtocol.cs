@@ -1,4 +1,4 @@
-﻿// <copyright file="KubernetesClient.cs" company="Quamotion bv">
+﻿// <copyright file="KubernetesProtocol.cs" company="Quamotion bv">
 // Copyright (c) Quamotion bv. All rights reserved.
 // </copyright>
 
@@ -9,16 +9,16 @@ using System.Net.Http;
 namespace Kaponata.Operator.Kubernetes.Polyfill
 {
     /// <summary>
-    /// The <see cref="KubernetesClient"/> class extends the <see cref="k8s.Kubernetes"/> class
+    /// The <see cref="KubernetesProtocol"/> class extends the <see cref="k8s.Kubernetes"/> class
     /// and provides additional functionality.
     /// </summary>
-    public partial class KubernetesClient : k8s.Kubernetes, IKubernetesClient
+    public partial class KubernetesProtocol : k8s.Kubernetes, IKubernetesProtocol
     {
-        private readonly ILogger<KubernetesClient> logger;
+        private readonly ILogger<KubernetesProtocol> logger;
         private readonly ILoggerFactory loggerFactory;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="KubernetesClient"/> class.
+        /// Initializes a new instance of the <see cref="KubernetesProtocol"/> class.
         /// </summary>
         /// <param name="handler">
         /// The <see cref="HttpMessageHandler"/> which is used to send HTTP requests.
@@ -29,7 +29,7 @@ namespace Kaponata.Operator.Kubernetes.Polyfill
         /// <param name="loggerFactory">
         /// A logger factory which is used to create new logger objects.
         /// </param>
-        public KubernetesClient(HttpMessageHandler handler, ILogger<KubernetesClient> logger, ILoggerFactory loggerFactory)
+        public KubernetesProtocol(HttpMessageHandler handler, ILogger<KubernetesProtocol> logger, ILoggerFactory loggerFactory)
         {
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
             this.loggerFactory = loggerFactory ?? throw new ArgumentNullException(nameof(loggerFactory));
@@ -38,7 +38,7 @@ namespace Kaponata.Operator.Kubernetes.Polyfill
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="KubernetesClient"/> class.
+        /// Initializes a new instance of the <see cref="KubernetesProtocol"/> class.
         /// </summary>
         /// <param name="config">
         /// The Kubernetes client configuration.
@@ -49,7 +49,7 @@ namespace Kaponata.Operator.Kubernetes.Polyfill
         /// <param name="loggerFactory">
         /// A logger factory which is used to create new logger objects.
         /// </param>
-        public KubernetesClient(k8s.KubernetesClientConfiguration config, ILogger<KubernetesClient> logger, ILoggerFactory loggerFactory)
+        public KubernetesProtocol(k8s.KubernetesClientConfiguration config, ILogger<KubernetesProtocol> logger, ILoggerFactory loggerFactory)
             : base(config)
         {
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));

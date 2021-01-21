@@ -1,4 +1,4 @@
-﻿// <copyright file="KubernetesClientTests.PortForward.cs" company="Quamotion bv">
+﻿// <copyright file="KubernetesProtocolTests.PortForward.cs" company="Quamotion bv">
 // Copyright (c) Quamotion bv. All rights reserved.
 // </copyright>
 
@@ -16,12 +16,12 @@ using Xunit;
 namespace Kaponata.Operator.Tests.Kubernetes.Polyfill
 {
     /// <summary>
-    /// Tests the <see cref="KubernetesClient.ConnectToPodPortAsync"/> method.
+    /// Tests the <see cref="KubernetesProtocol.ConnectToPodPortAsync"/> method.
     /// </summary>
-    public partial class KubernetesClientTests
+    public partial class KubernetesProtocolTests
     {
         /// <summary>
-        /// <see cref="KubernetesClient.ConnectToPodPortAsync"/> validates its arguments.
+        /// <see cref="KubernetesProtocol.ConnectToPodPortAsync"/> validates its arguments.
         /// </summary>
         /// <returns>
         /// A <see cref="Task"/> which represens the asynchronous test.
@@ -30,13 +30,13 @@ namespace Kaponata.Operator.Tests.Kubernetes.Polyfill
         public Task ConnectToPodPortAsync_ValidatesArguments_Async()
         {
             var handler = new DummyHandler();
-            var client = new KubernetesClient(handler, NullLogger<KubernetesClient>.Instance, NullLoggerFactory.Instance);
+            var client = new KubernetesProtocol(handler, NullLogger<KubernetesProtocol>.Instance, NullLoggerFactory.Instance);
 
             return Assert.ThrowsAsync<ArgumentNullException>(() => client.ConnectToPodPortAsync(null, 1, default));
         }
 
         /// <summary>
-        /// <see cref="KubernetesClient.ConnectToPodPortAsync"/> creates a correctly configured stream.
+        /// <see cref="KubernetesProtocol.ConnectToPodPortAsync"/> creates a correctly configured stream.
         /// </summary>
         /// <returns>
         /// A <see cref="Task"/> representing the asynchronous unit test.
@@ -53,7 +53,7 @@ namespace Kaponata.Operator.Tests.Kubernetes.Polyfill
                 .ReturnsAsync(webSocket.Object)
                 .Verifiable();
 
-            var client = new KubernetesClient(handler, NullLogger<KubernetesClient>.Instance, NullLoggerFactory.Instance);
+            var client = new KubernetesProtocol(handler, NullLogger<KubernetesProtocol>.Instance, NullLoggerFactory.Instance);
             client.CreateWebSocketBuilder = () => webSocketBuilder.Object;
 
             var stream = await client.ConnectToPodPortAsync(

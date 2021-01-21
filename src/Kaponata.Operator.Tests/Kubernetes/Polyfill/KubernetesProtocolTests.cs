@@ -1,4 +1,4 @@
-﻿// <copyright file="KubernetesClientTests.cs" company="Quamotion bv">
+﻿// <copyright file="KubernetesProtocolTests.cs" company="Quamotion bv">
 // Copyright (c) Quamotion bv. All rights reserved.
 // </copyright>
 
@@ -15,34 +15,34 @@ using Xunit;
 namespace Kaponata.Operator.Tests.Kubernetes.Polyfill
 {
     /// <summary>
-    /// Tests the <see cref="KubernetesClient"/> class.
+    /// Tests the <see cref="KubernetesProtocol"/> class.
     /// </summary>
-    public partial class KubernetesClientTests
+    public partial class KubernetesProtocolTests
     {
         /// <summary>
-        /// The <see cref="KubernetesClient"/> constructor should validate its arguments.
+        /// The <see cref="KubernetesProtocol"/> constructor should validate its arguments.
         /// </summary>
         [Fact]
         public void Constructor_ValidatesArguments()
         {
-            Assert.Throws<ArgumentNullException>(() => new KubernetesClient((HttpMessageHandler)null, NullLogger<KubernetesClient>.Instance, NullLoggerFactory.Instance));
-            Assert.Throws<ArgumentNullException>("logger", () => new KubernetesClient(new SocketsHttpHandler(), null, NullLoggerFactory.Instance));
-            Assert.Throws<ArgumentNullException>("loggerFactory", () => new KubernetesClient(new SocketsHttpHandler(), NullLogger<KubernetesClient>.Instance, null));
+            Assert.Throws<ArgumentNullException>(() => new KubernetesProtocol((HttpMessageHandler)null, NullLogger<KubernetesProtocol>.Instance, NullLoggerFactory.Instance));
+            Assert.Throws<ArgumentNullException>("logger", () => new KubernetesProtocol(new SocketsHttpHandler(), null, NullLoggerFactory.Instance));
+            Assert.Throws<ArgumentNullException>("loggerFactory", () => new KubernetesProtocol(new SocketsHttpHandler(), NullLogger<KubernetesProtocol>.Instance, null));
 
-            Assert.Throws<KubeConfigException>(() => new KubernetesClient((KubernetesClientConfiguration)null, NullLogger<KubernetesClient>.Instance, NullLoggerFactory.Instance));
-            Assert.Throws<ArgumentNullException>("logger", () => new KubernetesClient(KubernetesClientConfiguration.BuildConfigFromConfigFile("Kubernetes/Polyfill/kubeconfig.yml"), null, NullLoggerFactory.Instance));
-            Assert.Throws<ArgumentNullException>("loggerFactory", () => new KubernetesClient(KubernetesClientConfiguration.BuildConfigFromConfigFile("Kubernetes/Polyfill/kubeconfig.yml"), NullLogger<KubernetesClient>.Instance, null));
+            Assert.Throws<KubeConfigException>(() => new KubernetesProtocol((KubernetesClientConfiguration)null, NullLogger<KubernetesProtocol>.Instance, NullLoggerFactory.Instance));
+            Assert.Throws<ArgumentNullException>("logger", () => new KubernetesProtocol(KubernetesClientConfiguration.BuildConfigFromConfigFile("Kubernetes/Polyfill/kubeconfig.yml"), null, NullLoggerFactory.Instance));
+            Assert.Throws<ArgumentNullException>("loggerFactory", () => new KubernetesProtocol(KubernetesClientConfiguration.BuildConfigFromConfigFile("Kubernetes/Polyfill/kubeconfig.yml"), NullLogger<KubernetesProtocol>.Instance, null));
         }
 
         /// <summary>
-        /// The <see cref="KubernetesClient"/> class reads its configuration from the Kubernetes config file.
+        /// The <see cref="KubernetesProtocol"/> class reads its configuration from the Kubernetes config file.
         /// </summary>
         [Fact]
         public void KubernetesClient_IsConfigured()
         {
-            using (var client = new KubernetesClient(
+            using (var client = new KubernetesProtocol(
                 KubernetesClientConfiguration.BuildConfigFromConfigFile("Kubernetes/Polyfill/kubeconfig.yml"),
-                NullLogger<KubernetesClient>.Instance,
+                NullLogger<KubernetesProtocol>.Instance,
                 NullLoggerFactory.Instance))
             {
                 Assert.Collection(
