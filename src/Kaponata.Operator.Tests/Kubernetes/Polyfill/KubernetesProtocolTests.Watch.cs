@@ -2,10 +2,11 @@
 // Copyright (c) Quamotion bv. All rights reserved.
 // </copyright>
 
+using Divergic.Logging.Xunit;
 using k8s;
 using k8s.Models;
 using Kaponata.Operator.Kubernetes.Polyfill;
-using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Logging;
 using Nerdbank.Streams;
 using Newtonsoft.Json;
 using System;
@@ -16,6 +17,7 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Kaponata.Operator.Tests.Kubernetes.Polyfill
 {
@@ -24,6 +26,21 @@ namespace Kaponata.Operator.Tests.Kubernetes.Polyfill
     /// </summary>
     public partial class KubernetesProtocolTests
     {
+        private readonly ITestOutputHelper output;
+        private readonly ILoggerFactory loggerFactory;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="KubernetesProtocolTests"/> class.
+        /// </summary>
+        /// <param name="output">
+        /// The test output helper which will be used to log to xunit.
+        /// </param>
+        public KubernetesProtocolTests(ITestOutputHelper output)
+        {
+            this.loggerFactory = LogFactory.Create(output);
+            this.output = output;
+        }
+
         /// <summary>
         /// The <see cref="KubernetesProtocol.WatchPodAsync"/> method validates the parameters passed to it.
         /// </summary>
@@ -33,7 +50,7 @@ namespace Kaponata.Operator.Tests.Kubernetes.Polyfill
         [Fact]
         public async Task WatchPodAsync_ValidatesArguments_Async()
         {
-            var client = new KubernetesProtocol(new DummyHandler(), NullLogger<KubernetesProtocol>.Instance, NullLoggerFactory.Instance);
+            var client = new KubernetesProtocol(new DummyHandler(), this.loggerFactory.CreateLogger<KubernetesProtocol>(), this.loggerFactory);
             await Assert.ThrowsAsync<ArgumentNullException>("pod", () => client.WatchPodAsync(null, (eventType, result) => Task.FromResult(WatchResult.Continue), default)).ConfigureAwait(false);
             await Assert.ThrowsAsync<ArgumentNullException>("eventHandler", () => client.WatchPodAsync(new V1Pod(), null, default)).ConfigureAwait(false);
         }
@@ -58,7 +75,7 @@ namespace Kaponata.Operator.Tests.Kubernetes.Polyfill
 
             Collection<(WatchEventType, V1Pod)> events = new Collection<(WatchEventType, V1Pod)>();
 
-            var client = new KubernetesProtocol(handler, NullLogger<KubernetesProtocol>.Instance, NullLoggerFactory.Instance);
+            var client = new KubernetesProtocol(handler, this.loggerFactory.CreateLogger<KubernetesProtocol>(), this.loggerFactory);
             var result = await client.WatchPodAsync(
                 new V1Pod()
                 {
@@ -104,7 +121,7 @@ namespace Kaponata.Operator.Tests.Kubernetes.Polyfill
 
             Collection<(WatchEventType, V1Pod)> events = new Collection<(WatchEventType, V1Pod)>();
 
-            var client = new KubernetesProtocol(handler, NullLogger<KubernetesProtocol>.Instance, NullLoggerFactory.Instance);
+            var client = new KubernetesProtocol(handler, this.loggerFactory.CreateLogger<KubernetesProtocol>(), this.loggerFactory);
             var cts = new CancellationTokenSource();
 
             var watchTask = client.WatchPodAsync(
@@ -157,7 +174,7 @@ namespace Kaponata.Operator.Tests.Kubernetes.Polyfill
 
             Collection<(WatchEventType, V1Pod)> events = new Collection<(WatchEventType, V1Pod)>();
 
-            var client = new KubernetesProtocol(handler, NullLogger<KubernetesProtocol>.Instance, NullLoggerFactory.Instance);
+            var client = new KubernetesProtocol(handler, this.loggerFactory.CreateLogger<KubernetesProtocol>(), this.loggerFactory);
             var cts = new CancellationTokenSource();
 
             var ex = await Assert.ThrowsAsync<KubernetesException>(
@@ -199,7 +216,7 @@ namespace Kaponata.Operator.Tests.Kubernetes.Polyfill
 
             Collection<(WatchEventType, V1Pod)> events = new Collection<(WatchEventType, V1Pod)>();
 
-            var client = new KubernetesProtocol(handler, NullLogger<KubernetesProtocol>.Instance, NullLoggerFactory.Instance);
+            var client = new KubernetesProtocol(handler, this.loggerFactory.CreateLogger<KubernetesProtocol>(), this.loggerFactory);
             var cts = new CancellationTokenSource();
 
             var watchTask = client.WatchPodAsync(

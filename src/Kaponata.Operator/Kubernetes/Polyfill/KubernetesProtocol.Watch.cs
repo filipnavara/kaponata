@@ -1,9 +1,10 @@
-﻿// <copyright file="KubernetesClient.Watch.cs" company="Quamotion bv">
+﻿// <copyright file="KubernetesProtocol.Watch.cs" company="Quamotion bv">
 // Copyright (c) Quamotion bv. All rights reserved.
 // </copyright>
 
 using k8s;
 using k8s.Models;
+using Microsoft.Extensions.Logging;
 using Microsoft.Rest.Serialization;
 using System;
 using System.IO;
@@ -60,13 +61,17 @@ namespace Kaponata.Operator.Kubernetes.Polyfill
                             if (genericEvent.Object.Kind == "Status")
                             {
                                 var statusEvent = SafeJsonConvert.DeserializeObject<Watcher<V1Status>.WatchEvent>(line);
+                                this.logger.LogInformation("Stopped watching pod {pod} because of a status event with payload {status}", pod.Metadata.Name, statusEvent.Object);
                                 throw new KubernetesException(statusEvent.Object);
                             }
                             else
                             {
                                 var @event = SafeJsonConvert.DeserializeObject<Watcher<V1Pod>.WatchEvent>(line);
+                                this.logger.LogDebug("Got an {event} event for pod {pod}", @event.Type, pod.Metadata.Name);
+
                                 if (await eventHandler(@event.Type, @event.Object).ConfigureAwait(false) == WatchResult.Stop)
                                 {
+                                    this.logger.LogInformation("Stopped watching pod {pod} because the client requested to stop watching.", pod.Metadata.Name);
                                     return WatchExitReason.ClientDisconnected;
                                 }
                             }
@@ -74,9 +79,11 @@ namespace Kaponata.Operator.Kubernetes.Polyfill
                     }
                     catch (Exception ex) when (cancellationToken.IsCancellationRequested)
                     {
+                        this.logger.LogInformation("Stopped watching {pod} because a cancellation request was received.", pod.Metadata.Name);
                         throw new TaskCanceledException("The watch operation was cancelled.", ex);
                     }
 
+                    this.logger.LogInformation("Stopped watching {pod} because the server closed the connection.", pod.Metadata.Name);
                     return WatchExitReason.ServerDisconnected;
                 }
             }
