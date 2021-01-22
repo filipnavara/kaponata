@@ -49,14 +49,14 @@ namespace Kaponata.Operator.Tests.Kubernetes
                 this.loggerFactory))
             using (var client = new KubernetesClient(kubernetes, this.loggerFactory.CreateLogger<KubernetesClient>()))
             {
-                var pods = await kubernetes.ListNamespacedPodAsync("default", fieldSelector: $"metadata.name={FormatName(nameof(this.WaitForPodRunning_IntegrationTest_Async))}").ConfigureAwait(false);
+                V1Pod pod;
 
-                foreach (var podToDelete in pods.Items)
+                if ((pod = await client.TryReadPodAsync("default", FormatName(nameof(this.WaitForPodRunning_IntegrationTest_Async)), default).ConfigureAwait(false)) != null)
                 {
-                    await client.DeletePodAsync(podToDelete, TimeSpan.FromSeconds(100), default).ConfigureAwait(false);
+                    await client.DeletePodAsync(pod, TimeSpan.FromSeconds(100), default).ConfigureAwait(false);
                 }
 
-                var pod = await kubernetes.CreateNamespacedPodAsync(
+                pod = await client.CreatePodAsync(
                     new V1Pod()
                     {
                         Metadata = new V1ObjectMeta()
@@ -76,7 +76,7 @@ namespace Kaponata.Operator.Tests.Kubernetes
                             },
                         },
                     },
-                    "default").ConfigureAwait(false);
+                    default).ConfigureAwait(false);
 
                 await client.WaitForPodRunningAsync(pod, TimeSpan.FromSeconds(100), default).ConfigureAwait(false);
             }

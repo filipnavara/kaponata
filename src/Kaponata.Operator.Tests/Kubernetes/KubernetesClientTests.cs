@@ -62,7 +62,7 @@ namespace Kaponata.Operator.Tests.Kubernetes
 
             using (var client = new KubernetesClient(protocol.Object, NullLogger<KubernetesClient>.Instance))
             {
-                await Assert.ThrowsAsync<ArgumentNullException>("pod", () => client.WaitForPodRunningAsync(null, TimeSpan.FromMinutes(1), default)).ConfigureAwait(false);
+                await Assert.ThrowsAsync<ArgumentNullException>("value", () => client.WaitForPodRunningAsync(null, TimeSpan.FromMinutes(1), default)).ConfigureAwait(false);
             }
 
             protocol.Verify();
@@ -392,7 +392,7 @@ namespace Kaponata.Operator.Tests.Kubernetes
 
             using (var client = new KubernetesClient(protocol.Object, NullLogger<KubernetesClient>.Instance))
             {
-                await Assert.ThrowsAsync<ArgumentNullException>("pod", () => client.DeletePodAsync(null, TimeSpan.FromMinutes(1), default)).ConfigureAwait(false);
+                await Assert.ThrowsAsync<ArgumentNullException>("value", () => client.DeletePodAsync(null, TimeSpan.FromMinutes(1), default)).ConfigureAwait(false);
             }
 
             protocol.Verify();
@@ -461,6 +461,7 @@ namespace Kaponata.Operator.Tests.Kubernetes
             var pod =
                 new V1Pod()
                 {
+                    Kind = V1Pod.KubeKind,
                     Metadata = new V1ObjectMeta()
                     {
                         Name = "my-pod",
@@ -498,7 +499,7 @@ namespace Kaponata.Operator.Tests.Kubernetes
 
                 // The watch completes with an exception.
                 var ex = await Assert.ThrowsAsync<KubernetesException>(() => task).ConfigureAwait(false);
-                Assert.Equal("The API server unexpectedly closed the connection while watching pod my-pod.", ex.Message);
+                Assert.Equal("The API server unexpectedly closed the connection while watching Pod 'my-pod'.", ex.Message);
             }
 
             protocol.Verify();
@@ -514,6 +515,7 @@ namespace Kaponata.Operator.Tests.Kubernetes
             var pod =
                 new V1Pod()
                 {
+                    Kind = V1Pod.KubeKind,
                     Metadata = new V1ObjectMeta()
                     {
                         Name = "my-pod",
@@ -548,10 +550,147 @@ namespace Kaponata.Operator.Tests.Kubernetes
 
                 // The watch completes with an exception.
                 var ex = await Assert.ThrowsAsync<KubernetesException>(() => task).ConfigureAwait(false);
-                Assert.Equal("The pod my-pod was not deleted within a timeout of 0 seconds.", ex.Message);
+                Assert.Equal("The Pod 'my-pod' was not deleted within a timeout of 0 seconds.", ex.Message);
             }
 
             protocol.Verify();
+        }
+
+        /// <summary>
+        /// The <see cref="KubernetesClient.CreatePodAsync(V1Pod, CancellationToken)"/> method validates the arguments passed to it.
+        /// </summary>
+        /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
+        [Fact]
+        public async Task CreatePodAsync_ValidatesArguments_Async()
+        {
+            var protocol = new Mock<IKubernetesProtocol>(MockBehavior.Strict);
+            protocol.Setup(p => p.Dispose()).Verifiable();
+
+            using (var client = new KubernetesClient(protocol.Object, NullLogger<KubernetesClient>.Instance))
+            {
+                await Assert.ThrowsAsync<ArgumentNullException>("value", () => client.CreatePodAsync(null, default)).ConfigureAwait(false);
+                await Assert.ThrowsAsync<ValidationException>(() => client.CreatePodAsync(new V1Pod(), default)).ConfigureAwait(false);
+                await Assert.ThrowsAsync<ValidationException>(() => client.CreatePodAsync(new V1Pod() { Metadata = new V1ObjectMeta() }, default)).ConfigureAwait(false);
+            }
+        }
+
+        /// <summary>
+        /// The <see cref="KubernetesClient.CreatePodAsync(V1Pod, CancellationToken)"/> method captures any <see cref="V1Status"/> error messages
+        /// embedded in Kubernetes responses.
+        /// </summary>
+        /// <param name="statusCode">
+        /// The status code returned by the server.
+        /// </param>
+        /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
+        [Theory]
+        [InlineData(HttpStatusCode.Conflict)]
+        [InlineData(HttpStatusCode.UnprocessableEntity)]
+        public async Task CreatePodAsync_CapturesKubernetesError_Async(HttpStatusCode statusCode)
+        {
+            const string status = @"{""kind"":""Status"",""apiVersion"":""v1"",""metadata"":{},""status"":""Failure"",""message"":""pods 'waitforpodrunning-integrationtest-async' already exists"",""reason"":""AlreadyExists"",""details"":{ ""name"":""waitforpodrunning-integrationtest-async"",""kind"":""pods""},""code"":409}";
+
+            var pod = new V1Pod() { Metadata = new V1ObjectMeta() { NamespaceProperty = "default" } };
+
+            var protocol = new Mock<IKubernetesProtocol>(MockBehavior.Strict);
+            protocol
+                .Setup(p => p.CreateNamespacedPodWithHttpMessagesAsync(pod, pod.Metadata.NamespaceProperty, null, null, null, null, default))
+                .ThrowsAsync(
+                    new HttpOperationException()
+                    {
+                        Response = new HttpResponseMessageWrapper(
+                            new HttpResponseMessage(statusCode),
+                            status),
+                    });
+
+            protocol.Setup(p => p.Dispose()).Verifiable();
+
+            using (var client = new KubernetesClient(protocol.Object, NullLogger<KubernetesClient>.Instance))
+            {
+                var ex = await Assert.ThrowsAsync<KubernetesException>(() => client.CreatePodAsync(pod, default)).ConfigureAwait(false);
+                Assert.Equal("pods 'waitforpodrunning-integrationtest-async' already exists", ex.Message);
+                Assert.NotNull(ex.Status);
+            }
+        }
+
+        /// <summary>
+        /// The <see cref="KubernetesClient.CreatePodAsync(V1Pod, CancellationToken)"/> method throws the originale exception
+        /// when the V1Status object could not be parsed.
+        /// </summary>
+        /// <param name="statusJson">
+        /// The status data by the server.
+        /// </param>
+        /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
+        [Theory]
+        [InlineData(null)] // null string
+        [InlineData("")] // Empty string
+        [InlineData("{}")] // Empty json
+        [InlineData(@"{""kind"":""Pod"", ""apiVersion"":""v1"" }")] // Unexpected object kind
+        [InlineData(@"{""kind"":""Status"", ""apiVersion"":""v1beta1"", ""message"":""pods 'waitforpodrunning-integrationtest-async' already exists""}")] // Unexpected object version
+        [InlineData(@"{""kind"":""Status"", ""apiVersion"":""v1beta1"" ")] // No message
+        [InlineData(@"{""kind"":""Status"", ""apiVersion"":""v1beta1""  ""message"":""""")] // Empty message
+        public async Task CreatePodAsync_InvalidKubernetesError_Async(string statusJson)
+        {
+            var pod = new V1Pod() { Metadata = new V1ObjectMeta() { NamespaceProperty = "default" } };
+
+            var protocol = new Mock<IKubernetesProtocol>(MockBehavior.Strict);
+            protocol
+                .Setup(p => p.CreateNamespacedPodWithHttpMessagesAsync(pod, pod.Metadata.NamespaceProperty, null, null, null, null, default))
+                .ThrowsAsync(
+                    new HttpOperationException()
+                    {
+                        Response = new HttpResponseMessageWrapper(
+                            new HttpResponseMessage(HttpStatusCode.BadRequest),
+                            statusJson),
+                    });
+
+            protocol.Setup(p => p.Dispose()).Verifiable();
+
+            using (var client = new KubernetesClient(protocol.Object, NullLogger<KubernetesClient>.Instance))
+            {
+                await Assert.ThrowsAsync<HttpOperationException>(() => client.CreatePodAsync(pod, default)).ConfigureAwait(false);
+            }
+        }
+
+        /// <summary>
+        /// <see cref="KubernetesClient.TryReadPodAsync(string, string, CancellationToken)"/> returns the object if the pod exists.
+        /// </summary>
+        /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
+        [Fact]
+        public async Task TryReadPod_Found_ReturnsPod_Async()
+        {
+            var pod = new V1Pod();
+
+            var protocol = new Mock<IKubernetesProtocol>(MockBehavior.Strict);
+            protocol
+                .Setup(p => p.ListNamespacedPodWithHttpMessagesAsync("default", null, null, "metadata.name=my-pod", null, null, null, null, null, null, null, null, default))
+                .ReturnsAsync(new HttpOperationResponse<V1PodList>() { Body = new V1PodList() { Items = new V1Pod[] { pod } } });
+
+            protocol.Setup(p => p.Dispose()).Verifiable();
+
+            using (var client = new KubernetesClient(protocol.Object, NullLogger<KubernetesClient>.Instance))
+            {
+                Assert.Equal(pod, await client.TryReadPodAsync("default", "my-pod", default).ConfigureAwait(false));
+            }
+        }
+
+        /// <summary>
+        /// <see cref="KubernetesClient.TryReadPodAsync(string, string, CancellationToken)"/> returns the <see langword=""="null"/> if the pod does exist.
+        /// </summary>
+        /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
+        [Fact]
+        public async Task TryReadPod_NotFound_ReturnsNull_Async()
+        {
+            var protocol = new Mock<IKubernetesProtocol>(MockBehavior.Strict);
+            protocol
+                .Setup(p => p.ListNamespacedPodWithHttpMessagesAsync("default", null, null, "metadata.name=my-pod", null, null, null, null, null, null, null, null, default))
+                .ReturnsAsync(new HttpOperationResponse<V1PodList>() { Body = new V1PodList() { Items = new V1Pod[] { } } });
+
+            protocol.Setup(p => p.Dispose()).Verifiable();
+
+            using (var client = new KubernetesClient(protocol.Object, NullLogger<KubernetesClient>.Instance))
+            {
+                Assert.Null(await client.TryReadPodAsync("default", "my-pod", default).ConfigureAwait(false));
+            }
         }
     }
 }

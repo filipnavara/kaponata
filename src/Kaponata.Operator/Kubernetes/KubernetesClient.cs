@@ -6,9 +6,14 @@ using k8s;
 using k8s.Models;
 using Kaponata.Operator.Kubernetes.Polyfill;
 using Microsoft.Extensions.Logging;
+using Microsoft.Rest;
+using Microsoft.Rest.Serialization;
 using System;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
+
+#pragma warning disable VSTHRD003 // Avoid awaiting foreign Tasks
 
 namespace Kaponata.Operator.Kubernetes
 {
@@ -16,7 +21,7 @@ namespace Kaponata.Operator.Kubernetes
     /// Performs high-level transactions (such as creating a Pod, waiting for a pod to enter a specific state,...)
     /// on top of the <see cref="IKubernetesProtocol"/>.
     /// </summary>
-    public class KubernetesClient : IDisposable
+    public partial class KubernetesClient : IDisposable
     {
         private readonly IKubernetesProtocol protocol;
         private readonly ILogger<KubernetesClient> logger;
@@ -36,140 +41,11 @@ namespace Kaponata.Operator.Kubernetes
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        /// <summary>
-        /// Asynchronously waits for a pod to enter the running phase.
-        /// </summary>
-        /// <param name="pod">
-        /// The pod which should enter the running state.
-        /// </param>
-        /// <param name="timeout">
-        /// The amount of time in which the pod should enter the running state.
-        /// </param>
-        /// <param name="cancellationToken">
-        /// A <see cref="CancellationToken"/> which can be used to cancel the asynchronous operation.
-        /// </param>
-        /// <returns>
-        /// The <see cref="V1Pod"/>.
-        /// </returns>
-        public virtual async Task<V1Pod> WaitForPodRunningAsync(V1Pod pod, TimeSpan timeout, CancellationToken cancellationToken)
-        {
-            if (pod == null)
-            {
-                throw new ArgumentNullException(nameof(pod));
-            }
-
-            if (IsRunning(pod))
-            {
-                return pod;
-            }
-
-            if (HasFailed(pod, out Exception ex))
-            {
-                throw ex;
-            }
-
-            CancellationTokenSource cts = new CancellationTokenSource();
-            cancellationToken.Register(cts.Cancel);
-
-            var watchTask = this.protocol.WatchPodAsync(
-                pod,
-                onEvent: (type, updatedPod) =>
-                {
-                    pod = updatedPod;
-
-                    if (type == WatchEventType.Deleted)
-                    {
-                        throw new KubernetesException($"The pod {pod.Metadata.Name} was deleted.");
-                    }
-
-                    // Wait for the pod to be ready. Since we work with init containers, merely waiting for the pod to have an IP address is not enough -
-                    // we need both 'Running' status _and_ and IP address
-                    if (IsRunning(pod))
-                    {
-                        return Task.FromResult(WatchResult.Stop);
-                    }
-
-                    if (HasFailed(pod, out Exception ex))
-                    {
-                        throw ex;
-                    }
-
-                    return Task.FromResult(WatchResult.Continue);
-                },
-                cts.Token);
-
-            if (await Task.WhenAny(watchTask, Task.Delay(timeout)).ConfigureAwait(false) != watchTask)
-            {
-                cts.Cancel();
-                throw new KubernetesException($"The pod {pod.Metadata.Name} did not transition to the completed state within a timeout of {timeout.TotalSeconds} seconds.");
-            }
-
-            var result = await watchTask.ConfigureAwait(false);
-
-            if (result != WatchExitReason.ClientDisconnected)
-            {
-                throw new KubernetesException($"The API server unexpectedly closed the connection while watching pod {pod.Metadata.Name}.");
-            }
-
-            return pod;
-        }
-
-        /// <summary>
-        /// Asynchronously deletes a pod.
-        /// </summary>
-        /// <param name="pod">
-        /// The pod to delete.
-        /// </param>
-        /// <param name="timeout">
-        /// The amount of time in which the pod should be deleted.
-        /// </param>
-        /// <param name="cancellationToken">
-        /// A <see cref="CancellationToken"/> which can be used to cancel the asynchronous operation.
-        /// </param>
-        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-        public virtual async Task DeletePodAsync(V1Pod pod, TimeSpan timeout, CancellationToken cancellationToken)
-        {
-            if (pod == null)
-            {
-                throw new ArgumentNullException(nameof(pod));
-            }
-
-            CancellationTokenSource cts = new CancellationTokenSource();
-            cancellationToken.Register(cts.Cancel);
-
-            var watchTask = this.protocol.WatchPodAsync(
-                pod,
-                onEvent: (type, updatedPod) =>
-                {
-                    pod = updatedPod;
-
-                    if (type == WatchEventType.Deleted)
-                    {
-                        return Task.FromResult(WatchResult.Stop);
-                    }
-
-                    return Task.FromResult(WatchResult.Continue);
-                },
-                cts.Token);
-
-            await this.protocol.DeleteNamespacedPodAsync(
-                pod.Metadata.Name,
-                pod.Metadata.NamespaceProperty,
-                cancellationToken: cancellationToken).ConfigureAwait(false);
-
-            if (await Task.WhenAny(watchTask, Task.Delay(timeout)).ConfigureAwait(false) != watchTask)
-            {
-                cts.Cancel();
-                throw new KubernetesException($"The pod {pod.Metadata.Name} was not deleted within a timeout of {timeout.TotalSeconds} seconds.");
-            }
-
-            var result = await watchTask.ConfigureAwait(false);
-
-            if (result != WatchExitReason.ClientDisconnected)
-            {
-                throw new KubernetesException($"The API server unexpectedly closed the connection while watching pod {pod.Metadata.Name}.");
-            }
-        }
+        private delegate Task<WatchExitReason> WatchObjectAsyncDelegate<T>(
+            T value,
+            Func<WatchEventType, T, Task<WatchResult>> onEvent,
+            CancellationToken cancellationToken)
+            where T : IKubernetesObject<V1ObjectMeta>;
 
         /// <inheritdoc/>
         public void Dispose()
@@ -177,22 +53,24 @@ namespace Kaponata.Operator.Kubernetes
             this.protocol.Dispose();
         }
 
-        private static bool IsRunning(V1Pod pod)
+        private async Task<T> RunTaskAsync<T>(Task<T> task)
         {
-            return pod.Status.Phase == "Running";
-        }
-
-        private static bool HasFailed(V1Pod pod, out Exception ex)
-        {
-            if (pod.Status.Phase == "Failed")
+            try
             {
-                ex = new KubernetesException($"The pod {pod.Metadata.Name} has failed: {pod.Status.Reason}");
-                return true;
+                return await task.ConfigureAwait(false);
             }
-            else
+            catch (HttpOperationException ex) when (ex.Response.StatusCode == HttpStatusCode.UnprocessableEntity || ex.Response.StatusCode == HttpStatusCode.Conflict)
             {
-                ex = null;
-                return false;
+                // We should get a V1Status with a detailed error message, extract that error message.
+                var status = SafeJsonConvert.DeserializeObject<V1Status>(ex.Response.Content);
+
+                if (status.Kind != V1Status.KubeKind || status.ApiVersion != V1Status.KubeApiVersion || string.IsNullOrEmpty(status.Message))
+                {
+                    throw;
+                }
+
+                // Once https://github.com/kubernetes-client/csharp/pull/553 is merged, we can pass the inner exception, too.
+                throw new KubernetesException(status);
             }
         }
     }
