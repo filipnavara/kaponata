@@ -19,6 +19,8 @@ using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
 
+#pragma warning disable VSTHRD003 // Avoid awaiting foreign Tasks
+
 namespace Kaponata.Operator.Tests.Kubernetes.Polyfill
 {
     /// <summary>
@@ -122,6 +124,7 @@ namespace Kaponata.Operator.Tests.Kubernetes.Polyfill
                 Collection<(WatchEventType, V1Pod)> events = new Collection<(WatchEventType, V1Pod)>();
 
                 var client = new KubernetesProtocol(handler, this.loggerFactory.CreateLogger<KubernetesProtocol>(), this.loggerFactory);
+                var tcs = new TaskCompletionSource();
                 var cts = new CancellationTokenSource();
 
                 var watchTask = client.WatchPodAsync(
@@ -132,10 +135,26 @@ namespace Kaponata.Operator.Tests.Kubernetes.Polyfill
                     (eventType, result) =>
                     {
                         events.Add((eventType, result));
+                        tcs.SetResult();
                         return Task.FromResult(WatchResult.Continue);
                     },
                     cts.Token);
 
+                // Send a single event and wait for the watch task to handle that. This is to make sure we enter the inner
+                // loop, and the task does not cancel early.
+                await writer.WriteLineAsync(
+                    JsonConvert.SerializeObject(
+                        new Watcher<V1Pod>.WatchEvent()
+                        {
+                            Type = WatchEventType.Modified,
+                            Object = new V1Pod()
+                            {
+                                Kind = "V1Pod",
+                            },
+                        })).ConfigureAwait(false);
+                await writer.FlushAsync().ConfigureAwait(false);
+
+                await tcs.Task.ConfigureAwait(false);
                 Assert.True(!watchTask.IsCompleted);
                 cts.Cancel();
 

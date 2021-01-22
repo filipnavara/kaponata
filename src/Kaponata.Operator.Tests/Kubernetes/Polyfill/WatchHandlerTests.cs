@@ -58,7 +58,7 @@ namespace Kaponata.Operator.Tests.Kubernetes.Polyfill
             innerHandler.Responses.Enqueue(expectedResponse);
 
             var client = new HttpClient(new WatchHandler(innerHandler));
-            var response = 
+            var response =
                 method == "GET" ? await client.GetAsync(url).ConfigureAwait(false) : await client.PostAsync(url, new StringContent(string.Empty));
 
             Assert.Same(expectedResponse, response);

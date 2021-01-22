@@ -1,4 +1,4 @@
-﻿// <copyright file="KubernetesClient.PortForward.cs" company="Quamotion bv">
+﻿// <copyright file="KubernetesProtocol.PortForward.cs" company="Quamotion bv">
 // Copyright (c) Quamotion bv. All rights reserved.
 // </copyright>
 

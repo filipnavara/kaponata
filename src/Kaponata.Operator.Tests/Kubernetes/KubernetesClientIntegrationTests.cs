@@ -1,13 +1,14 @@
-﻿using Divergic.Logging.Xunit;
+﻿// <copyright file="KubernetesClientIntegrationTests.cs" company="Quamotion bv">
+// Copyright (c) Quamotion bv. All rights reserved.
+// </copyright>
+
+using Divergic.Logging.Xunit;
 using k8s;
 using k8s.Models;
 using Kaponata.Operator.Kubernetes;
 using Kaponata.Operator.Kubernetes.Polyfill;
 using Microsoft.Extensions.Logging;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
