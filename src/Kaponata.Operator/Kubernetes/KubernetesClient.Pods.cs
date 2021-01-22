@@ -31,7 +31,7 @@ namespace Kaponata.Operator.Kubernetes
         /// A <see cref="Task"/> which represents the asynchronous operation, and returns the newly created pod
         /// when completed.
         /// </returns>
-        public Task<V1Pod> CreatePodAsync(V1Pod value, CancellationToken cancellationToken)
+        public virtual Task<V1Pod> CreatePodAsync(V1Pod value, CancellationToken cancellationToken)
         {
             if (value == null)
             {
@@ -43,7 +43,7 @@ namespace Kaponata.Operator.Kubernetes
                 throw new ValidationException(ValidationRules.CannotBeNull, "value.Metadata.NamespaceProperty");
             }
 
-            return this.RunTaskAsync(this.protocol.CreateNamespacedPodAsync(value, value?.Metadata?.NamespaceProperty, cancellationToken: cancellationToken));
+            return this.RunTaskAsync(this.protocol.CreateNamespacedPodAsync(value, value.Metadata.NamespaceProperty, cancellationToken: cancellationToken));
         }
 
         /// <summary>
