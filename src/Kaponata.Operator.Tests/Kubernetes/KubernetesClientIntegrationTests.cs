@@ -82,6 +82,75 @@ namespace Kaponata.Operator.Tests.Kubernetes
             }
         }
 
+        /// <summary>
+        /// Runs an integration test which creates and then deletes a CRD.
+        /// </summary>
+        /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
+        [Fact]
+        [Trait("TestCategory", "IntegrationTest")]
+        public async Task CreateDeleteCrd_IntegrationTest_Async()
+        {
+            string name = $"{FormatName(nameof(this.CreateDeleteCrd_IntegrationTest_Async))}s.kaponata.io";
+
+            using (var kubernetes = new KubernetesProtocol(
+                KubernetesClientConfiguration.BuildDefaultConfig(),
+                this.loggerFactory.CreateLogger<KubernetesProtocol>(),
+                this.loggerFactory))
+            using (var client = new KubernetesClient(kubernetes, this.loggerFactory.CreateLogger<KubernetesClient>()))
+            {
+                V1CustomResourceDefinition crd;
+
+                if ((crd = await client.TryReadCustomResourceDefinitionAsync(name, default).ConfigureAwait(false)) != null)
+                {
+                    await client.DeleteCustomResourceDefinitionAsync(crd, TimeSpan.FromMinutes(1), default).ConfigureAwait(false);
+                }
+
+                crd = await client.CreateCustomResourceDefinitionAsync(
+                    new V1CustomResourceDefinition()
+                    {
+                        Metadata = new V1ObjectMeta()
+                        {
+                            Name = name,
+                        },
+                        Spec = new V1CustomResourceDefinitionSpec()
+                        {
+                            Group = "kaponata.io",
+                            Scope = "Namespaced",
+                            Names = new V1CustomResourceDefinitionNames()
+                            {
+                                Plural = $"{FormatName(nameof(this.CreateDeleteCrd_IntegrationTest_Async))}s",
+                                Singular = FormatName(nameof(this.CreateDeleteCrd_IntegrationTest_Async)),
+                                Kind = FormatNameCamelCase(nameof(this.CreateDeleteCrd_IntegrationTest_Async)),
+                            },
+                            Versions = new V1CustomResourceDefinitionVersion[]
+                            {
+                                new V1CustomResourceDefinitionVersion()
+                                {
+                                    Name = "v1alpha1",
+                                    Served = true,
+                                    Storage = true,
+                                    Schema = new V1CustomResourceValidation()
+                                    {
+                                         OpenAPIV3Schema = new V1JSONSchemaProps()
+                                         {
+                                             Type = "object",
+                                         },
+                                    },
+                                },
+                            },
+                        },
+                    },
+                    default).ConfigureAwait(false);
+
+                Assert.NotNull(await client.TryReadCustomResourceDefinitionAsync(crd.Metadata.Name, default).ConfigureAwait(false));
+            }
+        }
+
+        private static string FormatNameCamelCase(string value)
+        {
+            return value.Replace("_", "-");
+        }
+
         private static string FormatName(string value)
         {
             return value.ToLower().Replace("_", "-");
