@@ -626,8 +626,8 @@ namespace Kaponata.Operator.Tests.Kubernetes
         [InlineData("{}")] // Empty json
         [InlineData(@"{""kind"":""Pod"", ""apiVersion"":""v1"" }")] // Unexpected object kind
         [InlineData(@"{""kind"":""Status"", ""apiVersion"":""v1beta1"", ""message"":""pods 'waitforpodrunning-integrationtest-async' already exists""}")] // Unexpected object version
-        [InlineData(@"{""kind"":""Status"", ""apiVersion"":""v1beta1"" ")] // No message
-        [InlineData(@"{""kind"":""Status"", ""apiVersion"":""v1beta1""  ""message"":""""")] // Empty message
+        [InlineData(@"{""kind"":""Status"", ""apiVersion"":""v1beta1"" }")] // No message
+        [InlineData(@"{""kind"":""Status"", ""apiVersion"":""v1beta1"", ""message"":""""}")] // Empty message
         public async Task CreatePodAsync_InvalidKubernetesError_Async(string statusJson)
         {
             var pod = new V1Pod() { Metadata = new V1ObjectMeta() { NamespaceProperty = "default" } };
@@ -639,7 +639,7 @@ namespace Kaponata.Operator.Tests.Kubernetes
                     new HttpOperationException()
                     {
                         Response = new HttpResponseMessageWrapper(
-                            new HttpResponseMessage(HttpStatusCode.BadRequest),
+                            new HttpResponseMessage(HttpStatusCode.UnprocessableEntity),
                             statusJson),
                     });
 

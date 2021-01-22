@@ -59,12 +59,15 @@ namespace Kaponata.Operator.Kubernetes
             {
                 return await task.ConfigureAwait(false);
             }
-            catch (HttpOperationException ex) when (ex.Response.StatusCode == HttpStatusCode.UnprocessableEntity || ex.Response.StatusCode == HttpStatusCode.Conflict)
+            catch (HttpOperationException ex)
+            when (ex.Response != null
+                && ex.Response.Content != null
+                && (ex.Response.StatusCode == HttpStatusCode.UnprocessableEntity || ex.Response.StatusCode == HttpStatusCode.Conflict))
             {
                 // We should get a V1Status with a detailed error message, extract that error message.
                 var status = SafeJsonConvert.DeserializeObject<V1Status>(ex.Response.Content);
 
-                if (status.Kind != V1Status.KubeKind || status.ApiVersion != V1Status.KubeApiVersion || string.IsNullOrEmpty(status.Message))
+                if (status == null || status.Kind != V1Status.KubeKind || status.ApiVersion != V1Status.KubeApiVersion || string.IsNullOrEmpty(status.Message))
                 {
                     throw;
                 }
