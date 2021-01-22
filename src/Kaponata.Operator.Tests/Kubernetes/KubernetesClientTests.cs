@@ -23,7 +23,7 @@ namespace Kaponata.Operator.Tests.Kubernetes
     /// <summary>
     /// Tests the <see cref="KubernetesClient"/> class.
     /// </summary>
-    public class KubernetesClientTests
+    public partial class KubernetesClientTests
     {
         /// <summary>
         /// The <see cref="KubernetesClient"/> constructor validates its arguments.
@@ -674,7 +674,7 @@ namespace Kaponata.Operator.Tests.Kubernetes
         }
 
         /// <summary>
-        /// <see cref="KubernetesClient.TryReadPodAsync(string, string, CancellationToken)"/> returns the <see langword=""="null"/> if the pod does exist.
+        /// <see cref="KubernetesClient.TryReadPodAsync(string, string, CancellationToken)"/> returns <see langword="null"/> if the pod does exist.
         /// </summary>
         /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
         [Fact]
