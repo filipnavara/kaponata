@@ -53,7 +53,7 @@ namespace Kaponata.Operator.Tests.Kubernetes.Polyfill
         public async Task WatchPodAsync_ValidatesArguments_Async()
         {
             var client = new KubernetesProtocol(new DummyHandler(), this.loggerFactory.CreateLogger<KubernetesProtocol>(), this.loggerFactory);
-            await Assert.ThrowsAsync<ArgumentNullException>("pod", () => client.WatchPodAsync(null, (eventType, result) => Task.FromResult(WatchResult.Continue), default)).ConfigureAwait(false);
+            await Assert.ThrowsAsync<ArgumentNullException>("value", () => client.WatchPodAsync(null, (eventType, result) => Task.FromResult(WatchResult.Continue), default)).ConfigureAwait(false);
             await Assert.ThrowsAsync<ArgumentNullException>("eventHandler", () => client.WatchPodAsync(new V1Pod(), null, default)).ConfigureAwait(false);
         }
 
@@ -308,5 +308,64 @@ namespace Kaponata.Operator.Tests.Kubernetes.Polyfill
                     });
             }
         }
+
+        /// <summary>
+        /// The <see cref="KubernetesProtocol.WatchPodAsync"/> method validates the parameters passed to it.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="Task"/> which represents the asynchronous test.
+        /// </returns>
+        [Fact]
+        public async Task WatchCustomResourceDefinitionAsync_ValidatesArguments_Async()
+        {
+            var client = new KubernetesProtocol(new DummyHandler(), this.loggerFactory.CreateLogger<KubernetesProtocol>(), this.loggerFactory);
+            await Assert.ThrowsAsync<ArgumentNullException>("value", () => client.WatchCustomResourceDefinitionAsync(null, (eventType, result) => Task.FromResult(WatchResult.Continue), default)).ConfigureAwait(false);
+            await Assert.ThrowsAsync<ArgumentNullException>("eventHandler", () => client.WatchCustomResourceDefinitionAsync(new V1CustomResourceDefinition(), null, default)).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// The <see cref="KubernetesProtocol.WatchPodAsync"/> method immediately exists if it receives empty content.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="Task"/> which represents the asynchronous test.
+        /// </returns>
+        [Fact]
+        public async Task WatchCustomResourceDefinitionAsync_EmptyContent_Completes_Async()
+        {
+            var handler = new DummyHandler();
+            handler.Responses.Enqueue(
+                new HttpResponseMessage()
+                {
+                    StatusCode = HttpStatusCode.OK,
+                    Content = new WatchHttpContent(
+                        new StringContent(string.Empty)),
+                });
+
+            Collection<(WatchEventType, V1CustomResourceDefinition)> events = new Collection<(WatchEventType, V1CustomResourceDefinition)>();
+
+            var client = new KubernetesProtocol(handler, this.loggerFactory.CreateLogger<KubernetesProtocol>(), this.loggerFactory);
+            var result = await client.WatchCustomResourceDefinitionAsync(
+                new V1CustomResourceDefinition()
+                {
+                    Metadata = new V1ObjectMeta(name: "crd", namespaceProperty: "default", resourceVersion: "1"),
+                },
+                (eventType, result) =>
+                {
+                    events.Add((eventType, result));
+                    return Task.FromResult(WatchResult.Continue);
+                },
+                default).ConfigureAwait(false);
+
+            Assert.Equal(WatchExitReason.ServerDisconnected, result);
+            Assert.Empty(events);
+            Assert.Collection(
+                handler.Requests,
+                r =>
+                {
+                    Assert.Equal(new Uri("http://localhost/apis/apiextensions.k8s.io/v1/customresourcedefinitions?fieldSelector=metadata.name%3Dcrd&resourceVersion=1&watch=true"), r.RequestUri);
+                });
+        }
+
+        // There are no further tests for WatchCustomResourceDefinitionAsync because the code is shared with WatchPodAsync via the WatchAsync method.
     }
 }
