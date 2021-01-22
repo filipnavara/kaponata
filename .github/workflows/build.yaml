@@ -20,6 +20,10 @@ jobs:
 
       - name: Provision CI environment
         run: |
+          set -e
+
+          sudo apt-get update
+
           ansible-galaxy install geerlingguy.docker
           ansible-galaxy install geerlingguy.nodejs
           ansible-galaxy install andrewrothstein.k3d
