@@ -25,6 +25,7 @@ namespace Kaponata.Operator.Kubernetes
     {
         private readonly IKubernetesProtocol protocol;
         private readonly ILogger<KubernetesClient> logger;
+        private readonly ILoggerFactory loggerFactory;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="KubernetesClient"/> class.
@@ -35,10 +36,14 @@ namespace Kaponata.Operator.Kubernetes
         /// <param name="logger">
         /// The logger to use when logging.
         /// </param>
-        public KubernetesClient(IKubernetesProtocol protocol, ILogger<KubernetesClient> logger)
+        /// <param name="loggerFactory">
+        /// The logger factory to use when creating child objects.
+        /// </param>
+        public KubernetesClient(IKubernetesProtocol protocol, ILogger<KubernetesClient> logger, ILoggerFactory loggerFactory)
         {
             this.protocol = protocol ?? throw new ArgumentNullException(nameof(protocol));
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            this.loggerFactory = loggerFactory ?? throw new ArgumentNullException(nameof(loggerFactory));
         }
 
         private delegate Task<WatchExitReason> WatchObjectAsyncDelegate<T>(

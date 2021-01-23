@@ -47,7 +47,7 @@ namespace Kaponata.Operator.Tests.Kubernetes
                 KubernetesClientConfiguration.BuildDefaultConfig(),
                 this.loggerFactory.CreateLogger<KubernetesProtocol>(),
                 this.loggerFactory))
-            using (var client = new KubernetesClient(kubernetes, this.loggerFactory.CreateLogger<KubernetesClient>()))
+            using (var client = new KubernetesClient(kubernetes, this.loggerFactory.CreateLogger<KubernetesClient>(), this.loggerFactory))
             {
                 V1Pod pod;
 
@@ -96,7 +96,7 @@ namespace Kaponata.Operator.Tests.Kubernetes
                 KubernetesClientConfiguration.BuildDefaultConfig(),
                 this.loggerFactory.CreateLogger<KubernetesProtocol>(),
                 this.loggerFactory))
-            using (var client = new KubernetesClient(kubernetes, this.loggerFactory.CreateLogger<KubernetesClient>()))
+            using (var client = new KubernetesClient(kubernetes, this.loggerFactory.CreateLogger<KubernetesClient>(), this.loggerFactory))
             {
                 V1CustomResourceDefinition crd;
 

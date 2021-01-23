@@ -5,8 +5,10 @@
 using k8s;
 using k8s.Models;
 using Kaponata.Operator.Kubernetes.Polyfill;
+using Microsoft.Extensions.Logging;
 using Microsoft.Rest;
 using System;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -144,6 +146,52 @@ namespace Kaponata.Operator.Kubernetes
             }
 
             return value;
+        }
+
+        /// <summary>
+        /// Connects to a TCP port exposed by a pod.
+        /// </summary>
+        /// <param name="pod">
+        /// The pod to which to connect.
+        /// </param>
+        /// <param name="port">
+        /// The TCP port number of the port to which to connect.
+        /// </param>
+        /// <param name="cancellationToken">
+        /// A <see cref="CancellationToken"/> which can be used to cancel the asynchronous operation.
+        /// </param>
+        /// <returns>
+        /// A <see cref="Task"/> which represents the asynchronous operation, and returns
+        /// a <see cref="Stream"/> which can be used to send and receive data to the remote
+        /// port.
+        /// </returns>
+        public virtual async ValueTask<Stream> ConnectToPodPortAsync(V1Pod pod, int port, CancellationToken cancellationToken)
+        {
+            if (pod == null)
+            {
+                throw new ArgumentNullException(nameof(pod));
+            }
+
+            if (pod.Metadata?.Name == null)
+            {
+                throw new ValidationException(ValidationRules.CannotBeNull, "pod.Metadata.Name");
+            }
+
+            if (pod.Metadata?.NamespaceProperty == null)
+            {
+                throw new ValidationException(ValidationRules.CannotBeNull, "pod.Metadata.NamespaceProperty");
+            }
+
+            this.logger.LogInformation("Connecting to port {port} on pod {pod}", pod, pod.Metadata.Name);
+
+            var webSocket = await this.protocol.WebSocketNamespacedPodPortForwardAsync(
+                pod.Metadata.Name,
+                pod.Metadata.NamespaceProperty,
+                new int[] { port },
+                cancellationToken: cancellationToken).ConfigureAwait(false);
+
+            this.logger.LogInformation("Connected to port {port} on pod {pod}", port, pod.Metadata.Name);
+            return new PortForwardStream(webSocket, this.loggerFactory.CreateLogger<PortForwardStream>());
         }
 
         /// <summary>

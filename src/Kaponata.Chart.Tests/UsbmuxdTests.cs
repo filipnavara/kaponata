@@ -52,52 +52,53 @@ namespace Kaponata.Chart.Tests
                 config.Namespace = "default";
             }
 
-            var kubernetes = new KubernetesProtocol(
+            using (var kubernetes = new KubernetesProtocol(
                 config,
                 this.loggerFactory.CreateLogger<KubernetesProtocol>(),
-                this.loggerFactory);
-
-            // There's at least one usbmuxd pod
-            var pods = await kubernetes.ListNamespacedPodAsync(config.Namespace, labelSelector: "app.kubernetes.io/component=usbmuxd");
-            Assert.NotEmpty(pods.Items);
-            var pod = pods.Items[0];
-
-            var client = new KubernetesClient(
+                this.loggerFactory))
+            using (var client = new KubernetesClient(
                 kubernetes,
-                this.output.BuildLoggerFor<KubernetesClient>());
-
-            // The pod is in the running state
-            pod = await client.WaitForPodRunningAsync(pod, TimeSpan.FromMinutes(5), default).ConfigureAwait(false);
-            Assert.Equal("Running", pod.Status.Phase);
-
-            // We can connect to port 27015 and retrieve an empty device list
-            var locator = new KubernetesMuxerSocketLocator(kubernetes, pod, this.loggerFactory.CreateLogger<KubernetesMuxerSocketLocator>(), this.loggerFactory);
-            var muxerClient = new MuxerClient(this.loggerFactory.CreateLogger<MuxerClient>(), this.loggerFactory, locator);
-
-            Exception exception = null;
-
-            // The usbmuxd port may not yet be ready; in that case an IOException is thrown.
-            // Try up to 10 times.
-            for (int i = 0; i < 10; i++)
+                this.output.BuildLoggerFor<KubernetesClient>(),
+                this.loggerFactory))
             {
-                exception = null;
+                // There's at least one usbmuxd pod
+                var pods = await kubernetes.ListNamespacedPodAsync(config.Namespace, labelSelector: "app.kubernetes.io/component=usbmuxd");
+                Assert.NotEmpty(pods.Items);
+                var pod = pods.Items[0];
 
-                try
-                {
-                    var devices = await muxerClient.ListDevicesAsync(default).ConfigureAwait(false);
-                    break;
-                }
-                catch (IOException ex)
-                {
-                    exception = ex;
-                    this.output.WriteLine(ex.Message);
-                    await Task.Delay(TimeSpan.FromSeconds(10)).ConfigureAwait(false);
-                }
-            }
+                // The pod is in the running state
+                pod = await client.WaitForPodRunningAsync(pod, TimeSpan.FromMinutes(5), default).ConfigureAwait(false);
+                Assert.Equal("Running", pod.Status.Phase);
 
-            if (exception != null)
-            {
-                throw exception;
+                // We can connect to port 27015 and retrieve an empty device list
+                var locator = new KubernetesMuxerSocketLocator(kubernetes, pod, this.loggerFactory.CreateLogger<KubernetesMuxerSocketLocator>(), this.loggerFactory);
+                var muxerClient = new MuxerClient(this.loggerFactory.CreateLogger<MuxerClient>(), this.loggerFactory, locator);
+
+                Exception exception = null;
+
+                // The usbmuxd port may not yet be ready; in that case an IOException is thrown.
+                // Try up to 10 times.
+                for (int i = 0; i < 10; i++)
+                {
+                    exception = null;
+
+                    try
+                    {
+                        var devices = await muxerClient.ListDevicesAsync(default).ConfigureAwait(false);
+                        break;
+                    }
+                    catch (IOException ex)
+                    {
+                        exception = ex;
+                        this.output.WriteLine(ex.Message);
+                        await Task.Delay(TimeSpan.FromSeconds(10)).ConfigureAwait(false);
+                    }
+                }
+
+                if (exception != null)
+                {
+                    throw exception;
+                }
             }
         }
     }
