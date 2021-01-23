@@ -7,13 +7,21 @@ all: .arm64.docker-id .amd64.docker-id
 clean:
 	rm -f .arm64.docker-id .amd64.docker-id
 
+deploy: all
+	docker tag $(registry)/$(image):$(version)-amd64 $(registry)/$(image):latest-amd64
+	k3d image import $(registry)/$(image):latest-amd64
+	kubectl delete pod -l app.kubernetes.io/component=operator,app.kubernetes.io/name=kaponata
+  
 push: all
 	docker push $(registry)/$(image):$(version)-amd64
 	docker push $(registry)/$(image):$(version)-arm64
 	docker manifest create --amend $(registry)/$(image):$(version) $(registry)/$(image):$(version)-amd64 $(registry)/$(image):$(version)-arm64
 	docker manifest push $(registry)/$(image):$(version)
 
-.amd64.docker-id: Dockerfile
+bin/Release/net5.0/publish/Kaponata.Operator.dll: $(shell find . -path ./bin -prune -false -o -path ./obj -prune -false -o -name "*.cs" -type f)
+	dotnet publish -c Release
+
+.amd64.docker-id: Dockerfile bin/Release/net5.0/publish/Kaponata.Operator.dll
 	docker buildx build \
 		--platform linux/amd64 \
 		--build-arg host= \
@@ -27,7 +35,7 @@ push: all
 		-t $(registry)/$(image):$(version)-amd64
 	docker images --no-trunc --quiet $(registry)/$(image):$(version)-amd64 > .amd64.docker-id
 
-.arm64.docker-id: Dockerfile
+.arm64.docker-id: Dockerfile bin/Release/net5.0/publish/Kaponata.Operator.dll
 	docker buildx build --platform linux/arm64 \
 		--build-arg host=aarch64-linux-gnu \
 		--build-arg arch=arm64 \
