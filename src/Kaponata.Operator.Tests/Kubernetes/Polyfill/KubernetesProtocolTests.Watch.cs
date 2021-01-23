@@ -7,6 +7,7 @@ using k8s;
 using k8s.Models;
 using Kaponata.Operator.Kubernetes.Polyfill;
 using Microsoft.Extensions.Logging;
+using Moq;
 using Nerdbank.Streams;
 using Newtonsoft.Json;
 using System;
@@ -109,57 +110,51 @@ namespace Kaponata.Operator.Tests.Kubernetes.Polyfill
         [Fact]
         public async Task WatchPodAsync_CancelsIfNeeded_Async()
         {
-            using (var stream = new SimplexStream())
-            using (var writer = new StreamWriter(stream))
-            {
-                var handler = new DummyHandler();
-                handler.Responses.Enqueue(
-                    new HttpResponseMessage()
-                    {
-                        StatusCode = HttpStatusCode.OK,
-                        Content = new WatchHttpContent(
-                            new StreamContent(stream)),
-                    });
+            var readTaskCompletion = new TaskCompletionSource<int>();
 
-                Collection<(WatchEventType, V1Pod)> events = new Collection<(WatchEventType, V1Pod)>();
+            var stream = new Mock<Stream>(MockBehavior.Strict);
+            stream.Setup(s => s.CanSeek).Returns(false);
+            stream.Setup(s => s.CanRead).Returns(true);
+            stream
+                .Setup(s => s.ReadAsync(It.IsAny<Memory<byte>>(), It.IsAny<CancellationToken>()))
+                .Returns<Memory<byte>, CancellationToken>(async (memory, cancellationToken) => await readTaskCompletion.Task);
+            stream
+                .Setup(s => s.Close())
+                .Callback(() => readTaskCompletion.TrySetException(new ObjectDisposedException("Stream", "Stream is being disposed, and all pending I/O cancelled")))
+                .Verifiable();
 
-                var client = new KubernetesProtocol(handler, this.loggerFactory.CreateLogger<KubernetesProtocol>(), this.loggerFactory);
-                var tcs = new TaskCompletionSource();
-                var cts = new CancellationTokenSource();
+            var handler = new DummyHandler();
+            handler.Responses.Enqueue(
+                new HttpResponseMessage()
+                {
+                    StatusCode = HttpStatusCode.OK,
+                    Content = new WatchHttpContent(
+                        new StreamContent(stream.Object)),
+                });
 
-                var watchTask = client.WatchPodAsync(
-                    new V1Pod()
-                    {
-                        Metadata = new V1ObjectMeta(name: "pod", namespaceProperty: "default", resourceVersion: "1"),
-                    },
-                    (eventType, result) =>
-                    {
-                        events.Add((eventType, result));
-                        tcs.SetResult();
-                        return Task.FromResult(WatchResult.Continue);
-                    },
-                    cts.Token);
+            Collection<(WatchEventType, V1Pod)> events = new Collection<(WatchEventType, V1Pod)>();
 
-                // Send a single event and wait for the watch task to handle that. This is to make sure we enter the inner
-                // loop, and the task does not cancel early.
-                await writer.WriteLineAsync(
-                    JsonConvert.SerializeObject(
-                        new Watcher<V1Pod>.WatchEvent()
-                        {
-                            Type = WatchEventType.Modified,
-                            Object = new V1Pod()
-                            {
-                                Kind = "V1Pod",
-                            },
-                        })).ConfigureAwait(false);
-                await writer.FlushAsync().ConfigureAwait(false);
+            var client = new KubernetesProtocol(handler, this.loggerFactory.CreateLogger<KubernetesProtocol>(), this.loggerFactory);
+            var cts = new CancellationTokenSource();
 
-                await tcs.Task.ConfigureAwait(false);
-                Assert.True(!watchTask.IsCompleted);
-                cts.Cancel();
+            var watchTask = client.WatchPodAsync(
+                new V1Pod()
+                {
+                    Metadata = new V1ObjectMeta(name: "pod", namespaceProperty: "default", resourceVersion: "1"),
+                },
+                (eventType, result) =>
+                {
+                    events.Add((eventType, result));
+                    return Task.FromResult(WatchResult.Continue);
+                },
+                cts.Token);
 
-                await Assert.ThrowsAsync<TaskCanceledException>(() => watchTask).ConfigureAwait(false);
-            }
+            Assert.True(!watchTask.IsCompleted);
+            cts.Cancel();
+
+            await Assert.ThrowsAsync<TaskCanceledException>(() => watchTask).ConfigureAwait(false);
+
+            stream.Verify();
         }
 
         /// <summary>
