@@ -4,6 +4,10 @@
 
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
+using System.CommandLine;
+using System.CommandLine.Invocation;
+using System.CommandLine.IO;
+using System.Threading.Tasks;
 
 namespace Kaponata.Operator
 {
@@ -12,15 +16,32 @@ namespace Kaponata.Operator
     /// </summary>
     public class Program
     {
+        private IConsole console;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Program"/> class.
+        /// </summary>
+        /// <param name="console">
+        /// The console to use by the application.
+        /// </param>
+        public Program(IConsole console = null)
+        {
+            this.console = console ?? new SystemConsole();
+        }
+
         /// <summary>
         /// Runs the Kaponata Operator, either in command line or service mode.
         /// </summary>
         /// <param name="args">
         /// The command line arguments.
         /// </param>
-        public static void Main(string[] args)
+        /// <returns>
+        /// A <see cref="Task"/> representing the asynchronous operation.
+        /// </returns>
+        public static Task<int> Main(string[] args)
         {
-            CreateHostBuilder(args).Build().Run();
+            var program = new Program();
+            return program.MainAsync(args);
         }
 
         /// <summary>
@@ -39,5 +60,22 @@ namespace Kaponata.Operator
                 {
                     webBuilder.UseStartup<Startup>();
                 });
+
+        /// <summary>
+        /// Runs the Kaponata Operator, either in command line or service mode.
+        /// </summary>
+        /// <param name="args">
+        /// The command line arguments.
+        /// </param>
+        /// <returns>
+        /// A <see cref="Task"/> representing the asynchronous operation.
+        /// </returns>
+        public Task<int> MainAsync(string[] args)
+        {
+            // Create a root command with some options
+            var rootCommand = new RootCommand();
+            rootCommand.Handler = CommandHandler.Create(() => CreateHostBuilder(args).Build().RunAsync());
+            return rootCommand.InvokeAsync(args, this.console);
+        }
     }
 }
