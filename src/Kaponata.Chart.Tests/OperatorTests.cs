@@ -1,15 +1,14 @@
-// <copyright file="UsbmuxdTests.cs" company="Quamotion bv">
+﻿// <copyright file="OperatorTests.cs" company="Quamotion bv">
 // Copyright (c) Quamotion bv. All rights reserved.
 // </copyright>
 
 using Divergic.Logging.Xunit;
 using k8s;
-using Kaponata.iOS.Muxer;
 using Kaponata.Operator.Kubernetes;
 using Kaponata.Operator.Kubernetes.Polyfill;
 using Microsoft.Extensions.Logging;
 using System;
-using System.IO;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
@@ -17,34 +16,34 @@ using Xunit.Abstractions;
 namespace Kaponata.Chart.Tests
 {
     /// <summary>
-    /// Tests the usbmuxd Helm chart.
+    /// Tests the deployment of the Kaponata operator into the cluster.
     /// </summary>
-    public class UsbmuxdTests
+    public class OperatorTests
     {
         private readonly ITestOutputHelper output;
         private readonly ILoggerFactory loggerFactory;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="UsbmuxdTests"/> class.
+        /// Initializes a new instance of the <see cref="OperatorTests"/> class.
         /// </summary>
         /// <param name="output">
         /// The test output helper which will be used to log to xunit.
         /// </param>
-        public UsbmuxdTests(ITestOutputHelper output)
+        public OperatorTests(ITestOutputHelper output)
         {
             this.loggerFactory = LogFactory.Create(output);
             this.output = output;
         }
 
         /// <summary>
-        /// At least one usbmuxd pod is running in the cluster.
+        /// At least one Operator pod is running in the cluster.
         /// </summary>
         /// <returns>
         /// A <see cref="Task"/> which represents the asynchronous operation.
         /// </returns>
         [Fact]
         [Trait("TestCategory", "IntegrationTest")]
-        public async Task Usbmuxd_Is_Running_Async()
+        public async Task Operator_Is_Running_Async()
         {
             var config = KubernetesClientConfiguration.BuildDefaultConfig();
             if (config.Namespace == null)
@@ -61,8 +60,8 @@ namespace Kaponata.Chart.Tests
                 this.output.BuildLoggerFor<KubernetesClient>(),
                 this.loggerFactory))
             {
-                // There's at least one usbmuxd pod
-                var pods = await kubernetes.ListNamespacedPodAsync(config.Namespace, labelSelector: "app.kubernetes.io/component=usbmuxd");
+                // There's at least one operator pod
+                var pods = await kubernetes.ListNamespacedPodAsync(config.Namespace, labelSelector: "app.kubernetes.io/component=operator");
                 Assert.NotEmpty(pods.Items);
                 var pod = pods.Items[0];
 
@@ -70,34 +69,24 @@ namespace Kaponata.Chart.Tests
                 pod = await client.WaitForPodRunningAsync(pod, TimeSpan.FromMinutes(5), default).ConfigureAwait(false);
                 Assert.Equal("Running", pod.Status.Phase);
 
-                // We can connect to port 27015 and retrieve an empty device list
-                var locator = new KubernetesMuxerSocketLocator(kubernetes, pod, this.loggerFactory.CreateLogger<KubernetesMuxerSocketLocator>(), this.loggerFactory);
-                var muxerClient = new MuxerClient(this.loggerFactory.CreateLogger<MuxerClient>(), this.loggerFactory, locator);
-
-                Exception exception = null;
-
-                // The usbmuxd port may not yet be ready; in that case an IOException is thrown.
-                // Try up to 10 times.
-                for (int i = 0; i < 10; i++)
-                {
-                    exception = null;
-
-                    try
+                // We can connect to port 80 and fetch the status
+                using (var httpClient = new HttpClient(
+                    new SocketsHttpHandler()
                     {
-                        var devices = await muxerClient.ListDevicesAsync(default).ConfigureAwait(false);
-                        break;
-                    }
-                    catch (IOException ex)
-                    {
-                        exception = ex;
-                        this.output.WriteLine(ex.Message);
-                        await Task.Delay(TimeSpan.FromSeconds(10)).ConfigureAwait(false);
-                    }
-                }
-
-                if (exception != null)
+                         ConnectCallback = (context, cancellationToken) => client.ConnectToPodPortAsync(pod, 80, cancellationToken),
+                    }))
                 {
-                    throw exception;
+                    httpClient.BaseAddress = new Uri("http://localhost:80/");
+
+                    var urls = new string[] { "/", "/health/ready", "/health/alive" };
+
+                    foreach (var url in urls)
+                    {
+                        var response = await httpClient.GetAsync(url).ConfigureAwait(false);
+                        Assert.True(response.IsSuccessStatusCode);
+                        Assert.True(response.Headers.TryGetValues("X-Kaponata-Version", out var values));
+                        Assert.Equal(ThisAssembly.AssemblyInformationalVersion, Assert.Single(values));
+                    }
                 }
             }
         }

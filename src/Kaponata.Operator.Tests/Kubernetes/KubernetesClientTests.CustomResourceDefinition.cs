@@ -35,7 +35,7 @@ namespace Kaponata.Operator.Tests.Kubernetes
             var protocol = new Mock<IKubernetesProtocol>(MockBehavior.Strict);
             protocol.Setup(p => p.Dispose()).Verifiable();
 
-            using (var client = new KubernetesClient(protocol.Object, NullLogger<KubernetesClient>.Instance))
+            using (var client = new KubernetesClient(protocol.Object, NullLogger<KubernetesClient>.Instance, NullLoggerFactory.Instance))
             {
                 await Assert.ThrowsAsync<ArgumentNullException>("value", () => client.CreateCustomResourceDefinitionAsync(null, default)).ConfigureAwait(false);
             }
@@ -55,7 +55,7 @@ namespace Kaponata.Operator.Tests.Kubernetes
                 .ReturnsAsync(new HttpOperationResponse<V1CustomResourceDefinition>() { Body = crd });
             protocol.Setup(p => p.Dispose()).Verifiable();
 
-            using (var client = new KubernetesClient(protocol.Object, NullLogger<KubernetesClient>.Instance))
+            using (var client = new KubernetesClient(protocol.Object, NullLogger<KubernetesClient>.Instance, NullLoggerFactory.Instance))
             {
                 var result = await client.CreateCustomResourceDefinitionAsync(crd, default).ConfigureAwait(false);
                 Assert.Same(crd, result);
@@ -78,7 +78,7 @@ namespace Kaponata.Operator.Tests.Kubernetes
 
             protocol.Setup(p => p.Dispose()).Verifiable();
 
-            using (var client = new KubernetesClient(protocol.Object, NullLogger<KubernetesClient>.Instance))
+            using (var client = new KubernetesClient(protocol.Object, NullLogger<KubernetesClient>.Instance, NullLoggerFactory.Instance))
             {
                 Assert.Equal(crd, await client.TryReadCustomResourceDefinitionAsync("my-crd", default).ConfigureAwait(false));
             }
@@ -98,7 +98,7 @@ namespace Kaponata.Operator.Tests.Kubernetes
 
             protocol.Setup(p => p.Dispose()).Verifiable();
 
-            using (var client = new KubernetesClient(protocol.Object, NullLogger<KubernetesClient>.Instance))
+            using (var client = new KubernetesClient(protocol.Object, NullLogger<KubernetesClient>.Instance, NullLoggerFactory.Instance))
             {
                 Assert.Null(await client.TryReadCustomResourceDefinitionAsync("my-crd", default).ConfigureAwait(false));
             }
@@ -114,7 +114,7 @@ namespace Kaponata.Operator.Tests.Kubernetes
             var protocol = new Mock<IKubernetesProtocol>(MockBehavior.Strict);
             protocol.Setup(p => p.Dispose()).Verifiable();
 
-            using (var client = new KubernetesClient(protocol.Object, NullLogger<KubernetesClient>.Instance))
+            using (var client = new KubernetesClient(protocol.Object, NullLogger<KubernetesClient>.Instance, NullLoggerFactory.Instance))
             {
                 await Assert.ThrowsAsync<ArgumentNullException>("value", () => client.DeleteCustomResourceDefinitionAsync(null, TimeSpan.FromMinutes(1), default)).ConfigureAwait(false);
             }
@@ -158,7 +158,7 @@ namespace Kaponata.Operator.Tests.Kubernetes
                     return watchTask.Task;
                 });
 
-            using (var client = new KubernetesClient(protocol.Object, NullLogger<KubernetesClient>.Instance))
+            using (var client = new KubernetesClient(protocol.Object, NullLogger<KubernetesClient>.Instance, NullLoggerFactory.Instance))
             {
                 var task = client.DeleteCustomResourceDefinitionAsync(customResourceDefinition, TimeSpan.FromMinutes(1), default);
                 Assert.NotNull(callback);
@@ -208,7 +208,7 @@ namespace Kaponata.Operator.Tests.Kubernetes
                     return watchTask.Task;
                 });
 
-            using (var client = new KubernetesClient(protocol.Object, NullLogger<KubernetesClient>.Instance))
+            using (var client = new KubernetesClient(protocol.Object, NullLogger<KubernetesClient>.Instance, NullLoggerFactory.Instance))
             {
                 var task = client.DeleteCustomResourceDefinitionAsync(customResourceDefinition, TimeSpan.FromMinutes(1), default);
                 Assert.NotNull(callback);
@@ -261,7 +261,7 @@ namespace Kaponata.Operator.Tests.Kubernetes
                     return watchTask.Task;
                 });
 
-            using (var client = new KubernetesClient(protocol.Object, NullLogger<KubernetesClient>.Instance))
+            using (var client = new KubernetesClient(protocol.Object, NullLogger<KubernetesClient>.Instance, NullLoggerFactory.Instance))
             {
                 var task = client.DeleteCustomResourceDefinitionAsync(customResourceDefinition, TimeSpan.Zero, default);
                 Assert.NotNull(callback);

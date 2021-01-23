@@ -24,6 +24,7 @@ namespace Kaponata.Operator
         /// <seealso href="http://go.microsoft.com/fwlink/?LinkID=398940"/>
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddHealthChecks();
         }
 
         /// <summary>
@@ -42,14 +43,24 @@ namespace Kaponata.Operator
                 app.UseDeveloperExceptionPage();
             }
 
+            app.Use((context, next) =>
+            {
+                context.Response.Headers["X-Kaponata-Version"] = ThisAssembly.AssemblyInformationalVersion;
+                return next.Invoke();
+            });
+
             app.UseRouting();
 
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapGet("/", async context =>
                 {
+                    context.Response.ContentType = "text/plain";
                     await context.Response.WriteAsync("Hello World!");
                 });
+
+                endpoints.MapHealthChecks("/health/ready");
+                endpoints.MapHealthChecks("/health/alive");
             });
         }
     }

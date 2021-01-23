@@ -119,6 +119,7 @@ jobs:
 
           yq e '.version="${{ steps.nbgv.outputs.SemVer2 }}"' -i Chart.yaml
           yq e '.appVersion="${{ steps.nbgv.outputs.SemVer2 }}"' -i Chart.yaml
+          yq e '.operator.image.tag="${{ steps.nbgv.outputs.SemVer2 }}"' -i values.yaml
 
           helm lint .
           helm package . -d ${{ github.workspace }}/bin
@@ -133,18 +134,30 @@ jobs:
 
       - name: Create k3d cluster
         run: |
+          k3d cluster create --api-port 6433 -p "80:80@loadbalancer"
+
+      # We don't built Docker crossarch manifests during CI, so tag the {version}-amd64 image
+      # as the {version} image. Then, import the image into k3d.
+      - name: Upload images to k3d cluster
+        run: |
           set -e
 
-          k3d cluster create --api-port 6433 -p "80:80@loadbalancer"
+          docker tag quay.io/kaponata/operator:${{ steps.nbgv.outputs.SemVer2 }}-amd64 quay.io/kaponata/operator:${{ steps.nbgv.outputs.SemVer2 }}
+          k3d image import quay.io/kaponata/operator:${{ steps.nbgv.outputs.SemVer2 }}
 
       # Override the usbmuxd image tag in the usbmuxd subchart to
       # latest-udev-amd64. This fixes an issue where usbmuxd will fail
       # to start on a VM with no USB stack (because libusb fails to
       # initialize.)
+      #
+      # For images built during CI, we set ImagePullPolicy to Never
+      # so that Kubernetes will use the images built locally (and uploaded
+      # during the previous step).
       - name: Deploy Helm chart
         run: >
           helm install
           --set usbmuxd.usbmuxd.image.tag=latest-udev-amd64
+          --set operator.imagePullPolicy=Never
           --wait
           kaponata
           ${{ github.workspace }}/bin/kaponata-${{ steps.nbgv.outputs.SemVer2 }}.tgz

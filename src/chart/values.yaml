@@ -1,0 +1,5 @@
+operator:
+  image:
+    repository: quay.io/kaponata/operator
+    tag: latest-amd64
+  imagePullPolicy: IfNotPresent

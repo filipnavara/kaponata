@@ -71,28 +71,5 @@ namespace Kaponata.Operator.Kubernetes.Polyfill
             V1CustomResourceDefinition crd,
             Func<WatchEventType, V1CustomResourceDefinition, Task<WatchResult>> eventHandler,
             CancellationToken cancellationToken);
-
-        /// <summary>
-        /// Connects to a TCP port exposed by a pod.
-        /// </summary>
-        /// <param name="pod">
-        /// The pod to which to connect.
-        /// </param>
-        /// <param name="port">
-        /// The TCP port number of the port to which to connect.
-        /// </param>
-        /// <param name="cancellationToken">
-        /// A <see cref="CancellationToken"/> which can be used to cancel the asynchronous
-        /// operation.
-        /// </param>
-        /// <returns>
-        /// A <see cref="Task"/> which represents the asynchronous operation, and returns
-        /// a <see cref="Stream"/> which can be used to send and receive data to the remote
-        /// port.
-        /// </returns>
-        Task<Stream> ConnectToPodPortAsync(
-            V1Pod pod,
-            int port,
-            CancellationToken cancellationToken);
     }
 }

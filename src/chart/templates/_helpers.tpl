@@ -29,3 +29,52 @@ Create chart name and version as used by the chart label.
 {{- define "kaponata.chart" -}}
 {{- printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" }}
 {{- end }}
+
+{{/*
+Operator: Full Name
+*/}}
+{{- define "operator.fullname" -}}
+{{- printf "%s-operator" (include "kaponata.fullname" .) | trunc 63 | trimSuffix "-" }}
+{{- end }}
+
+{{/*
+Operator: Role Full Name
+*/}}
+{{- define "operator.role.fullname" -}}
+{{- printf "%s-operator-role" (include "kaponata.fullname" .) | trunc 63 | trimSuffix "-" }}
+{{- end }}
+
+{{/*
+Operator: Role Binding Full Name
+*/}}
+{{- define "operator.roleBinding.fullname" -}}
+{{- printf "%s-operator-rolebinding" (include "kaponata.fullname" .) | trunc 63 | trimSuffix "-" }}
+{{- end }}
+
+{{/*
+Operator: Service Account Full Name
+*/}}
+{{- define "operator.serviceAccount.fullname" -}}
+{{- printf "%s-operator-account" (include "kaponata.fullname" .) | trunc 63 | trimSuffix "-" }}
+{{- end }}
+
+{{/*
+Operator: Common labels
+*/}}
+{{- define "operator.labels" -}}
+helm.sh/chart: {{ include "kaponata.chart" . }}
+{{ include "operator.selectorLabels" . }}
+{{- if .Chart.AppVersion }}
+app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
+{{- end }}
+app.kubernetes.io/managed-by: {{ .Release.Service }}
+{{- end }}
+
+{{/*
+Operator: Selector labels
+*/}}
+{{- define "operator.selectorLabels" -}}
+app.kubernetes.io/name: {{ include "kaponata.name" . }}
+app.kubernetes.io/instance: {{ .Release.Name }}
+app.kubernetes.io/component: "operator"
+{{- end }}
