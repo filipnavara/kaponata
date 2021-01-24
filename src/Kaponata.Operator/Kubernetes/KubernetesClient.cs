@@ -6,6 +6,7 @@ using k8s;
 using k8s.Models;
 using Kaponata.Operator.Kubernetes.Polyfill;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Rest;
 using Microsoft.Rest.Serialization;
 using System;
@@ -44,6 +45,18 @@ namespace Kaponata.Operator.Kubernetes
             this.protocol = protocol ?? throw new ArgumentNullException(nameof(protocol));
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
             this.loggerFactory = loggerFactory ?? throw new ArgumentNullException(nameof(loggerFactory));
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="KubernetesClient"/> class.
+        /// </summary>
+        /// <remarks>
+        /// This constructor is intended for unit testing purposes only.
+        /// </remarks>
+        protected KubernetesClient()
+        {
+            this.logger = NullLogger<KubernetesClient>.Instance;
+            this.loggerFactory = NullLoggerFactory.Instance;
         }
 
         private delegate Task<WatchExitReason> WatchObjectAsyncDelegate<T>(
