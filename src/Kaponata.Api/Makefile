@@ -1,5 +1,5 @@
 registry=quay.io/kaponata
-image=operator
+image=api
 version=$(shell nbgv get-version -v SemVer2)
 
 all: .arm64.docker-id .amd64.docker-id
@@ -18,10 +18,10 @@ push: all
 	docker manifest create --amend $(registry)/$(image):$(version) $(registry)/$(image):$(version)-amd64 $(registry)/$(image):$(version)-arm64
 	docker manifest push $(registry)/$(image):$(version)
 
-bin/Release/net5.0/publish/Kaponata.Operator.dll: $(shell find . -path ./bin -prune -false -o -path ./obj -prune -false -o -name "*.cs" -type f)
+bin/Release/net5.0/publish/Kaponata.Api.dll: $(shell find . -path ./bin -prune -false -o -path ./obj -prune -false -o -name "*.cs" -type f)
 	dotnet publish -c Release
 
-.amd64.docker-id: Dockerfile bin/Release/net5.0/publish/Kaponata.Operator.dll
+.amd64.docker-id: Dockerfile bin/Release/net5.0/publish/Kaponata.Api.dll
 	docker buildx build \
 		--platform linux/amd64 \
 		--build-arg host= \
@@ -35,7 +35,7 @@ bin/Release/net5.0/publish/Kaponata.Operator.dll: $(shell find . -path ./bin -pr
 		-t $(registry)/$(image):$(version)-amd64
 	docker images --no-trunc --quiet $(registry)/$(image):$(version)-amd64 > .amd64.docker-id
 
-.arm64.docker-id: Dockerfile bin/Release/net5.0/publish/Kaponata.Operator.dll
+.arm64.docker-id: Dockerfile bin/Release/net5.0/publish/Kaponata.Api.dll
 	docker buildx build --platform linux/arm64 \
 		--build-arg host=aarch64-linux-gnu \
 		--build-arg arch=arm64 \
