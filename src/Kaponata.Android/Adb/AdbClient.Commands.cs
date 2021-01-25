@@ -29,6 +29,11 @@ namespace Kaponata.Android.Adb
         {
             await using var protocol = await this.TryConnectToAdbAsync(cancellationToken).ConfigureAwait(false);
 
+            if (protocol == null)
+            {
+                throw new InvalidOperationException("Could not connect to the ADB server.");
+            }
+
             // send devices command.
             await protocol.WriteAsync("host:devices-l", cancellationToken).ConfigureAwait(false);
             protocol.EnsureValidAdbResponse(await protocol.ReadAdbResponseAsync(cancellationToken).ConfigureAwait(false));
@@ -55,6 +60,11 @@ namespace Kaponata.Android.Adb
         {
             await using var protocol = await this.TryConnectToAdbAsync(cancellationToken).ConfigureAwait(false);
 
+            if (protocol == null)
+            {
+                throw new InvalidOperationException("Could not connect to the ADB server.");
+            }
+
             // send version command.
             await protocol.WriteAsync("host:version", cancellationToken).ConfigureAwait(false);
             protocol.EnsureValidAdbResponse(await protocol.ReadAdbResponseAsync(cancellationToken).ConfigureAwait(false));
@@ -63,7 +73,15 @@ namespace Kaponata.Android.Adb
             var length = await protocol.ReadUInt16Async(cancellationToken).ConfigureAwait(false);
             var versionMessage = await protocol.ReadStringAsync(length, cancellationToken).ConfigureAwait(false);
 
-            return int.Parse(versionMessage, NumberStyles.HexNumber);
+            var adbVersion = 0;
+            var success = int.TryParse(versionMessage, NumberStyles.HexNumber, default, out adbVersion);
+
+            if (!success)
+            {
+                throw new InvalidOperationException($"Could not parse {versionMessage} to a valid ADB server number.");
+            }
+
+            return adbVersion;
         }
     }
 }

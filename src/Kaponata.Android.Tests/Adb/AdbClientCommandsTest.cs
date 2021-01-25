@@ -5,6 +5,7 @@
 using Kaponata.Android.Adb;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
+using System;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -15,6 +16,26 @@ namespace Kaponata.Android.Tests.Adb
     /// </summary>
     public class AdbClientCommandsTest
     {
+        /// <summary>
+        /// The <see cref="AdbClient.GetDevicesAsync(System.Threading.CancellationToken)"/> method throws an exception when connecting to the <c>ADB</c> server failed.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="Task"/> which represents the asynchrounous test.
+        /// </returns>
+        [Fact]
+        public async Task GetDevicesAsync_ThrowsWhenNoConnection_Async()
+        {
+            var clientMock = new Mock<AdbClient>(NullLogger<AdbClient>.Instance, NullLoggerFactory.Instance)
+            {
+                CallBase = true,
+            };
+
+            clientMock.Setup(c => c.TryConnectToAdbAsync(default)).ReturnsAsync((AdbProtocol)null);
+            var client = clientMock.Object;
+
+            await Assert.ThrowsAsync<InvalidOperationException>(async () => await client.GetDevicesAsync(default).ConfigureAwait(false));
+        }
+
         /// <summary>
         /// The <see cref="AdbClient.GetDevicesAsync(System.Threading.CancellationToken)"/> method returns the connected devices.
         /// </summary>
@@ -60,6 +81,26 @@ namespace Kaponata.Android.Tests.Adb
         }
 
         /// <summary>
+        /// The <see cref="AdbClient.GetAdbVersionAsync(System.Threading.CancellationToken)"/> method throws an exception when connecting to the <c>ADB</c> server failed.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="Task"/> which represents the asynchrounous test.
+        /// </returns>
+        [Fact]
+        public async Task GetAdbVersion_ThrowsWhenNoConnection_Async()
+        {
+            var clientMock = new Mock<AdbClient>(NullLogger<AdbClient>.Instance, NullLoggerFactory.Instance)
+            {
+                CallBase = true,
+            };
+
+            clientMock.Setup(c => c.TryConnectToAdbAsync(default)).ReturnsAsync((AdbProtocol)null);
+            var client = clientMock.Object;
+
+            await Assert.ThrowsAsync<InvalidOperationException>(async () => await client.GetAdbVersionAsync(default).ConfigureAwait(false));
+        }
+
+        /// <summary>
         /// The <see cref="AdbClient.GetAdbVersionAsync(System.Threading.CancellationToken)"/> method returns the <c>ADB</c> server version.
         /// </summary>
         /// <returns>
@@ -93,6 +134,41 @@ namespace Kaponata.Android.Tests.Adb
             Assert.Equal(41, await client.GetAdbVersionAsync(default).ConfigureAwait(false));
 
             protocol.Verify();
+        }
+
+        /// <summary>
+        /// The <see cref="AdbClient.GetAdbVersionAsync(System.Threading.CancellationToken)"/> method throws when an invalid version number message is returned.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="Task"/> which represents the asynchrounous test.
+        /// </returns>
+        [Fact]
+        public async Task GetAdbVersion_ThrowsOnInvalidData_Async()
+        {
+            var protocol = new Mock<AdbProtocol>();
+            protocol.Setup(p => p.WriteAsync("host:version", default))
+                    .Verifiable();
+            protocol.Setup(p => p.ReadAdbResponseAsync(default))
+                .ReturnsAsync(AdbResponse.Success)
+                .Verifiable();
+            protocol.Setup(p => p.ReadUInt16Async(default))
+                .ReturnsAsync((ushort)4)
+                .Verifiable();
+            protocol
+                .Setup(p => p.ReadStringAsync(4, default))
+                .ReturnsAsync("0029bis")
+                .Verifiable();
+
+            var clientMock = new Mock<AdbClient>(NullLogger<AdbClient>.Instance, NullLoggerFactory.Instance)
+            {
+                CallBase = true,
+            };
+
+            clientMock.Setup(c => c.TryConnectToAdbAsync(default)).ReturnsAsync(protocol.Object);
+            var client = clientMock.Object;
+
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () => await client.GetAdbVersionAsync(default).ConfigureAwait(false));
+            Assert.Contains("0029bis", exception.Message);
         }
     }
 }

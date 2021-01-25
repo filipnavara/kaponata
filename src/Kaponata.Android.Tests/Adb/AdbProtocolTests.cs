@@ -122,6 +122,25 @@ namespace Kaponata.Android.Tests.Adb
         }
 
         /// <summary>
+        /// The <see cref="AdbProtocol.ReadStringAsync(int, System.Threading.CancellationToken)"/> method returns null when server provides insufficient data.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="Task"/> which represents the asynchronous test.
+        /// </returns>
+        [Fact]
+        public async Task ReadString_NullWhenInsufficientData_Async()
+        {
+            await using MemoryStream stream = new MemoryStream();
+            await using var protocol = new AdbProtocol(stream, ownsStream: true, NullLogger<AdbProtocol>.Instance);
+            using var writer = new StreamWriter(stream);
+            await writer.WriteAsync("Tester").ConfigureAwait(false);
+            await writer.FlushAsync().ConfigureAwait(false);
+            stream.Position = 0;
+
+            Assert.Null(await protocol.ReadStringAsync(10, default).ConfigureAwait(false));
+        }
+
+        /// <summary>
         /// The <see cref="AdbProtocol.ReadUInt16Async(CancellationToken)"/> method receives an <see cref="int"/> from the <c>ADB</c> server.
         /// </summary>
         /// <param name="input">
