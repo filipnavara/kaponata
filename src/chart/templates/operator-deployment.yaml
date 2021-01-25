@@ -14,6 +14,10 @@ spec:
         {{- include "operator.selectorLabels" . | nindent 8 }}
     spec:
       serviceAccountName: {{ template "operator.serviceAccount.fullname" . }}
+      initContainers:
+        - name: "install-extensions"
+          image: "{{ .Values.operator.image.repository }}:{{ tpl .Values.operator.image.tag . }}"
+          command: [ "dotnet", "/app/Kaponata.Operator.dll", "install-extensions" ]
       containers:
         - name: "operator"
           image: "{{ .Values.operator.image.repository }}:{{ tpl .Values.operator.image.tag . }}"

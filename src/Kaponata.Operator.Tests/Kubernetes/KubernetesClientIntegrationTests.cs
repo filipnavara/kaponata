@@ -9,6 +9,7 @@ using Kaponata.Operator.Kubernetes;
 using Kaponata.Operator.Kubernetes.Polyfill;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
@@ -143,6 +144,139 @@ namespace Kaponata.Operator.Tests.Kubernetes
                     default).ConfigureAwait(false);
 
                 Assert.NotNull(await client.TryReadCustomResourceDefinitionAsync(crd.Metadata.Name, default).ConfigureAwait(false));
+            }
+        }
+
+        /// <summary>
+        /// Runs an integration test which installs, upgrades and then deletes a CRD.
+        /// </summary>
+        /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
+        [Fact]
+        [Trait("TestCategory", "IntegrationTest")]
+        public async Task InstallUpgradeDeleteCrd_IntegrationTest_Async()
+        {
+            string name = $"{FormatName(nameof(this.InstallUpgradeDeleteCrd_IntegrationTest_Async))}s.kaponata.io";
+
+            using (var kubernetes = new KubernetesProtocol(
+                KubernetesClientConfiguration.BuildDefaultConfig(),
+                this.loggerFactory.CreateLogger<KubernetesProtocol>(),
+                this.loggerFactory))
+            using (var client = new KubernetesClient(kubernetes, this.loggerFactory.CreateLogger<KubernetesClient>(), this.loggerFactory))
+            {
+                var v1crd = new V1CustomResourceDefinition()
+                {
+                    Metadata = new V1ObjectMeta()
+                    {
+                        Name = name,
+                        Labels = new Dictionary<string, string>()
+                        {
+                            { Annotations.Version, "0.1" },
+                        },
+                    },
+                    Spec = new V1CustomResourceDefinitionSpec()
+                    {
+                        Group = "kaponata.io",
+                        Scope = "Namespaced",
+                        Names = new V1CustomResourceDefinitionNames()
+                        {
+                            Plural = $"{FormatName(nameof(this.InstallUpgradeDeleteCrd_IntegrationTest_Async))}s",
+                            Singular = FormatName(nameof(this.InstallUpgradeDeleteCrd_IntegrationTest_Async)),
+                            Kind = FormatNameCamelCase(nameof(this.InstallUpgradeDeleteCrd_IntegrationTest_Async)),
+                        },
+                        Versions = new V1CustomResourceDefinitionVersion[]
+                        {
+                                new V1CustomResourceDefinitionVersion()
+                                {
+                                    Name = "v1alpha1",
+                                    Served = true,
+                                    Storage = true,
+                                    Schema = new V1CustomResourceValidation()
+                                    {
+                                         OpenAPIV3Schema = new V1JSONSchemaProps()
+                                         {
+                                             Type = "object",
+                                         },
+                                    },
+                                },
+                        },
+                    },
+                };
+
+                var v2crd = new V1CustomResourceDefinition()
+                {
+                    Metadata = new V1ObjectMeta()
+                    {
+                        Name = name,
+                        Labels = new Dictionary<string, string>()
+                        {
+                            { Annotations.Version, "0.2" },
+                        },
+                    },
+                    Spec = new V1CustomResourceDefinitionSpec()
+                    {
+                        Group = "kaponata.io",
+                        Scope = "Namespaced",
+                        Names = new V1CustomResourceDefinitionNames()
+                        {
+                            Plural = $"{FormatName(nameof(this.InstallUpgradeDeleteCrd_IntegrationTest_Async))}s",
+                            Singular = FormatName(nameof(this.InstallUpgradeDeleteCrd_IntegrationTest_Async)),
+                            Kind = FormatNameCamelCase(nameof(this.InstallUpgradeDeleteCrd_IntegrationTest_Async)),
+                        },
+                        Versions = new V1CustomResourceDefinitionVersion[]
+                        {
+                                new V1CustomResourceDefinitionVersion()
+                                {
+                                    Name = "v1alpha1",
+                                    Served = true,
+                                    Storage = true,
+                                    Schema = new V1CustomResourceValidation()
+                                    {
+                                         OpenAPIV3Schema = new V1JSONSchemaProps()
+                                         {
+                                             Type = "object",
+                                         },
+                                    },
+                                },
+                        },
+                    },
+                };
+
+                var installedCrd = await client.InstallOrUpgradeCustomResourceDefinitionAsync(
+                    v1crd,
+                    TimeSpan.FromMinutes(1),
+                    default).ConfigureAwait(false);
+
+                installedCrd = await client.WaitForCustomResourceDefinitionEstablishedAsync(
+                    installedCrd,
+                    TimeSpan.FromMinutes(1),
+                    default).ConfigureAwait(false);
+
+                Assert.Equal("0.1", installedCrd.Metadata.Labels[Annotations.Version]);
+
+                // Re-read to be sure.
+                installedCrd = await client.TryReadCustomResourceDefinitionAsync(name, default);
+                Assert.Equal("0.1", installedCrd.Metadata.Labels[Annotations.Version]);
+
+                installedCrd = await client.InstallOrUpgradeCustomResourceDefinitionAsync(
+                    v2crd,
+                    TimeSpan.FromMinutes(1),
+                    default).ConfigureAwait(false);
+
+                installedCrd = await client.WaitForCustomResourceDefinitionEstablishedAsync(
+                    installedCrd,
+                    TimeSpan.FromMinutes(1),
+                    default).ConfigureAwait(false);
+
+                Assert.Equal("0.2", installedCrd.Metadata.Labels[Annotations.Version]);
+
+                // Re-read to be sure.
+                installedCrd = await client.TryReadCustomResourceDefinitionAsync(name, default);
+                Assert.Equal("0.2", installedCrd.Metadata.Labels[Annotations.Version]);
+
+                await client.DeleteCustomResourceDefinitionAsync(
+                    installedCrd,
+                    TimeSpan.FromMinutes(1),
+                    default).ConfigureAwait(false);
             }
         }
 

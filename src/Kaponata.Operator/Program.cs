@@ -2,11 +2,18 @@
 // Copyright (c) Quamotion bv. All rights reserved.
 // </copyright>
 
+using k8s;
+using Kaponata.Operator.Kubernetes;
+using Kaponata.Operator.Kubernetes.Polyfill;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System.CommandLine;
+using System.CommandLine.Builder;
+using System.CommandLine.Hosting;
 using System.CommandLine.Invocation;
 using System.CommandLine.IO;
+using System.CommandLine.Parsing;
 using System.Threading.Tasks;
 
 namespace Kaponata.Operator
@@ -72,10 +79,31 @@ namespace Kaponata.Operator
         /// </returns>
         public Task<int> MainAsync(string[] args)
         {
-            // Create a root command with some options
+            // Create a root command with default options
             var rootCommand = new RootCommand();
             rootCommand.Handler = CommandHandler.Create(() => CreateHostBuilder(args).Build().RunAsync());
-            return rootCommand.InvokeAsync(args, this.console);
+
+            // The "install-extensions" command will install the Kubernetes extensions used by Kaponata
+            var installExtensionsCommand = new Command("install-extensions", "Installs Kubernetes extensions used by Kaponata into your cluster.");
+            installExtensionsCommand.Handler = CommandHandler.Create<IHost>(ExtensionsInstaller.RunAsync);
+            rootCommand.AddCommand(installExtensionsCommand);
+
+            return new CommandLineBuilder(rootCommand)
+                .UseHost((host) =>
+                {
+                    host.ConfigureServices(
+                        (services) =>
+                        {
+                            services.AddSingleton<KubernetesClientConfiguration>(KubernetesClientConfiguration.BuildDefaultConfig());
+                            services.AddScoped<IKubernetesProtocol, KubernetesProtocol>();
+                            services.AddScoped<KubernetesClient>();
+                            services.AddLogging();
+                            services.AddScoped<ExtensionsInstaller>();
+                        });
+                })
+                .UseDefaults()
+                .Build()
+                .InvokeAsync(args, this.console);
         }
     }
 }

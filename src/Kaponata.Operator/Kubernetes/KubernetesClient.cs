@@ -6,6 +6,7 @@ using k8s;
 using k8s.Models;
 using Kaponata.Operator.Kubernetes.Polyfill;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Rest;
 using Microsoft.Rest.Serialization;
 using System;
@@ -46,6 +47,18 @@ namespace Kaponata.Operator.Kubernetes
             this.loggerFactory = loggerFactory ?? throw new ArgumentNullException(nameof(loggerFactory));
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="KubernetesClient"/> class.
+        /// </summary>
+        /// <remarks>
+        /// This constructor is intended for unit testing purposes only.
+        /// </remarks>
+        protected KubernetesClient()
+        {
+            this.logger = NullLogger<KubernetesClient>.Instance;
+            this.loggerFactory = NullLoggerFactory.Instance;
+        }
+
         private delegate Task<WatchExitReason> WatchObjectAsyncDelegate<T>(
             T value,
             Func<WatchEventType, T, Task<WatchResult>> onEvent,
@@ -67,7 +80,7 @@ namespace Kaponata.Operator.Kubernetes
             catch (HttpOperationException ex)
             when (ex.Response != null
                 && ex.Response.Content != null
-                && (ex.Response.StatusCode == HttpStatusCode.UnprocessableEntity || ex.Response.StatusCode == HttpStatusCode.Conflict))
+                && (ex.Response.StatusCode == HttpStatusCode.UnprocessableEntity || ex.Response.StatusCode == HttpStatusCode.Conflict || ex.Response.StatusCode == HttpStatusCode.BadRequest))
             {
                 // We should get a V1Status with a detailed error message, extract that error message.
                 var status = SafeJsonConvert.DeserializeObject<V1Status>(ex.Response.Content);
