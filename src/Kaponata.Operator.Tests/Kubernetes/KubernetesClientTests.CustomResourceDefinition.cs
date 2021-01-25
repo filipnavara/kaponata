@@ -662,6 +662,34 @@ namespace Kaponata.Operator.Tests.Kubernetes
                 // Simulate a first callback where nothing changes. The task keeps listening.
                 Assert.Equal(WatchResult.Continue, await callback(WatchEventType.Modified, crd).ConfigureAwait(false));
 
+                // Another condition is present, and True
+                crd.Status = new V1CustomResourceDefinitionStatus()
+                {
+                    Conditions = new V1CustomResourceDefinitionCondition[]
+                    {
+                        new V1CustomResourceDefinitionCondition()
+                        {
+                            Type = "Terminating",
+                            Status = "True",
+                        },
+                    },
+                };
+                Assert.Equal(WatchResult.Continue, await callback(WatchEventType.Modified, crd).ConfigureAwait(false));
+
+                // The established condition is present, but false.
+                crd.Status = new V1CustomResourceDefinitionStatus()
+                {
+                    Conditions = new V1CustomResourceDefinitionCondition[]
+                    {
+                        new V1CustomResourceDefinitionCondition()
+                        {
+                            Type = "Established",
+                            Status = "False",
+                        },
+                    },
+                };
+                Assert.Equal(WatchResult.Continue, await callback(WatchEventType.Modified, crd).ConfigureAwait(false));
+
                 // The callback signals to stop watching when the CRD is established.
                 crd.Status = new V1CustomResourceDefinitionStatus()
                 {

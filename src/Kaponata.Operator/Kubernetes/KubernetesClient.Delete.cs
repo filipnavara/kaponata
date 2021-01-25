@@ -5,6 +5,7 @@
 using k8s;
 using k8s.Models;
 using Kaponata.Operator.Kubernetes.Polyfill;
+using Microsoft.Rest;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -49,6 +50,16 @@ namespace Kaponata.Operator.Kubernetes
             if (value == null)
             {
                 throw new ArgumentNullException(nameof(value));
+            }
+
+            if (value.Metadata?.Name == null)
+            {
+                throw new ValidationException(ValidationRules.CannotBeNull, "value.Metadata.Name");
+            }
+
+            if (value.Metadata?.NamespaceProperty == null)
+            {
+                throw new ValidationException(ValidationRules.CannotBeNull, "value.Metadata.NamespaceProperty");
             }
 
             CancellationTokenSource cts = new CancellationTokenSource();

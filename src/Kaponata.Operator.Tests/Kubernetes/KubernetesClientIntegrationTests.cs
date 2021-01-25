@@ -7,9 +7,11 @@ using k8s;
 using k8s.Models;
 using Kaponata.Operator.Kubernetes;
 using Kaponata.Operator.Kubernetes.Polyfill;
+using Kaponata.Operator.Models;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
@@ -44,11 +46,7 @@ namespace Kaponata.Operator.Tests.Kubernetes
         [Trait("TestCategory", "IntegrationTest")]
         public async Task WaitForPodRunning_IntegrationTest_Async()
         {
-            using (var kubernetes = new KubernetesProtocol(
-                KubernetesClientConfiguration.BuildDefaultConfig(),
-                this.loggerFactory.CreateLogger<KubernetesProtocol>(),
-                this.loggerFactory))
-            using (var client = new KubernetesClient(kubernetes, this.loggerFactory.CreateLogger<KubernetesClient>(), this.loggerFactory))
+            using (var client = this.CreateKubernetesClient())
             {
                 V1Pod pod;
 
@@ -93,11 +91,7 @@ namespace Kaponata.Operator.Tests.Kubernetes
         {
             string name = $"{FormatName(nameof(this.CreateDeleteCrd_IntegrationTest_Async))}s.kaponata.io";
 
-            using (var kubernetes = new KubernetesProtocol(
-                KubernetesClientConfiguration.BuildDefaultConfig(),
-                this.loggerFactory.CreateLogger<KubernetesProtocol>(),
-                this.loggerFactory))
-            using (var client = new KubernetesClient(kubernetes, this.loggerFactory.CreateLogger<KubernetesClient>(), this.loggerFactory))
+            using (var client = this.CreateKubernetesClient())
             {
                 V1CustomResourceDefinition crd;
 
@@ -157,11 +151,7 @@ namespace Kaponata.Operator.Tests.Kubernetes
         {
             string name = $"{FormatName(nameof(this.InstallUpgradeDeleteCrd_IntegrationTest_Async))}s.kaponata.io";
 
-            using (var kubernetes = new KubernetesProtocol(
-                KubernetesClientConfiguration.BuildDefaultConfig(),
-                this.loggerFactory.CreateLogger<KubernetesProtocol>(),
-                this.loggerFactory))
-            using (var client = new KubernetesClient(kubernetes, this.loggerFactory.CreateLogger<KubernetesClient>(), this.loggerFactory))
+            using (var client = this.CreateKubernetesClient())
             {
                 var v1crd = new V1CustomResourceDefinition()
                 {
@@ -280,6 +270,104 @@ namespace Kaponata.Operator.Tests.Kubernetes
             }
         }
 
+        /// <summary>
+        /// Runs an integration test which creates and deletes a <see cref="MobileDevice"/> object.
+        /// </summary>
+        /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
+        [Fact]
+        [Trait("TestCategory", "IntegrationTest")]
+        public async Task CreateDeleteMobileDevice_Async()
+        {
+            string name = FormatName(nameof(this.CreateDeleteMobileDevice_Async));
+
+            using (var client = this.CreateKubernetesClient())
+            {
+                MobileDevice currentDevice = null;
+
+                if ((currentDevice = await client.TryReadMobileDeviceAsync("default", name, default).ConfigureAwait(false)) != null)
+                {
+                    await client.DeleteMobileDeviceAsync(currentDevice, TimeSpan.FromSeconds(100), default).ConfigureAwait(false);
+                }
+
+                var device = new MobileDevice()
+                {
+                    Metadata = new V1ObjectMeta()
+                    {
+                        Name = name,
+                        NamespaceProperty = "default",
+                    },
+                };
+
+                var newDevice = await client.CreateMobileDeviceAsync(device, default).ConfigureAwait(false);
+                Assert.NotNull(newDevice);
+
+                var readDevice = await client.TryReadMobileDeviceAsync("default", name, default).ConfigureAwait(false);
+                Assert.NotNull(readDevice);
+
+                await client.DeleteMobileDeviceAsync(newDevice, TimeSpan.FromMinutes(1), default).ConfigureAwait(false);
+
+                Assert.Null(await client.TryReadMobileDeviceAsync("default", name, default).ConfigureAwait(false));
+            }
+        }
+
+        /// <summary>
+        /// Runs an integration test which watches a <see cref="MobileDevice"/>.
+        /// </summary>
+        /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
+        [Fact]
+        [Trait("TestCategory", "IntegrationTest")]
+        public async Task WatchMobileDevice_Async()
+        {
+            string name = FormatName(nameof(this.WatchMobileDevice_Async));
+
+            using (var client = this.CreateKubernetesClient())
+            {
+                Collection<(WatchEventType, MobileDevice)> watchEvents = new Collection<(WatchEventType, MobileDevice)>();
+                MobileDevice currentDevice = null;
+
+                if ((currentDevice = await client.TryReadMobileDeviceAsync("default", name, default).ConfigureAwait(false)) != null)
+                {
+                    await client.DeleteMobileDeviceAsync(currentDevice, TimeSpan.FromSeconds(100), default).ConfigureAwait(false);
+                }
+
+                var watch = client.WatchMobileDeviceAsync(
+                    new MobileDevice() { Metadata = new V1ObjectMeta() { NamespaceProperty = "default", Name = name } },
+                    (type, device) =>
+                    {
+                        watchEvents.Add((type, device));
+
+                        return Task.FromResult(type == WatchEventType.Deleted ? WatchResult.Stop : WatchResult.Continue);
+                    },
+                    default);
+
+                var device = new MobileDevice()
+                {
+                    Metadata = new V1ObjectMeta()
+                    {
+                        Name = name,
+                        NamespaceProperty = "default",
+                    },
+                };
+
+                await client.CreateMobileDeviceAsync(device, default).ConfigureAwait(false);
+                await client.DeleteMobileDeviceAsync(device, TimeSpan.FromMinutes(1), default).ConfigureAwait(false);
+                await watch.ConfigureAwait(false);
+
+                Assert.Collection(
+                    watchEvents,
+                    e =>
+                    {
+                        Assert.Equal(WatchEventType.Added, e.Item1);
+                        Assert.NotNull(e.Item2);
+                    },
+                    e =>
+                    {
+                        Assert.Equal(WatchEventType.Deleted, e.Item1);
+                        Assert.NotNull(e.Item2);
+                    });
+            }
+        }
+
         private static string FormatNameCamelCase(string value)
         {
             return value.Replace("_", "-");
@@ -288,6 +376,17 @@ namespace Kaponata.Operator.Tests.Kubernetes
         private static string FormatName(string value)
         {
             return value.ToLower().Replace("_", "-");
+        }
+
+        private KubernetesClient CreateKubernetesClient()
+        {
+            return new KubernetesClient(
+                new KubernetesProtocol(
+                    KubernetesClientConfiguration.BuildDefaultConfig(),
+                    this.loggerFactory.CreateLogger<KubernetesProtocol>(),
+                    this.loggerFactory),
+                this.loggerFactory.CreateLogger<KubernetesClient>(),
+                this.loggerFactory);
         }
     }
 }

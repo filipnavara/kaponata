@@ -21,24 +21,6 @@ namespace Kaponata.Operator.Kubernetes.Polyfill
     public partial class KubernetesProtocol
     {
         private delegate
-            Task<HttpOperationResponse<TList>> ListNamespacedObjectWithHttpMessagesAsync<TObject, TList>(
-            string namespaceParameter,
-            bool? allowWatchBookmarks = null,
-            string continueParameter = null,
-            string fieldSelector = null,
-            string labelSelector = null,
-            int? limit = null,
-            string resourceVersion = null,
-            string resourceVersionMatch = null,
-            int? timeoutSeconds = null,
-            bool? watch = null,
-            string pretty = null,
-            Dictionary<string, List<string>> customHeaders = null,
-            CancellationToken cancellationToken = default)
-            where TObject : IKubernetesObject<V1ObjectMeta>
-            where TList : IItems<TObject>;
-
-        private delegate
             Task<HttpOperationResponse<TList>> ListObjectWithHttpMessagesAsync<TObject, TList>(
             bool? allowWatchBookmarks = null,
             string continueParameter = null,
@@ -81,7 +63,8 @@ namespace Kaponata.Operator.Kubernetes.Polyfill
                 cancellationToken);
         }
 
-        private async Task<WatchExitReason> WatchNamespacedObjectAsync<TObject, TList>(
+        /// <inheritdoc/>
+        public async Task<WatchExitReason> WatchNamespacedObjectAsync<TObject, TList>(
             TObject value,
             ListNamespacedObjectWithHttpMessagesAsync<TObject, TList> listOperation,
             Func<WatchEventType, TObject, Task<WatchResult>> eventHandler,

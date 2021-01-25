@@ -413,6 +413,7 @@ namespace Kaponata.Operator.Tests.Kubernetes
                     Metadata = new V1ObjectMeta()
                     {
                         Name = "my-pod",
+                        NamespaceProperty = "default",
                     },
                     Status = new V1PodStatus()
                     {
@@ -467,6 +468,7 @@ namespace Kaponata.Operator.Tests.Kubernetes
                     Metadata = new V1ObjectMeta()
                     {
                         Name = "my-pod",
+                        NamespaceProperty = "default",
                     },
                     Status = new V1PodStatus()
                     {
@@ -521,6 +523,7 @@ namespace Kaponata.Operator.Tests.Kubernetes
                     Metadata = new V1ObjectMeta()
                     {
                         Name = "my-pod",
+                        NamespaceProperty = "default",
                     },
                     Status = new V1PodStatus()
                     {

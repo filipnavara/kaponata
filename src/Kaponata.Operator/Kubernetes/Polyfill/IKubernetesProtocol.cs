@@ -5,7 +5,6 @@
 using k8s;
 using k8s.Models;
 using System;
-using System.IO;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -71,5 +70,42 @@ namespace Kaponata.Operator.Kubernetes.Polyfill
             V1CustomResourceDefinition crd,
             Func<WatchEventType, V1CustomResourceDefinition, Task<WatchResult>> eventHandler,
             CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Asynchronously watches a namespaced object.
+        /// </summary>
+        /// <typeparam name="TObject">
+        /// The type of the object to watch.
+        /// </typeparam>
+        /// <typeparam name="TList">
+        /// The type of a list of <typeparamref name="TObject"/> objects.
+        /// </typeparam>
+        /// <param name="value">
+        /// The object to watch.
+        /// </param>
+        /// <param name="listOperation">
+        /// A delegate which lists all objects.
+        /// </param>
+        /// <param name="eventHandler">
+        /// An handler which processes a watch event, and lets the watcher know whether
+        /// to continue watching or not.
+        /// </param>
+        /// <param name="cancellationToken">
+        /// A <see cref="CancellationToken"/> which can be used to cancel the asynchronous
+        /// operation.
+        /// </param>
+        /// <returns>
+        /// A <see cref="Task"/> which represents the watch operation. The task completes
+        /// when the watcher stops watching for events. The <see cref="WatchExitReason"/>
+        /// return value describes why the watcher stopped. The task errors if the watch
+        /// loop errors.
+        /// </returns>
+        Task<WatchExitReason> WatchNamespacedObjectAsync<TObject, TList>(
+            TObject value,
+            ListNamespacedObjectWithHttpMessagesAsync<TObject, TList> listOperation,
+            Func<WatchEventType, TObject, Task<WatchResult>> eventHandler,
+            CancellationToken cancellationToken)
+            where TObject : IKubernetesObject<V1ObjectMeta>
+            where TList : IItems<TObject>;
     }
 }
