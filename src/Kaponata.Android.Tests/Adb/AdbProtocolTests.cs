@@ -97,7 +97,7 @@ namespace Kaponata.Android.Tests.Adb
             await using var protocol = new AdbProtocol(stream, ownsStream: true, NullLogger<AdbProtocol>.Instance);
 
             await Assert.ThrowsAsync<ArgumentNullException>(async () => await protocol.WriteAsync(string.Empty, default).ConfigureAwait(false));
-            await Assert.ThrowsAsync<ArgumentNullException>(async () => await protocol.WriteAsync(null, default).ConfigureAwait(false));
+            await Assert.ThrowsAsync<ArgumentNullException>(async () => await protocol.WriteAsync((string)null, default).ConfigureAwait(false));
         }
 
         /// <summary>
@@ -302,6 +302,106 @@ namespace Kaponata.Android.Tests.Adb
 
             var protocol = protocolMock.Object;
             protocol.EnsureValidAdbResponse(AdbResponse.Success);
+        }
+
+        /// <summary>
+        /// The <see cref="AdbProtocol.SetDeviceAsync(DeviceData, CancellationToken)"/> sends the set device command to the <c>ADB</c> server.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="Task"/> which represents the asynchronous test.
+        /// </returns>
+        [Fact]
+        public async Task SetDeviceAsync_SendsDeviceCommand_Async()
+        {
+            var protocolMock = new Mock<AdbProtocol>()
+            {
+                CallBase = true,
+            };
+
+            protocolMock.Setup(p => p.WriteAsync("host:transport:123", default))
+                    .Verifiable();
+            protocolMock
+                    .Setup(p => p.ReadAdbResponseAsync(default))
+                    .ReturnsAsync(AdbResponse.Success);
+
+            var protocol = protocolMock.Object;
+            await protocol.SetDeviceAsync(
+                new DeviceData() { Serial = "123" },
+                default).ConfigureAwait(false);
+
+            protocolMock.Verify();
+        }
+
+        /// <summary>
+        /// The <see cref="AdbProtocol.SetDeviceAsync(DeviceData, CancellationToken)"/> throws exception when an invalid serial is provided.
+        /// </summary>
+        /// <param name="serial">
+        /// An invalid serial.
+        /// </param>
+        /// <returns>
+        /// A <see cref="Task"/> which represents the asynchronous test.
+        /// </returns>
+        [Theory]
+        [InlineData("")]
+        [InlineData(null)]
+        public async Task SetDeviceAsync_ThrowsOnInvalidSerial_Async(string serial)
+        {
+            var protocolMock = new Mock<AdbProtocol>()
+            {
+                CallBase = true,
+            };
+
+            var protocol = protocolMock.Object;
+            await Assert.ThrowsAsync<ArgumentException>(async () => await protocol.SetDeviceAsync(new DeviceData() { Serial = serial }, default).ConfigureAwait(false));
+        }
+
+        /// <summary>
+        /// The <see cref="AdbProtocol.SetDeviceAsync(DeviceData, CancellationToken)"/> throws exception when invalid device data is provided.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="Task"/> which represents the asynchronous test.
+        /// </returns>
+        [Fact]
+        public async Task SetDeviceAsync_ThrowsOnInvalidDeviceData_Async()
+        {
+            var protocolMock = new Mock<AdbProtocol>()
+            {
+                CallBase = true,
+            };
+
+            var protocol = protocolMock.Object;
+            await Assert.ThrowsAsync<ArgumentNullException>(async () => await protocol.SetDeviceAsync(null, default).ConfigureAwait(false));
+        }
+
+        /// <summary>
+        /// The <see cref="AdbProtocol.SetDeviceAsync(DeviceData, CancellationToken)"/> throws exception the <c>ADB</c> server responds with FAIL.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="Task"/> which represents the asynchronous test.
+        /// </returns>
+        [Fact]
+        public async Task SetDeviceAsync_ThrowsWhenSetDeviceFails_Async()
+        {
+            var protocolMock = new Mock<AdbProtocol>()
+            {
+                CallBase = true,
+            };
+
+            protocolMock.Setup(p => p.WriteAsync("host:transport:123", default))
+                    .Verifiable();
+            protocolMock
+                .Setup(p => p.ReadAdbResponseAsync(default))
+                .ReturnsAsync(new AdbResponse()
+                {
+                    Status = AdbResponseStatus.FAIL,
+                    Message = "Aiai",
+                })
+                .Verifiable();
+
+            var protocol = protocolMock.Object;
+            var exception = await Assert.ThrowsAsync<InvalidDataException>(async () => await protocol.SetDeviceAsync(new DeviceData() { Serial = "123" }, default).ConfigureAwait(false));
+            Assert.Equal("Aiai", exception.Message);
+            protocolMock.Verify();
         }
     }
 }
