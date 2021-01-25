@@ -1,0 +1,70 @@
+﻿apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  # name must match the spec fields below, and be in the form: <plural>.<group>
+  name: mobiledevices.kaponata.io
+  labels:
+    app.kubernetes.io/managed-by: Kaponata
+    # Set this to the version number of the last commit which modified this file. It's used by the
+    # operator to determine whether the CRD should be reinstalled or not.
+    # Use the following command to determine that version:
+    # nbgv get-version $( git rev-list -1 HEAD .\stylecop.json ) -v NuGetPackageVersion
+    app.kubernetes.io/version: "0.1.69"
+spec:
+  # group name to use for REST API: /apis/<group>/<version>
+  group: kaponata.io
+  # list of versions supported by this CustomResourceDefinition
+  versions:
+    - name: v1alpha1
+      # Each version can be enabled/disabled by Served flag.
+      served: true
+      # One and only one version must be marked as the storage version.
+      storage: true
+      schema:
+        openAPIV3Schema:
+          description: |
+            A MobileDevice represents a physical iOS or Android devices connected to one of the nodes
+            in your Kubernetes cluster, an emulator running inside your Kubernets cluster, or a
+            cloud device which is remotely connected to your cluster.
+            The name of the MobileDevice object is the serial number or UDID of the device.
+            The kubernetes.io/os an kubernets.io/arch labels contain the operating system (for example,
+            iOS or Android) running on the device and the architecture (for example, arm64 or amd64)
+            of the device.
+          type: object
+          properties:
+            spec:
+              type: object
+              properties:
+                owner:
+                  type: string
+                  description: |
+                    The name of the pod which owns this device. This is usually the pod which hosts the
+                    usbmuxd or adb instance to which the device is connected.
+            status:
+              type: object
+              properties:
+                vncHost:
+                  type: string
+                  description: |
+                    When available, the name of a service which hosts a VNC server which allows users to
+                    remotely control this device.
+      # Shown in kubectl get
+      additionalPrinterColumns:
+      - name: Platform
+        type: string
+        jsonPath: .spec.platform
+      - name: Owner
+        type: string
+        jsonPath: .spec.owner
+  # either Namespaced or Cluster
+  scope: Namespaced
+  names:
+    # plural name to be used in the URL: /apis/<group>/<version>/<plural>
+    plural: mobiledevices
+    # singular name to be used as an alias on the CLI and for display
+    singular: mobiledevice
+    # kind is normally the CamelCased singular type. Your resource manifests use this.
+    kind: MobileDevice
+    # shortNames allow shorter string to match your resource on the CLI
+    shortNames:
+    - device
