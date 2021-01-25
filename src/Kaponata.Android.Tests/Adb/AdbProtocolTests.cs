@@ -85,6 +85,31 @@ namespace Kaponata.Android.Tests.Adb
         }
 
         /// <summary>
+        /// The <see cref="AdbProtocol.WriteAsync(string, System.Threading.CancellationToken)"/> sends the given data to the <c>ADB</c> server.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="Task"/> which represents the asynchronous test.
+        /// </returns>
+        [Fact]
+        public async Task WriteAsync_SendDataStream_Async()
+        {
+            await using MemoryStream inputStream = new MemoryStream();
+            using var writer = new StreamWriter(inputStream);
+            await writer.WriteAsync("Tester").ConfigureAwait(false);
+            await writer.FlushAsync().ConfigureAwait(false);
+            inputStream.Position = 0;
+
+            await using MemoryStream stream = new MemoryStream();
+            await using var protocol = new AdbProtocol(stream, ownsStream: true, NullLogger<AdbProtocol>.Instance);
+
+            await protocol.WriteAsync(inputStream, default).ConfigureAwait(false);
+
+            stream.Position = 0;
+            using var reader = new StreamReader(stream);
+            Assert.Equal("Tester", await reader.ReadToEndAsync().ConfigureAwait(false));
+        }
+
+        /// <summary>
         /// The <see cref="AdbProtocol.WriteAsync(string, System.Threading.CancellationToken)"/> throws an exception when the message is invalid.
         /// </summary>
         /// <returns>
@@ -98,6 +123,21 @@ namespace Kaponata.Android.Tests.Adb
 
             await Assert.ThrowsAsync<ArgumentNullException>(async () => await protocol.WriteAsync(string.Empty, default).ConfigureAwait(false));
             await Assert.ThrowsAsync<ArgumentNullException>(async () => await protocol.WriteAsync((string)null, default).ConfigureAwait(false));
+        }
+
+        /// <summary>
+        /// The <see cref="AdbProtocol.WriteAsync(Stream, CancellationToken)"/> throws an exception when the message is invalid.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="Task"/> which represents the asynchronous test.
+        /// </returns>
+        [Fact]
+        public async Task WriteAsync_ThrowsOnInvalidStream_Async()
+        {
+            await using MemoryStream stream = new MemoryStream();
+            await using var protocol = new AdbProtocol(stream, ownsStream: true, NullLogger<AdbProtocol>.Instance);
+
+            await Assert.ThrowsAsync<ArgumentNullException>(async () => await protocol.WriteAsync((Stream)null, default).ConfigureAwait(false));
         }
 
         /// <summary>
@@ -353,6 +393,27 @@ namespace Kaponata.Android.Tests.Adb
 
             var protocol = protocolMock.Object;
             await Assert.ThrowsAsync<ArgumentException>(async () => await protocol.SetDeviceAsync(new DeviceData() { Serial = serial }, default).ConfigureAwait(false));
+        }
+
+        /// <summary>
+        /// The <see cref="AdbProtocol.ReadStringAsync(CancellationToken)"/> reads out a string from the <c>ADB</c> server.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="Task"/> which represents the asynchronous test.
+        /// </returns>
+        [Fact]
+        public async Task ReadString_ReadString_Async()
+        {
+            await using MemoryStream stream = new MemoryStream();
+            await using var protocol = new AdbProtocol(stream, ownsStream: true, NullLogger<AdbProtocol>.Instance);
+            using var writer = new StreamWriter(stream);
+            await writer.WriteAsync("Tester").ConfigureAwait(false);
+            await writer.FlushAsync().ConfigureAwait(false);
+            stream.Position = 0;
+
+            var message = await protocol.ReadStringAsync(default).ConfigureAwait(false);
+
+            Assert.Equal("Tester", message);
         }
 
         /// <summary>
