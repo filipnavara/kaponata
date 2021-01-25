@@ -80,7 +80,7 @@ namespace Kaponata.Operator.Kubernetes
             catch (HttpOperationException ex)
             when (ex.Response != null
                 && ex.Response.Content != null
-                && (ex.Response.StatusCode == HttpStatusCode.UnprocessableEntity || ex.Response.StatusCode == HttpStatusCode.Conflict))
+                && (ex.Response.StatusCode == HttpStatusCode.UnprocessableEntity || ex.Response.StatusCode == HttpStatusCode.Conflict || ex.Response.StatusCode == HttpStatusCode.BadRequest))
             {
                 // We should get a V1Status with a detailed error message, extract that error message.
                 var status = SafeJsonConvert.DeserializeObject<V1Status>(ex.Response.Content);
