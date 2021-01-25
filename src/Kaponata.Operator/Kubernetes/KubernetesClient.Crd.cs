@@ -109,7 +109,7 @@ namespace Kaponata.Operator.Kubernetes
                 throw new ValidationException(ValidationRules.CannotBeNull, "value.Metadata.Name");
             }
 
-            if (crd.Metadata?.Labels == null || !crd.Metadata.Labels.ContainsKey(Annotations.Version))
+            if (crd.Metadata.Labels == null || !crd.Metadata.Labels.ContainsKey(Annotations.Version))
             {
                 throw new ValidationException(ValidationRules.CannotBeNull, $"value.Metadata.Labels[{Annotations.Version}]");
             }
