@@ -53,6 +53,26 @@ namespace Kaponata.iOS.Tests.Muxer
         }
 
         /// <summary>
+        /// <see cref="MuxerClient.TryConnectToMuxerAsync(CancellationToken)"/> returns a <see cref="MuxerProtocol"/> if
+        /// <see cref="MuxerSocketLocator.ConnectToMuxerAsync(CancellationToken)"/> returns a <see cref="Stream"/>.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="Task"/> which represents the asynchronous test.
+        /// </returns>
+        [Fact]
+        public async Task TryConnectToMuxerAsync_ReturnsMuxerProtocol_Async()
+        {
+            var muxerStream = Mock.Of<Stream>();
+
+            var locator = new Mock<MuxerSocketLocator>();
+            locator.Setup(l => l.ConnectToMuxerAsync(default)).ReturnsAsync(muxerStream);
+
+            var client = new MuxerClient(NullLogger<MuxerClient>.Instance, NullLoggerFactory.Instance, locator.Object);
+            var protocol = await client.TryConnectToMuxerAsync(default).ConfigureAwait(false);
+            Assert.NotNull(protocol);
+        }
+
+        /// <summary>
         /// <see cref="MuxerClient.ListDevicesAsync(CancellationToken)"/> returns an empty list if the usbmuxd
         /// socket is not available.
         /// </summary>
@@ -78,7 +98,7 @@ namespace Kaponata.iOS.Tests.Muxer
         /// A <see cref="Task"/> which represents the asynchronous test.
         /// </returns>
         [Fact]
-        public async Task ListDevicesAsync_ReturnsDeviceList_Async()
+        public async Task ListDevicesAsync_WithWifiDevices_ReturnsDeviceList_Async()
         {
             var protocol = new Mock<MuxerProtocol>(MockBehavior.Strict);
             protocol
@@ -117,6 +137,114 @@ namespace Kaponata.iOS.Tests.Muxer
                     Assert.Equal(2, device.DeviceID);
                     Assert.Equal(IPAddress.Parse("192.168.10.239"), device.IPAddress);
                     Assert.Equal("cccccccccccccccccccccccccccccccccccccccc", device.Udid);
+                });
+
+            protocol.Verify();
+        }
+
+        /// <summary>
+        /// The <see cref="MuxerClient.ListDevicesAsync(CancellationToken)"/> method returns a list of devices
+        /// which are currently connected to the host.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="Task"/> which represents the asynchronous test.
+        /// </returns>
+        [Fact]
+        public async Task ListDevicesAsync_WitLocalDevices_ReturnsDeviceList_Async()
+        {
+            var protocol = new Mock<MuxerProtocol>(MockBehavior.Strict);
+            protocol
+                .Setup(p => p.WriteMessageAsync(It.IsAny<MuxerMessage>(), default))
+                .Callback<MuxerMessage, CancellationToken>((message, ct) =>
+                {
+                    Assert.Equal(MuxerMessageType.ListDevices, message.MessageType);
+                })
+                .Returns(Task.CompletedTask)
+                .Verifiable();
+
+            protocol
+                .Setup(p => p.DisposeAsync())
+                .Returns(ValueTask.CompletedTask)
+                .Verifiable();
+
+            protocol
+                .Setup(p => p.ReadMessageAsync(default))
+                .ReturnsAsync(
+                    DeviceListMessage.Read(
+                        (NSDictionary)PropertyListParser.Parse("Muxer/devicelist.xml")));
+
+            var clientMock = new Mock<MuxerClient>(NullLogger<MuxerClient>.Instance, NullLoggerFactory.Instance)
+            {
+                CallBase = true,
+            };
+            clientMock.Setup(c => c.TryConnectToMuxerAsync(default)).ReturnsAsync(protocol.Object);
+
+            var client = clientMock.Object;
+            var result = await client.ListDevicesAsync(default).ConfigureAwait(false);
+            Assert.Collection(
+                result,
+                device =>
+                {
+                    Assert.Equal(MuxerConnectionType.USB, device.ConnectionType);
+                    Assert.Equal(5, device.DeviceID);
+                    Assert.Equal("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", device.Udid);
+                },
+                device =>
+                {
+                    Assert.Equal(MuxerConnectionType.USB, device.ConnectionType);
+                    Assert.Equal(6, device.DeviceID);
+                    Assert.Equal("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb", device.Udid);
+                });
+
+            protocol.Verify();
+        }
+
+        /// <summary>
+        /// The <see cref="MuxerClient.ListDevicesAsync(CancellationToken)"/> method returns a list of devices
+        /// which are currently connected to the host.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="Task"/> which represents the asynchronous test.
+        /// </returns>
+        [Fact]
+        public async Task ListDevicesAsync_WithNewUdid_ReturnsDeviceList_Async()
+        {
+            var protocol = new Mock<MuxerProtocol>(MockBehavior.Strict);
+            protocol
+                .Setup(p => p.WriteMessageAsync(It.IsAny<MuxerMessage>(), default))
+                .Callback<MuxerMessage, CancellationToken>((message, ct) =>
+                {
+                    Assert.Equal(MuxerMessageType.ListDevices, message.MessageType);
+                })
+                .Returns(Task.CompletedTask)
+                .Verifiable();
+
+            protocol
+                .Setup(p => p.DisposeAsync())
+                .Returns(ValueTask.CompletedTask)
+                .Verifiable();
+
+            protocol
+                .Setup(p => p.ReadMessageAsync(default))
+                .ReturnsAsync(
+                    DeviceListMessage.Read(
+                        (NSDictionary)PropertyListParser.Parse("Muxer/devicelist-udid2.xml")));
+
+            var clientMock = new Mock<MuxerClient>(NullLogger<MuxerClient>.Instance, NullLoggerFactory.Instance)
+            {
+                CallBase = true,
+            };
+            clientMock.Setup(c => c.TryConnectToMuxerAsync(default)).ReturnsAsync(protocol.Object);
+
+            var client = clientMock.Object;
+            var result = await client.ListDevicesAsync(default).ConfigureAwait(false);
+            Assert.Collection(
+                result,
+                device =>
+                {
+                    Assert.Equal(MuxerConnectionType.USB, device.ConnectionType);
+                    Assert.Equal(5, device.DeviceID);
+                    Assert.Equal("00000000-0000000000000000", device.Udid);
                 });
 
             protocol.Verify();
@@ -426,6 +554,55 @@ namespace Kaponata.iOS.Tests.Muxer
                     default).ConfigureAwait(false));
 
             Assert.Equal(2, queue.Count);
+            protocol.Verify();
+        }
+
+        /// <summary>
+        /// <see cref="MuxerClient.ListenAsync"/> throws an <see cref="InvalidDataException"/> if an unexpected message
+        /// is received.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="Task"/> which represents the asynchrounous test.
+        /// </returns>
+        [Fact]
+        public async Task ListenAsync_ThrowsOnUnexceptedMessage_Async()
+        {
+            var queue = new Queue<MuxerMessage>(
+                new MuxerMessage[]
+                {
+                    new ResultMessage() { Number = MuxerError.Success },
+                    new ResultMessage() { Number = MuxerError.Success },
+                });
+
+            var protocol = new Mock<MuxerProtocol>();
+            protocol.Setup(p => p.WriteMessageAsync(It.IsAny<MuxerMessage>(), default))
+                .Returns(Task.CompletedTask)
+                .Callback<MuxerMessage, CancellationToken>((message, ct) =>
+                {
+                    var listenRequest = Assert.IsType<ListenMessage>(message);
+                })
+                .Verifiable();
+
+            protocol
+                .Setup(p => p.ReadMessageAsync(default))
+                .ReturnsAsync(queue.Dequeue);
+
+            var clientMock = new Mock<MuxerClient>(NullLogger<MuxerClient>.Instance, NullLoggerFactory.Instance)
+            {
+                CallBase = true,
+            };
+
+            clientMock.Setup(c => c.TryConnectToMuxerAsync(default)).ReturnsAsync(protocol.Object);
+            var client = clientMock.Object;
+
+            await Assert.ThrowsAsync<InvalidDataException>(
+                () => client.ListenAsync(
+                    (onAttached) => { return Task.FromResult(MuxerListenAction.ContinueListening); },
+                    (onDetached) => { return Task.FromResult(MuxerListenAction.ContinueListening); },
+                    (onPaired) => { return Task.FromResult(MuxerListenAction.ContinueListening); },
+                    default)).ConfigureAwait(false);
+
+            Assert.Empty(queue);
             protocol.Verify();
         }
     }
