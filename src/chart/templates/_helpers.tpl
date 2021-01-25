@@ -38,6 +38,20 @@ Operator: Full Name
 {{- end }}
 
 {{/*
+Operator: Cluster Role Full Name
+*/}}
+{{- define "operator.clusterRole.fullname" -}}
+{{- printf "%s-operator-clusterrole" (include "kaponata.fullname" .) | trunc 63 | trimSuffix "-" }}
+{{- end }}
+
+{{/*
+Operator: Cluster Role Binding Full Name
+*/}}
+{{- define "operator.clusterRoleBinding.fullname" -}}
+{{- printf "%s-operator-clusterrolebinding" (include "kaponata.fullname" .) | trunc 63 | trimSuffix "-" }}
+{{- end }}
+
+{{/*
 Operator: Role Full Name
 */}}
 {{- define "operator.role.fullname" -}}
