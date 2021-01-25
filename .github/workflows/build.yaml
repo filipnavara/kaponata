@@ -103,6 +103,14 @@ jobs:
           make
         working-directory: src/Kaponata.Operator/
 
+      - name: Package API server
+        run: |
+          set -e
+
+          dotnet publish -c Release
+          make
+        working-directory: src/Kaponata.Api/
+
       - name: Package UI
         run: |
           set -e
