@@ -13,6 +13,7 @@ jobs:
         image:
         - iproxy
         - usbmuxd
+        - adb
     steps:
       - uses: actions/checkout@v2
         with:
