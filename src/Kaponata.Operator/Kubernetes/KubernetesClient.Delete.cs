@@ -52,12 +52,17 @@ namespace Kaponata.Operator.Kubernetes
                 throw new ArgumentNullException(nameof(value));
             }
 
-            if (value.Metadata?.Name == null)
+            if (value.Metadata == null)
+            {
+                throw new ValidationException(ValidationRules.CannotBeNull, "value.Metadata");
+            }
+
+            if (value.Metadata.Name == null)
             {
                 throw new ValidationException(ValidationRules.CannotBeNull, "value.Metadata.Name");
             }
 
-            if (value.Metadata?.NamespaceProperty == null)
+            if (value.Metadata.NamespaceProperty == null)
             {
                 throw new ValidationException(ValidationRules.CannotBeNull, "value.Metadata.NamespaceProperty");
             }

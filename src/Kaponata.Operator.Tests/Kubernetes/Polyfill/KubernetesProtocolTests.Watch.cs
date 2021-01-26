@@ -7,6 +7,7 @@ using k8s;
 using k8s.Models;
 using Kaponata.Operator.Kubernetes.Polyfill;
 using Microsoft.Extensions.Logging;
+using Microsoft.Rest;
 using Moq;
 using Nerdbank.Streams;
 using Newtonsoft.Json;
@@ -21,11 +22,13 @@ using Xunit;
 using Xunit.Abstractions;
 
 #pragma warning disable VSTHRD003 // Avoid awaiting foreign Tasks
+#pragma warning disable CS0419 // Ambiguous reference in cref attribute
 
 namespace Kaponata.Operator.Tests.Kubernetes.Polyfill
 {
+
     /// <summary>
-    /// Tests the <see cref="KubernetesProtocol.WatchPodAsync"/> method.
+    /// Tests the <see cref="KubernetesProtocol.WatchNamespacedObjectAsync"/> method.
     /// </summary>
     public partial class KubernetesProtocolTests
     {
@@ -45,27 +48,38 @@ namespace Kaponata.Operator.Tests.Kubernetes.Polyfill
         }
 
         /// <summary>
-        /// The <see cref="KubernetesProtocol.WatchPodAsync"/> method validates the parameters passed to it.
+        /// The <see cref="KubernetesProtocol.WatchNamespacedObjectAsync"/> method validates the parameters passed to it.
         /// </summary>
         /// <returns>
         /// A <see cref="Task"/> which represents the asynchronous test.
         /// </returns>
         [Fact]
-        public async Task WatchPodAsync_ValidatesArguments_Async()
+        public async Task WatchNamespacedObjectAsync_ValidatesArguments_Async()
         {
-            var client = new KubernetesProtocol(new DummyHandler(), this.loggerFactory.CreateLogger<KubernetesProtocol>(), this.loggerFactory);
-            await Assert.ThrowsAsync<ArgumentNullException>("value", () => client.WatchPodAsync(null, (eventType, result) => Task.FromResult(WatchResult.Continue), default)).ConfigureAwait(false);
-            await Assert.ThrowsAsync<ArgumentNullException>("eventHandler", () => client.WatchPodAsync(new V1Pod(), null, default)).ConfigureAwait(false);
+            var pod = new V1Pod() { Metadata = new V1ObjectMeta() { Name = "name", NamespaceProperty = "namespace" } };
+
+            var protocol = new KubernetesProtocol(new DummyHandler(), this.loggerFactory.CreateLogger<KubernetesProtocol>(), this.loggerFactory);
+            await Assert.ThrowsAsync<ArgumentNullException>("value", () => protocol.WatchNamespacedObjectAsync<V1Pod, V1PodList>(null, protocol.ListNamespacedPodWithHttpMessagesAsync, (eventType, result) => Task.FromResult(WatchResult.Continue), default)).ConfigureAwait(false);
+            await Assert.ThrowsAsync<ValidationException>(() => protocol.WatchNamespacedObjectAsync<V1Pod, V1PodList>(new V1Pod() { }, null, (eventType, result) => Task.FromResult(WatchResult.Continue), default)).ConfigureAwait(false);
+            await Assert.ThrowsAsync<ValidationException>(() => protocol.WatchNamespacedObjectAsync<V1Pod, V1PodList>(new V1Pod() { Metadata = new V1ObjectMeta() }, null, (eventType, result) => Task.FromResult(WatchResult.Continue), default)).ConfigureAwait(false);
+            await Assert.ThrowsAsync<ValidationException>(() => protocol.WatchNamespacedObjectAsync<V1Pod, V1PodList>(new V1Pod() { Metadata = new V1ObjectMeta() { Name = "test" } }, null, (eventType, result) => Task.FromResult(WatchResult.Continue), default)).ConfigureAwait(false);
+            await Assert.ThrowsAsync<ValidationException>(() => protocol.WatchNamespacedObjectAsync<V1Pod, V1PodList>(new V1Pod() { Metadata = new V1ObjectMeta() { NamespaceProperty = "test" } }, null, (eventType, result) => Task.FromResult(WatchResult.Continue), default)).ConfigureAwait(false);
+            await Assert.ThrowsAsync<ArgumentNullException>("listOperation", () => protocol.WatchNamespacedObjectAsync<V1Pod, V1PodList>(pod, null, (eventType, result) => Task.FromResult(WatchResult.Continue), default)).ConfigureAwait(false);
+            await Assert.ThrowsAsync<ArgumentNullException>("eventHandler", () => protocol.WatchNamespacedObjectAsync<V1Pod, V1PodList>(pod, protocol.ListNamespacedPodWithHttpMessagesAsync, null, default)).ConfigureAwait(false);
+
+            await Assert.ThrowsAsync<ArgumentNullException>("namespace", () => protocol.WatchNamespacedObjectAsync<V1Pod, V1PodList>(null, string.Empty, string.Empty, string.Empty, protocol.ListNamespacedPodWithHttpMessagesAsync, (eventType, result) => Task.FromResult(WatchResult.Continue), default)).ConfigureAwait(false);
+            await Assert.ThrowsAsync<ArgumentNullException>("listOperation", () => protocol.WatchNamespacedObjectAsync<V1Pod, V1PodList>("default", null, null, null, null, (eventType, result) => Task.FromResult(WatchResult.Continue), default)).ConfigureAwait(false);
+            await Assert.ThrowsAsync<ArgumentNullException>("eventHandler", () => protocol.WatchNamespacedObjectAsync<V1Pod, V1PodList>("default", null, null, null, protocol.ListNamespacedPodWithHttpMessagesAsync, null, default)).ConfigureAwait(false);
         }
 
         /// <summary>
-        /// The <see cref="KubernetesProtocol.WatchPodAsync"/> method immediately exists if it receives empty content.
+        /// The <see cref="KubernetesProtocol.WatchNamespacedObjectAsync"/> method immediately exists if it receives empty content.
         /// </summary>
         /// <returns>
         /// A <see cref="Task"/> which represents the asynchronous test.
         /// </returns>
         [Fact]
-        public async Task WatchPodAsync_EmptyContent_Completes_Async()
+        public async Task WatchNamespacedObjectAsync_EmptyContent_Completes_Async()
         {
             var handler = new DummyHandler();
             handler.Responses.Enqueue(
@@ -78,12 +92,13 @@ namespace Kaponata.Operator.Tests.Kubernetes.Polyfill
 
             Collection<(WatchEventType, V1Pod)> events = new Collection<(WatchEventType, V1Pod)>();
 
-            var client = new KubernetesProtocol(handler, this.loggerFactory.CreateLogger<KubernetesProtocol>(), this.loggerFactory);
-            var result = await client.WatchPodAsync(
+            var protocol = new KubernetesProtocol(handler, this.loggerFactory.CreateLogger<KubernetesProtocol>(), this.loggerFactory);
+            var result = await protocol.WatchNamespacedObjectAsync<V1Pod, V1PodList>(
                 new V1Pod()
                 {
                     Metadata = new V1ObjectMeta(name: "pod", namespaceProperty: "default", resourceVersion: "1"),
                 },
+                protocol.ListNamespacedPodWithHttpMessagesAsync,
                 (eventType, result) =>
                 {
                     events.Add((eventType, result));
@@ -102,13 +117,13 @@ namespace Kaponata.Operator.Tests.Kubernetes.Polyfill
         }
 
         /// <summary>
-        /// The <see cref="KubernetesProtocol.WatchPodAsync"/> method can be cancelled.
+        /// The <see cref="KubernetesProtocol.WatchNamespacedObjectAsync"/> method can be cancelled.
         /// </summary>
         /// <returns>
         /// A <see cref="Task"/> which represents the asynchronous test.
         /// </returns>
         [Fact]
-        public async Task WatchPodAsync_CancelsIfNeeded_Async()
+        public async Task WatchNamespacedObjectAsync_CancelsIfNeeded_Async()
         {
             var readTaskCompletion = new TaskCompletionSource<int>();
 
@@ -134,14 +149,15 @@ namespace Kaponata.Operator.Tests.Kubernetes.Polyfill
 
             Collection<(WatchEventType, V1Pod)> events = new Collection<(WatchEventType, V1Pod)>();
 
-            var client = new KubernetesProtocol(handler, this.loggerFactory.CreateLogger<KubernetesProtocol>(), this.loggerFactory);
+            var protocol = new KubernetesProtocol(handler, this.loggerFactory.CreateLogger<KubernetesProtocol>(), this.loggerFactory);
             var cts = new CancellationTokenSource();
 
-            var watchTask = client.WatchPodAsync(
+            var watchTask = protocol.WatchNamespacedObjectAsync(
                 new V1Pod()
                 {
                     Metadata = new V1ObjectMeta(name: "pod", namespaceProperty: "default", resourceVersion: "1"),
                 },
+                protocol.ListNamespacedPodWithHttpMessagesAsync,
                 (eventType, result) =>
                 {
                     events.Add((eventType, result));
@@ -158,14 +174,14 @@ namespace Kaponata.Operator.Tests.Kubernetes.Polyfill
         }
 
         /// <summary>
-        /// The <see cref="KubernetesProtocol.WatchPodAsync"/> method throws an exception when a Kubernetes
+        /// The <see cref="KubernetesProtocol.WatchNamespacedObjectAsync"/> method throws an exception when a Kubernetes
         /// error occurs.
         /// </summary>
         /// <returns>
         /// A <see cref="Task"/> which represents the asynchronous test.
         /// </returns>
         [Fact]
-        public async Task WatchPodAsync_ThrowsExceptionIfNeeded_Async()
+        public async Task WatchNamespacedObjectAsync_ThrowsExceptionIfNeeded_Async()
         {
             var handler = new DummyHandler();
             handler.Responses.Enqueue(
@@ -189,15 +205,16 @@ namespace Kaponata.Operator.Tests.Kubernetes.Polyfill
 
             Collection<(WatchEventType, V1Pod)> events = new Collection<(WatchEventType, V1Pod)>();
 
-            var client = new KubernetesProtocol(handler, this.loggerFactory.CreateLogger<KubernetesProtocol>(), this.loggerFactory);
+            var protocol = new KubernetesProtocol(handler, this.loggerFactory.CreateLogger<KubernetesProtocol>(), this.loggerFactory);
             var cts = new CancellationTokenSource();
 
             var ex = await Assert.ThrowsAsync<KubernetesException>(
-                () => client.WatchPodAsync(
+                () => protocol.WatchNamespacedObjectAsync(
                 new V1Pod()
                 {
                     Metadata = new V1ObjectMeta(name: "pod", namespaceProperty: "default", resourceVersion: "1"),
                 },
+                protocol.ListNamespacedPodWithHttpMessagesAsync,
                 (eventType, result) =>
                 {
                     events.Add((eventType, result));
@@ -208,14 +225,14 @@ namespace Kaponata.Operator.Tests.Kubernetes.Polyfill
         }
 
         /// <summary>
-        /// The <see cref="KubernetesProtocol.WatchPodAsync"/> method returns when the client
+        /// The <see cref="KubernetesProtocol.WatchNamespacedObjectAsync"/> method returns when the client
         /// returns <see cref="WatchResult.Stop"/>.
         /// </summary>
         /// <returns>
         /// A <see cref="Task"/> which represents the asynchronous test.
         /// </returns>
         [Fact]
-        public async Task WatchPodAsync_ClientCanStopLoop_Async()
+        public async Task WatchNamespacedObjectAsync_ClientCanStopLoop_Async()
         {
             using (var stream = new SimplexStream())
             using (var writer = new StreamWriter(stream))
@@ -231,14 +248,15 @@ namespace Kaponata.Operator.Tests.Kubernetes.Polyfill
 
                 Collection<(WatchEventType, V1Pod)> events = new Collection<(WatchEventType, V1Pod)>();
 
-                var client = new KubernetesProtocol(handler, this.loggerFactory.CreateLogger<KubernetesProtocol>(), this.loggerFactory);
+                var protocol = new KubernetesProtocol(handler, this.loggerFactory.CreateLogger<KubernetesProtocol>(), this.loggerFactory);
                 var cts = new CancellationTokenSource();
 
-                var watchTask = client.WatchPodAsync(
+                var watchTask = protocol.WatchNamespacedObjectAsync(
                     new V1Pod()
                     {
                         Metadata = new V1ObjectMeta(name: "pod", namespaceProperty: "default", resourceVersion: "1"),
                     },
+                    protocol.ListNamespacedPodWithHttpMessagesAsync,
                     (eventType, result) =>
                     {
                         events.Add((eventType, result));
@@ -305,7 +323,7 @@ namespace Kaponata.Operator.Tests.Kubernetes.Polyfill
         }
 
         /// <summary>
-        /// The <see cref="KubernetesProtocol.WatchPodAsync"/> method validates the parameters passed to it.
+        /// The <see cref="KubernetesProtocol.WatchNamespacedObjectAsync"/> method validates the parameters passed to it.
         /// </summary>
         /// <returns>
         /// A <see cref="Task"/> which represents the asynchronous test.
@@ -313,13 +331,15 @@ namespace Kaponata.Operator.Tests.Kubernetes.Polyfill
         [Fact]
         public async Task WatchCustomResourceDefinitionAsync_ValidatesArguments_Async()
         {
-            var client = new KubernetesProtocol(new DummyHandler(), this.loggerFactory.CreateLogger<KubernetesProtocol>(), this.loggerFactory);
-            await Assert.ThrowsAsync<ArgumentNullException>("value", () => client.WatchCustomResourceDefinitionAsync(null, (eventType, result) => Task.FromResult(WatchResult.Continue), default)).ConfigureAwait(false);
-            await Assert.ThrowsAsync<ArgumentNullException>("eventHandler", () => client.WatchCustomResourceDefinitionAsync(new V1CustomResourceDefinition(), null, default)).ConfigureAwait(false);
+            var protocol = new KubernetesProtocol(new DummyHandler(), this.loggerFactory.CreateLogger<KubernetesProtocol>(), this.loggerFactory);
+            await Assert.ThrowsAsync<ArgumentNullException>("value", () => protocol.WatchCustomResourceDefinitionAsync(null, (eventType, result) => Task.FromResult(WatchResult.Continue), default)).ConfigureAwait(false);
+            await Assert.ThrowsAsync<ValidationException>(() => protocol.WatchCustomResourceDefinitionAsync(new V1CustomResourceDefinition(), (eventType, result) => Task.FromResult(WatchResult.Continue), default)).ConfigureAwait(false);
+            await Assert.ThrowsAsync<ValidationException>(() => protocol.WatchCustomResourceDefinitionAsync(new V1CustomResourceDefinition() { Metadata = new V1ObjectMeta() }, (eventType, result) => Task.FromResult(WatchResult.Continue), default)).ConfigureAwait(false);
+            await Assert.ThrowsAsync<ArgumentNullException>("eventHandler", () => protocol.WatchCustomResourceDefinitionAsync(new V1CustomResourceDefinition() { Metadata = new V1ObjectMeta() { Name = "test" } }, null, default)).ConfigureAwait(false);
         }
 
         /// <summary>
-        /// The <see cref="KubernetesProtocol.WatchPodAsync"/> method immediately exists if it receives empty content.
+        /// The <see cref="KubernetesProtocol.WatchNamespacedObjectAsync"/> method immediately exists if it receives empty content.
         /// </summary>
         /// <returns>
         /// A <see cref="Task"/> which represents the asynchronous test.
@@ -338,8 +358,8 @@ namespace Kaponata.Operator.Tests.Kubernetes.Polyfill
 
             Collection<(WatchEventType, V1CustomResourceDefinition)> events = new Collection<(WatchEventType, V1CustomResourceDefinition)>();
 
-            var client = new KubernetesProtocol(handler, this.loggerFactory.CreateLogger<KubernetesProtocol>(), this.loggerFactory);
-            var result = await client.WatchCustomResourceDefinitionAsync(
+            var protocol = new KubernetesProtocol(handler, this.loggerFactory.CreateLogger<KubernetesProtocol>(), this.loggerFactory);
+            var result = await protocol.WatchCustomResourceDefinitionAsync(
                 new V1CustomResourceDefinition()
                 {
                     Metadata = new V1ObjectMeta(name: "crd", namespaceProperty: "default", resourceVersion: "1"),
@@ -361,6 +381,6 @@ namespace Kaponata.Operator.Tests.Kubernetes.Polyfill
                 });
         }
 
-        // There are no further tests for WatchCustomResourceDefinitionAsync because the code is shared with WatchPodAsync via the WatchAsync method.
+        // There are no further tests for WatchCustomResourceDefinitionAsync because the code is shared with WatchNamespacedObjectAsync via the WatchAsync method.
     }
 }

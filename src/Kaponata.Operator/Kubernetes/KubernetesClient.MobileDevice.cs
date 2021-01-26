@@ -44,12 +44,17 @@ namespace Kaponata.Operator.Kubernetes
                 throw new ArgumentNullException(nameof(value));
             }
 
-            if (value.Metadata?.Name == null)
+            if (value.Metadata == null)
+            {
+                throw new ValidationException(ValidationRules.CannotBeNull, "value.Metadata");
+            }
+
+            if (value.Metadata.Name == null)
             {
                 throw new ValidationException(ValidationRules.CannotBeNull, "value.Metadata.Name");
             }
 
-            if (value.Metadata?.NamespaceProperty == null)
+            if (value.Metadata.NamespaceProperty == null)
             {
                 throw new ValidationException(ValidationRules.CannotBeNull, "value.Metadata.NamespaceProperty");
             }
@@ -134,7 +139,7 @@ namespace Kaponata.Operator.Kubernetes
         /// A <see cref="CancellationToken"/> which can be used to cancel the asynchronous operation.
         /// </param>
         /// <returns>
-        /// A <see cref="HttpOperationResponse"/> which represents the server response.
+        /// A <see cref="MobileDeviceList"/> which represents the mobile devices which match the query.
         /// </returns>
         public async virtual Task<MobileDeviceList> ListMobileDeviceAsync(string @namespace, string @continue = null, string fieldSelector = null, string labelSelector = null, int? limit = null, CancellationToken cancellationToken = default)
         {
@@ -224,6 +229,57 @@ namespace Kaponata.Operator.Kubernetes
                  this.ListMobileDeviceAsync,
                  eventHandler,
                  cancellationToken);
+        }
+
+        /// <summary>
+        /// Asynchronously watches <see cref="MobileDevice"/> objects.
+        /// </summary>
+        /// <param name="namespace">
+        /// The namespace in which to watch for <see cref="MobileDevice"/> objects.
+        /// </param>
+        /// <param name="fieldSelector">
+        /// A selector to restrict the list of returned objects by their fields. Defaults
+        /// to everything.
+        /// </param>
+        /// <param name="labelSelector">
+        /// A selector to restrict the list of returned objects by their labels. Defaults
+        /// to everything.
+        /// </param>
+        /// <param name="resourceVersion">
+        /// resourceVersion sets a constraint on what resource versions a request may be
+        /// served from. See <see href="https://kubernetes.io/docs/reference/using-api/api-concepts/#resource-versions"/>
+        /// for details. Defaults to unset.
+        /// </param>
+        /// <param name="eventHandler">
+        /// An handler which processes a watch event, and lets the watcher know whether
+        /// to continue watching or not.
+        /// </param>
+        /// <param name="cancellationToken">
+        /// A <see cref="CancellationToken"/> which can be used to cancel the asynchronous
+        /// operation.
+        /// </param>
+        /// <returns>
+        /// A <see cref="Task"/> which represents the watch operation. The task completes
+        /// when the watcher stops watching for events. The <see cref="WatchExitReason"/>
+        /// return value describes why the watcher stopped. The task errors if the watch
+        /// loop errors.
+        /// </returns>
+        public Task<WatchExitReason> WatchMobileDeviceAsync(
+            string @namespace,
+            string fieldSelector,
+            string labelSelector,
+            string resourceVersion,
+            Func<WatchEventType, MobileDevice, Task<WatchResult>> eventHandler,
+            CancellationToken cancellationToken)
+        {
+            return this.protocol.WatchNamespacedObjectAsync<MobileDevice, MobileDeviceList>(
+                @namespace,
+                fieldSelector,
+                labelSelector,
+                resourceVersion,
+                this.ListMobileDeviceAsync,
+                eventHandler,
+                cancellationToken);
         }
 
         private async Task<HttpOperationResponse<MobileDeviceList>> ListMobileDeviceAsync(

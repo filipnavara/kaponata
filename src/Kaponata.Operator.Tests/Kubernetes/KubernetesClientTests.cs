@@ -157,9 +157,10 @@ namespace Kaponata.Operator.Tests.Kubernetes
             var protocol = new Mock<IKubernetesProtocol>(MockBehavior.Strict);
             protocol.Setup(p => p.Dispose()).Verifiable();
             protocol
-                .Setup(p => p.WatchPodAsync(pod, It.IsAny<Func<WatchEventType, V1Pod, Task<WatchResult>>>(), It.IsAny<CancellationToken>()))
-                .Returns<V1Pod, Func<WatchEventType, V1Pod, Task<WatchResult>>, CancellationToken>((pod, watcher, ct) =>
+                .Setup(p => p.WatchNamespacedObjectAsync(pod, protocol.Object.ListNamespacedPodWithHttpMessagesAsync, It.IsAny<Func<WatchEventType, V1Pod, Task<WatchResult>>>(), It.IsAny<CancellationToken>()))
+                .Returns<V1Pod, ListNamespacedObjectWithHttpMessagesAsync<V1Pod, V1PodList>, Func<WatchEventType, V1Pod, Task<WatchResult>>, CancellationToken>((pod, list, watcher, ct) =>
                 {
+                    Assert.NotNull(list);
                     callback = watcher;
                     return watchTask.Task;
                 });
@@ -207,9 +208,10 @@ namespace Kaponata.Operator.Tests.Kubernetes
             var protocol = new Mock<IKubernetesProtocol>(MockBehavior.Strict);
             protocol.Setup(p => p.Dispose()).Verifiable();
             protocol
-                .Setup(p => p.WatchPodAsync(pod, It.IsAny<Func<WatchEventType, V1Pod, Task<WatchResult>>>(), It.IsAny<CancellationToken>()))
-                .Returns<V1Pod, Func<WatchEventType, V1Pod, Task<WatchResult>>, CancellationToken>((pod, watcher, ct) =>
+                .Setup(p => p.WatchNamespacedObjectAsync(pod, protocol.Object.ListNamespacedPodWithHttpMessagesAsync, It.IsAny<Func<WatchEventType, V1Pod, Task<WatchResult>>>(), It.IsAny<CancellationToken>()))
+                .Returns<V1Pod, ListNamespacedObjectWithHttpMessagesAsync<V1Pod, V1PodList>, Func<WatchEventType, V1Pod, Task<WatchResult>>, CancellationToken>((pod, list, watcher, ct) =>
                 {
+                    Assert.NotNull(list);
                     callback = watcher;
                     return watchTask.Task;
                 });
@@ -260,9 +262,10 @@ namespace Kaponata.Operator.Tests.Kubernetes
             var protocol = new Mock<IKubernetesProtocol>(MockBehavior.Strict);
             protocol.Setup(p => p.Dispose()).Verifiable();
             protocol
-                .Setup(p => p.WatchPodAsync(pod, It.IsAny<Func<WatchEventType, V1Pod, Task<WatchResult>>>(), It.IsAny<CancellationToken>()))
-                .Returns<V1Pod, Func<WatchEventType, V1Pod, Task<WatchResult>>, CancellationToken>((pod, watcher, ct) =>
+                .Setup(p => p.WatchNamespacedObjectAsync(pod, protocol.Object.ListNamespacedPodWithHttpMessagesAsync, It.IsAny<Func<WatchEventType, V1Pod, Task<WatchResult>>>(), It.IsAny<CancellationToken>()))
+                .Returns<V1Pod, ListNamespacedObjectWithHttpMessagesAsync<V1Pod, V1PodList>, Func<WatchEventType, V1Pod, Task<WatchResult>>, CancellationToken>((pod, list, watcher, ct) =>
                 {
+                    Assert.NotNull(list);
                     callback = watcher;
                     return watchTask.Task;
                 });
@@ -313,9 +316,10 @@ namespace Kaponata.Operator.Tests.Kubernetes
             var protocol = new Mock<IKubernetesProtocol>(MockBehavior.Strict);
             protocol.Setup(p => p.Dispose()).Verifiable();
             protocol
-                .Setup(p => p.WatchPodAsync(pod, It.IsAny<Func<WatchEventType, V1Pod, Task<WatchResult>>>(), It.IsAny<CancellationToken>()))
-                .Returns<V1Pod, Func<WatchEventType, V1Pod, Task<WatchResult>>, CancellationToken>((pod, watcher, ct) =>
+                .Setup(p => p.WatchNamespacedObjectAsync(pod, protocol.Object.ListNamespacedPodWithHttpMessagesAsync, It.IsAny<Func<WatchEventType, V1Pod, Task<WatchResult>>>(), It.IsAny<CancellationToken>()))
+                .Returns<V1Pod, ListNamespacedObjectWithHttpMessagesAsync<V1Pod, V1PodList>, Func<WatchEventType, V1Pod, Task<WatchResult>>, CancellationToken>((pod, list, watcher, ct) =>
                 {
+                    Assert.NotNull(list);
                     callback = watcher;
                     return watchTask.Task;
                 });
@@ -362,9 +366,10 @@ namespace Kaponata.Operator.Tests.Kubernetes
             var protocol = new Mock<IKubernetesProtocol>(MockBehavior.Strict);
             protocol.Setup(p => p.Dispose()).Verifiable();
             protocol
-                .Setup(p => p.WatchPodAsync(pod, It.IsAny<Func<WatchEventType, V1Pod, Task<WatchResult>>>(), It.IsAny<CancellationToken>()))
-                .Returns<V1Pod, Func<WatchEventType, V1Pod, Task<WatchResult>>, CancellationToken>((pod, watcher, ct) =>
+                .Setup(p => p.WatchNamespacedObjectAsync(pod, protocol.Object.ListNamespacedPodWithHttpMessagesAsync, It.IsAny<Func<WatchEventType, V1Pod, Task<WatchResult>>>(), It.IsAny<CancellationToken>()))
+                .Returns<V1Pod, ListNamespacedObjectWithHttpMessagesAsync<V1Pod, V1PodList>, Func<WatchEventType, V1Pod, Task<WatchResult>>, CancellationToken>((pod, list, watcher, ct) =>
                 {
+                    Assert.NotNull(list);
                     callback = watcher;
                     return watchTask.Task;
                 });
@@ -431,9 +436,10 @@ namespace Kaponata.Operator.Tests.Kubernetes
                 .Returns(Task.FromResult(new HttpOperationResponse<V1Pod>() { Body = pod, Response = new HttpResponseMessage(HttpStatusCode.OK) })).Verifiable();
 
             protocol
-                .Setup(p => p.WatchPodAsync(pod, It.IsAny<Func<WatchEventType, V1Pod, Task<WatchResult>>>(), It.IsAny<CancellationToken>()))
-                .Returns<V1Pod, Func<WatchEventType, V1Pod, Task<WatchResult>>, CancellationToken>((pod, watcher, ct) =>
+                .Setup(p => p.WatchNamespacedObjectAsync(pod, protocol.Object.ListNamespacedPodWithHttpMessagesAsync, It.IsAny<Func<WatchEventType, V1Pod, Task<WatchResult>>>(), It.IsAny<CancellationToken>()))
+                .Returns<V1Pod, ListNamespacedObjectWithHttpMessagesAsync<V1Pod, V1PodList>, Func<WatchEventType, V1Pod, Task<WatchResult>>, CancellationToken>((pod, list, watcher, ct) =>
                 {
+                    Assert.NotNull(list);
                     callback = watcher;
                     return watchTask.Task;
                 });
@@ -486,9 +492,10 @@ namespace Kaponata.Operator.Tests.Kubernetes
                 .Returns(Task.FromResult(new HttpOperationResponse<V1Pod>() { Body = pod, Response = new HttpResponseMessage(HttpStatusCode.OK) })).Verifiable();
 
             protocol
-                .Setup(p => p.WatchPodAsync(pod, It.IsAny<Func<WatchEventType, V1Pod, Task<WatchResult>>>(), It.IsAny<CancellationToken>()))
-                .Returns<V1Pod, Func<WatchEventType, V1Pod, Task<WatchResult>>, CancellationToken>((pod, watcher, ct) =>
+                .Setup(p => p.WatchNamespacedObjectAsync(pod, protocol.Object.ListNamespacedPodWithHttpMessagesAsync, It.IsAny<Func<WatchEventType, V1Pod, Task<WatchResult>>>(), It.IsAny<CancellationToken>()))
+                .Returns<V1Pod, ListNamespacedObjectWithHttpMessagesAsync<V1Pod, V1PodList>, Func<WatchEventType, V1Pod, Task<WatchResult>>, CancellationToken>((pod, list, watcher, ct) =>
                 {
+                    Assert.NotNull(list);
                     callback = watcher;
                     return watchTask.Task;
                 });
@@ -541,9 +548,10 @@ namespace Kaponata.Operator.Tests.Kubernetes
                 .Returns(Task.FromResult(new HttpOperationResponse<V1Pod>() { Body = pod, Response = new HttpResponseMessage(HttpStatusCode.OK) })).Verifiable();
 
             protocol
-                .Setup(p => p.WatchPodAsync(pod, It.IsAny<Func<WatchEventType, V1Pod, Task<WatchResult>>>(), It.IsAny<CancellationToken>()))
-                .Returns<V1Pod, Func<WatchEventType, V1Pod, Task<WatchResult>>, CancellationToken>((pod, watcher, ct) =>
+                .Setup(p => p.WatchNamespacedObjectAsync(pod, protocol.Object.ListNamespacedPodWithHttpMessagesAsync, It.IsAny<Func<WatchEventType, V1Pod, Task<WatchResult>>>(), It.IsAny<CancellationToken>()))
+                .Returns<V1Pod, ListNamespacedObjectWithHttpMessagesAsync<V1Pod, V1PodList>, Func<WatchEventType, V1Pod, Task<WatchResult>>, CancellationToken>((pod, list, watcher, ct) =>
                 {
+                    Assert.NotNull(list);
                     callback = watcher;
                     return watchTask.Task;
                 });
@@ -751,6 +759,52 @@ namespace Kaponata.Operator.Tests.Kubernetes
             {
                 var portForwardStream = Assert.IsType<PortForwardStream>(stream);
                 Assert.Same(websocket, portForwardStream.WebSocket);
+            }
+
+            protocol.Verify();
+        }
+
+        /// <summary>
+        /// The <see cref="KubernetesClient.ListPodAsync"/> method forwards requests to <see cref="IKubernetesProtocol"/>.
+        /// </summary>
+        /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
+        [Fact]
+        public async Task ListPodAsync_ForwardRequests_Async()
+        {
+            var list = new V1PodList();
+            var response = new HttpOperationResponse<V1PodList>() { Body = list };
+            var protocol = new Mock<IKubernetesProtocol>(MockBehavior.Strict);
+            protocol
+                .Setup(p => p.ListNamespacedPodWithHttpMessagesAsync("namespace", null, "continue", "fieldSelector", "labelSelector", 1, null, null, null, null, null, null, default))
+                .ReturnsAsync(response);
+            protocol.Setup(p => p.Dispose()).Verifiable();
+
+            using (var client = new KubernetesClient(protocol.Object, NullLogger<KubernetesClient>.Instance, NullLoggerFactory.Instance))
+            {
+                Assert.Same(list, await client.ListPodAsync("namespace", "continue", "fieldSelector", "labelSelector", 1, default).ConfigureAwait(false));
+            }
+
+            protocol.Verify();
+        }
+
+        /// <summary>
+        /// KubernetesClient.WatchPodAsync forwards requests to <see cref="IKubernetesProtocol"/>.
+        /// </summary>
+        [Fact]
+        public void WatchPodAsync_ForwardRequests()
+        {
+            var tcs = new TaskCompletionSource<WatchExitReason>();
+            var eventHandler = new Func<WatchEventType, V1Pod, Task<WatchResult>>((type, pod) => Task.FromResult(WatchResult.Continue));
+
+            var protocol = new Mock<IKubernetesProtocol>(MockBehavior.Strict);
+            protocol
+                .Setup(p => p.WatchNamespacedObjectAsync("namespace", "fieldSelector", "labelSelector", "resourceVersion", protocol.Object.ListNamespacedPodWithHttpMessagesAsync, eventHandler, default))
+                .Returns(tcs.Task);
+            protocol.Setup(p => p.Dispose()).Verifiable();
+
+            using (var client = new KubernetesClient(protocol.Object, NullLogger<KubernetesClient>.Instance, NullLoggerFactory.Instance))
+            {
+                Assert.Same(tcs.Task, client.WatchPodAsync("namespace", "fieldSelector", "labelSelector", "resourceVersion", eventHandler, default));
             }
 
             protocol.Verify();

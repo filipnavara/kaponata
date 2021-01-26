@@ -40,13 +40,13 @@ namespace Kaponata.Operator.Tests.Kubernetes.Polyfill
         [Fact]
         public void KubernetesClient_IsConfigured()
         {
-            using (var client = new KubernetesProtocol(
+            using (var protocol = new KubernetesProtocol(
                 KubernetesClientConfiguration.BuildConfigFromConfigFile("Kubernetes/Polyfill/kubeconfig.yml"),
                 NullLogger<KubernetesProtocol>.Instance,
                 NullLoggerFactory.Instance))
             {
                 Assert.Collection(
-                    client.HttpMessageHandlers,
+                    protocol.HttpMessageHandlers,
                     (h) =>
                     {
                         var watchHandler = Assert.IsType<WatchHandler>(h);
@@ -63,7 +63,7 @@ namespace Kaponata.Operator.Tests.Kubernetes.Polyfill
                             });
                     });
 
-                Assert.Equal(new Uri("https://127.0.0.1:443"), client.BaseUri);
+                Assert.Equal(new Uri("https://127.0.0.1:443"), protocol.BaseUri);
             }
         }
     }

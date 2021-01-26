@@ -38,19 +38,6 @@ namespace Kaponata.Operator.Kubernetes.Polyfill
             where TList : IItems<TObject>;
 
         /// <inheritdoc/>
-        public Task<WatchExitReason> WatchPodAsync(
-            V1Pod value,
-            Func<WatchEventType, V1Pod, Task<WatchResult>> eventHandler,
-            CancellationToken cancellationToken)
-        {
-            return this.WatchNamespacedObjectAsync(
-                value,
-                this.ListNamespacedPodWithHttpMessagesAsync,
-                eventHandler,
-                cancellationToken);
-        }
-
-        /// <inheritdoc/>
         public Task<WatchExitReason> WatchCustomResourceDefinitionAsync(
             V1CustomResourceDefinition value,
             Func<WatchEventType, V1CustomResourceDefinition, Task<WatchResult>> eventHandler,
@@ -64,7 +51,7 @@ namespace Kaponata.Operator.Kubernetes.Polyfill
         }
 
         /// <inheritdoc/>
-        public async Task<WatchExitReason> WatchNamespacedObjectAsync<TObject, TList>(
+        public Task<WatchExitReason> WatchNamespacedObjectAsync<TObject, TList>(
             TObject value,
             ListNamespacedObjectWithHttpMessagesAsync<TObject, TList> listOperation,
             Func<WatchEventType, TObject, Task<WatchResult>> eventHandler,
@@ -77,23 +64,71 @@ namespace Kaponata.Operator.Kubernetes.Polyfill
                 throw new ArgumentNullException(nameof(value));
             }
 
+            if (value.Metadata == null)
+            {
+                throw new ValidationException(ValidationRules.CannotBeNull, "value.Metadata");
+            }
+
+            if (value.Metadata.NamespaceProperty == null)
+            {
+                throw new ValidationException(ValidationRules.CannotBeNull, "value.Metadata.NamespaceProperty");
+            }
+
+            if (value.Metadata.Name == null)
+            {
+                throw new ValidationException(ValidationRules.CannotBeNull, "value.Metadata.Name");
+            }
+
+            return this.WatchNamespacedObjectAsync<TObject, TList>(
+                @namespace: value.Metadata.NamespaceProperty,
+                fieldSelector: $"metadata.name={value.Metadata.Name}",
+                labelSelector: null,
+                resourceVersion: value.Metadata.ResourceVersion,
+                listOperation,
+                eventHandler,
+                cancellationToken);
+        }
+
+        /// <inheritdoc/>
+        public async Task<WatchExitReason> WatchNamespacedObjectAsync<TObject, TList>(
+            string @namespace,
+            string fieldSelector,
+            string labelSelector,
+            string resourceVersion,
+            ListNamespacedObjectWithHttpMessagesAsync<TObject, TList> listOperation,
+            Func<WatchEventType, TObject, Task<WatchResult>> eventHandler,
+            CancellationToken cancellationToken)
+            where TObject : IKubernetesObject<V1ObjectMeta>
+            where TList : IItems<TObject>
+        {
+            if (@namespace == null)
+            {
+                throw new ArgumentNullException(nameof(@namespace));
+            }
+
+            if (listOperation == null)
+            {
+                throw new ArgumentNullException(nameof(listOperation));
+            }
+
             if (eventHandler == null)
             {
                 throw new ArgumentNullException(nameof(eventHandler));
             }
 
             using (var response = await listOperation(
-                value.Metadata.NamespaceProperty,
-                fieldSelector: $"metadata.name={value.Metadata.Name}",
-                resourceVersion: value.Metadata.ResourceVersion,
+                namespaceParameter: @namespace,
+                fieldSelector: fieldSelector,
+                labelSelector: labelSelector,
+                resourceVersion: resourceVersion,
                 watch: true,
                 cancellationToken: cancellationToken).ConfigureAwait(false))
             {
-                return await this.WatchAsync(value, response, eventHandler, cancellationToken).ConfigureAwait(false);
+                return await this.WatchAsync(response, eventHandler, cancellationToken).ConfigureAwait(false);
             }
         }
 
-        private async Task<WatchExitReason> WatchObjectAsync<TObject, TList>(
+        private Task<WatchExitReason> WatchObjectAsync<TObject, TList>(
             TObject value,
             ListObjectWithHttpMessagesAsync<TObject, TList> listOperation,
             Func<WatchEventType, TObject, Task<WatchResult>> eventHandler,
@@ -106,23 +141,49 @@ namespace Kaponata.Operator.Kubernetes.Polyfill
                 throw new ArgumentNullException(nameof(value));
             }
 
+            if (value.Metadata == null)
+            {
+                throw new ValidationException(ValidationRules.CannotBeNull, "value.Metadata");
+            }
+
+            if (value.Metadata.Name == null)
+            {
+                throw new ValidationException(ValidationRules.CannotBeNull, "value.Metadata.Name");
+            }
+
+            return this.WatchObjectAsync<TObject, TList>(
+                fieldSelector: $"metadata.name={value.Metadata.Name}",
+                value.Metadata.ResourceVersion,
+                listOperation,
+                eventHandler,
+                cancellationToken);
+        }
+
+        private async Task<WatchExitReason> WatchObjectAsync<TObject, TList>(
+            string fieldSelector,
+            string resourceVersion,
+            ListObjectWithHttpMessagesAsync<TObject, TList> listOperation,
+            Func<WatchEventType, TObject, Task<WatchResult>> eventHandler,
+            CancellationToken cancellationToken)
+            where TObject : IKubernetesObject<V1ObjectMeta>
+            where TList : IItems<TObject>
+        {
             if (eventHandler == null)
             {
                 throw new ArgumentNullException(nameof(eventHandler));
             }
 
             using (var response = await listOperation(
-                fieldSelector: $"metadata.name={value.Metadata.Name}",
-                resourceVersion: value.Metadata.ResourceVersion,
+                fieldSelector: fieldSelector,
+                resourceVersion: resourceVersion,
                 watch: true,
                 cancellationToken: cancellationToken).ConfigureAwait(false))
             {
-                return await this.WatchAsync(value, response, eventHandler, cancellationToken).ConfigureAwait(false);
+                return await this.WatchAsync(response, eventHandler, cancellationToken).ConfigureAwait(false);
             }
         }
 
         private async Task<WatchExitReason> WatchAsync<TObject, TList>(
-            TObject value,
             HttpOperationResponse<TList> response,
             Func<WatchEventType, TObject, Task<WatchResult>> eventHandler,
             CancellationToken cancellationToken)
@@ -149,17 +210,17 @@ namespace Kaponata.Operator.Kubernetes.Polyfill
                         if (genericEvent.Object.Kind == "Status")
                         {
                             var statusEvent = SafeJsonConvert.DeserializeObject<Watcher<V1Status>.WatchEvent>(line);
-                            this.logger.LogInformation("Stopped watching '{kind}' object '{name}' because of a status event with payload {status}", value.Kind, value.Metadata.Name, statusEvent.Object);
+                            this.logger.LogInformation("Stopped watching '{kind}' objects because of a status event with payload {status}", typeof(TObject).Name, statusEvent.Object);
                             throw new KubernetesException(statusEvent.Object);
                         }
                         else
                         {
                             var @event = SafeJsonConvert.DeserializeObject<Watcher<TObject>.WatchEvent>(line);
-                            this.logger.LogDebug("Got an {event} event for object {object}", @event.Type, value.Metadata.Name);
+                            this.logger.LogDebug("Got an {event} event for a {kind} object", @event.Type, typeof(TObject).Name);
 
                             if (await eventHandler(@event.Type, @event.Object).ConfigureAwait(false) == WatchResult.Stop)
                             {
-                                this.logger.LogInformation("Stopped watching '{kind}' object '{name}' because the client requested to stop watching.", value.Kind, value.Metadata.Name);
+                                this.logger.LogInformation("Stopped watching '{kind}' objects because the client requested to stop watching.", typeof(TObject).Name);
                                 return WatchExitReason.ClientDisconnected;
                             }
                         }
@@ -167,11 +228,11 @@ namespace Kaponata.Operator.Kubernetes.Polyfill
                 }
                 catch (Exception ex) when (cancellationToken.IsCancellationRequested)
                 {
-                    this.logger.LogInformation("Stopped watching '{kind}' object '{name}' because a cancellation request was received.", value.Kind, value.Metadata.Name);
+                    this.logger.LogInformation("Stopped watching '{kind}' objects because a cancellation request was received.", typeof(TObject).Name);
                     throw new TaskCanceledException("The watch operation was cancelled.", ex);
                 }
 
-                this.logger.LogInformation("Stopped watching '{kind}' object '{name}' because the server closed the connection.", value.Kind, value.Metadata.Name);
+                this.logger.LogInformation("Stopped watching '{kind}' objects because the server closed the connection.", typeof(TObject).Name);
                 return WatchExitReason.ServerDisconnected;
             }
         }
