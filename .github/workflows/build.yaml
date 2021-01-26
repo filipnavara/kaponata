@@ -197,9 +197,10 @@ jobs:
       - name: Redroid - Creating the Android pod
         run: |
           kubectl create -f ci/redroid.yaml
-          kubectl wait --for=condition=ready --timeout=120s pod redroid
+          kubectl wait --for=condition=ready --timeout=180s pod redroid || kubectl describe pod redroid
 
       - name: Redroid - Dump logcat output
+        if: always()
         run: kubectl exec redroid -- logcat -d
 
       - name: Run chart tests and integration tests
