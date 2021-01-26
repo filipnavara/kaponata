@@ -396,7 +396,7 @@ namespace Kaponata.Android.Tests.Adb
         }
 
         /// <summary>
-        /// The <see cref="AdbProtocol.ReadStringAsync(CancellationToken)"/> reads out a string from the <c>ADB</c> server.
+        /// The <see cref="AdbProtocol.ReadIndefiniteLengthStringAsync(CancellationToken)"/> reads out a string from the <c>ADB</c> server.
         /// </summary>
         /// <returns>
         /// A <see cref="Task"/> which represents the asynchronous test.
@@ -411,7 +411,7 @@ namespace Kaponata.Android.Tests.Adb
             await writer.FlushAsync().ConfigureAwait(false);
             stream.Position = 0;
 
-            var message = await protocol.ReadStringAsync(default).ConfigureAwait(false);
+            var message = await protocol.ReadIndefiniteLengthStringAsync(default).ConfigureAwait(false);
 
             Assert.Equal("Tester", message);
         }

@@ -213,7 +213,7 @@ namespace Kaponata.Android.Adb
         }
 
         /// <summary>
-        ///  Asynchronously reads a <see cref="string"/> from the <c>ADB</c> server.
+        ///  Asynchronously reads a <see cref="string"/> with indefinite length from the <c>ADB</c> server.
         /// </summary>
         /// <param name="cancellationToken">
         /// A <see cref="CancellationToken"/> which can be used to cancel the asynchronous operation.
@@ -221,7 +221,7 @@ namespace Kaponata.Android.Adb
         /// <returns>
         /// The <see cref="string"/> received from the <c>ADB</c> server.
         /// </returns>
-        public virtual async Task<string> ReadStringAsync(CancellationToken cancellationToken)
+        public virtual async Task<string> ReadIndefiniteLengthStringAsync(CancellationToken cancellationToken)
         {
             using var reader = new StreamReader(this.stream, AdbEncoding);
 

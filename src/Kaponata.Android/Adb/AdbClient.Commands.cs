@@ -142,7 +142,7 @@ namespace Kaponata.Android.Adb
 
             await protocol.WriteAsync(apk, cancellationToken).ConfigureAwait(false);
 
-            var installMessage = await protocol.ReadStringAsync(cancellationToken).ConfigureAwait(false);
+            var installMessage = await protocol.ReadIndefiniteLengthStringAsync(cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>

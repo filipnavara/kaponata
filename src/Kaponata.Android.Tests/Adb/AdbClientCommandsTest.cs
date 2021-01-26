@@ -70,7 +70,7 @@ namespace Kaponata.Android.Tests.Adb
             }
 
             protocol
-                .Setup(p => p.ReadStringAsync(default))
+                .Setup(p => p.ReadIndefiniteLengthStringAsync(default))
                 .ReturnsAsync("Success\n");
             protocol.Setup(p => p.ReadAdbResponseAsync(default))
                     .ReturnsAsync(AdbResponse.Success)
