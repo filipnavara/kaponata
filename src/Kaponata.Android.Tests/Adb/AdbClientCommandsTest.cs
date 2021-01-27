@@ -273,7 +273,7 @@ namespace Kaponata.Android.Tests.Adb
             clientMock.Setup(c => c.TryConnectToAdbAsync(default)).ReturnsAsync((AdbProtocol)null);
             var client = clientMock.Object;
 
-            await Assert.ThrowsAsync<ArgumentNullException>(async () => await client.ConnectDeviceAsync(null, default).ConfigureAwait(false));
+            await Assert.ThrowsAsync<InvalidOperationException>(async () => await client.ConnectDeviceAsync(new System.Net.DnsEndPoint("localhost", 5555), default).ConfigureAwait(false));
         }
 
         /// <summary>
