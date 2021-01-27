@@ -15,3 +15,7 @@ obj/
 # Files used by the Docker-specific Makefiles
 *.docker-id
 .version
+
+# MkDocs output
+site/
+

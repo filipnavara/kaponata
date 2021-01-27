@@ -1,0 +1,28 @@
+# See https://raw.githubusercontent.com/wtfutil/wtfdocs
+# for a good example
+site_name: Kaponata
+site_url: https://www.kaponata.io/
+site_author: Quamotion bv
+site_description: >-
+  Kaponata manages your mobile device test farm for you, so you can run
+  Appium tests at scale on iOS and Android devices.
+
+# Repository
+repo_name: kaponata-io/kaponata
+repo_url: https://github.com/kaponata-io/kaponata
+edit_uri: ""
+
+# Copyright
+copyright: Copyright &copy; 2021 Quamotion bv
+
+theme:
+  name: material
+  custom_dir: docs/overrides
+  features:
+    - navigation.tabs
+
+plugins: []
+
+# Page tree
+nav:
+  - Home: index.md
