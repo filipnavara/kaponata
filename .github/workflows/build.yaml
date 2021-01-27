@@ -123,6 +123,7 @@ jobs:
           yq e '.version="${{ steps.nbgv.outputs.SemVer2 }}"' -i Chart.yaml
           yq e '.appVersion="${{ steps.nbgv.outputs.SemVer2 }}"' -i Chart.yaml
           yq e '.operator.image.tag="${{ steps.nbgv.outputs.SemVer2 }}"' -i values.yaml
+          yq e '.api.image.tag="${{ steps.nbgv.outputs.SemVer2 }}"' -i values.yaml
 
           helm lint .
           helm package . -d ${{ github.workspace }}/bin
@@ -146,6 +147,9 @@ jobs:
           docker tag quay.io/kaponata/operator:${{ steps.nbgv.outputs.SemVer2 }}-amd64 quay.io/kaponata/operator:${{ steps.nbgv.outputs.SemVer2 }}
           k3d image import quay.io/kaponata/operator:${{ steps.nbgv.outputs.SemVer2 }}
 
+          docker tag quay.io/kaponata/api:${{ steps.nbgv.outputs.SemVer2 }}-amd64 quay.io/kaponata/api:${{ steps.nbgv.outputs.SemVer2 }}
+          k3d image import quay.io/kaponata/api:${{ steps.nbgv.outputs.SemVer2 }}
+
       # Override the usbmuxd image tag in the usbmuxd subchart to
       # latest-udev-amd64. This fixes an issue where usbmuxd will fail
       # to start on a VM with no USB stack (because libusb fails to
@@ -159,9 +163,10 @@ jobs:
           helm install
           --set usbmuxd.usbmuxd.image.tag=latest-udev-amd64
           --set operator.imagePullPolicy=Never
+          --set api.imagePullPolicy=Never
           --wait
           kaponata
-          ${{ github.workspace }}/bin/kaponata-${{ steps.nbgv.outputs.SemVer2 }}.tgz
+          ${{ github.workspace }}/bin/kaponata-${{ steps.nbgv.outputs.SemVer2 }}.tgz || kubectl get pods
       
       - name: Redroid - Install the Android kernel modules
         run: |
