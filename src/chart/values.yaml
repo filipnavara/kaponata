@@ -3,3 +3,9 @@ operator:
     repository: quay.io/kaponata/operator
     tag: latest-amd64
   imagePullPolicy: IfNotPresent
+
+api:
+  image:
+    repository: quay.io/kaponata/api
+    tag: latest-amd64
+imagePullPolicy: IfNotPresent

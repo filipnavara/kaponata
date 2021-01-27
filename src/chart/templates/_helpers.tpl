@@ -31,6 +31,55 @@ Create chart name and version as used by the chart label.
 {{- end }}
 
 {{/*
+API: Full Name
+*/}}
+{{- define "api.fullname" -}}
+{{- printf "%s-api" (include "kaponata.fullname" .) | trunc 63 | trimSuffix "-" }}
+{{- end }}
+
+{{/*
+API: Service Account Full Name
+*/}}
+{{- define "api.serviceAccount.fullname" -}}
+{{- printf "%s-api-account" (include "kaponata.fullname" .) | trunc 63 | trimSuffix "-" }}
+{{- end }}
+
+{{/*
+API: Common labels
+*/}}
+{{- define "api.labels" -}}
+helm.sh/chart: {{ include "kaponata.chart" . }}
+{{ include "api.selectorLabels" . }}
+{{- if .Chart.AppVersion }}
+app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
+{{- end }}
+app.kubernetes.io/managed-by: {{ .Release.Service }}
+{{- end }}
+
+{{/*
+API: Selector labels
+*/}}
+{{- define "api.selectorLabels" -}}
+app.kubernetes.io/name: {{ include "kaponata.name" . }}
+app.kubernetes.io/instance: {{ .Release.Name }}
+app.kubernetes.io/component: "api"
+{{- end }}
+
+{{/*
+API: Service Name
+*/}}
+{{- define "api.service.fullname" -}}
+{{- printf "%s-api-service" (include "kaponata.fullname" .) | trunc 63 | trimSuffix "-" }}
+{{- end }}
+
+{{/*
+API: Ingress Name
+*/}}
+{{- define "api.ingress.fullname" -}}
+{{- printf "%s-api-ingress" (include "kaponata.fullname" .) | trunc 63 | trimSuffix "-" }}
+{{- end }}
+
+{{/*
 Operator: Full Name
 */}}
 {{- define "operator.fullname" -}}
