@@ -211,6 +211,73 @@ namespace Kaponata.Android.Tests.Adb
         }
 
         /// <summary>
+        /// The <see cref="AdbClient.ConnectDeviceAsync(System.Net.DnsEndPoint, CancellationToken)"/> connects to the device on given endpoint.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="Task"/> which represents the asynchrounous test.
+        /// </returns>
+        [Fact]
+        public async Task ConnectDevice_ConnectsDevice_Async()
+        {
+            var protocol = new Mock<AdbProtocol>()
+            {
+                CallBase = true,
+            };
+
+            protocol.Setup(p => p.WriteAsync("host:connect:localhost:5559", default))
+                    .Verifiable();
+            protocol.Setup(p => p.ReadAdbResponseAsync(default))
+                    .ReturnsAsync(AdbResponse.Success)
+                    .Verifiable();
+
+            var clientMock = new Mock<AdbClient>(NullLogger<AdbClient>.Instance, NullLoggerFactory.Instance)
+            {
+                CallBase = true,
+            };
+
+            clientMock.Setup(c => c.TryConnectToAdbAsync(default)).ReturnsAsync(protocol.Object);
+            var client = clientMock.Object;
+
+            await client.ConnectDeviceAsync(new System.Net.DnsEndPoint("localhost", 5559), default).ConfigureAwait(false);
+
+            protocol.Verify();
+        }
+
+        /// <summary>
+        /// The <see cref="AdbClient.ConnectDeviceAsync(System.Net.DnsEndPoint, CancellationToken)"/> throws when the <c>ADB</c> server reports an error.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="Task"/> which represents the asynchrounous test.
+        /// </returns>
+        [Fact]
+        public async Task ConnectDevice_ThrowsOnError_Async()
+        {
+            var protocol = new Mock<AdbProtocol>()
+            {
+                CallBase = true,
+            };
+
+            protocol.Setup(p => p.WriteAsync("host:connect:localhost:5559", default))
+                    .Verifiable();
+            protocol.Setup(p => p.ReadAdbResponseAsync(default))
+                    .ReturnsAsync(new AdbResponse(AdbResponseStatus.FAIL, "Aiai"))
+                    .Verifiable();
+
+            var clientMock = new Mock<AdbClient>(NullLogger<AdbClient>.Instance, NullLoggerFactory.Instance)
+            {
+                CallBase = true,
+            };
+
+            clientMock.Setup(c => c.TryConnectToAdbAsync(default)).ReturnsAsync(protocol.Object);
+            var client = clientMock.Object;
+
+            var exception = await Assert.ThrowsAsync<AdbException>(async () => await client.ConnectDeviceAsync(new System.Net.DnsEndPoint("localhost", 5559), default).ConfigureAwait(false));
+
+            Assert.Equal("Aiai", exception.Message);
+            protocol.Verify();
+        }
+
+        /// <summary>
         /// The <see cref="AdbClient.InstallAsync(DeviceData, Stream, CancellationToken, string[])"/> method throws when invalid device data is provided.
         /// </summary>
         /// <returns>
