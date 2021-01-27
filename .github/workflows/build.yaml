@@ -20,8 +20,6 @@ jobs:
 
       - name: Provision CI environment
         run: |
-          set -e
-
           sudo apt-get update
 
           ansible-galaxy install geerlingguy.docker
@@ -97,23 +95,18 @@ jobs:
 
       - name: Package operator
         run: |
-          set -e
-
           dotnet publish -c Release
           make
         working-directory: src/Kaponata.Operator/
 
       - name: Package API server
         run: |
-          set -e
-
           dotnet publish -c Release
           make
         working-directory: src/Kaponata.Api/
 
       - name: Package UI
         run: |
-          set -e
           export PATH="$PATH:/usr/local/lib/npm/bin/"
 
           npm install
@@ -123,8 +116,6 @@ jobs:
 
       - name: Create Helm chart
         run: |
-          set -e
-
           yq e '.version="${{ steps.nbgv.outputs.SemVer2 }}"' -i Chart.yaml
           yq e '.appVersion="${{ steps.nbgv.outputs.SemVer2 }}"' -i Chart.yaml
           yq e '.operator.image.tag="${{ steps.nbgv.outputs.SemVer2 }}"' -i values.yaml
@@ -148,8 +139,6 @@ jobs:
       # as the {version} image. Then, import the image into k3d.
       - name: Upload images to k3d cluster
         run: |
-          set -e
-
           docker tag quay.io/kaponata/operator:${{ steps.nbgv.outputs.SemVer2 }}-amd64 quay.io/kaponata/operator:${{ steps.nbgv.outputs.SemVer2 }}
           k3d image import quay.io/kaponata/operator:${{ steps.nbgv.outputs.SemVer2 }}
 
@@ -212,8 +201,6 @@ jobs:
 
       - name: Delete k3d cluster
         run: |
-          set -e
-
           k3d cluster delete
 
       - name: Publish Test Results
