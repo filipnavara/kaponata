@@ -29,6 +29,10 @@ spec:
             - '[ "$(getprop init.svc.bootanim)x" == "stoppedx" ]'
         initialDelaySeconds: 5
         periodSeconds: 5
+      resources:
+        limits:
+          memory: "2Gi"
+          cpu: "1"
   nodeSelector:
     kubernetes.io/arch: amd64
     kubernetes.io/os: linux

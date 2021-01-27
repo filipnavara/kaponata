@@ -94,9 +94,7 @@ namespace Kaponata.Operator
                     host.ConfigureServices(
                         (services) =>
                         {
-                            services.AddSingleton<KubernetesClientConfiguration>(KubernetesClientConfiguration.BuildDefaultConfig());
-                            services.AddScoped<IKubernetesProtocol, KubernetesProtocol>();
-                            services.AddScoped<KubernetesClient>();
+                            services.AddKubernetes();
                             services.AddLogging();
                             services.AddScoped<ExtensionsInstaller>();
                         });
