@@ -244,6 +244,39 @@ namespace Kaponata.Android.Tests.Adb
         }
 
         /// <summary>
+        /// The <see cref="AdbClient.ConnectDeviceAsync(System.Net.DnsEndPoint, CancellationToken)"/> method validates the arguments.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="Task"/> which represents the asynchrounous test.
+        /// </returns>
+        [Fact]
+        public async Task ConnectDevice_ValidatesArguments_Async()
+        {
+            var client = new AdbClient(NullLogger<AdbClient>.Instance, NullLoggerFactory.Instance);
+
+            await Assert.ThrowsAsync<ArgumentNullException>(async () => await client.ConnectDeviceAsync(null, default).ConfigureAwait(false));
+        }
+
+        /// <summary>
+        /// The <see cref="AdbClient.ConnectDeviceAsync(System.Net.DnsEndPoint, CancellationToken)"/> method throws when connecting to the <c>ADB</c> server fails.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="Task"/> which represents the asynchrounous test.
+        /// </returns>
+        [Fact]
+        public async Task ConnectDevice_ThrowsOnConnectFailure_Async()
+        {
+            var clientMock = new Mock<AdbClient>(NullLogger<AdbClient>.Instance, NullLoggerFactory.Instance)
+            {
+                CallBase = true,
+            };
+            clientMock.Setup(c => c.TryConnectToAdbAsync(default)).ReturnsAsync((AdbProtocol)null);
+            var client = clientMock.Object;
+
+            await Assert.ThrowsAsync<ArgumentNullException>(async () => await client.ConnectDeviceAsync(null, default).ConfigureAwait(false));
+        }
+
+        /// <summary>
         /// The <see cref="AdbClient.ConnectDeviceAsync(System.Net.DnsEndPoint, CancellationToken)"/> throws when the <c>ADB</c> server reports an error.
         /// </summary>
         /// <returns>
