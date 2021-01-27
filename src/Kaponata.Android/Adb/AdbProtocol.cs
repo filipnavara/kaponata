@@ -67,6 +67,34 @@ namespace Kaponata.Android.Adb
         public static Encoding AdbEncoding { get; } = Encoding.GetEncoding(DefaultEncoding);
 
         /// <summary>
+        /// Switches the connection to the device/emulator identified by <paramref name="device"/>.
+        /// </summary>
+        /// <param name="device">
+        /// The device to which to connect.
+        /// </param>
+        /// <param name="cancellationToken">
+        /// A <see cref="CancellationToken"/> which can be used to cancel the asynchronous operation.
+        /// </param>
+        /// <returns>
+        /// A <see cref="Task"/> which represents the asynchronous operation.
+        /// </returns>
+        public virtual async Task SetDeviceAsync(DeviceData device, CancellationToken cancellationToken)
+        {
+            if (device == null)
+            {
+                throw new ArgumentNullException(nameof(device));
+            }
+
+            if (string.IsNullOrEmpty(device.Serial))
+            {
+                throw new ArgumentException(nameof(device));
+            }
+
+            await this.WriteAsync($"host:transport:{device.Serial}", cancellationToken).ConfigureAwait(false);
+            this.EnsureValidAdbResponse(await this.ReadAdbResponseAsync(cancellationToken).ConfigureAwait(false));
+        }
+
+        /// <summary>
         /// Reads the <c>ADB</c> response.
         /// </summary>
         /// <param name="cancellationToken">
@@ -182,6 +210,45 @@ namespace Kaponata.Android.Adb
             }
 
             return AdbEncoding.GetString(messageBuffer.Memory.Slice(0, length).Span);
+        }
+
+        /// <summary>
+        ///  Asynchronously reads a <see cref="string"/> with indefinite length from the <c>ADB</c> server.
+        /// </summary>
+        /// <param name="cancellationToken">
+        /// A <see cref="CancellationToken"/> which can be used to cancel the asynchronous operation.
+        /// </param>
+        /// <returns>
+        /// The <see cref="string"/> received from the <c>ADB</c> server.
+        /// </returns>
+        public virtual async Task<string> ReadIndefiniteLengthStringAsync(CancellationToken cancellationToken)
+        {
+            using var reader = new StreamReader(this.stream, AdbEncoding);
+
+            return await reader.ReadToEndAsync().ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Writes the content of the stream  to the <c>ADB</c> server.
+        /// </summary>
+        /// <param name="stream">
+        /// The data stream.
+        /// </param>
+        /// <param name="cancellationToken">
+        /// A <see cref="CancellationToken"/> which can be used to cancel the asynchronous operation.
+        /// </param>
+        /// <returns>
+        /// A <see cref="Task"/> which represents the asynchronous operation.
+        /// </returns>
+        public virtual async Task WriteAsync(Stream stream, CancellationToken cancellationToken)
+        {
+            if (stream == null)
+            {
+                throw new ArgumentNullException(nameof(stream));
+            }
+
+            await stream.CopyToAsync(this.stream).ConfigureAwait(false);
+            await this.stream.FlushAsync(cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>

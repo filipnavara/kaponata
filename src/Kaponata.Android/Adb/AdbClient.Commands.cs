@@ -5,7 +5,9 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -78,10 +80,85 @@ namespace Kaponata.Android.Adb
 
             if (!success)
             {
-                throw new InvalidOperationException($"Could not parse {versionMessage} to a valid ADB server number.");
+                throw new AdbException($"Could not parse {versionMessage} to a valid ADB server number.");
             }
 
             return adbVersion;
+        }
+
+        /// <summary>
+        /// Installs an <c>apk</c> on the given device.
+        /// </summary>
+        /// <param name="device">
+        /// The device on which the <c>apk</c> needs to be installed.
+        /// </param>
+        /// <param name="apk">
+        /// The <c>apk</c> stream.
+        /// </param>
+        /// <param name="cancellationToken">
+        /// A <see cref="CancellationToken"/> which can be used to cancel the asynchronous operation.
+        /// </param>
+        /// <param name="arguments">
+        /// The arguments used to install the <c>apk</c>.
+        /// </param>
+        /// <returns>
+        /// A <see cref="Task"/> representing the asynchronous operation.
+        /// </returns>
+        public virtual async Task InstallAsync(DeviceData device, Stream apk, CancellationToken cancellationToken, params string[] arguments)
+        {
+            this.EnsureDevice(device);
+
+            if (apk == null)
+            {
+                throw new ArgumentNullException(nameof(apk));
+            }
+
+            if (!apk.CanRead || !apk.CanSeek)
+            {
+                throw new ArgumentOutOfRangeException(nameof(apk), "The apk stream must be a readable and seekable stream");
+            }
+
+            await using var protocol = await this.TryConnectToAdbAsync(cancellationToken).ConfigureAwait(false);
+            await protocol.SetDeviceAsync(device, cancellationToken).ConfigureAwait(false);
+
+            var command = $"exec:cmd package 'install' -S {apk.Length}";
+            if (arguments != null && arguments.Length > 0)
+            {
+                command = string.Join(" ", "exec:cmd package 'install'", string.Join(" ", arguments), $"-S {apk.Length}");
+            }
+
+            await protocol.WriteAsync(command, cancellationToken).ConfigureAwait(false);
+            protocol.EnsureValidAdbResponse(await protocol.ReadAdbResponseAsync(cancellationToken).ConfigureAwait(false));
+
+            await protocol.WriteAsync(apk, cancellationToken).ConfigureAwait(false);
+
+            var installMessage = await protocol.ReadIndefiniteLengthStringAsync(cancellationToken).ConfigureAwait(false);
+
+            if (!string.Equals(installMessage, "Success\n"))
+            {
+                throw new AdbException(installMessage);
+            }
+        }
+
+        /// <summary>
+        /// Throws an <see cref="ArgumentNullException"/> if the <paramref name="device"/>
+        /// parameter is <see langword="null"/>, and a <see cref="ArgumentOutOfRangeException"/>
+        /// if <paramref name="device"/> does not have a valid serial number.
+        /// </summary>
+        /// <param name="device">
+        /// A <see cref="DeviceData"/> object to validate.
+        /// </param>
+        internal void EnsureDevice(DeviceData device)
+        {
+            if (device == null)
+            {
+                throw new ArgumentNullException(nameof(device));
+            }
+
+            if (string.IsNullOrEmpty(device.Serial))
+            {
+                throw new ArgumentOutOfRangeException(nameof(device), "You must specific a serial number for the device");
+            }
         }
     }
 }
