@@ -110,6 +110,7 @@ namespace Kaponata.Android.Tests.Adb
             {
                 CallBase = true,
             };
+
             if (args == null)
             {
                 protocol.Setup(p => p.WriteAsync("exec:cmd package 'install' -S 3", default))
@@ -198,7 +199,7 @@ namespace Kaponata.Android.Tests.Adb
 
             using var apkStream = new MemoryStream(new byte[] { 1, 2, 3 });
 
-            var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () => await client.InstallAsync(
+            var exception = await Assert.ThrowsAsync<AdbException>(async () => await client.InstallAsync(
                 new DeviceData() { Serial = "123" },
                 apkStream,
                 default,
@@ -304,7 +305,11 @@ namespace Kaponata.Android.Tests.Adb
         [Fact]
         public async Task GetDevices_ReturnsDevicesList_Async()
         {
-            var protocol = new Mock<AdbProtocol>();
+            var protocol = new Mock<AdbProtocol>()
+            {
+                CallBase = true,
+            };
+
             protocol.Setup(p => p.WriteAsync("host:devices-l", default))
                     .Verifiable();
             protocol.Setup(p => p.ReadAdbResponseAsync(default))
@@ -368,7 +373,11 @@ namespace Kaponata.Android.Tests.Adb
         [Fact]
         public async Task GetAdbVersion_ReturnsAdbVersion_Async()
         {
-            var protocol = new Mock<AdbProtocol>();
+            var protocol = new Mock<AdbProtocol>()
+            {
+                CallBase = true,
+            };
+
             protocol.Setup(p => p.WriteAsync("host:version", default))
                     .Verifiable();
             protocol.Setup(p => p.ReadAdbResponseAsync(default))
@@ -404,7 +413,11 @@ namespace Kaponata.Android.Tests.Adb
         [Fact]
         public async Task GetAdbVersion_ThrowsOnInvalidData_Async()
         {
-            var protocol = new Mock<AdbProtocol>();
+            var protocol = new Mock<AdbProtocol>()
+            {
+                CallBase = true,
+            };
+
             protocol.Setup(p => p.WriteAsync("host:version", default))
                     .Verifiable();
             protocol.Setup(p => p.ReadAdbResponseAsync(default))
@@ -426,7 +439,7 @@ namespace Kaponata.Android.Tests.Adb
             clientMock.Setup(c => c.TryConnectToAdbAsync(default)).ReturnsAsync(protocol.Object);
             var client = clientMock.Object;
 
-            var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () => await client.GetAdbVersionAsync(default).ConfigureAwait(false));
+            var exception = await Assert.ThrowsAsync<AdbException>(async () => await client.GetAdbVersionAsync(default).ConfigureAwait(false));
             Assert.Contains("0029bis", exception.Message);
         }
     }

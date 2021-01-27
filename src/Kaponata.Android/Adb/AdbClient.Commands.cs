@@ -80,7 +80,7 @@ namespace Kaponata.Android.Adb
 
             if (!success)
             {
-                throw new InvalidOperationException($"Could not parse {versionMessage} to a valid ADB server number.");
+                throw new AdbException($"Could not parse {versionMessage} to a valid ADB server number.");
             }
 
             return adbVersion;
@@ -136,7 +136,7 @@ namespace Kaponata.Android.Adb
 
             if (!string.Equals(installMessage, "Success\n"))
             {
-                throw new InvalidOperationException(installMessage);
+                throw new AdbException(installMessage);
             }
         }
 
