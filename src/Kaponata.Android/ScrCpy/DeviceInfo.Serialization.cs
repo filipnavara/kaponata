@@ -1,4 +1,8 @@
-﻿using System;
+﻿// <copyright file="DeviceInfo.Serialization.cs" company="Quamotion bv">
+// Copyright (c) Quamotion bv. All rights reserved.
+// </copyright>
+
+using System;
 using System.Buffers.Binary;
 using System.Text;
 
