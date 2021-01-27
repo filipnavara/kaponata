@@ -10,6 +10,21 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
     - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+
+    - uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: '5.0.100'
+
+    - name: Document API
+      run: |
+        dotnet tool install -g xmldocmd
+        dotnet publish -c Release
+
+        xmldocmd ./Kaponata.Android/bin/Release/net5.0/publish/Kaponata.Android.dll ../website/docs/class/
+        xmldocmd ./Kaponata.iOS/bin/Release/net5.0/publish/Kaponata.iOS.dll ../website/docs/class/
+      working-directory: src/
 
     - name: Compile Website
       uses: docker://squidfunk/mkdocs-material:6.2.6

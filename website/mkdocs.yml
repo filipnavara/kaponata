@@ -23,6 +23,16 @@ theme:
 
 plugins: []
 
+markdown_extensions:
+  - pymdownx.highlight
+  - pymdownx.superfences
+
 # Page tree
 nav:
   - Home: index.md
+  - User Guide: user-guide
+  - Reference:
+    - Class Library:
+      - class/index.md
+      - Kaponata.Android: class/Kaponata.Android
+      - Kaponata.iOS: class/Kaponata.iOS
