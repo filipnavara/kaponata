@@ -39,6 +39,58 @@ namespace Kaponata.Android.Tests.Adb
         }
 
         /// <summary>
+        /// The <see cref="AdbClient.InstallAsync(DeviceData, Stream, CancellationToken, string[])"/> method pushes and installs the apk to the <c>ADB</c> server in case where no arguments are provided.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="Task"/> which represents the asynchrounous test.
+        /// </returns>
+        [Fact]
+        public async Task Install_ApkPushedWithoutArguments_Async()
+        {
+            Stream receivedStream = null;
+            var protocol = new Mock<AdbProtocol>()
+            {
+                CallBase = true,
+            };
+
+            protocol.Setup(p => p.WriteAsync("exec:cmd package 'install' -S 3", default))
+                        .Verifiable();
+
+            protocol
+                .Setup(p => p.ReadIndefiniteLengthStringAsync(default))
+                .ReturnsAsync("Success\n");
+            protocol.Setup(p => p.ReadAdbResponseAsync(default))
+                    .ReturnsAsync(AdbResponse.Success)
+                    .Verifiable();
+            protocol
+                .Setup(p => p.SetDeviceAsync(It.IsAny<DeviceData>(), default)).Returns(Task.CompletedTask);
+            protocol
+                .Setup(p => p.WriteAsync(It.IsAny<Stream>(), default))
+                .Callback<Stream, CancellationToken>((s, c) =>
+                {
+                    receivedStream = s;
+                });
+
+            var clientMock = new Mock<AdbClient>(NullLogger<AdbClient>.Instance, NullLoggerFactory.Instance)
+            {
+                CallBase = true,
+            };
+
+            clientMock.Setup(c => c.TryConnectToAdbAsync(default)).ReturnsAsync(protocol.Object);
+            var client = clientMock.Object;
+
+            using var apkStream = new MemoryStream(new byte[] { 1, 2, 3 });
+
+            await client.InstallAsync(
+                new DeviceData() { Serial = "123" },
+                apkStream,
+                default,
+                Array.Empty<string>()).ConfigureAwait(false);
+
+            protocol.Verify();
+        }
+
+        /// <summary>
         /// The <see cref="AdbClient.InstallAsync(DeviceData, Stream, CancellationToken, string[])"/> method pushes and installs the apk to the <c>ADB</c> server.
         /// </summary>
         /// <param name="args">
@@ -60,12 +112,12 @@ namespace Kaponata.Android.Tests.Adb
             };
             if (args == null)
             {
-                protocol.Setup(p => p.WriteAsync("exec:cmd package 'install'  -S 3", default))
+                protocol.Setup(p => p.WriteAsync("exec:cmd package 'install' -S 3", default))
                         .Verifiable();
             }
             else
             {
-                protocol.Setup(p => p.WriteAsync($"exec:cmd package 'install'  {string.Join(" ", args)} -S 3", default))
+                protocol.Setup(p => p.WriteAsync($"exec:cmd package 'install' {string.Join(" ", args)} -S 3", default))
                         .Verifiable();
             }
 
@@ -99,6 +151,60 @@ namespace Kaponata.Android.Tests.Adb
                 apkStream,
                 default,
                 args).ConfigureAwait(false);
+
+            protocol.Verify();
+        }
+
+        /// <summary>
+        /// The <see cref="AdbClient.InstallAsync(DeviceData, Stream, CancellationToken, string[])"/> method throws when the <c>ADB</c> server reports a failure.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="Task"/> which represents the asynchrounous test.
+        /// </returns>
+        [Fact]
+        public async Task Install_ThrowsOnFailure_Async()
+        {
+            Stream receivedStream = null;
+            var protocol = new Mock<AdbProtocol>()
+            {
+                CallBase = true,
+            };
+
+            protocol.Setup(p => p.WriteAsync($"exec:cmd package 'install' -S 3", default))
+                    .Verifiable();
+
+            protocol
+                .Setup(p => p.ReadIndefiniteLengthStringAsync(default))
+                .ReturnsAsync("Fail\n");
+            protocol.Setup(p => p.ReadAdbResponseAsync(default))
+                    .ReturnsAsync(AdbResponse.Success)
+                    .Verifiable();
+            protocol
+                .Setup(p => p.SetDeviceAsync(It.IsAny<DeviceData>(), default)).Returns(Task.CompletedTask);
+            protocol
+                .Setup(p => p.WriteAsync(It.IsAny<Stream>(), default))
+                .Callback<Stream, CancellationToken>((s, c) =>
+                {
+                    receivedStream = s;
+                });
+
+            var clientMock = new Mock<AdbClient>(NullLogger<AdbClient>.Instance, NullLoggerFactory.Instance)
+            {
+                CallBase = true,
+            };
+
+            clientMock.Setup(c => c.TryConnectToAdbAsync(default)).ReturnsAsync(protocol.Object);
+            var client = clientMock.Object;
+
+            using var apkStream = new MemoryStream(new byte[] { 1, 2, 3 });
+
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () => await client.InstallAsync(
+                new DeviceData() { Serial = "123" },
+                apkStream,
+                default,
+                null).ConfigureAwait(false));
+
+            Assert.Equal("Fail\n", exception.Message);
 
             protocol.Verify();
         }

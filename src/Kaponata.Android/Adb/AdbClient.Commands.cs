@@ -118,31 +118,26 @@ namespace Kaponata.Android.Adb
                 throw new ArgumentOutOfRangeException(nameof(apk), "The apk stream must be a readable and seekable stream");
             }
 
-            var requestBuilder = new StringBuilder();
-            requestBuilder.Append("exec:cmd package 'install' ");
-
-            if (arguments != null)
-            {
-                foreach (var argument in arguments)
-                {
-                    requestBuilder.Append(" ");
-                    requestBuilder.Append(argument);
-                }
-            }
-
-            // add size parameter [required for streaming installs]
-            // do last to override any user specified value
-            requestBuilder.Append($" -S {apk.Length}");
-
             await using var protocol = await this.TryConnectToAdbAsync(cancellationToken).ConfigureAwait(false);
             await protocol.SetDeviceAsync(device, cancellationToken).ConfigureAwait(false);
 
-            await protocol.WriteAsync(requestBuilder.ToString(), cancellationToken).ConfigureAwait(false);
+            var command = $"exec:cmd package 'install' -S {apk.Length}";
+            if (arguments != null && arguments.Length > 0)
+            {
+                command = string.Join(" ", "exec:cmd package 'install'", string.Join(" ", arguments), $"-S {apk.Length}");
+            }
+
+            await protocol.WriteAsync(command, cancellationToken).ConfigureAwait(false);
             protocol.EnsureValidAdbResponse(await protocol.ReadAdbResponseAsync(cancellationToken).ConfigureAwait(false));
 
             await protocol.WriteAsync(apk, cancellationToken).ConfigureAwait(false);
 
             var installMessage = await protocol.ReadIndefiniteLengthStringAsync(cancellationToken).ConfigureAwait(false);
+
+            if (!string.Equals(installMessage, "Success\n"))
+            {
+                throw new InvalidOperationException(installMessage);
+            }
         }
 
         /// <summary>
