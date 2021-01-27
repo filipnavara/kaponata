@@ -2,6 +2,8 @@
 // Copyright (c) Quamotion bv. All rights reserved.
 // </copyright>
 
+using Kaponata.Operator.Kubernetes;
+using Kaponata.Operator.Operators;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -25,6 +27,9 @@ namespace Kaponata.Operator
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddHealthChecks();
+
+            services.AddKubernetes();
+            services.AddHostedService<RedroidOperator>();
         }
 
         /// <summary>
