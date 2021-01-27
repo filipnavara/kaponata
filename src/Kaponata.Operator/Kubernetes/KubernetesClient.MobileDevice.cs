@@ -221,7 +221,7 @@ namespace Kaponata.Operator.Kubernetes
         /// </returns>
         public Task<WatchExitReason> WatchMobileDeviceAsync(
             MobileDevice value,
-            Func<WatchEventType, MobileDevice, Task<WatchResult>> eventHandler,
+            WatchEventDelegate<MobileDevice> eventHandler,
             CancellationToken cancellationToken)
         {
             return this.protocol.WatchNamespacedObjectAsync<MobileDevice, MobileDeviceList>(
@@ -264,12 +264,12 @@ namespace Kaponata.Operator.Kubernetes
         /// return value describes why the watcher stopped. The task errors if the watch
         /// loop errors.
         /// </returns>
-        public Task<WatchExitReason> WatchMobileDeviceAsync(
+        public virtual Task<WatchExitReason> WatchMobileDeviceAsync(
             string @namespace,
             string fieldSelector,
             string labelSelector,
             string resourceVersion,
-            Func<WatchEventType, MobileDevice, Task<WatchResult>> eventHandler,
+            WatchEventDelegate<MobileDevice> eventHandler,
             CancellationToken cancellationToken)
         {
             return this.protocol.WatchNamespacedObjectAsync<MobileDevice, MobileDeviceList>(

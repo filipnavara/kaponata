@@ -164,7 +164,7 @@ namespace Kaponata.Operator.Kubernetes
         /// </returns>
         public virtual Task<WatchExitReason> WatchPodAsync(
             V1Pod value,
-            Func<WatchEventType, V1Pod, Task<WatchResult>> eventHandler,
+            WatchEventDelegate<V1Pod> eventHandler,
             CancellationToken cancellationToken)
         {
             return this.protocol.WatchNamespacedObjectAsync(
@@ -212,7 +212,7 @@ namespace Kaponata.Operator.Kubernetes
             string fieldSelector,
             string labelSelector,
             string resourceVersion,
-            Func<WatchEventType, V1Pod, Task<WatchResult>> eventHandler,
+            WatchEventDelegate<V1Pod> eventHandler,
             CancellationToken cancellationToken)
         {
             return this.protocol.WatchNamespacedObjectAsync(

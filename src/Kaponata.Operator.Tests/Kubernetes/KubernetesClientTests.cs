@@ -151,14 +151,14 @@ namespace Kaponata.Operator.Tests.Kubernetes
                     },
                 };
 
-            Func<WatchEventType, V1Pod, Task<WatchResult>> callback = null;
+            WatchEventDelegate<V1Pod> callback = null;
             TaskCompletionSource<WatchExitReason> watchTask = new TaskCompletionSource<WatchExitReason>();
 
             var protocol = new Mock<IKubernetesProtocol>(MockBehavior.Strict);
             protocol.Setup(p => p.Dispose()).Verifiable();
             protocol
-                .Setup(p => p.WatchNamespacedObjectAsync(pod, protocol.Object.ListNamespacedPodWithHttpMessagesAsync, It.IsAny<Func<WatchEventType, V1Pod, Task<WatchResult>>>(), It.IsAny<CancellationToken>()))
-                .Returns<V1Pod, ListNamespacedObjectWithHttpMessagesAsync<V1Pod, V1PodList>, Func<WatchEventType, V1Pod, Task<WatchResult>>, CancellationToken>((pod, list, watcher, ct) =>
+                .Setup(p => p.WatchNamespacedObjectAsync(pod, protocol.Object.ListNamespacedPodWithHttpMessagesAsync, It.IsAny<WatchEventDelegate<V1Pod>>(), It.IsAny<CancellationToken>()))
+                .Returns<V1Pod, ListNamespacedObjectWithHttpMessagesAsync<V1Pod, V1PodList>, WatchEventDelegate<V1Pod>, CancellationToken>((pod, list, watcher, ct) =>
                 {
                     Assert.NotNull(list);
                     callback = watcher;
@@ -202,14 +202,14 @@ namespace Kaponata.Operator.Tests.Kubernetes
                     },
                 };
 
-            Func<WatchEventType, V1Pod, Task<WatchResult>> callback = null;
+            WatchEventDelegate<V1Pod> callback = null;
             TaskCompletionSource<WatchExitReason> watchTask = new TaskCompletionSource<WatchExitReason>();
 
             var protocol = new Mock<IKubernetesProtocol>(MockBehavior.Strict);
             protocol.Setup(p => p.Dispose()).Verifiable();
             protocol
-                .Setup(p => p.WatchNamespacedObjectAsync(pod, protocol.Object.ListNamespacedPodWithHttpMessagesAsync, It.IsAny<Func<WatchEventType, V1Pod, Task<WatchResult>>>(), It.IsAny<CancellationToken>()))
-                .Returns<V1Pod, ListNamespacedObjectWithHttpMessagesAsync<V1Pod, V1PodList>, Func<WatchEventType, V1Pod, Task<WatchResult>>, CancellationToken>((pod, list, watcher, ct) =>
+                .Setup(p => p.WatchNamespacedObjectAsync(pod, protocol.Object.ListNamespacedPodWithHttpMessagesAsync, It.IsAny<WatchEventDelegate<V1Pod>>(), It.IsAny<CancellationToken>()))
+                .Returns<V1Pod, ListNamespacedObjectWithHttpMessagesAsync<V1Pod, V1PodList>, WatchEventDelegate<V1Pod>, CancellationToken>((pod, list, watcher, ct) =>
                 {
                     Assert.NotNull(list);
                     callback = watcher;
@@ -256,14 +256,14 @@ namespace Kaponata.Operator.Tests.Kubernetes
                     },
                 };
 
-            Func<WatchEventType, V1Pod, Task<WatchResult>> callback = null;
+            WatchEventDelegate<V1Pod> callback = null;
             TaskCompletionSource<WatchExitReason> watchTask = new TaskCompletionSource<WatchExitReason>();
 
             var protocol = new Mock<IKubernetesProtocol>(MockBehavior.Strict);
             protocol.Setup(p => p.Dispose()).Verifiable();
             protocol
-                .Setup(p => p.WatchNamespacedObjectAsync(pod, protocol.Object.ListNamespacedPodWithHttpMessagesAsync, It.IsAny<Func<WatchEventType, V1Pod, Task<WatchResult>>>(), It.IsAny<CancellationToken>()))
-                .Returns<V1Pod, ListNamespacedObjectWithHttpMessagesAsync<V1Pod, V1PodList>, Func<WatchEventType, V1Pod, Task<WatchResult>>, CancellationToken>((pod, list, watcher, ct) =>
+                .Setup(p => p.WatchNamespacedObjectAsync(pod, protocol.Object.ListNamespacedPodWithHttpMessagesAsync, It.IsAny<WatchEventDelegate<V1Pod>>(), It.IsAny<CancellationToken>()))
+                .Returns<V1Pod, ListNamespacedObjectWithHttpMessagesAsync<V1Pod, V1PodList>, WatchEventDelegate<V1Pod>, CancellationToken>((pod, list, watcher, ct) =>
                 {
                     Assert.NotNull(list);
                     callback = watcher;
@@ -310,14 +310,14 @@ namespace Kaponata.Operator.Tests.Kubernetes
                     },
                 };
 
-            Func<WatchEventType, V1Pod, Task<WatchResult>> callback = null;
+            WatchEventDelegate<V1Pod> callback = null;
             TaskCompletionSource<WatchExitReason> watchTask = new TaskCompletionSource<WatchExitReason>();
 
             var protocol = new Mock<IKubernetesProtocol>(MockBehavior.Strict);
             protocol.Setup(p => p.Dispose()).Verifiable();
             protocol
-                .Setup(p => p.WatchNamespacedObjectAsync(pod, protocol.Object.ListNamespacedPodWithHttpMessagesAsync, It.IsAny<Func<WatchEventType, V1Pod, Task<WatchResult>>>(), It.IsAny<CancellationToken>()))
-                .Returns<V1Pod, ListNamespacedObjectWithHttpMessagesAsync<V1Pod, V1PodList>, Func<WatchEventType, V1Pod, Task<WatchResult>>, CancellationToken>((pod, list, watcher, ct) =>
+                .Setup(p => p.WatchNamespacedObjectAsync(pod, protocol.Object.ListNamespacedPodWithHttpMessagesAsync, It.IsAny<WatchEventDelegate<V1Pod>>(), It.IsAny<CancellationToken>()))
+                .Returns<V1Pod, ListNamespacedObjectWithHttpMessagesAsync<V1Pod, V1PodList>, WatchEventDelegate<V1Pod>, CancellationToken>((pod, list, watcher, ct) =>
                 {
                     Assert.NotNull(list);
                     callback = watcher;
@@ -360,14 +360,14 @@ namespace Kaponata.Operator.Tests.Kubernetes
                     },
                 };
 
-            Func<WatchEventType, V1Pod, Task<WatchResult>> callback = null;
+            WatchEventDelegate<V1Pod> callback = null;
             TaskCompletionSource<WatchExitReason> watchTask = new TaskCompletionSource<WatchExitReason>();
 
             var protocol = new Mock<IKubernetesProtocol>(MockBehavior.Strict);
             protocol.Setup(p => p.Dispose()).Verifiable();
             protocol
-                .Setup(p => p.WatchNamespacedObjectAsync(pod, protocol.Object.ListNamespacedPodWithHttpMessagesAsync, It.IsAny<Func<WatchEventType, V1Pod, Task<WatchResult>>>(), It.IsAny<CancellationToken>()))
-                .Returns<V1Pod, ListNamespacedObjectWithHttpMessagesAsync<V1Pod, V1PodList>, Func<WatchEventType, V1Pod, Task<WatchResult>>, CancellationToken>((pod, list, watcher, ct) =>
+                .Setup(p => p.WatchNamespacedObjectAsync(pod, protocol.Object.ListNamespacedPodWithHttpMessagesAsync, It.IsAny<WatchEventDelegate<V1Pod>>(), It.IsAny<CancellationToken>()))
+                .Returns<V1Pod, ListNamespacedObjectWithHttpMessagesAsync<V1Pod, V1PodList>, WatchEventDelegate<V1Pod>, CancellationToken>((pod, list, watcher, ct) =>
                 {
                     Assert.NotNull(list);
                     callback = watcher;
@@ -426,7 +426,7 @@ namespace Kaponata.Operator.Tests.Kubernetes
                     },
                 };
 
-            Func<WatchEventType, V1Pod, Task<WatchResult>> callback = null;
+            WatchEventDelegate<V1Pod> callback = null;
             TaskCompletionSource<WatchExitReason> watchTask = new TaskCompletionSource<WatchExitReason>();
 
             var protocol = new Mock<IKubernetesProtocol>(MockBehavior.Strict);
@@ -436,8 +436,8 @@ namespace Kaponata.Operator.Tests.Kubernetes
                 .Returns(Task.FromResult(new HttpOperationResponse<V1Pod>() { Body = pod, Response = new HttpResponseMessage(HttpStatusCode.OK) })).Verifiable();
 
             protocol
-                .Setup(p => p.WatchNamespacedObjectAsync(pod, protocol.Object.ListNamespacedPodWithHttpMessagesAsync, It.IsAny<Func<WatchEventType, V1Pod, Task<WatchResult>>>(), It.IsAny<CancellationToken>()))
-                .Returns<V1Pod, ListNamespacedObjectWithHttpMessagesAsync<V1Pod, V1PodList>, Func<WatchEventType, V1Pod, Task<WatchResult>>, CancellationToken>((pod, list, watcher, ct) =>
+                .Setup(p => p.WatchNamespacedObjectAsync(pod, protocol.Object.ListNamespacedPodWithHttpMessagesAsync, It.IsAny<WatchEventDelegate<V1Pod>>(), It.IsAny<CancellationToken>()))
+                .Returns<V1Pod, ListNamespacedObjectWithHttpMessagesAsync<V1Pod, V1PodList>, WatchEventDelegate<V1Pod>, CancellationToken>((pod, list, watcher, ct) =>
                 {
                     Assert.NotNull(list);
                     callback = watcher;
@@ -482,7 +482,7 @@ namespace Kaponata.Operator.Tests.Kubernetes
                     },
                 };
 
-            Func<WatchEventType, V1Pod, Task<WatchResult>> callback = null;
+            WatchEventDelegate<V1Pod> callback = null;
             TaskCompletionSource<WatchExitReason> watchTask = new TaskCompletionSource<WatchExitReason>();
 
             var protocol = new Mock<IKubernetesProtocol>(MockBehavior.Strict);
@@ -492,8 +492,8 @@ namespace Kaponata.Operator.Tests.Kubernetes
                 .Returns(Task.FromResult(new HttpOperationResponse<V1Pod>() { Body = pod, Response = new HttpResponseMessage(HttpStatusCode.OK) })).Verifiable();
 
             protocol
-                .Setup(p => p.WatchNamespacedObjectAsync(pod, protocol.Object.ListNamespacedPodWithHttpMessagesAsync, It.IsAny<Func<WatchEventType, V1Pod, Task<WatchResult>>>(), It.IsAny<CancellationToken>()))
-                .Returns<V1Pod, ListNamespacedObjectWithHttpMessagesAsync<V1Pod, V1PodList>, Func<WatchEventType, V1Pod, Task<WatchResult>>, CancellationToken>((pod, list, watcher, ct) =>
+                .Setup(p => p.WatchNamespacedObjectAsync(pod, protocol.Object.ListNamespacedPodWithHttpMessagesAsync, It.IsAny<WatchEventDelegate<V1Pod>>(), It.IsAny<CancellationToken>()))
+                .Returns<V1Pod, ListNamespacedObjectWithHttpMessagesAsync<V1Pod, V1PodList>, WatchEventDelegate<V1Pod>, CancellationToken>((pod, list, watcher, ct) =>
                 {
                     Assert.NotNull(list);
                     callback = watcher;
@@ -538,7 +538,7 @@ namespace Kaponata.Operator.Tests.Kubernetes
                     },
                 };
 
-            Func<WatchEventType, V1Pod, Task<WatchResult>> callback = null;
+            WatchEventDelegate<V1Pod> callback = null;
             TaskCompletionSource<WatchExitReason> watchTask = new TaskCompletionSource<WatchExitReason>();
 
             var protocol = new Mock<IKubernetesProtocol>(MockBehavior.Strict);
@@ -548,8 +548,8 @@ namespace Kaponata.Operator.Tests.Kubernetes
                 .Returns(Task.FromResult(new HttpOperationResponse<V1Pod>() { Body = pod, Response = new HttpResponseMessage(HttpStatusCode.OK) })).Verifiable();
 
             protocol
-                .Setup(p => p.WatchNamespacedObjectAsync(pod, protocol.Object.ListNamespacedPodWithHttpMessagesAsync, It.IsAny<Func<WatchEventType, V1Pod, Task<WatchResult>>>(), It.IsAny<CancellationToken>()))
-                .Returns<V1Pod, ListNamespacedObjectWithHttpMessagesAsync<V1Pod, V1PodList>, Func<WatchEventType, V1Pod, Task<WatchResult>>, CancellationToken>((pod, list, watcher, ct) =>
+                .Setup(p => p.WatchNamespacedObjectAsync(pod, protocol.Object.ListNamespacedPodWithHttpMessagesAsync, It.IsAny<WatchEventDelegate<V1Pod>>(), It.IsAny<CancellationToken>()))
+                .Returns<V1Pod, ListNamespacedObjectWithHttpMessagesAsync<V1Pod, V1PodList>, WatchEventDelegate<V1Pod>, CancellationToken>((pod, list, watcher, ct) =>
                 {
                     Assert.NotNull(list);
                     callback = watcher;
@@ -794,7 +794,7 @@ namespace Kaponata.Operator.Tests.Kubernetes
         public void WatchPodAsync_ForwardRequests()
         {
             var tcs = new TaskCompletionSource<WatchExitReason>();
-            var eventHandler = new Func<WatchEventType, V1Pod, Task<WatchResult>>((type, pod) => Task.FromResult(WatchResult.Continue));
+            var eventHandler = new WatchEventDelegate<V1Pod>((type, pod) => Task.FromResult(WatchResult.Continue));
 
             var protocol = new Mock<IKubernetesProtocol>(MockBehavior.Strict);
             protocol
