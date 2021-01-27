@@ -1,0 +1,25 @@
+name: website
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-20.04
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Compile Website
+      uses: docker://squidfunk/mkdocs-material:6.2.6
+      with:
+        # Perhaps oddly enough, $ {{ github.workspace }} expands to /home/runner/work/kaponata/kaponata which is
+        # correct on the host, but the directory name is /github/workspace inside the container
+        args: "build -f website/mkdocs.yml -d /github/workspace/bin/website/"
+    
+    - name: Upload website as artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: website
+        path: ${{ github.workspace }}/bin/website/
