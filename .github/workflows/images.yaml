@@ -4,6 +4,10 @@ on:
     branches:
       - main
   pull_request:
+    paths:
+    - src/iproxy
+    - src/usbmuxd
+    - src/adb
 
 jobs:
   build:
