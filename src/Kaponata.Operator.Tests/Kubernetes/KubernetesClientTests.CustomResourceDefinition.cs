@@ -142,7 +142,7 @@ namespace Kaponata.Operator.Tests.Kubernetes
                     },
                 };
 
-            Func<WatchEventType, V1CustomResourceDefinition, Task<WatchResult>> callback = null;
+            WatchEventDelegate<V1CustomResourceDefinition> callback = null;
             TaskCompletionSource<WatchExitReason> watchTask = new TaskCompletionSource<WatchExitReason>();
 
             var protocol = new Mock<IKubernetesProtocol>(MockBehavior.Strict);
@@ -152,8 +152,8 @@ namespace Kaponata.Operator.Tests.Kubernetes
                 .Returns(Task.FromResult(new HttpOperationResponse<V1Status>() { Body = new V1Status(), Response = new HttpResponseMessage(HttpStatusCode.OK) })).Verifiable();
 
             protocol
-                .Setup(p => p.WatchCustomResourceDefinitionAsync(customResourceDefinition, It.IsAny<Func<WatchEventType, V1CustomResourceDefinition, Task<WatchResult>>>(), It.IsAny<CancellationToken>()))
-                .Returns<V1CustomResourceDefinition, Func<WatchEventType, V1CustomResourceDefinition, Task<WatchResult>>, CancellationToken>((customResourceDefinition, watcher, ct) =>
+                .Setup(p => p.WatchCustomResourceDefinitionAsync(customResourceDefinition, It.IsAny<WatchEventDelegate<V1CustomResourceDefinition>>(), It.IsAny<CancellationToken>()))
+                .Returns<V1CustomResourceDefinition, WatchEventDelegate<V1CustomResourceDefinition>, CancellationToken>((customResourceDefinition, watcher, ct) =>
                 {
                     callback = watcher;
                     return watchTask.Task;
@@ -192,7 +192,7 @@ namespace Kaponata.Operator.Tests.Kubernetes
                     },
                 };
 
-            Func<WatchEventType, V1CustomResourceDefinition, Task<WatchResult>> callback = null;
+            WatchEventDelegate<V1CustomResourceDefinition> callback = null;
             TaskCompletionSource<WatchExitReason> watchTask = new TaskCompletionSource<WatchExitReason>();
 
             var protocol = new Mock<IKubernetesProtocol>(MockBehavior.Strict);
@@ -202,8 +202,8 @@ namespace Kaponata.Operator.Tests.Kubernetes
                 .Returns(Task.FromResult(new HttpOperationResponse<V1Status>() { Body = new V1Status(), Response = new HttpResponseMessage(HttpStatusCode.OK) })).Verifiable();
 
             protocol
-                .Setup(p => p.WatchCustomResourceDefinitionAsync(customResourceDefinition, It.IsAny<Func<WatchEventType, V1CustomResourceDefinition, Task<WatchResult>>>(), It.IsAny<CancellationToken>()))
-                .Returns<V1CustomResourceDefinition, Func<WatchEventType, V1CustomResourceDefinition, Task<WatchResult>>, CancellationToken>((customResourceDefinition, watcher, ct) =>
+                .Setup(p => p.WatchCustomResourceDefinitionAsync(customResourceDefinition, It.IsAny<WatchEventDelegate<V1CustomResourceDefinition>>(), It.IsAny<CancellationToken>()))
+                .Returns<V1CustomResourceDefinition, WatchEventDelegate<V1CustomResourceDefinition>, CancellationToken>((customResourceDefinition, watcher, ct) =>
                 {
                     callback = watcher;
                     return watchTask.Task;
@@ -245,7 +245,7 @@ namespace Kaponata.Operator.Tests.Kubernetes
                     },
                 };
 
-            Func<WatchEventType, V1CustomResourceDefinition, Task<WatchResult>> callback = null;
+            WatchEventDelegate<V1CustomResourceDefinition> callback = null;
             TaskCompletionSource<WatchExitReason> watchTask = new TaskCompletionSource<WatchExitReason>();
 
             var protocol = new Mock<IKubernetesProtocol>(MockBehavior.Strict);
@@ -255,8 +255,8 @@ namespace Kaponata.Operator.Tests.Kubernetes
                 .Returns(Task.FromResult(new HttpOperationResponse<V1Status>() { Body = new V1Status(), Response = new HttpResponseMessage(HttpStatusCode.OK) })).Verifiable();
 
             protocol
-                .Setup(p => p.WatchCustomResourceDefinitionAsync(customResourceDefinition, It.IsAny<Func<WatchEventType, V1CustomResourceDefinition, Task<WatchResult>>>(), It.IsAny<CancellationToken>()))
-                .Returns<V1CustomResourceDefinition, Func<WatchEventType, V1CustomResourceDefinition, Task<WatchResult>>, CancellationToken>((customResourceDefinition, watcher, ct) =>
+                .Setup(p => p.WatchCustomResourceDefinitionAsync(customResourceDefinition, It.IsAny<WatchEventDelegate<V1CustomResourceDefinition>>(), It.IsAny<CancellationToken>()))
+                .Returns<V1CustomResourceDefinition, WatchEventDelegate<V1CustomResourceDefinition>, CancellationToken>((customResourceDefinition, watcher, ct) =>
                 {
                     callback = watcher;
                     return watchTask.Task;
@@ -595,14 +595,14 @@ namespace Kaponata.Operator.Tests.Kubernetes
                     },
                 };
 
-            Func<WatchEventType, V1CustomResourceDefinition, Task<WatchResult>> callback = null;
+            WatchEventDelegate<V1CustomResourceDefinition> callback = null;
             TaskCompletionSource<WatchExitReason> watchTask = new TaskCompletionSource<WatchExitReason>();
 
             var protocol = new Mock<IKubernetesProtocol>(MockBehavior.Strict);
             protocol.Setup(p => p.Dispose()).Verifiable();
             protocol
-                .Setup(p => p.WatchCustomResourceDefinitionAsync(crd, It.IsAny<Func<WatchEventType, V1CustomResourceDefinition, Task<WatchResult>>>(), It.IsAny<CancellationToken>()))
-                .Returns<V1CustomResourceDefinition, Func<WatchEventType, V1CustomResourceDefinition, Task<WatchResult>>, CancellationToken>((crd, watcher, ct) =>
+                .Setup(p => p.WatchCustomResourceDefinitionAsync(crd, It.IsAny<WatchEventDelegate<V1CustomResourceDefinition>>(), It.IsAny<CancellationToken>()))
+                .Returns<V1CustomResourceDefinition, WatchEventDelegate<V1CustomResourceDefinition>, CancellationToken>((crd, watcher, ct) =>
                 {
                     callback = watcher;
                     return watchTask.Task;
@@ -641,14 +641,14 @@ namespace Kaponata.Operator.Tests.Kubernetes
                     },
                 };
 
-            Func<WatchEventType, V1CustomResourceDefinition, Task<WatchResult>> callback = null;
+            WatchEventDelegate<V1CustomResourceDefinition> callback = null;
             TaskCompletionSource<WatchExitReason> watchTask = new TaskCompletionSource<WatchExitReason>();
 
             var protocol = new Mock<IKubernetesProtocol>(MockBehavior.Strict);
             protocol.Setup(p => p.Dispose()).Verifiable();
             protocol
-                .Setup(p => p.WatchCustomResourceDefinitionAsync(crd, It.IsAny<Func<WatchEventType, V1CustomResourceDefinition, Task<WatchResult>>>(), It.IsAny<CancellationToken>()))
-                .Returns<V1CustomResourceDefinition, Func<WatchEventType, V1CustomResourceDefinition, Task<WatchResult>>, CancellationToken>((pod, watcher, ct) =>
+                .Setup(p => p.WatchCustomResourceDefinitionAsync(crd, It.IsAny<WatchEventDelegate<V1CustomResourceDefinition>>(), It.IsAny<CancellationToken>()))
+                .Returns<V1CustomResourceDefinition, WatchEventDelegate<V1CustomResourceDefinition>, CancellationToken>((pod, watcher, ct) =>
                 {
                     callback = watcher;
                     return watchTask.Task;
@@ -728,14 +728,14 @@ namespace Kaponata.Operator.Tests.Kubernetes
                     },
                 };
 
-            Func<WatchEventType, V1CustomResourceDefinition, Task<WatchResult>> callback = null;
+            WatchEventDelegate<V1CustomResourceDefinition> callback = null;
             TaskCompletionSource<WatchExitReason> watchTask = new TaskCompletionSource<WatchExitReason>();
 
             var protocol = new Mock<IKubernetesProtocol>(MockBehavior.Strict);
             protocol.Setup(p => p.Dispose()).Verifiable();
             protocol
-                .Setup(p => p.WatchCustomResourceDefinitionAsync(crd, It.IsAny<Func<WatchEventType, V1CustomResourceDefinition, Task<WatchResult>>>(), It.IsAny<CancellationToken>()))
-                .Returns<V1CustomResourceDefinition, Func<WatchEventType, V1CustomResourceDefinition, Task<WatchResult>>, CancellationToken>((pod, watcher, ct) =>
+                .Setup(p => p.WatchCustomResourceDefinitionAsync(crd, It.IsAny<WatchEventDelegate<V1CustomResourceDefinition>>(), It.IsAny<CancellationToken>()))
+                .Returns<V1CustomResourceDefinition, WatchEventDelegate<V1CustomResourceDefinition>, CancellationToken>((pod, watcher, ct) =>
                 {
                     callback = watcher;
                     return watchTask.Task;
@@ -773,14 +773,14 @@ namespace Kaponata.Operator.Tests.Kubernetes
                     },
                 };
 
-            Func<WatchEventType, V1CustomResourceDefinition, Task<WatchResult>> callback = null;
+            WatchEventDelegate<V1CustomResourceDefinition> callback = null;
             TaskCompletionSource<WatchExitReason> watchTask = new TaskCompletionSource<WatchExitReason>();
 
             var protocol = new Mock<IKubernetesProtocol>(MockBehavior.Strict);
             protocol.Setup(p => p.Dispose()).Verifiable();
             protocol
-                .Setup(p => p.WatchCustomResourceDefinitionAsync(crd, It.IsAny<Func<WatchEventType, V1CustomResourceDefinition, Task<WatchResult>>>(), It.IsAny<CancellationToken>()))
-                .Returns<V1CustomResourceDefinition, Func<WatchEventType, V1CustomResourceDefinition, Task<WatchResult>>, CancellationToken>((pod, watcher, ct) =>
+                .Setup(p => p.WatchCustomResourceDefinitionAsync(crd, It.IsAny<WatchEventDelegate<V1CustomResourceDefinition>>(), It.IsAny<CancellationToken>()))
+                .Returns<V1CustomResourceDefinition, WatchEventDelegate<V1CustomResourceDefinition>, CancellationToken>((pod, watcher, ct) =>
                 {
                     callback = watcher;
                     return watchTask.Task;

@@ -4,7 +4,6 @@
 
 using k8s;
 using k8s.Models;
-using System;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -43,7 +42,7 @@ namespace Kaponata.Operator.Kubernetes.Polyfill
         /// </returns>
         Task<WatchExitReason> WatchCustomResourceDefinitionAsync(
             V1CustomResourceDefinition crd,
-            Func<WatchEventType, V1CustomResourceDefinition, Task<WatchResult>> eventHandler,
+            WatchEventDelegate<V1CustomResourceDefinition> eventHandler,
             CancellationToken cancellationToken);
 
         /// <summary>
@@ -78,7 +77,7 @@ namespace Kaponata.Operator.Kubernetes.Polyfill
         Task<WatchExitReason> WatchNamespacedObjectAsync<TObject, TList>(
             TObject value,
             ListNamespacedObjectWithHttpMessagesAsync<TObject, TList> listOperation,
-            Func<WatchEventType, TObject, Task<WatchResult>> eventHandler,
+            WatchEventDelegate<TObject> eventHandler,
             CancellationToken cancellationToken)
             where TObject : IKubernetesObject<V1ObjectMeta>
             where TList : IItems<TObject>;
@@ -131,7 +130,7 @@ namespace Kaponata.Operator.Kubernetes.Polyfill
             string labelSelector,
             string resourceVersion,
             ListNamespacedObjectWithHttpMessagesAsync<TObject, TList> listOperation,
-            Func<WatchEventType, TObject, Task<WatchResult>> eventHandler,
+            WatchEventDelegate<TObject> eventHandler,
             CancellationToken cancellationToken)
             where TObject : IKubernetesObject<V1ObjectMeta>
             where TList : IItems<TObject>;

@@ -61,7 +61,7 @@ namespace Kaponata.Operator.Kubernetes
 
         private delegate Task<WatchExitReason> WatchObjectAsyncDelegate<T>(
             T value,
-            Func<WatchEventType, T, Task<WatchResult>> onEvent,
+            WatchEventDelegate<T> onEvent,
             CancellationToken cancellationToken)
             where T : IKubernetesObject<V1ObjectMeta>;
 

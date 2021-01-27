@@ -40,7 +40,7 @@ namespace Kaponata.Operator.Kubernetes.Polyfill
         /// <inheritdoc/>
         public Task<WatchExitReason> WatchCustomResourceDefinitionAsync(
             V1CustomResourceDefinition value,
-            Func<WatchEventType, V1CustomResourceDefinition, Task<WatchResult>> eventHandler,
+            WatchEventDelegate<V1CustomResourceDefinition> eventHandler,
             CancellationToken cancellationToken)
         {
             return this.WatchObjectAsync(
@@ -54,7 +54,7 @@ namespace Kaponata.Operator.Kubernetes.Polyfill
         public Task<WatchExitReason> WatchNamespacedObjectAsync<TObject, TList>(
             TObject value,
             ListNamespacedObjectWithHttpMessagesAsync<TObject, TList> listOperation,
-            Func<WatchEventType, TObject, Task<WatchResult>> eventHandler,
+            WatchEventDelegate<TObject> eventHandler,
             CancellationToken cancellationToken)
             where TObject : IKubernetesObject<V1ObjectMeta>
             where TList : IItems<TObject>
@@ -96,7 +96,7 @@ namespace Kaponata.Operator.Kubernetes.Polyfill
             string labelSelector,
             string resourceVersion,
             ListNamespacedObjectWithHttpMessagesAsync<TObject, TList> listOperation,
-            Func<WatchEventType, TObject, Task<WatchResult>> eventHandler,
+            WatchEventDelegate<TObject> eventHandler,
             CancellationToken cancellationToken)
             where TObject : IKubernetesObject<V1ObjectMeta>
             where TList : IItems<TObject>
@@ -131,7 +131,7 @@ namespace Kaponata.Operator.Kubernetes.Polyfill
         private Task<WatchExitReason> WatchObjectAsync<TObject, TList>(
             TObject value,
             ListObjectWithHttpMessagesAsync<TObject, TList> listOperation,
-            Func<WatchEventType, TObject, Task<WatchResult>> eventHandler,
+            WatchEventDelegate<TObject> eventHandler,
             CancellationToken cancellationToken)
             where TObject : IKubernetesObject<V1ObjectMeta>
             where TList : IItems<TObject>
@@ -163,7 +163,7 @@ namespace Kaponata.Operator.Kubernetes.Polyfill
             string fieldSelector,
             string resourceVersion,
             ListObjectWithHttpMessagesAsync<TObject, TList> listOperation,
-            Func<WatchEventType, TObject, Task<WatchResult>> eventHandler,
+            WatchEventDelegate<TObject> eventHandler,
             CancellationToken cancellationToken)
             where TObject : IKubernetesObject<V1ObjectMeta>
             where TList : IItems<TObject>
@@ -185,7 +185,7 @@ namespace Kaponata.Operator.Kubernetes.Polyfill
 
         private async Task<WatchExitReason> WatchAsync<TObject, TList>(
             HttpOperationResponse<TList> response,
-            Func<WatchEventType, TObject, Task<WatchResult>> eventHandler,
+            WatchEventDelegate<TObject> eventHandler,
             CancellationToken cancellationToken)
             where TObject : IKubernetesObject<V1ObjectMeta>
             where TList : IItems<TObject>
