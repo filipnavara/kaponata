@@ -26,7 +26,6 @@ using Xunit.Abstractions;
 
 namespace Kaponata.Operator.Tests.Kubernetes.Polyfill
 {
-
     /// <summary>
     /// Tests the <see cref="KubernetesProtocol.WatchNamespacedObjectAsync"/> method.
     /// </summary>

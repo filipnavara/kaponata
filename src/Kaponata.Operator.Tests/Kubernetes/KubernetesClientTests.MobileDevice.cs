@@ -19,6 +19,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 
+#pragma warning disable VSTHRD003 // Avoid awaiting foreign Tasks
+
 namespace Kaponata.Operator.Tests.Kubernetes
 {
     /// <summary>
@@ -390,7 +392,8 @@ namespace Kaponata.Operator.Tests.Kubernetes
         }
 
         /// <summary>
-        /// <see cref="KubernetesClient.WatchMobileDeviceAsync"/> delegates its work to <see cref="IKubernetesProtocol.WatchNamespacedObjectAsync{TObject, TList}"/>.
+        /// <see cref="KubernetesClient.WatchMobileDeviceAsync(MobileDevice, WatchEventDelegate{MobileDevice}, CancellationToken)"/>
+        /// delegates its work to <see cref="IKubernetesProtocol.WatchNamespacedObjectAsync{TObject, TList}(TObject, ListNamespacedObjectWithHttpMessagesAsync{TObject, TList}, WatchEventDelegate{TObject}, CancellationToken)"/>.
         /// </summary>
         /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
         [Fact]
