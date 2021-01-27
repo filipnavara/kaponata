@@ -53,5 +53,40 @@ namespace Kaponata.Android.Tests.ScrCpy
 
             Assert.Equal(expected, memory.ToArray());
         }
+
+        /// <summary>
+        /// The <see cref="InjectTouchEventControlMessage.ToFixedPoint16(float)"/> method converts the given value.
+        /// </summary>
+        /// <param name="value">
+        /// The value to be converted.
+        /// </param>
+        /// <param name="result">
+        /// The expected result.
+        /// </param>
+        [Theory]
+        [InlineData(0.1, 6553)]
+        [InlineData(0.0, 0)]
+        [InlineData(0.85, 55705)]
+        [InlineData(1, 65535)]
+        public void ToFixedPoint16_ConvertsValue(float value, ushort result)
+        {
+            var message = new InjectTouchEventControlMessage();
+            Assert.Equal(result, message.ToFixedPoint16(value));
+        }
+
+        /// <summary>
+        /// The <see cref="InjectTouchEventControlMessage.ToFixedPoint16(float)"/> validates the input value.
+        /// </summary>
+        /// <param name="value">
+        /// The value to be converted.
+        /// </param>
+        [Theory]
+        [InlineData(-1)]
+        [InlineData(2)]
+        public void ToFixedPoint16_ValidatesInput(float value)
+        {
+            var message = new InjectTouchEventControlMessage();
+            Assert.Throws<ArgumentOutOfRangeException>(() => message.ToFixedPoint16(value));
+        }
     }
 }
