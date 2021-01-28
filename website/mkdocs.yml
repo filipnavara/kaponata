@@ -30,9 +30,9 @@ markdown_extensions:
 # Page tree
 nav:
   - Home: index.md
-  - User Guide: user-guide
+  - User Guide: user-guide/
   - Reference:
     - Class Library:
       - class/index.md
-      - Kaponata.Android: class/Kaponata.Android
-      - Kaponata.iOS: class/Kaponata.iOS
+      - Kaponata.Android: class/Kaponata.Android/
+      - Kaponata.iOS: class/Kaponata.iOS/
