@@ -2,6 +2,7 @@
 // Copyright (c) Quamotion bv. All rights reserved.
 // </copyright>
 
+using k8s.Models;
 using Kaponata.Operator.Kubernetes;
 using Kaponata.Operator.Models;
 using Microsoft.Extensions.DependencyInjection;
@@ -68,14 +69,18 @@ namespace Kaponata.Operator
         /// </returns>
         public async Task InstallAsync(CancellationToken cancellationToken)
         {
-            var mobileDeviceCrd = ModelDefinitions.MobileDevice;
+            await this.InstallCrdAsync(ModelDefinitions.MobileDevice, cancellationToken).ConfigureAwait(false);
+            await this.InstallCrdAsync(ModelDefinitions.WebDriverSession, cancellationToken).ConfigureAwait(false);
+        }
 
-            this.logger.LogInformation("Installing the {crdName} custom resource definition", mobileDeviceCrd.Metadata.Name);
+        private async Task InstallCrdAsync(V1CustomResourceDefinition crd, CancellationToken cancellationToken)
+        {
+            this.logger.LogInformation("Installing the {crdName} custom resource definition", crd.Metadata.Name);
             await this.kubernetesClient.InstallOrUpgradeCustomResourceDefinitionAsync(
-                mobileDeviceCrd,
+                crd,
                 TimeSpan.FromMinutes(1),
                 cancellationToken).ConfigureAwait(false);
-            this.logger.LogInformation("Successfully installed the {crdName} custom resource definition.", mobileDeviceCrd.Metadata.Name);
+            this.logger.LogInformation("Successfully installed the {crdName} custom resource definition.", crd.Metadata.Name);
         }
     }
 }

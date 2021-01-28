@@ -27,5 +27,20 @@ namespace Kaponata.Operator.Models
                 }
             }
         }
+
+        /// <summary>
+        /// Gets the <see cref="V1CustomResourceDefinition"/> for the WebDriverSession type.
+        /// </summary>
+        public static V1CustomResourceDefinition WebDriverSession
+        {
+            get
+            {
+                using (Stream stream = typeof(ModelDefinitions).Assembly.GetManifestResourceStream("Kaponata.Operator.Models.WebDriverSession.yaml"))
+                using (StreamReader reader = new StreamReader(stream))
+                {
+                    return Yaml.LoadFromString<V1CustomResourceDefinition>(reader.ReadToEnd());
+                }
+            }
+        }
     }
 }

@@ -368,6 +368,104 @@ namespace Kaponata.Operator.Tests.Kubernetes
             }
         }
 
+        /// <summary>
+        /// Runs an integration test which creates and deletes a <see cref="WebDriverSession"/> object.
+        /// </summary>
+        /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
+        [Fact]
+        [Trait("TestCategory", "IntegrationTest")]
+        public async Task CreateDeleteWebDriverSession_Async()
+        {
+            string name = FormatName(nameof(this.CreateDeleteWebDriverSession_Async));
+
+            using (var client = this.CreateKubernetesClient())
+            {
+                WebDriverSession currentDevice = null;
+
+                if ((currentDevice = await client.TryReadWebDriverSessionAsync("default", name, default).ConfigureAwait(false)) != null)
+                {
+                    await client.DeleteWebDriverSessionAsync(currentDevice, TimeSpan.FromSeconds(100), default).ConfigureAwait(false);
+                }
+
+                var session = new WebDriverSession()
+                {
+                    Metadata = new V1ObjectMeta()
+                    {
+                        Name = name,
+                        NamespaceProperty = "default",
+                    },
+                };
+
+                var newSession = await client.CreateWebDriverSessionAsync(session, default).ConfigureAwait(false);
+                Assert.NotNull(newSession);
+
+                var readSession = await client.TryReadWebDriverSessionAsync("default", name, default).ConfigureAwait(false);
+                Assert.NotNull(readSession);
+
+                await client.DeleteWebDriverSessionAsync(newSession, TimeSpan.FromMinutes(1), default).ConfigureAwait(false);
+
+                Assert.Null(await client.TryReadWebDriverSessionAsync("default", name, default).ConfigureAwait(false));
+            }
+        }
+
+        /// <summary>
+        /// Runs an integration test which watches a <see cref="WebDriverSession"/>.
+        /// </summary>
+        /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
+        [Fact]
+        [Trait("TestCategory", "IntegrationTest")]
+        public async Task WatchWebDriverSession_Async()
+        {
+            string name = FormatName(nameof(this.WatchWebDriverSession_Async));
+
+            using (var client = this.CreateKubernetesClient())
+            {
+                var watchEvents = new Collection<(WatchEventType, WebDriverSession)>();
+                WebDriverSession currentSession = null;
+
+                if ((currentSession = await client.TryReadWebDriverSessionAsync("default", name, default).ConfigureAwait(false)) != null)
+                {
+                    await client.DeleteWebDriverSessionAsync(currentSession, TimeSpan.FromSeconds(100), default).ConfigureAwait(false);
+                }
+
+                var watch = client.WatchWebDriverSessionAsync(
+                    new WebDriverSession() { Metadata = new V1ObjectMeta() { NamespaceProperty = "default", Name = name } },
+                    (type, device) =>
+                    {
+                        watchEvents.Add((type, device));
+
+                        return Task.FromResult(type == WatchEventType.Deleted ? WatchResult.Stop : WatchResult.Continue);
+                    },
+                    default);
+
+                var session = new WebDriverSession()
+                {
+                    Metadata = new V1ObjectMeta()
+                    {
+                        Name = name,
+                        NamespaceProperty = "default",
+                    },
+                };
+
+                await client.CreateWebDriverSessionAsync(session, default).ConfigureAwait(false);
+                await client.DeleteWebDriverSessionAsync(session, TimeSpan.FromMinutes(1), default).ConfigureAwait(false);
+                await watch.ConfigureAwait(false);
+
+                Assert.Collection(
+                    watchEvents,
+                    e =>
+                    {
+                        Assert.Equal(WatchEventType.Added, e.Item1);
+                        Assert.NotNull(e.Item2);
+                    },
+                    e =>
+                    {
+                        Assert.Equal(WatchEventType.Deleted, e.Item1);
+                        Assert.NotNull(e.Item2);
+                    });
+            }
+        }
+
         private static string FormatNameCamelCase(string value)
         {
             return value.Replace("_", "-");
