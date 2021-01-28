@@ -32,6 +32,8 @@ namespace Kaponata.Operator.Operators
         /// </summary>
         private readonly SemaphoreSlim semaphore = new SemaphoreSlim(1);
 
+        private TaskCompletionSource waitForCompletionTcs;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="RedroidOperator"/> class.
         /// </summary>
@@ -46,6 +48,16 @@ namespace Kaponata.Operator.Operators
             this.kubernetes = kubernetes ?? throw new ArgumentNullException(nameof(kubernetes));
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
+
+        /// <summary>
+        /// Gets a value indicating whether the operator is currently running.
+        /// </summary>
+        public bool IsRunning { get; private set; }
+
+        /// <summary>
+        /// Gets a <see cref="Task"/> which will finish when the <see cref="RedroidOperator"/> stops executing.
+        /// </summary>
+        public Task WaitForCompletion => this.waitForCompletionTcs.Task;
 
         /// <summary>
         /// Gets the labels attached to devices managed by the <see cref="RedroidOperator"/> class.
@@ -181,6 +193,9 @@ namespace Kaponata.Operator.Operators
         /// <inheritdoc/>
         protected override async Task ExecuteAsync(CancellationToken cancellationToken)
         {
+            this.waitForCompletionTcs = new TaskCompletionSource();
+            this.IsRunning = true;
+
             this.logger.LogInformation("Starting the {operatorName} operator", this.GetType().Name);
 
             try
@@ -222,6 +237,11 @@ namespace Kaponata.Operator.Operators
             catch (Exception ex)
             {
                 this.logger.LogError(ex, "An unexpected exception occurred when running the {operatorName} operator: {message}.", this.GetType().Name, ex.Message);
+            }
+            finally
+            {
+                this.waitForCompletionTcs.SetResult();
+                this.IsRunning = false;
             }
         }
     }

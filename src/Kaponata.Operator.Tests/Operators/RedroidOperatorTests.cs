@@ -444,5 +444,58 @@ namespace Kaponata.Operator.Tests.Operators
                 Assert.Single(newDeviceList);
             }
         }
+
+        /// <summary>
+        /// The <see cref="RedroidOperator"/> stops executing when one of the watchers stop executing.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="Task"/> representing the asynchronous unit test.
+        /// </returns>
+        /// <remarks>
+        /// This is the current behavior; we may well want to change this so that the watchers automatically restart.
+        /// </remarks>
+        [Fact]
+        public async Task RedroidOperator_Stops_WhenWatchersStop_Async()
+        {
+            var kubernetes = new Mock<KubernetesClient>(MockBehavior.Strict);
+
+            // Empty cluster, so the Reconcile loop at first nothing but start the watcher
+            var podWatchCts = kubernetes.WithPodWatcher(
+                labelSelector: "kubernetes.io/os=android");
+            kubernetes.WithPodList(
+                labelSelector: "kubernetes.io/os=android");
+
+            var deviceWatchCts = kubernetes.WithDeviceWatcher(
+                labelSelector: "kubernetes.io/os=android,app.kubernetes.io/managed-by=RedroidOperator");
+            kubernetes.WithDeviceList(
+                "kubernetes.io/os=android,app.kubernetes.io/managed-by=RedroidOperator");
+
+            using (var @operator = new RedroidOperator(
+                kubernetes.Object,
+                NullLogger<RedroidOperator>.Instance))
+            {
+                await @operator.StartAsync(default).ConfigureAwait(false);
+
+                Assert.True(@operator.IsRunning);
+
+                await Task.WhenAll(podWatchCts.ClientRegistered.Task, deviceWatchCts.ClientRegistered.Task).ConfigureAwait(false);
+
+                // Simulate the pod watcher and device watcher quitting
+                Assert.True(@operator.IsRunning);
+
+                podWatchCts.TaskCompletionSource.SetResult(WatchExitReason.ServerDisconnected);
+                deviceWatchCts.TaskCompletionSource.SetResult(WatchExitReason.ServerDisconnected);
+
+                await @operator.WaitForCompletion.ConfigureAwait(false);
+
+                Assert.False(@operator.IsRunning);
+
+                // operator.StopAsync will throw an exception because the operator is not running.
+                var ex = await Assert.ThrowsAsync<AggregateException>(() => @operator.StopAsync(default)).ConfigureAwait(false);
+                Assert.IsType<InvalidOperationException>(ex.GetBaseException().InnerException);
+
+                Assert.False(@operator.IsRunning);
+            }
+        }
     }
 }
