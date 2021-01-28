@@ -47,6 +47,11 @@ namespace Kaponata.Operator.Models
         public const string KubePlural = "mobiledevices";
 
         /// <summary>
+        /// Gets <see cref="KindMetadata"/> which describes the <see cref="MobileDevice"/> object type.
+        /// </summary>
+        public static KindMetadata KubeMetadata { get; } = new KindMetadata(KubeGroup, KubeVersion, KubePlural);
+
+        /// <summary>
         /// Gets or sets the API version, which defines the versioned schema of this representation of
         /// an object. Servers should convert recognized schemas to the latest internal value,
         /// and may reject unrecognized values.

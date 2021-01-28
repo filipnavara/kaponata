@@ -2,18 +2,13 @@
 // Copyright (c) Quamotion bv. All rights reserved.
 // </copyright>
 
-using k8s;
 using k8s.Models;
 using Kaponata.Operator.Kubernetes.Polyfill;
 using Kaponata.Operator.Models;
 using Microsoft.Rest;
-using Microsoft.Rest.Serialization;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -37,50 +32,12 @@ namespace Kaponata.Operator.Kubernetes
         /// A <see cref="Task"/> which represents the asynchronous operation, and returns the newly created mobile device
         /// when completed.
         /// </returns>
-        public virtual async Task<MobileDevice> CreateMobileDeviceAsync(MobileDevice value, CancellationToken cancellationToken)
+        public virtual Task<MobileDevice> CreateMobileDeviceAsync(MobileDevice value, CancellationToken cancellationToken)
         {
-            if (value == null)
-            {
-                throw new ArgumentNullException(nameof(value));
-            }
-
-            if (value.Metadata == null)
-            {
-                throw new ValidationException(ValidationRules.CannotBeNull, "value.Metadata");
-            }
-
-            if (value.Metadata.Name == null)
-            {
-                throw new ValidationException(ValidationRules.CannotBeNull, "value.Metadata.Name");
-            }
-
-            if (value.Metadata.NamespaceProperty == null)
-            {
-                throw new ValidationException(ValidationRules.CannotBeNull, "value.Metadata.NamespaceProperty");
-            }
-
-            using (var operationResponse = await this.RunTaskAsync(this.protocol.CreateNamespacedCustomObjectWithHttpMessagesAsync(
+            return this.CreateNamespacedValueAsync<MobileDevice>(
+                MobileDevice.KubeMetadata,
                 value,
-                MobileDevice.KubeGroup,
-                MobileDevice.KubeVersion,
-                value.Metadata.NamespaceProperty,
-                MobileDevice.KubePlural,
-                cancellationToken: cancellationToken)).ConfigureAwait(false))
-            {
-                var response = operationResponse.Response;
-
-                response.EnsureSuccessStatusCode();
-
-                var responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-                try
-                {
-                    return SafeJsonConvert.DeserializeObject<MobileDevice>(responseContent, this.protocol.DeserializationSettings);
-                }
-                catch (JsonException ex)
-                {
-                    throw new SerializationException("Unable to deserialize the response.", responseContent, ex);
-                }
-            }
+                cancellationToken);
         }
 
         /// <summary>
@@ -177,13 +134,13 @@ namespace Kaponata.Operator.Kubernetes
         }
 
         /// <summary>
-        /// Asynchronously deletes a pod.
+        /// Asynchronously deletes a mobile device.
         /// </summary>
         /// <param name="value">
-        /// The pod to delete.
+        /// The mobile device to delete.
         /// </param>
         /// <param name="timeout">
-        /// The amount of time in which the pod should be deleted.
+        /// The amount of time in which the mobile device should be deleted.
         /// </param>
         /// <param name="cancellationToken">
         /// A <see cref="CancellationToken"/> which can be used to cancel the asynchronous operation.
@@ -282,7 +239,7 @@ namespace Kaponata.Operator.Kubernetes
                 cancellationToken);
         }
 
-        private async Task<HttpOperationResponse<MobileDeviceList>> ListMobileDeviceAsync(
+        private Task<HttpOperationResponse<MobileDeviceList>> ListMobileDeviceAsync(
             string namespaceParameter,
             bool? allowWatchBookmarks = null,
             string continueParameter = null,
@@ -297,48 +254,24 @@ namespace Kaponata.Operator.Kubernetes
             Dictionary<string, List<string>> customHeaders = null,
             CancellationToken cancellationToken = default)
         {
-            Debug.Assert(allowWatchBookmarks == null, "Not supported by the generic Kubernetes API");
-            Debug.Assert(resourceVersionMatch == null, "Not supported by the generic Kubernetes API");
-
-            var operationResponse = await this.RunTaskAsync(this.protocol.ListNamespacedCustomObjectWithHttpMessagesAsync(
-                MobileDevice.KubeGroup,
-                MobileDevice.KubeVersion,
+            return this.ListNamespacedObjectAsync<MobileDevice, MobileDeviceList>(
+                MobileDevice.KubeMetadata,
                 namespaceParameter,
-                MobileDevice.KubePlural,
-                continueParameter: continueParameter,
-                fieldSelector: fieldSelector,
-                labelSelector: labelSelector,
-                limit: limit,
-                resourceVersion: resourceVersion,
-                timeoutSeconds: timeoutSeconds,
-                watch: watch,
-                pretty: pretty,
-                customHeaders: customHeaders,
-                cancellationToken: cancellationToken)).ConfigureAwait(false);
-
-            var typedOperationResponse = new HttpOperationResponse<MobileDeviceList>()
-            {
-                Request = operationResponse.Request,
-                Response = operationResponse.Response,
-            };
-
-            if (operationResponse.Response.StatusCode == HttpStatusCode.OK)
-            {
-                var responseContent = await operationResponse.Response.Content.ReadAsStringAsync().ConfigureAwait(false);
-                try
-                {
-                    typedOperationResponse.Body = SafeJsonConvert.DeserializeObject<MobileDeviceList>(responseContent, this.protocol.DeserializationSettings);
-                }
-                catch (JsonException ex)
-                {
-                    throw new SerializationException("Unable to deserialize the response.", responseContent, ex);
-                }
-            }
-
-            return typedOperationResponse;
+                allowWatchBookmarks,
+                continueParameter,
+                fieldSelector,
+                labelSelector,
+                limit,
+                resourceVersion,
+                resourceVersionMatch,
+                timeoutSeconds,
+                watch,
+                pretty,
+                customHeaders,
+                cancellationToken);
         }
 
-        private async Task<MobileDevice> DeleteNamespacedMobileDeviceAsync(
+        private Task<MobileDevice> DeleteNamespacedMobileDeviceAsync(
             string name,
             string namespaceParameter,
             V1DeleteOptions body = null,
@@ -349,39 +282,17 @@ namespace Kaponata.Operator.Kubernetes
             string pretty = null,
             CancellationToken cancellationToken = default)
         {
-            using (var operationResponse = await this.protocol.DeleteNamespacedCustomObjectWithHttpMessagesAsync(
-                MobileDevice.KubeGroup,
-                MobileDevice.KubeVersion,
-                namespaceParameter,
-                MobileDevice.KubePlural,
+            return this.DeleteNamespacedObjectAsync<MobileDevice>(
+                MobileDevice.KubeMetadata,
                 name,
+                namespaceParameter,
                 body,
+                dryRun,
                 gracePeriodSeconds,
                 orphanDependents,
                 propagationPolicy,
-                dryRun,
-                customHeaders: null,
-                cancellationToken).ConfigureAwait(false))
-            {
-                var response = operationResponse.Response;
-
-                response.EnsureSuccessStatusCode();
-
-                var responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-                try
-                {
-                    // It is actually very wrong to return a MobileDevice from this method, but it's a problem that is deeply rooted
-                    // within the Kubernetes client, see e.g.
-                    // - https://github.com/kubernetes-client/csharp/issues/145
-                    // - https://github.com/kubernetes-client/csharp/issues/475
-                    var status = SafeJsonConvert.DeserializeObject<V1Status>(responseContent, this.protocol.DeserializationSettings);
-                    return null;
-                }
-                catch (JsonException ex)
-                {
-                    throw new SerializationException("Unable to deserialize the response.", responseContent, ex);
-                }
-            }
+                pretty,
+                cancellationToken);
         }
     }
 }
