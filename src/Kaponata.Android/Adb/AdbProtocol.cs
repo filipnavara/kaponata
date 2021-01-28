@@ -147,7 +147,7 @@ namespace Kaponata.Android.Adb
         {
             if (response.Status != AdbResponseStatus.OKAY)
             {
-                throw new InvalidDataException(response.Message);
+                throw new AdbException(response.Message);
             }
         }
 

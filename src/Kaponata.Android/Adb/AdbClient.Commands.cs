@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -18,6 +19,58 @@ namespace Kaponata.Android.Adb
     /// </summary>
     public partial class AdbClient
     {
+        /// <summary>
+        /// Connect to a device via TCP/IP.
+        /// </summary>
+        /// <param name="endpoint">
+        /// The <see cref="IPEndPoint"/> at which the <c>ADB</c> server is running.
+        /// </param>
+        /// <param name="cancellationToken">
+        /// A <see cref="CancellationToken"/> which can be used to cancel the asynchronous operation.
+        /// </param>
+        /// <returns>
+        /// A <see cref="Task"/> representing the asynchronous operation.
+        /// </returns>
+        public Task ConnectDeviceAsync(IPEndPoint endpoint, CancellationToken cancellationToken)
+        {
+            if (endpoint == null)
+            {
+                throw new ArgumentNullException(nameof(endpoint));
+            }
+
+            return this.ConnectDeviceAsync(new DnsEndPoint(endpoint.Address.ToString(), endpoint.Port), cancellationToken);
+        }
+
+        /// <summary>
+        /// Connect to a device via TCP/IP.
+        /// </summary>
+        /// <param name="endpoint">
+        /// The <see cref="DnsEndPoint"/> at which the <c>ADB</c> server is running.
+        /// </param>
+        /// <param name="cancellationToken">
+        /// A <see cref="CancellationToken"/> which can be used to cancel the asynchronous operation.
+        /// </param>
+        /// <returns>
+        /// A <see cref="Task"/> representing the asynchronous operation.
+        /// </returns>
+        public async Task ConnectDeviceAsync(DnsEndPoint endpoint, CancellationToken cancellationToken)
+        {
+            if (endpoint == null)
+            {
+                throw new ArgumentNullException(nameof(endpoint));
+            }
+
+            await using var protocol = await this.TryConnectToAdbAsync(cancellationToken).ConfigureAwait(false);
+
+            if (protocol == null)
+            {
+                throw new InvalidOperationException("Could not connect to the ADB server.");
+            }
+
+            await protocol.WriteAsync($"host:connect:{endpoint.Host}:{endpoint.Port}", cancellationToken).ConfigureAwait(false);
+            protocol.EnsureValidAdbResponse(await protocol.ReadAdbResponseAsync(cancellationToken).ConfigureAwait(false));
+        }
+
         /// <summary>
         /// Gets all connected devices listed by the <c>ADB</c> server.
         /// </summary>

@@ -7,6 +7,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using System;
 using System.IO;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
@@ -207,6 +208,154 @@ namespace Kaponata.Android.Tests.Adb
 
             Assert.Equal("Fail\n", exception.Message);
 
+            protocol.Verify();
+        }
+
+        /// <summary>
+        /// The <see cref="AdbClient.ConnectDeviceAsync(System.Net.DnsEndPoint, CancellationToken)"/> connects to the device on given endpoint.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="Task"/> which represents the asynchrounous test.
+        /// </returns>
+        [Fact]
+        public async Task ConnectDevice_ConnectsDevice_Async()
+        {
+            var protocol = new Mock<AdbProtocol>()
+            {
+                CallBase = true,
+            };
+
+            protocol.Setup(p => p.WriteAsync("host:connect:localhost:5559", default))
+                    .Verifiable();
+            protocol.Setup(p => p.ReadAdbResponseAsync(default))
+                    .ReturnsAsync(AdbResponse.Success)
+                    .Verifiable();
+
+            var clientMock = new Mock<AdbClient>(NullLogger<AdbClient>.Instance, NullLoggerFactory.Instance)
+            {
+                CallBase = true,
+            };
+
+            clientMock.Setup(c => c.TryConnectToAdbAsync(default)).ReturnsAsync(protocol.Object);
+            var client = clientMock.Object;
+
+            await client.ConnectDeviceAsync(new System.Net.DnsEndPoint("localhost", 5559), default).ConfigureAwait(false);
+
+            protocol.Verify();
+        }
+
+        /// <summary>
+        /// The <see cref="AdbClient.ConnectDeviceAsync(System.Net.IPEndPoint, CancellationToken)"/> connects to the device on given endpoint.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="Task"/> which represents the asynchrounous test.
+        /// </returns>
+        [Fact]
+        public async Task ConnectDevice_IpEndPoint_ConnectsDevice_Async()
+        {
+            var protocol = new Mock<AdbProtocol>()
+            {
+                CallBase = true,
+            };
+
+            protocol.Setup(p => p.WriteAsync("host:connect:127.0.0.1:5559", default))
+                    .Verifiable();
+            protocol.Setup(p => p.ReadAdbResponseAsync(default))
+                    .ReturnsAsync(AdbResponse.Success)
+                    .Verifiable();
+
+            var clientMock = new Mock<AdbClient>(NullLogger<AdbClient>.Instance, NullLoggerFactory.Instance)
+            {
+                CallBase = true,
+            };
+
+            clientMock.Setup(c => c.TryConnectToAdbAsync(default)).ReturnsAsync(protocol.Object);
+            var client = clientMock.Object;
+
+            await client.ConnectDeviceAsync(new System.Net.IPEndPoint(IPAddress.Loopback, 5559), default).ConfigureAwait(false);
+
+            protocol.Verify();
+        }
+
+        /// <summary>
+        /// The <see cref="AdbClient.ConnectDeviceAsync(System.Net.IPEndPoint, CancellationToken)"/> method validates the arguments.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="Task"/> which represents the asynchrounous test.
+        /// </returns>
+        [Fact]
+        public async Task ConnectDevice_IPEndPoint__ValidatesArguments_Async()
+        {
+            var client = new AdbClient(NullLogger<AdbClient>.Instance, NullLoggerFactory.Instance);
+
+            await Assert.ThrowsAsync<ArgumentNullException>(async () => await client.ConnectDeviceAsync((IPEndPoint)null, default).ConfigureAwait(false));
+            await Assert.ThrowsAsync<ArgumentNullException>(async () => await client.ConnectDeviceAsync(new IPEndPoint(null, 5555), default).ConfigureAwait(false));
+        }
+
+        /// <summary>
+        /// The <see cref="AdbClient.ConnectDeviceAsync(System.Net.DnsEndPoint, CancellationToken)"/> method validates the arguments.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="Task"/> which represents the asynchrounous test.
+        /// </returns>
+        [Fact]
+        public async Task ConnectDevice_ValidatesArguments_Async()
+        {
+            var client = new AdbClient(NullLogger<AdbClient>.Instance, NullLoggerFactory.Instance);
+
+            await Assert.ThrowsAsync<ArgumentNullException>(async () => await client.ConnectDeviceAsync((DnsEndPoint)null, default).ConfigureAwait(false));
+        }
+
+        /// <summary>
+        /// The <see cref="AdbClient.ConnectDeviceAsync(System.Net.DnsEndPoint, CancellationToken)"/> method throws when connecting to the <c>ADB</c> server fails.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="Task"/> which represents the asynchrounous test.
+        /// </returns>
+        [Fact]
+        public async Task ConnectDevice_ThrowsOnConnectFailure_Async()
+        {
+            var clientMock = new Mock<AdbClient>(NullLogger<AdbClient>.Instance, NullLoggerFactory.Instance)
+            {
+                CallBase = true,
+            };
+            clientMock.Setup(c => c.TryConnectToAdbAsync(default)).ReturnsAsync((AdbProtocol)null);
+            var client = clientMock.Object;
+
+            await Assert.ThrowsAsync<InvalidOperationException>(async () => await client.ConnectDeviceAsync(new System.Net.DnsEndPoint("localhost", 5555), default).ConfigureAwait(false));
+        }
+
+        /// <summary>
+        /// The <see cref="AdbClient.ConnectDeviceAsync(System.Net.DnsEndPoint, CancellationToken)"/> throws when the <c>ADB</c> server reports an error.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="Task"/> which represents the asynchrounous test.
+        /// </returns>
+        [Fact]
+        public async Task ConnectDevice_ThrowsOnError_Async()
+        {
+            var protocol = new Mock<AdbProtocol>()
+            {
+                CallBase = true,
+            };
+
+            protocol.Setup(p => p.WriteAsync("host:connect:localhost:5559", default))
+                    .Verifiable();
+            protocol.Setup(p => p.ReadAdbResponseAsync(default))
+                    .ReturnsAsync(new AdbResponse(AdbResponseStatus.FAIL, "Aiai"))
+                    .Verifiable();
+
+            var clientMock = new Mock<AdbClient>(NullLogger<AdbClient>.Instance, NullLoggerFactory.Instance)
+            {
+                CallBase = true,
+            };
+
+            clientMock.Setup(c => c.TryConnectToAdbAsync(default)).ReturnsAsync(protocol.Object);
+            var client = clientMock.Object;
+
+            var exception = await Assert.ThrowsAsync<AdbException>(async () => await client.ConnectDeviceAsync(new System.Net.DnsEndPoint("localhost", 5559), default).ConfigureAwait(false));
+
+            Assert.Equal("Aiai", exception.Message);
             protocol.Verify();
         }
 

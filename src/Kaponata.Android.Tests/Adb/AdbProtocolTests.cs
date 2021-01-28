@@ -320,7 +320,7 @@ namespace Kaponata.Android.Tests.Adb
             };
 
             var protocol = protocolMock.Object;
-            var exception = Assert.Throws<InvalidDataException>(() => protocol.EnsureValidAdbResponse(new AdbResponse()
+            var exception = Assert.Throws<AdbException>(() => protocol.EnsureValidAdbResponse(new AdbResponse()
             {
                 Status = AdbResponseStatus.FAIL,
                 Message = "Aiai",
@@ -460,7 +460,7 @@ namespace Kaponata.Android.Tests.Adb
                 .Verifiable();
 
             var protocol = protocolMock.Object;
-            var exception = await Assert.ThrowsAsync<InvalidDataException>(async () => await protocol.SetDeviceAsync(new DeviceData() { Serial = "123" }, default).ConfigureAwait(false));
+            var exception = await Assert.ThrowsAsync<AdbException>(async () => await protocol.SetDeviceAsync(new DeviceData() { Serial = "123" }, default).ConfigureAwait(false));
             Assert.Equal("Aiai", exception.Message);
             protocolMock.Verify();
         }
