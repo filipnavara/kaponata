@@ -25,6 +25,7 @@ namespace Kaponata.Api
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddHealthChecks();
+            services.AddControllers();
         }
 
         /// <summary>
@@ -58,6 +59,8 @@ namespace Kaponata.Api
                     context.Response.ContentType = "text/plain";
                     await context.Response.WriteAsync("Hello World!");
                 });
+
+                endpoints.MapControllers();
 
                 endpoints.MapHealthChecks("/health/ready");
                 endpoints.MapHealthChecks("/health/alive");
