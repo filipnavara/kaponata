@@ -55,14 +55,14 @@ jobs:
         uses: danielpalme/ReportGenerator-GitHub-Action@4.8.4
         with:
           reports: ${{ github.workspace }}/bin/Kaponata.TestResults/**/coverage.cobertura.xml
-          targetdir: ${{ github.workspace }}/bin/Kaponata.coveragereport/${{ github.ref }}/
+          targetdir: ${{ github.workspace }}/bin/Kaponata.coveragereport/${{ github.ref }}/coverage/
           reporttypes: 'HtmlInline;Cobertura'
         
       - name: Publish Operator Coverage Summary
         uses: 5monkeys/cobertura-action@master
         if: always()
         with:
-          path:  ${{ github.workspace }}/bin/Kaponata.coveragereport/${{ github.ref }}/Cobertura.xml
+          path:  ${{ github.workspace }}/bin/Kaponata.coveragereport/${{ github.ref }}/coverage/Cobertura.xml
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           minimum_coverage: 75
 
@@ -95,7 +95,7 @@ jobs:
         with:
           issue-number: ${{ github.event.pull_request.number }}
           body: |
-            The code coverage report for this pull request [is available online](https://kaponataci.z6.web.core.windows.net/${{ github.ref }}/index.html)
+            The code coverage report for this pull request [is available online](https://kaponataci.z6.web.core.windows.net/${{ github.ref }}/coverage/index.html)
 
       - name: Package operator
         run: |
