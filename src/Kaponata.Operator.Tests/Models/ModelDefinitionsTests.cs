@@ -19,6 +19,17 @@ namespace Kaponata.Operator.Tests.Models
         public void MobileDevice_Works()
         {
             Assert.NotNull(ModelDefinitions.MobileDevice);
+            Assert.Equal("mobiledevices.kaponata.io", ModelDefinitions.MobileDevice.Metadata.Name);
+        }
+
+        /// <summary>
+        /// The <see cref="ModelDefinitions.WebDriverSession"/> property returns the correct value.
+        /// </summary>
+        [Fact]
+        public void WebDriverSession_Works()
+        {
+            Assert.NotNull(ModelDefinitions.WebDriverSession);
+            Assert.Equal("webdriversessions.kaponata.io", ModelDefinitions.WebDriverSession.Metadata.Name);
         }
     }
 }
