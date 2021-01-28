@@ -95,7 +95,7 @@ jobs:
         with:
           issue-number: ${{ github.event.pull_request.number }}
           body: |
-            The code coverage report for this pull request [is available online](https://ci.kaponata.io/${{ github.ref }}/index.html)
+            The code coverage report for this pull request [is available online](https://kaponataci.z6.web.core.windows.net/${{ github.ref }}/index.html)
 
       - name: Package operator
         run: |
