@@ -5,10 +5,10 @@ on:
       - main
   pull_request:
     paths:
-    - src/iproxy
-    - src/usbmuxd
-    - src/adb
-    - src/fake-driver
+    - src/iproxy/**
+    - src/usbmuxd/**
+    - src/adb/**
+    - src/fake-driver/**
 
 jobs:
   build:
