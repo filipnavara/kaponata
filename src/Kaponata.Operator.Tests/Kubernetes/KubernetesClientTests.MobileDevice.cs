@@ -117,7 +117,7 @@ namespace Kaponata.Operator.Tests.Kubernetes
                             {
                                 Response = new HttpResponseMessage()
                                 {
-                                    Content = new StringContent(JsonConvert.SerializeObject(Assert.IsType<MobileDevice>(mobileDevice))),
+                                    Content = new StringContent(JsonConvert.SerializeObject(Assert.IsType<MobileDevice>(value))),
                                     StatusCode = HttpStatusCode.OK,
                                 },
                             });
@@ -347,8 +347,8 @@ namespace Kaponata.Operator.Tests.Kubernetes
         }
 
         /// <summary>
-        /// <see cref="KubernetesClient.TryReadMobileDeviceAsync(string, string, CancellationToken)"/> returns <see langword="null"/>
-        /// if the requested device does not exist.
+        /// <see cref="KubernetesClient.TryReadMobileDeviceAsync(string, string, CancellationToken)"/> returns a <see cref="MobileDevice"/>
+        /// object if the requested device exists.
         /// </summary>
         /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
         [Fact]
