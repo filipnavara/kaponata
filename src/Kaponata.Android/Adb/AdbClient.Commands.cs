@@ -23,7 +23,29 @@ namespace Kaponata.Android.Adb
         /// Connect to a device via TCP/IP.
         /// </summary>
         /// <param name="endpoint">
-        /// The endpoint at which the <c>ADB</c> server is running.
+        /// The <see cref="IPEndPoint"/> at which the <c>ADB</c> server is running.
+        /// </param>
+        /// <param name="cancellationToken">
+        /// A <see cref="CancellationToken"/> which can be used to cancel the asynchronous operation.
+        /// </param>
+        /// <returns>
+        /// A <see cref="Task"/> representing the asynchronous operation.
+        /// </returns>
+        public Task ConnectDeviceAsync(IPEndPoint endpoint, CancellationToken cancellationToken)
+        {
+            if (endpoint == null)
+            {
+                throw new ArgumentNullException(nameof(endpoint));
+            }
+
+            return this.ConnectDeviceAsync(new DnsEndPoint(endpoint.Address.ToString(), endpoint.Port), cancellationToken);
+        }
+
+        /// <summary>
+        /// Connect to a device via TCP/IP.
+        /// </summary>
+        /// <param name="endpoint">
+        /// The <see cref="DnsEndPoint"/> at which the <c>ADB</c> server is running.
         /// </param>
         /// <param name="cancellationToken">
         /// A <see cref="CancellationToken"/> which can be used to cancel the asynchronous operation.
