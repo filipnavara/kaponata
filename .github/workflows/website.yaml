@@ -59,10 +59,19 @@ jobs:
         comment-author: 'github-actions[bot]'
         body-includes: The Kaponata website
 
-    - name: Create Code Coverage Comment
+    - name: Create Website Comment
       if: ${{ github.event_name == 'pull_request' && steps.fc.outputs.comment-id == 0 }}
       uses: peter-evans/create-or-update-comment@v1
       with:
         issue-number: ${{ github.event.pull_request.number }}
         body: |
           The Kaponata website [can be previewed online](https://kaponataci.z6.web.core.windows.net/${{ github.ref }}/website/index.html)
+
+    - name: Publish Website
+      if: github.ref == 'refs/heads/master'
+      uses: bacongobbler/azure-blob-storage-upload@v1.1.1
+      with:
+        source_dir: ${{ github.workspace }}/bin/${{ github.ref }}/website/
+        container_name: '$web'
+        connection_string: ${{ secrets.WEBSITE_STORAGE_CONNECTION_STRING }}
+        sync: false
