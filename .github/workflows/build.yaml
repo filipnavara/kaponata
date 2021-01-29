@@ -233,10 +233,10 @@ jobs:
 
       - name: Publish Operator container image
         if: github.ref == 'refs/heads/main'
-        run: make publish
+        run: make push
         working-directory: src/Kaponata.Operator/
 
       - name: Publish API server container image
         if: github.ref == 'refs/heads/main'
-        run: make publish
+        run: make push
         working-directory: src/Kaponata.Api/
