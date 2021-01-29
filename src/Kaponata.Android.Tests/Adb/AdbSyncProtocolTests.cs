@@ -147,7 +147,7 @@ namespace Kaponata.Android.Tests.Adb
                 .Verifiable();
 
             var protocol = protocolMock.Object;
-            var exception = await Assert.ThrowsAsync<InvalidDataException>(async () => await protocol.StartSyncSessionAsync(default).ConfigureAwait(false));
+            var exception = await Assert.ThrowsAsync<AdbException>(async () => await protocol.StartSyncSessionAsync(default).ConfigureAwait(false));
             Assert.Equal("Oesje!", exception.Message);
             protocolMock.Verify();
         }

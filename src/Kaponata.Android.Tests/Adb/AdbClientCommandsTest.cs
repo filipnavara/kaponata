@@ -20,56 +20,6 @@ namespace Kaponata.Android.Tests.Adb
     public class AdbClientCommandsTest
     {
         /// <summary>
-        /// The <see cref="AdbClient.StartSyncServiceAsync(DeviceData, CancellationToken)"/> method creates a <see cref="SyncService"/>.
-        /// </summary>
-        /// <returns>
-        /// A <see cref="Task"/> which represents the asynchrounous test.
-        /// </returns>
-        [Fact]
-        public async Task StartSyncService_CreatesAndConnects_Async()
-        {
-            var protocol = new Mock<AdbProtocol>()
-            {
-                CallBase = true,
-            };
-            protocol.Setup(p => p.SetDeviceAsync(It.Is<DeviceData>(d => d.Serial == "123"), default)).Returns(Task.CompletedTask);
-            protocol.Setup(p => p.StartSyncSessionAsync(default)).Returns(Task.CompletedTask);
-
-            var clientMock = new Mock<AdbClient>(NullLogger<AdbClient>.Instance, NullLoggerFactory.Instance)
-            {
-                CallBase = true,
-            };
-
-            clientMock.Setup(c => c.TryConnectToAdbAsync(default)).ReturnsAsync(protocol.Object);
-            var client = clientMock.Object;
-
-            var service = await client.StartSyncServiceAsync(new DeviceData() { Serial = "123" }, default).ConfigureAwait(false);
-            Assert.True(service.Connected);
-            protocol.Verify();
-        }
-
-        /// <summary>
-        /// The <see cref="AdbClient.StartSyncServiceAsync(DeviceData, CancellationToken)"/> method throws an exception when connecting to the <c>ADB</c> server failes.
-        /// </summary>
-        /// <returns>
-        /// A <see cref="Task"/> which represents the asynchrounous test.
-        /// </returns>
-        [Fact]
-        public async Task StartSyncService_ThrowsWhenNoConnection_Async()
-        {
-            var clientMock = new Mock<AdbClient>(NullLogger<AdbClient>.Instance, NullLoggerFactory.Instance)
-            {
-                CallBase = true,
-            };
-
-            clientMock.Setup(c => c.TryConnectToAdbAsync(default)).ReturnsAsync((AdbProtocol)null);
-
-            var client = clientMock.Object;
-
-            await Assert.ThrowsAsync<InvalidOperationException>(async () => await client.StartSyncServiceAsync(new DeviceData(), default).ConfigureAwait(false));
-        }
-
-        /// <summary>
         /// The <see cref="AdbClient.GetDevicesAsync(System.Threading.CancellationToken)"/> method throws an exception when connecting to the <c>ADB</c> server failed.
         /// </summary>
         /// <returns>
