@@ -19,7 +19,7 @@ namespace Kaponata.Android.Adb
     /// <summary>
     /// The <see cref="AdbProtocol"/> allows interacting with the Android Debug Bridge (ADB) using a <see cref="Stream"/>.
     /// </summary>
-    public class AdbProtocol : IAsyncDisposable
+    public partial class AdbProtocol : IAsyncDisposable
     {
         /// <summary>
         /// The default encoding.

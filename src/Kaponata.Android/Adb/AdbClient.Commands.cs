@@ -2,6 +2,7 @@
 // Copyright (c) Quamotion bv. All rights reserved.
 // </copyright>
 
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -19,6 +20,32 @@ namespace Kaponata.Android.Adb
     /// </summary>
     public partial class AdbClient
     {
+                /// <summary>
+        /// Starts a new <see cref="SyncService"/>.
+        /// </summary>
+        /// <param name="device">
+        /// The device for which the <see cref="SyncService"/> needs to be started.
+        /// </param>
+        /// <param name="cancellationToken">
+        /// A <see cref="CancellationToken"/> which can be used to cancel the asynchronous operation.
+        /// </param>
+        /// <returns>
+        /// A <see cref="SyncService"/> for the given device.
+        /// </returns>
+        public async Task<SyncService> StartSyncServiceAsync(DeviceData device, CancellationToken cancellationToken)
+        {
+            var protocol = await this.TryConnectToAdbAsync(cancellationToken).ConfigureAwait(false);
+
+            if (protocol == null)
+            {
+                throw new InvalidOperationException("Could not connect to the ADB server.");
+            }
+
+            var service = new SyncService(this.loggerFactory.CreateLogger<SyncService>(), this.loggerFactory, protocol);
+            await service.ConnectAsync(device, cancellationToken).ConfigureAwait(false);
+            return service;
+        }
+        
         /// <summary>
         /// Connect to a device via TCP/IP.
         /// </summary>
