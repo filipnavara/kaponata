@@ -25,7 +25,7 @@ namespace Kaponata.Android.Adb
         /// </returns>
         public virtual async Task StartSyncSessionAsync(CancellationToken cancellationToken)
         {
-            await this.WriteAsync($"sync:", cancellationToken).ConfigureAwait(false);
+            await this.WriteAsync("sync:", cancellationToken).ConfigureAwait(false);
             this.EnsureValidAdbResponse(await this.ReadAdbResponseAsync(cancellationToken).ConfigureAwait(false));
         }
 
@@ -51,12 +51,12 @@ namespace Kaponata.Android.Adb
                 throw new ArgumentNullException(nameof(command));
             }
 
-            ushort commandLength = (ushort)AdbEncoding.GetByteCount(command);
+            var commandLength = AdbEncoding.GetByteCount(command);
             using var messageBuffer = this.memoryPool.Rent(commandLength + 8);
 
             BinaryPrimitives.WriteInt32BigEndian(messageBuffer.Memory[0..4].Span, (int)commandType);
-            BinaryPrimitives.WriteUInt32LittleEndian(messageBuffer.Memory[4..8].Span, commandLength);
-            AdbEncoding.GetBytes(command.ToString()).CopyTo(messageBuffer.Memory[8..].Span);
+            BinaryPrimitives.WriteUInt32LittleEndian(messageBuffer.Memory[4..8].Span, (uint)commandLength);
+            AdbEncoding.GetBytes(command).CopyTo(messageBuffer.Memory[8..].Span);
 
             await this.stream.WriteAsync(messageBuffer.Memory.Slice(0, commandLength + 8), cancellationToken).ConfigureAwait(false);
             await this.stream.FlushAsync(cancellationToken).ConfigureAwait(false);
