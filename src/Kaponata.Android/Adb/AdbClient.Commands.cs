@@ -45,7 +45,7 @@ namespace Kaponata.Android.Adb
             await service.ConnectAsync(device, cancellationToken).ConfigureAwait(false);
             return service;
         }
-        
+
         /// <summary>
         /// Connect to a device via TCP/IP.
         /// </summary>
