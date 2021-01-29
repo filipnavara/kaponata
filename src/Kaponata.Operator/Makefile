@@ -2,6 +2,11 @@ registry=quay.io/kaponata
 image=operator
 version=$(shell nbgv get-version -v SemVer2)
 
+# Set tags to expire in 2 weeks (duration of a sprint) in quay.io;
+# exception for tags built from release branches, which never expire.
+branch=$(shell git rev-parse --abbrev-ref HEAD)
+expires=$(if $(patsubst releases/,,$(branch)),2w,)
+
 all: .arm64.docker-id .amd64.docker-id
 
 clean:
@@ -31,6 +36,7 @@ bin/Release/net5.0/publish/Kaponata.Operator.dll: $(shell find . -path ./bin -pr
 		--build-arg GIT_REF="$(shell nbgv get-version -v BuildingRef)" \
 		--build-arg GIT_REMOTE="$(shell git remote get-url $(shell git remote))" \
 		--build-arg VERSION="$(version)" \
+		--build-arg EXPIRES=$(expires) \
 		. \
 		-t $(registry)/$(image):$(version)-amd64
 	docker images --no-trunc --quiet $(registry)/$(image):$(version)-amd64 > .amd64.docker-id
@@ -44,6 +50,7 @@ bin/Release/net5.0/publish/Kaponata.Operator.dll: $(shell find . -path ./bin -pr
 		--build-arg GIT_REF="$(shell nbgv get-version -v BuildingRef)" \
 		--build-arg GIT_REMOTE="$(shell git remote get-url $(shell git remote))" \
 		--build-arg VERSION="$(version)" \
+		--build-arg EXPIRES=$(expires) \
 		. \
 		-t $(registry)/$(image):$(version)-arm64
 	docker images --no-trunc --quiet $(registry)/$(image):$(version)-arm64 > .arm64.docker-id
