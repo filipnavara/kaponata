@@ -222,9 +222,9 @@ namespace Kaponata.Operator.Tests.Kubernetes
 
             var protocol = new Mock<IKubernetesProtocol>(MockBehavior.Strict);
             protocol.Setup(
-                p => p.WatchNamespacedObjectAsync<WebDriverSession, WebDriverSessionList>(
+                p => p.WatchNamespacedObjectAsync<WebDriverSession, ItemList<WebDriverSession>>(
                     session,
-                    It.IsAny<ListNamespacedObjectWithHttpMessagesAsync<WebDriverSession, WebDriverSessionList>>(),
+                    It.IsAny<ListNamespacedObjectWithHttpMessagesAsync<WebDriverSession, ItemList<WebDriverSession>>>(),
                     It.IsAny<WatchEventDelegate<WebDriverSession>>(),
                     default))
                 .Returns(tcs.Task);
@@ -260,7 +260,7 @@ namespace Kaponata.Operator.Tests.Kubernetes
 
             var protocol = new Mock<IKubernetesProtocol>(MockBehavior.Strict);
             protocol
-                .Setup(p => p.WatchNamespacedObjectAsync("namespace", "fieldSelector", "labelSelector", "resourceVersion", It.IsAny<ListNamespacedObjectWithHttpMessagesAsync<WebDriverSession, WebDriverSessionList>>(), eventHandler, default))
+                .Setup(p => p.WatchNamespacedObjectAsync("namespace", "fieldSelector", "labelSelector", "resourceVersion", It.IsAny<ListNamespacedObjectWithHttpMessagesAsync<WebDriverSession, ItemList<WebDriverSession>>>(), eventHandler, default))
                 .Returns(tcs.Task);
             protocol.Setup(p => p.Dispose()).Verifiable();
 
@@ -298,12 +298,12 @@ namespace Kaponata.Operator.Tests.Kubernetes
 
             protocol
                 .Setup(
-                    p => p.WatchNamespacedObjectAsync<WebDriverSession, WebDriverSessionList>(
+                    p => p.WatchNamespacedObjectAsync<WebDriverSession, ItemList<WebDriverSession>>(
                         session,
-                        It.IsAny<ListNamespacedObjectWithHttpMessagesAsync<WebDriverSession, WebDriverSessionList>>(),
+                        It.IsAny<ListNamespacedObjectWithHttpMessagesAsync<WebDriverSession, ItemList<WebDriverSession>>>(),
                         It.IsAny<WatchEventDelegate<WebDriverSession>>(),
                         It.IsAny<CancellationToken>()))
-                .Returns<WebDriverSession, ListNamespacedObjectWithHttpMessagesAsync<WebDriverSession, WebDriverSessionList>, WatchEventDelegate<WebDriverSession>, CancellationToken>(
+                .Returns<WebDriverSession, ListNamespacedObjectWithHttpMessagesAsync<WebDriverSession, ItemList<WebDriverSession>>, WatchEventDelegate<WebDriverSession>, CancellationToken>(
                 (session, list, watcher, ct) =>
                 {
                     callback = watcher;

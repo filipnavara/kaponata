@@ -1,25 +1,53 @@
-﻿// <copyright file="KubernetesClient.MobileDevice.cs" company="Quamotion bv">
+﻿// <copyright file="NamespacedKubernetesClient.cs" company="Quamotion bv">
 // Copyright (c) Quamotion bv. All rights reserved.
 // </copyright>
 
+using k8s;
+using k8s.Models;
 using Kaponata.Operator.Kubernetes.Polyfill;
 using Kaponata.Operator.Models;
+using Microsoft.Rest;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace Kaponata.Operator.Kubernetes
 {
     /// <summary>
-    /// Implements the <see cref="MobileDevice"/> operations.
+    /// Represents a generic Kubernetes client which provides strongly-typed access to namespaced objects.
     /// </summary>
-    public partial class KubernetesClient
+    /// <typeparam name="T">
+    /// The type of Kubernetes object being accessed using this client.
+    /// </typeparam>
+    public class NamespacedKubernetesClient<T>
+        where T : IKubernetesObject<V1ObjectMeta>, new()
     {
+        private readonly KubernetesClient parent;
+        private readonly KindMetadata metadata;
+
         /// <summary>
-        /// Asynchronously creates a new mobile device.
+        /// Initializes a new instance of the <see cref="NamespacedKubernetesClient{T}"/> class.
+        /// </summary>
+        /// <param name="parent">
+        /// The parent <see cref="KubernetesClient"/> which provides access to the Kubernetes API.
+        /// </param>
+        /// <param name="metadata">
+        /// Metadata on the current Kubernetes type, used to constructor the URLs used to access
+        /// the object in the Kubernetes API.
+        /// </param>
+        public NamespacedKubernetesClient(KubernetesClient parent, KindMetadata metadata)
+        {
+            this.parent = parent ?? throw new ArgumentNullException(nameof(parent));
+            this.metadata = metadata ?? throw new ArgumentNullException(nameof(metadata));
+        }
+
+        /// <summary>
+        /// Asynchronously creates a new <typeparamref name="T"/> object.
         /// </summary>
         /// <param name="value">
-        /// The mobile device to create.
+        /// The <typeparamref name="T"/> object object to create.
         /// </param>
         /// <param name="cancellationToken">
         /// A <see cref="CancellationToken"/> which can be used to cancel the asynchronous operation.
@@ -28,13 +56,16 @@ namespace Kaponata.Operator.Kubernetes
         /// A <see cref="Task"/> which represents the asynchronous operation, and returns the newly created mobile device
         /// when completed.
         /// </returns>
-        public virtual Task<MobileDevice> CreateMobileDeviceAsync(MobileDevice value, CancellationToken cancellationToken)
+        public virtual Task<T> CreateAsync(T value, CancellationToken cancellationToken)
         {
-            return this.mobileDeviceClient.CreateAsync(value, cancellationToken);
+            return this.parent.CreateNamespacedValueAsync<T>(
+                this.metadata,
+                value,
+                cancellationToken);
         }
 
         /// <summary>
-        /// Asynchronously list or watch <see cref="MobileDevice"/> objects.
+        /// Asynchronously list or watch <typeparamref name="T"/> objects.
         /// </summary>
         /// <param name="namespace">
         /// The namespace in which to list or watch objects.
@@ -89,60 +120,68 @@ namespace Kaponata.Operator.Kubernetes
         /// A <see cref="CancellationToken"/> which can be used to cancel the asynchronous operation.
         /// </param>
         /// <returns>
-        /// A <see cref="MobileDeviceList"/> which represents the mobile devices which match the query.
+        /// A <see cref="ItemList{T}"/> which represents the mobile devices which match the query.
         /// </returns>
-        public virtual Task<ItemList<MobileDevice>> ListMobileDeviceAsync(string @namespace, string @continue = null, string fieldSelector = null, string labelSelector = null, int? limit = null, CancellationToken cancellationToken = default)
+        public async virtual Task<ItemList<T>> ListAsync(string @namespace, string @continue = null, string fieldSelector = null, string labelSelector = null, int? limit = null, CancellationToken cancellationToken = default)
         {
-            return this.mobileDeviceClient.ListAsync(
-                @namespace: @namespace,
-                @continue: @continue,
+            using (var operationResponse = await this.ListAsync(
+                namespaceParameter: @namespace,
+                continueParameter: @continue,
                 fieldSelector: fieldSelector,
                 labelSelector: labelSelector,
-                limit: limit,
-                cancellationToken: cancellationToken);
+                cancellationToken: cancellationToken))
+            {
+                return operationResponse.Body;
+            }
         }
 
         /// <summary>
-        /// Asynchronously tries to read a mobile device.
+        /// Asynchronously tries to read a <typeparamref name="T"/> object.
         /// </summary>
         /// <param name="namespace">
-        /// The namespace in which the mobile device is located.
+        /// The namespace in which the <typeparamref name="T"/> object is located.
         /// </param>
         /// <param name="name">
-        /// The name which uniquely identifies the mobile device within the namespace.
+        /// The name which uniquely identifies the <typeparamref name="T"/> objectwithin the namespace.
         /// </param>
         /// <param name="cancellationToken">
         /// A <see cref="CancellationToken"/> which can be used to cancel the asynchronous operation.
         /// </param>
         /// <returns>
-        /// A <see cref="Task"/> which represents the asynchronous operation, and returns the requested mobile device, or
-        /// <see langword="null"/> if the mobile device does not exist.
+        /// A <see cref="Task"/> which represents the asynchronous operation, and returns the requested <typeparamref name="T"/> object, or
+        /// <see langword="null"/> if the <typeparamref name="T"/> object does not exist.
         /// </returns>
-        public virtual Task<MobileDevice> TryReadMobileDeviceAsync(string @namespace, string name, CancellationToken cancellationToken)
+        public virtual async Task<T> TryReadAsync(string @namespace, string name, CancellationToken cancellationToken)
         {
-            return this.mobileDeviceClient.TryReadAsync(@namespace, name, cancellationToken);
+            var list = await this.parent.RunTaskAsync(this.ListAsync(namespaceParameter: @namespace, fieldSelector: $"metadata.name={name}", cancellationToken: cancellationToken)).ConfigureAwait(false);
+            return list.Body.Items.SingleOrDefault();
         }
 
         /// <summary>
-        /// Asynchronously deletes a mobile device.
+        /// Asynchronously deletes a <typeparamref name="T"/> object.
         /// </summary>
         /// <param name="value">
-        /// The mobile device to delete.
+        /// The <typeparamref name="T"/> object to delete.
         /// </param>
         /// <param name="timeout">
-        /// The amount of time in which the mobile device should be deleted.
+        /// The amount of time in which the <typeparamref name="T"/> object should be deleted.
         /// </param>
         /// <param name="cancellationToken">
         /// A <see cref="CancellationToken"/> which can be used to cancel the asynchronous operation.
         /// </param>
         /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-        public virtual Task DeleteMobileDeviceAsync(MobileDevice value, TimeSpan timeout, CancellationToken cancellationToken)
+        public virtual Task DeleteAsync(T value, TimeSpan timeout, CancellationToken cancellationToken)
         {
-            return this.mobileDeviceClient.DeleteAsync(value, timeout, cancellationToken);
+            return this.parent.DeleteNamespacedObjectAsync<T>(
+                value,
+                this.DeleteAsync,
+                this.WatchAsync,
+                timeout,
+                cancellationToken);
         }
 
         /// <summary>
-        /// Asynchronously watches <see cref="MobileDevice"/> objects.
+        /// Asynchronously watches <typeparamref name="T"/> objects.
         /// </summary>
         /// <param name="value">
         /// The object to watch.
@@ -161,19 +200,23 @@ namespace Kaponata.Operator.Kubernetes
         /// return value describes why the watcher stopped. The task errors if the watch
         /// loop errors.
         /// </returns>
-        public Task<WatchExitReason> WatchMobileDeviceAsync(
-            MobileDevice value,
-            WatchEventDelegate<MobileDevice> eventHandler,
+        public Task<WatchExitReason> WatchAsync(
+            T value,
+            WatchEventDelegate<T> eventHandler,
             CancellationToken cancellationToken)
         {
-            return this.mobileDeviceClient.WatchAsync(value, eventHandler, cancellationToken);
+            return this.parent.WatchNamespacedObjectAsync<T, ItemList<T>>(
+                 value,
+                 this.ListAsync,
+                 eventHandler,
+                 cancellationToken);
         }
 
         /// <summary>
-        /// Asynchronously watches <see cref="MobileDevice"/> objects.
+        /// Asynchronously watches <typeparamref name="T"/> objects.
         /// </summary>
         /// <param name="namespace">
-        /// The namespace in which to watch for <see cref="MobileDevice"/> objects.
+        /// The namespace in which to watch for <typeparamref name="T"/> objects.
         /// </param>
         /// <param name="fieldSelector">
         /// A selector to restrict the list of returned objects by their fields. Defaults
@@ -202,15 +245,78 @@ namespace Kaponata.Operator.Kubernetes
         /// return value describes why the watcher stopped. The task errors if the watch
         /// loop errors.
         /// </returns>
-        public virtual Task<WatchExitReason> WatchMobileDeviceAsync(
+        public virtual Task<WatchExitReason> WatchAsync(
             string @namespace,
             string fieldSelector,
             string labelSelector,
             string resourceVersion,
-            WatchEventDelegate<MobileDevice> eventHandler,
+            WatchEventDelegate<T> eventHandler,
             CancellationToken cancellationToken)
         {
-            return this.mobileDeviceClient.WatchAsync(@namespace, fieldSelector, labelSelector, resourceVersion, eventHandler, cancellationToken);
+            return this.parent.WatchNamespacedObjectAsync<T, ItemList<T>>(
+                @namespace,
+                fieldSelector,
+                labelSelector,
+                resourceVersion,
+                this.ListAsync,
+                eventHandler,
+                cancellationToken);
+        }
+
+        private Task<HttpOperationResponse<ItemList<T>>> ListAsync(
+            string namespaceParameter,
+            bool? allowWatchBookmarks = null,
+            string continueParameter = null,
+            string fieldSelector = null,
+            string labelSelector = null,
+            int? limit = null,
+            string resourceVersion = null,
+            string resourceVersionMatch = null,
+            int? timeoutSeconds = null,
+            bool? watch = null,
+            string pretty = null,
+            Dictionary<string, List<string>> customHeaders = null,
+            CancellationToken cancellationToken = default)
+        {
+            return this.parent.ListNamespacedObjectAsync<T, ItemList<T>>(
+                this.metadata,
+                namespaceParameter,
+                allowWatchBookmarks,
+                continueParameter,
+                fieldSelector,
+                labelSelector,
+                limit,
+                resourceVersion,
+                resourceVersionMatch,
+                timeoutSeconds,
+                watch,
+                pretty,
+                customHeaders,
+                cancellationToken);
+        }
+
+        private Task<T> DeleteAsync(
+            string name,
+            string namespaceParameter,
+            V1DeleteOptions body = null,
+            string dryRun = null,
+            int? gracePeriodSeconds = null,
+            bool? orphanDependents = null,
+            string propagationPolicy = null,
+            string pretty = null,
+            CancellationToken cancellationToken = default)
+        {
+            return this.parent.DeleteNamespacedObjectAsync<T>(
+                this.metadata,
+                name,
+                namespaceParameter,
+                body,
+                dryRun,
+                gracePeriodSeconds,
+                orphanDependents,
+                propagationPolicy,
+                pretty,
+                cancellationToken);
         }
     }
 }

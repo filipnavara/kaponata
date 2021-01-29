@@ -221,7 +221,7 @@ namespace Kaponata.Operator.Tests.Kubernetes
                         Content =
                             new StringContent(
                                 JsonConvert.SerializeObject(
-                                    new MobileDeviceList()
+                                    new ItemList<MobileDevice>()
                                     {
                                         Items = new MobileDevice[]
                                         {
@@ -412,9 +412,9 @@ namespace Kaponata.Operator.Tests.Kubernetes
 
             var protocol = new Mock<IKubernetesProtocol>(MockBehavior.Strict);
             protocol.Setup(
-                p => p.WatchNamespacedObjectAsync<MobileDevice, MobileDeviceList>(
+                p => p.WatchNamespacedObjectAsync<MobileDevice, ItemList<MobileDevice>>(
                     device,
-                    It.IsAny<ListNamespacedObjectWithHttpMessagesAsync<MobileDevice, MobileDeviceList>>(),
+                    It.IsAny<ListNamespacedObjectWithHttpMessagesAsync<MobileDevice, ItemList<MobileDevice>>>(),
                     It.IsAny<WatchEventDelegate<MobileDevice>>(),
                     default))
                 .Returns(tcs.Task);
@@ -450,7 +450,7 @@ namespace Kaponata.Operator.Tests.Kubernetes
 
             var protocol = new Mock<IKubernetesProtocol>(MockBehavior.Strict);
             protocol
-                .Setup(p => p.WatchNamespacedObjectAsync("namespace", "fieldSelector", "labelSelector", "resourceVersion", It.IsAny<ListNamespacedObjectWithHttpMessagesAsync<MobileDevice, MobileDeviceList>>(), eventHandler, default))
+                .Setup(p => p.WatchNamespacedObjectAsync("namespace", "fieldSelector", "labelSelector", "resourceVersion", It.IsAny<ListNamespacedObjectWithHttpMessagesAsync<MobileDevice, ItemList<MobileDevice>>>(), eventHandler, default))
                 .Returns(tcs.Task);
             protocol.Setup(p => p.Dispose()).Verifiable();
 
@@ -539,12 +539,12 @@ namespace Kaponata.Operator.Tests.Kubernetes
 
             protocol
                 .Setup(
-                    p => p.WatchNamespacedObjectAsync<MobileDevice, MobileDeviceList>(
+                    p => p.WatchNamespacedObjectAsync<MobileDevice, ItemList<MobileDevice>>(
                         mobileDevice,
-                        It.IsAny<ListNamespacedObjectWithHttpMessagesAsync<MobileDevice, MobileDeviceList>>(),
+                        It.IsAny<ListNamespacedObjectWithHttpMessagesAsync<MobileDevice, ItemList<MobileDevice>>>(),
                         It.IsAny<WatchEventDelegate<MobileDevice>>(),
                         It.IsAny<CancellationToken>()))
-                .Returns<MobileDevice, ListNamespacedObjectWithHttpMessagesAsync<MobileDevice, MobileDeviceList>, WatchEventDelegate<MobileDevice>, CancellationToken>(
+                .Returns<MobileDevice, ListNamespacedObjectWithHttpMessagesAsync<MobileDevice, ItemList<MobileDevice>>, WatchEventDelegate<MobileDevice>, CancellationToken>(
                 (device, list, watcher, ct) =>
                 {
                     callback = watcher;
@@ -611,12 +611,12 @@ namespace Kaponata.Operator.Tests.Kubernetes
 
             protocol
                 .Setup(
-                    p => p.WatchNamespacedObjectAsync<MobileDevice, MobileDeviceList>(
+                    p => p.WatchNamespacedObjectAsync<MobileDevice, ItemList<MobileDevice>>(
                         mobileDevice,
-                        It.IsAny<ListNamespacedObjectWithHttpMessagesAsync<MobileDevice, MobileDeviceList>>(),
+                        It.IsAny<ListNamespacedObjectWithHttpMessagesAsync<MobileDevice, ItemList<MobileDevice>>>(),
                         It.IsAny<WatchEventDelegate<MobileDevice>>(),
                         It.IsAny<CancellationToken>()))
-                .Returns<MobileDevice, ListNamespacedObjectWithHttpMessagesAsync<MobileDevice, MobileDeviceList>, WatchEventDelegate<MobileDevice>, CancellationToken>(
+                .Returns<MobileDevice, ListNamespacedObjectWithHttpMessagesAsync<MobileDevice, ItemList<MobileDevice>>, WatchEventDelegate<MobileDevice>, CancellationToken>(
                 (device, list, watcher, ct) =>
                 {
                     callback = watcher;
@@ -674,12 +674,12 @@ namespace Kaponata.Operator.Tests.Kubernetes
 
             protocol
                 .Setup(
-                    p => p.WatchNamespacedObjectAsync<MobileDevice, MobileDeviceList>(
+                    p => p.WatchNamespacedObjectAsync<MobileDevice, ItemList<MobileDevice>>(
                         mobileDevice,
-                        It.IsAny<ListNamespacedObjectWithHttpMessagesAsync<MobileDevice, MobileDeviceList>>(),
+                        It.IsAny<ListNamespacedObjectWithHttpMessagesAsync<MobileDevice, ItemList<MobileDevice>>>(),
                         It.IsAny<WatchEventDelegate<MobileDevice>>(),
                         It.IsAny<CancellationToken>()))
-                .Returns<MobileDevice, ListNamespacedObjectWithHttpMessagesAsync<MobileDevice, MobileDeviceList>, WatchEventDelegate<MobileDevice>, CancellationToken>(
+                .Returns<MobileDevice, ListNamespacedObjectWithHttpMessagesAsync<MobileDevice, ItemList<MobileDevice>>, WatchEventDelegate<MobileDevice>, CancellationToken>(
                 (device, list, watcher, ct) =>
                 {
                     callback = watcher;
@@ -745,12 +745,12 @@ namespace Kaponata.Operator.Tests.Kubernetes
 
             protocol
                 .Setup(
-                    p => p.WatchNamespacedObjectAsync<MobileDevice, MobileDeviceList>(
+                    p => p.WatchNamespacedObjectAsync<MobileDevice, ItemList<MobileDevice>>(
                         mobileDevice,
-                        It.IsAny<ListNamespacedObjectWithHttpMessagesAsync<MobileDevice, MobileDeviceList>>(),
+                        It.IsAny<ListNamespacedObjectWithHttpMessagesAsync<MobileDevice, ItemList<MobileDevice>>>(),
                         It.IsAny<WatchEventDelegate<MobileDevice>>(),
                         It.IsAny<CancellationToken>()))
-                .Returns<MobileDevice, ListNamespacedObjectWithHttpMessagesAsync<MobileDevice, MobileDeviceList>, WatchEventDelegate<MobileDevice>, CancellationToken>(
+                .Returns<MobileDevice, ListNamespacedObjectWithHttpMessagesAsync<MobileDevice, ItemList<MobileDevice>>, WatchEventDelegate<MobileDevice>, CancellationToken>(
                 (device, list, watcher, ct) =>
                 {
                     callback = watcher;

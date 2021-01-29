@@ -2,13 +2,9 @@
 // Copyright (c) Quamotion bv. All rights reserved.
 // </copyright>
 
-using k8s.Models;
 using Kaponata.Operator.Kubernetes.Polyfill;
 using Kaponata.Operator.Models;
-using Microsoft.Rest;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -34,10 +30,7 @@ namespace Kaponata.Operator.Kubernetes
         /// </returns>
         public virtual Task<WebDriverSession> CreateWebDriverSessionAsync(WebDriverSession value, CancellationToken cancellationToken)
         {
-            return this.CreateNamespacedValueAsync<WebDriverSession>(
-                WebDriverSession.KubeMetadata,
-                value,
-                cancellationToken);
+            return this.webDriverSessionClient.CreateAsync(value, cancellationToken);
         }
 
         /// <summary>
@@ -98,17 +91,9 @@ namespace Kaponata.Operator.Kubernetes
         /// <returns>
         /// A <see cref="MobileDeviceList"/> which represents the mobile devices which match the query.
         /// </returns>
-        public async virtual Task<WebDriverSessionList> ListWebDriverSessionAsync(string @namespace, string @continue = null, string fieldSelector = null, string labelSelector = null, int? limit = null, CancellationToken cancellationToken = default)
+        public virtual Task<ItemList<WebDriverSession>> ListWebDriverSessionAsync(string @namespace, string @continue = null, string fieldSelector = null, string labelSelector = null, int? limit = null, CancellationToken cancellationToken = default)
         {
-            using (var operationResponse = await this.ListWebDriverSessionAsync(
-                namespaceParameter: @namespace,
-                continueParameter: @continue,
-                fieldSelector: fieldSelector,
-                labelSelector: labelSelector,
-                cancellationToken: cancellationToken))
-            {
-                return operationResponse.Body;
-            }
+            return this.webDriverSessionClient.ListAsync(@namespace, @continue, fieldSelector, labelSelector, limit, cancellationToken);
         }
 
         /// <summary>
@@ -127,10 +112,9 @@ namespace Kaponata.Operator.Kubernetes
         /// A <see cref="Task"/> which represents the asynchronous operation, and returns the requested WebDriver session, or
         /// <see langword="null"/> if the WebDriver session does not exist.
         /// </returns>
-        public virtual async Task<WebDriverSession> TryReadWebDriverSessionAsync(string @namespace, string name, CancellationToken cancellationToken)
+        public virtual Task<WebDriverSession> TryReadWebDriverSessionAsync(string @namespace, string name, CancellationToken cancellationToken)
         {
-            var list = await this.RunTaskAsync(this.ListWebDriverSessionAsync(namespaceParameter: @namespace, fieldSelector: $"metadata.name={name}", cancellationToken: cancellationToken)).ConfigureAwait(false);
-            return list.Body.Items.SingleOrDefault();
+            return this.webDriverSessionClient.TryReadAsync(@namespace, name, cancellationToken);
         }
 
         /// <summary>
@@ -148,12 +132,7 @@ namespace Kaponata.Operator.Kubernetes
         /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
         public virtual Task DeleteWebDriverSessionAsync(WebDriverSession value, TimeSpan timeout, CancellationToken cancellationToken)
         {
-            return this.DeleteNamespacedObjectAsync<WebDriverSession>(
-                value,
-                this.DeleteNamespacedWebDriverSessionAsync,
-                this.WatchWebDriverSessionAsync,
-                timeout,
-                cancellationToken);
+            return this.webDriverSessionClient.DeleteAsync(value, timeout, cancellationToken);
         }
 
         /// <summary>
@@ -181,11 +160,7 @@ namespace Kaponata.Operator.Kubernetes
             WatchEventDelegate<WebDriverSession> eventHandler,
             CancellationToken cancellationToken)
         {
-            return this.protocol.WatchNamespacedObjectAsync<WebDriverSession, WebDriverSessionList>(
-                 value,
-                 this.ListWebDriverSessionAsync,
-                 eventHandler,
-                 cancellationToken);
+            return this.webDriverSessionClient.WatchAsync(value, eventHandler, cancellationToken);
         }
 
         /// <summary>
@@ -229,70 +204,7 @@ namespace Kaponata.Operator.Kubernetes
             WatchEventDelegate<WebDriverSession> eventHandler,
             CancellationToken cancellationToken)
         {
-            return this.protocol.WatchNamespacedObjectAsync<WebDriverSession, WebDriverSessionList>(
-                @namespace,
-                fieldSelector,
-                labelSelector,
-                resourceVersion,
-                this.ListWebDriverSessionAsync,
-                eventHandler,
-                cancellationToken);
-        }
-
-        private Task<HttpOperationResponse<WebDriverSessionList>> ListWebDriverSessionAsync(
-            string namespaceParameter,
-            bool? allowWatchBookmarks = null,
-            string continueParameter = null,
-            string fieldSelector = null,
-            string labelSelector = null,
-            int? limit = null,
-            string resourceVersion = null,
-            string resourceVersionMatch = null,
-            int? timeoutSeconds = null,
-            bool? watch = null,
-            string pretty = null,
-            Dictionary<string, List<string>> customHeaders = null,
-            CancellationToken cancellationToken = default)
-        {
-            return this.ListNamespacedObjectAsync<WebDriverSession, WebDriverSessionList>(
-                WebDriverSession.KubeMetadata,
-                namespaceParameter,
-                allowWatchBookmarks,
-                continueParameter,
-                fieldSelector,
-                labelSelector,
-                limit,
-                resourceVersion,
-                resourceVersionMatch,
-                timeoutSeconds,
-                watch,
-                pretty,
-                customHeaders,
-                cancellationToken);
-        }
-
-        private Task<WebDriverSession> DeleteNamespacedWebDriverSessionAsync(
-            string name,
-            string namespaceParameter,
-            V1DeleteOptions body = null,
-            string dryRun = null,
-            int? gracePeriodSeconds = null,
-            bool? orphanDependents = null,
-            string propagationPolicy = null,
-            string pretty = null,
-            CancellationToken cancellationToken = default)
-        {
-            return this.DeleteNamespacedObjectAsync<WebDriverSession>(
-                WebDriverSession.KubeMetadata,
-                name,
-                namespaceParameter,
-                body,
-                dryRun,
-                gracePeriodSeconds,
-                orphanDependents,
-                propagationPolicy,
-                pretty,
-                cancellationToken);
+            return this.webDriverSessionClient.WatchAsync(@namespace, fieldSelector, labelSelector, resourceVersion, eventHandler, cancellationToken);
         }
     }
 }
