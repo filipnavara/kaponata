@@ -1,4 +1,4 @@
-﻿// <copyright file="AdbClient.Commands.cs" company="Quamotion bv">
+﻿// <copyright file="AdbClient.Services.cs" company="Quamotion bv">
 // Copyright (c) Quamotion bv. All rights reserved.
 // </copyright>
 
