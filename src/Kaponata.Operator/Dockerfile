@@ -5,6 +5,7 @@ ARG GIT_COMMIT_ID
 ARG GIT_REF
 ARG GIT_REMOTE
 ARG VERSION
+ARG EXPIRES
 
 LABEL org.opencontainers.image.title="Kaponata Operator"
 LABEL org.opencontainers.image.description=""
@@ -18,6 +19,8 @@ LABEL org.opencontainers.image.source=$GIT_REMOTE
 LABEL org.opencontainers.image.version=$VERSION
 LABEL org.opencontainers.image.revision=$GIT_COMMIT_ID
 LABEL org.opencontainers.image.ref.name=$GIT_REF
+
+LABEL quay.expires-after=$EXPIRES
 
 WORKDIR /app
 

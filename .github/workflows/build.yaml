@@ -226,3 +226,17 @@ jobs:
           name: test
           path: |
             ${{ github.workspace }}/bin/Kaponata.TestResults/
+
+      - name: Login to quay.io
+        if: github.ref == 'refs/heads/master'
+        run: echo ${{ secrets.QUAY_ACCOUNT_NAME }} | docker login -u ${{ secrets.QUAY_ACCOUNT_TOKEN }} --password-stdin quay.io
+
+      - name: Publish Operator container image
+        if: github.ref == 'refs/heads/master'
+        run: make publish
+        working-directory: src/Kaponata.Operator/
+
+      - name: Publish API server container image
+        if: github.ref == 'refs/heads/master'
+        run: make publish
+        working-directory: src/Kaponata.Api/
