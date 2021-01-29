@@ -170,7 +170,7 @@ namespace Kaponata.Android.Tests.Adb
 
             var stats = await protocol.ReadFileStatisticsAsync(default).ConfigureAwait(false);
 
-            Assert.Equal(new DateTime(2018, 12, 6, 6, 44, 2), stats.Time);
+            Assert.Equal(DateTimeOffset.FromUnixTimeSeconds(1544075042), stats.Time);
             Assert.Equal<uint>(4096, stats.Size);
             Assert.Equal("Samsung", stats.Path);
 
