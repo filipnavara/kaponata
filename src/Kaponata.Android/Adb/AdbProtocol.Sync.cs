@@ -95,7 +95,7 @@ namespace Kaponata.Android.Adb
             await this.stream.ReadAsync(messageBuffer.Memory.Slice(0, 16), cancellationToken).ConfigureAwait(false);
             var fileStatistics = new FileStatistics()
             {
-                FileMode = (UnixFileMode)(BinaryPrimitives.ReadUInt32LittleEndian(messageBuffer.Memory[0..4].Span) & 0x11000),
+                FileMode = BinaryPrimitives.ReadUInt32LittleEndian(messageBuffer.Memory[0..4].Span),
                 Size = BinaryPrimitives.ReadUInt32LittleEndian(messageBuffer.Memory[4..].Span),
                 Time = DateTimeOffset.FromUnixTimeSeconds(BinaryPrimitives.ReadUInt32LittleEndian(messageBuffer.Memory[8..].Span)),
             };

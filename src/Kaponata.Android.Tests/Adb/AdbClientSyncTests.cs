@@ -36,14 +36,14 @@ namespace Kaponata.Android.Tests.Adb
                 .ReturnsAsync(new FileStatistics()
                 {
                     Path = "file1",
-                    FileMode = UnixFileMode.Regular,
+                    FileMode = 123,
                     Size = 101,
                     Time = new DateTime(1980, 12, 31),
                 })
                 .ReturnsAsync(new FileStatistics()
                 {
                     Path = "file2",
-                    FileMode = UnixFileMode.Regular,
+                    FileMode = 123,
                     Size = 102,
                     Time = new DateTime(1980, 12, 31),
                 });
@@ -92,14 +92,14 @@ namespace Kaponata.Android.Tests.Adb
                 .ReturnsAsync(new FileStatistics()
                 {
                     Path = "file1",
-                    FileMode = UnixFileMode.Regular,
+                    FileMode = 123,
                     Size = 101,
                     Time = new DateTime(1980, 12, 31),
                 })
                 .ReturnsAsync(new FileStatistics()
                 {
                     Path = "file2",
-                    FileMode = UnixFileMode.Regular,
+                    FileMode = 123,
                     Size = 102,
                     Time = new DateTime(1980, 12, 31),
                 });

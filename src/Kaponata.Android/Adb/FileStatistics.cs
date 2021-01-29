@@ -21,9 +21,9 @@ namespace Kaponata.Android.Adb
         }
 
         /// <summary>
-        /// Gets or sets the <see cref="UnixFileMode"/> attributes of the file.
+        /// Gets or sets the unix file mode of the file.
         /// </summary>
-        public UnixFileMode FileMode
+        public uint FileMode
         {
             get;
             set;
