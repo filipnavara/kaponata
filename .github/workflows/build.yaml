@@ -229,7 +229,7 @@ jobs:
 
       - name: Login to quay.io
         if: github.ref == 'refs/heads/main'
-        run: echo ${{ secrets.QUAY_ACCOUNT_NAME }} | docker login -u ${{ secrets.QUAY_ACCOUNT_TOKEN }} --password-stdin quay.io
+        run: docker login -u="${{ secrets.QUAY_ACCOUNT_NAME }}" -p="${{ secrets.QUAY_ACCOUNT_TOKEN }}" quay.io
 
       - name: Publish Operator container image
         if: github.ref == 'refs/heads/main'
