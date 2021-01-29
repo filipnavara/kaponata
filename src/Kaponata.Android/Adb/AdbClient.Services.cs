@@ -1,7 +1,8 @@
-﻿// <copyright file="AdbClient.Commands.cs" company="Quamotion bv">
+﻿// <copyright file="AdbClient.Services.cs" company="Quamotion bv">
 // Copyright (c) Quamotion bv. All rights reserved.
 // </copyright>
 
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -15,7 +16,7 @@ using System.Threading.Tasks;
 namespace Kaponata.Android.Adb
 {
     /// <summary>
-    /// Contains the <c>ADB</c> commands for the <see cref="AdbClient"/> class.
+    /// Contains the <c>ADB</c> service methods for the <see cref="AdbClient"/> class.
     /// </summary>
     public partial class AdbClient
     {
