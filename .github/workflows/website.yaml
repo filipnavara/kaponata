@@ -68,7 +68,7 @@ jobs:
           The Kaponata website [can be previewed online](https://kaponataci.z6.web.core.windows.net/${{ github.ref }}/website/index.html)
 
     - name: Publish Website
-      if: github.ref == 'refs/heads/master'
+      if: github.ref == 'refs/heads/main'
       uses: bacongobbler/azure-blob-storage-upload@v1.1.1
       with:
         source_dir: ${{ github.workspace }}/bin/${{ github.ref }}/website/
