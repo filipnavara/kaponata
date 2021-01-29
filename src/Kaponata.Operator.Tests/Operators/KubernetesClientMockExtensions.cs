@@ -72,7 +72,7 @@ namespace Kaponata.Operator.Tests.Operators
 
             client
                 .Setup(k => k.ListMobileDeviceAsync("default", null, null, labelSelector, null, It.IsAny<CancellationToken>()))
-                .Returns(Task.FromResult(
+                .Returns(Task.FromResult<ItemList<MobileDevice>>(
                     new MobileDeviceList()
                     {
                         Items = items,
