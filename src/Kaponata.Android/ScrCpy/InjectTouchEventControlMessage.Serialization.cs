@@ -23,6 +23,7 @@ namespace Kaponata.Android.ScrCpy
         }
 
         /// <inheritdoc/>
+        /// <seealso href="https://github.com/Genymobile/scrcpy/blob/master/app/src/control_msg.c#L54"/>
         public void Write(Memory<byte> memory)
         {
             var buffer = memory.Span;

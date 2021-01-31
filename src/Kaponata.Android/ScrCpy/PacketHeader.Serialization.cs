@@ -21,6 +21,7 @@ namespace Kaponata.Android.ScrCpy
         /// <returns>
         /// A <see cref="PacketHeader"/> value.
         /// </returns>
+        /// <seealso href="https://github.com/Genymobile/scrcpy/blob/master/app/src/stream.c#L25"/>
         public static PacketHeader Read(Span<byte> buffer)
         {
             return new PacketHeader()

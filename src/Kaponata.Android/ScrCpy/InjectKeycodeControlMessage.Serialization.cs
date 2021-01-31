@@ -4,7 +4,6 @@
 
 using System;
 using System.Buffers.Binary;
-using System.Text;
 
 namespace Kaponata.Android.ScrCpy
 {
@@ -23,6 +22,7 @@ namespace Kaponata.Android.ScrCpy
         }
 
         /// <inheritdoc/>
+        /// <seealso href="https://github.com/Genymobile/scrcpy/blob/master/app/src/control_msg.c#L43"/>
         public void Write(Memory<byte> memory)
         {
             var buffer = memory.Span;

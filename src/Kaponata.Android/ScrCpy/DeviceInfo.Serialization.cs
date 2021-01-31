@@ -22,6 +22,7 @@ namespace Kaponata.Android.ScrCpy
         /// <returns>
         /// A <see cref="DeviceInfo"/> value.
         /// </returns>
+        /// <seealso href="https://github.com/Genymobile/scrcpy/blob/master/app/src/device_msg.c"/>
         public static DeviceInfo Read(Span<byte> buffer)
         {
             return new DeviceInfo()

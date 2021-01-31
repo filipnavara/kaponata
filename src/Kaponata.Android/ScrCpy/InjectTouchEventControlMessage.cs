@@ -3,7 +3,6 @@
 // </copyright>
 
 using Kaponata.Android.Common;
-using System.Drawing;
 
 namespace Kaponata.Android.ScrCpy
 {
