@@ -19,4 +19,13 @@
     <ProjectReference Include="..\Kaponata.Android\Kaponata.Android.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="ScrCpy\device_info.bin">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="ScrCpy\packet_header.bin">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>
