@@ -11,22 +11,13 @@ namespace Kaponata.Android.Tests.Adb
     /// </summary>
     public class ErrorStream : MemoryStream
     {
-        private readonly bool canRead;
-
         /// <summary>
         /// Initializes a new instance of the <see cref="ErrorStream"/> class.
         /// </summary>
-        /// <param name="canRead">
-        /// Indicates whether the stream is readable.
-        /// </param>
-        public ErrorStream(bool canRead = true)
+        public ErrorStream()
             : base(100)
         {
-            this.canRead = canRead;
         }
-
-        /// <inheritdoc/>
-        public override bool CanRead => this.canRead;
 
         /// <summary>
         /// Gets the invalid length.

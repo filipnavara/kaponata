@@ -3,6 +3,7 @@
 // </copyright>
 
 using Kaponata.Android.Adb;
+using Moq;
 using System;
 using System.IO;
 using System.Text;
@@ -23,8 +24,9 @@ namespace Kaponata.Android.Tests.Adb
         public void Constructor_ValidatesArguments()
         {
             Assert.Throws<ArgumentNullException>(() => new ShellStream(null, false));
-            using var stream = new ErrorStream(false);
-            Assert.Throws<ArgumentOutOfRangeException>(() => new ShellStream(stream, false));
+            var streamMock = new Mock<Stream>();
+            streamMock.SetupGet(s => s.CanRead).Returns(false);
+            Assert.Throws<ArgumentOutOfRangeException>(() => new ShellStream(streamMock.Object, false));
         }
 
         /// <summary>
@@ -41,6 +43,56 @@ namespace Kaponata.Android.Tests.Adb
                 Assert.False(shellStream.CanSeek);
                 Assert.False(shellStream.CanWrite);
             }
+        }
+
+        /// <summary>
+        /// Not implemented methods throw an exception.
+        /// </summary>
+        [Fact]
+        public void NotImplementedMethods_ThrowException()
+        {
+            using var stream = GetStream("test");
+
+            Assert.Throws<NotImplementedException>(() => stream.Length);
+            Assert.Throws<NotImplementedException>(() => stream.Position);
+            Assert.Throws<NotImplementedException>(() => stream.Position = 4);
+            Assert.Throws<NotImplementedException>(() => stream.Flush());
+            Assert.Throws<NotImplementedException>(() => stream.Seek(4, SeekOrigin.Begin));
+            Assert.Throws<NotImplementedException>(() => stream.SetLength(4));
+            Assert.Throws<NotImplementedException>(() => stream.Write(null, 0, 4));
+        }
+
+        /// <summary>
+        /// The <see cref="ShellStream.ReadAsync(byte[], int, int, System.Threading.CancellationToken)"/> with zero count reads zeor bytes.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="Task"/> which represents the asynchronous test.
+        /// </returns>
+        [Fact]
+        public async Task Read_CountZero_Async()
+        {
+            using var stream = GetStream("test");
+
+            var buffer = new byte[] { 1, 2, 3, 4 };
+            var read = await stream.ReadAsync(buffer, 0, 0, default).ConfigureAwait(false);
+
+            Assert.Equal(0, read);
+            Assert.Equal(new byte[] { 1, 2, 3, 4 }, buffer);
+        }
+
+        /// <summary>
+        /// The <see cref="ShellStream.Read(byte[], int, int)"/> with zero count reads zeor bytes.
+        /// </summary>
+        [Fact]
+        public void Read_CountZero()
+        {
+            using var stream = GetStream("test");
+
+            var buffer = new byte[] { 1, 2, 3, 4 };
+            var read = stream.Read(buffer, 0, 0);
+
+            Assert.Equal(0, read);
+            Assert.Equal(new byte[] { 1, 2, 3, 4 }, buffer);
         }
 
         /// <summary>

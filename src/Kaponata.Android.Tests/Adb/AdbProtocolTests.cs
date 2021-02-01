@@ -19,6 +19,27 @@ namespace Kaponata.Android.Tests.Adb
     public class AdbProtocolTests
     {
         /// <summary>
+        /// The <see cref="AdbProtocol.GetShellStream()"/> returns an shell stream instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="Task"/> which represents the asynchronous test.
+        /// </returns>
+        [Fact]
+        public async Task GetShellStream_ReturnsShellStreamAsync()
+        {
+            using (var stream = new MemoryStream(new byte[] { 1, 2, 3 }))
+            await using (var protocol = new AdbProtocol(stream, false, NullLogger<AdbProtocol>.Instance))
+            using (var shellStream = protocol.GetShellStream())
+            {
+                Assert.Equal(1, shellStream.ReadByte());
+                Assert.Equal(2, shellStream.ReadByte());
+                Assert.Equal(3, shellStream.ReadByte());
+            }
+
+            Assert.True(true);
+        }
+
+        /// <summary>
         /// The <see cref="AdbProtocol"/> class disposes of the underlying stream if it owns the stream.
         /// </summary>
         /// <param name="ownsStream">

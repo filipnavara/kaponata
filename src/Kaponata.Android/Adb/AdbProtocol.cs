@@ -69,15 +69,12 @@ namespace Kaponata.Android.Adb
         /// <summary>
         /// Gets a shell output stream.
         /// </summary>
-        /// <param name="ownsStream">
-        /// A value indicating whether the resulting <see cref="ShellStream"/> instance owns the inner <c>ADB</c> stream or not.
-        /// </param>
         /// <returns>
         /// The shell output stream.
         /// </returns>
-        public virtual ShellStream GetShellStream(bool ownsStream = true)
+        public virtual ShellStream GetShellStream()
         {
-            return new ShellStream(this.stream, ownsStream);
+            return new ShellStream(this.stream, true);
         }
 
         /// <summary>
