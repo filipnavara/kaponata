@@ -23,7 +23,7 @@ namespace Kaponata.Android.Tests.Adb
         public void Constructor_ValidatesArguments()
         {
             Assert.Throws<ArgumentNullException>(() => new ShellStream(null, false));
-            using var stream = new MemoryStream();
+            using var stream = new ErrorStream(false);
             Assert.Throws<ArgumentOutOfRangeException>(() => new ShellStream(stream, false));
         }
 
