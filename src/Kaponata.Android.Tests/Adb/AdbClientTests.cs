@@ -32,7 +32,7 @@ namespace Kaponata.Android.Tests.Adb
         }
 
         /// <summary>
-        /// <see cref="AdbClient.TryConnectToAdbAsync(System.Threading.CancellationToken)"/> returns <see langword="null"/> when the connection is <see langword="null"/>.
+        /// <see cref="AdbClient.TryConnectToAdbAsync(System.Threading.CancellationToken, bool)"/> returns <see langword="null"/> when the connection is <see langword="null"/>.
         /// <see cref="AdbSocketLocator.GetAdbSocket"/> returns <see langword="null"/>.
         /// </summary>
         /// <returns>
@@ -49,7 +49,7 @@ namespace Kaponata.Android.Tests.Adb
         }
 
         /// <summary>
-        /// <see cref="AdbClient.TryConnectToAdbAsync(System.Threading.CancellationToken)"/> returns the <see cref="AdbProtocol"/>.
+        /// <see cref="AdbClient.TryConnectToAdbAsync(System.Threading.CancellationToken, bool)"/> returns the <see cref="AdbProtocol"/>.
         /// </summary>
         /// <returns>
         /// A <see cref="Task"/> which represents the asynchronous test.

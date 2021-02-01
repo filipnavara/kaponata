@@ -67,6 +67,20 @@ namespace Kaponata.Android.Adb
         public static Encoding AdbEncoding { get; } = Encoding.GetEncoding(DefaultEncoding);
 
         /// <summary>
+        /// Gets a shell output stream.
+        /// </summary>
+        /// <param name="ownsStream">
+        /// A value indicating whether the resulting <see cref="ShellStream"/> instance owns the inner <c>ADB</c> stream or not.
+        /// </param>
+        /// <returns>
+        /// The shell output stream.
+        /// </returns>
+        public virtual ShellStream GetShellStream(bool ownsStream = true)
+        {
+            return new ShellStream(this.stream, ownsStream);
+        }
+
+        /// <summary>
         /// Switches the connection to the device/emulator identified by <paramref name="device"/>.
         /// </summary>
         /// <param name="device">

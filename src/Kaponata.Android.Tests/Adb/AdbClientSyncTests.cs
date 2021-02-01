@@ -362,7 +362,7 @@ namespace Kaponata.Android.Tests.Adb
                 CallBase = true,
             };
 
-            clientMock.Setup(c => c.TryConnectToAdbAsync(default)).ReturnsAsync(adbProtocolMock.Object);
+            clientMock.Setup(c => c.TryConnectToAdbAsync(default, true)).ReturnsAsync(adbProtocolMock.Object);
             var client = clientMock.Object;
 
             var listing = await client.GetDirectoryListingAsync(new DeviceData() { Serial = "123" }, "/sdcard", default).ConfigureAwait(false);
@@ -453,7 +453,7 @@ namespace Kaponata.Android.Tests.Adb
                 CallBase = true,
             };
 
-            clientMock.Setup(c => c.TryConnectToAdbAsync(default)).ReturnsAsync(protocolMock.Object);
+            clientMock.Setup(c => c.TryConnectToAdbAsync(default, true)).ReturnsAsync(protocolMock.Object);
             var client = clientMock.Object;
 
             await client.ConnectToSyncServiceAsync(new DeviceData() { Serial = "123" }, default).ConfigureAwait(false);

@@ -33,7 +33,7 @@ namespace Kaponata.Android.Tests.Adb
                 CallBase = true,
             };
 
-            clientMock.Setup(c => c.TryConnectToAdbAsync(default)).ReturnsAsync((AdbProtocol)null);
+            clientMock.Setup(c => c.TryConnectToAdbAsync(default, true)).ReturnsAsync((AdbProtocol)null);
             var client = clientMock.Object;
 
             await Assert.ThrowsAsync<InvalidOperationException>(async () => await client.GetDevicesAsync(default).ConfigureAwait(false));
@@ -77,7 +77,7 @@ namespace Kaponata.Android.Tests.Adb
                 CallBase = true,
             };
 
-            clientMock.Setup(c => c.TryConnectToAdbAsync(default)).ReturnsAsync(protocol.Object);
+            clientMock.Setup(c => c.TryConnectToAdbAsync(default, true)).ReturnsAsync(protocol.Object);
             var client = clientMock.Object;
 
             using var apkStream = new MemoryStream(new byte[] { 1, 2, 3 });
@@ -143,7 +143,7 @@ namespace Kaponata.Android.Tests.Adb
                 CallBase = true,
             };
 
-            clientMock.Setup(c => c.TryConnectToAdbAsync(default)).ReturnsAsync(protocol.Object);
+            clientMock.Setup(c => c.TryConnectToAdbAsync(default, true)).ReturnsAsync(protocol.Object);
             var client = clientMock.Object;
 
             using var apkStream = new MemoryStream(new byte[] { 1, 2, 3 });
@@ -195,7 +195,7 @@ namespace Kaponata.Android.Tests.Adb
                 CallBase = true,
             };
 
-            clientMock.Setup(c => c.TryConnectToAdbAsync(default)).ReturnsAsync(protocol.Object);
+            clientMock.Setup(c => c.TryConnectToAdbAsync(default, true)).ReturnsAsync(protocol.Object);
             var client = clientMock.Object;
 
             using var apkStream = new MemoryStream(new byte[] { 1, 2, 3 });
@@ -236,7 +236,7 @@ namespace Kaponata.Android.Tests.Adb
                 CallBase = true,
             };
 
-            clientMock.Setup(c => c.TryConnectToAdbAsync(default)).ReturnsAsync(protocol.Object);
+            clientMock.Setup(c => c.TryConnectToAdbAsync(default, true)).ReturnsAsync(protocol.Object);
             var client = clientMock.Object;
 
             await client.ConnectDeviceAsync(new System.Net.DnsEndPoint("localhost", 5559), default).ConfigureAwait(false);
@@ -269,7 +269,7 @@ namespace Kaponata.Android.Tests.Adb
                 CallBase = true,
             };
 
-            clientMock.Setup(c => c.TryConnectToAdbAsync(default)).ReturnsAsync(protocol.Object);
+            clientMock.Setup(c => c.TryConnectToAdbAsync(default, true)).ReturnsAsync(protocol.Object);
             var client = clientMock.Object;
 
             await client.ConnectDeviceAsync(new System.Net.IPEndPoint(IPAddress.Loopback, 5559), default).ConfigureAwait(false);
@@ -319,7 +319,7 @@ namespace Kaponata.Android.Tests.Adb
             {
                 CallBase = true,
             };
-            clientMock.Setup(c => c.TryConnectToAdbAsync(default)).ReturnsAsync((AdbProtocol)null);
+            clientMock.Setup(c => c.TryConnectToAdbAsync(default, true)).ReturnsAsync((AdbProtocol)null);
             var client = clientMock.Object;
 
             await Assert.ThrowsAsync<InvalidOperationException>(async () => await client.ConnectDeviceAsync(new System.Net.DnsEndPoint("localhost", 5555), default).ConfigureAwait(false));
@@ -350,7 +350,7 @@ namespace Kaponata.Android.Tests.Adb
                 CallBase = true,
             };
 
-            clientMock.Setup(c => c.TryConnectToAdbAsync(default)).ReturnsAsync(protocol.Object);
+            clientMock.Setup(c => c.TryConnectToAdbAsync(default, true)).ReturnsAsync(protocol.Object);
             var client = clientMock.Object;
 
             var exception = await Assert.ThrowsAsync<AdbException>(async () => await client.ConnectDeviceAsync(new System.Net.DnsEndPoint("localhost", 5559), default).ConfigureAwait(false));
@@ -476,7 +476,7 @@ namespace Kaponata.Android.Tests.Adb
                 CallBase = true,
             };
 
-            clientMock.Setup(c => c.TryConnectToAdbAsync(default)).ReturnsAsync(protocol.Object);
+            clientMock.Setup(c => c.TryConnectToAdbAsync(default, true)).ReturnsAsync(protocol.Object);
             var client = clientMock.Object;
 
             var device = Assert.Single(await client.GetDevicesAsync(default).ConfigureAwait(false));
@@ -507,7 +507,7 @@ namespace Kaponata.Android.Tests.Adb
                 CallBase = true,
             };
 
-            clientMock.Setup(c => c.TryConnectToAdbAsync(default)).ReturnsAsync((AdbProtocol)null);
+            clientMock.Setup(c => c.TryConnectToAdbAsync(default, true)).ReturnsAsync((AdbProtocol)null);
             var client = clientMock.Object;
 
             await Assert.ThrowsAsync<InvalidOperationException>(async () => await client.GetAdbVersionAsync(default).ConfigureAwait(false));
@@ -545,7 +545,7 @@ namespace Kaponata.Android.Tests.Adb
                 CallBase = true,
             };
 
-            clientMock.Setup(c => c.TryConnectToAdbAsync(default)).ReturnsAsync(protocol.Object);
+            clientMock.Setup(c => c.TryConnectToAdbAsync(default, true)).ReturnsAsync(protocol.Object);
             var client = clientMock.Object;
 
             Assert.Equal(41, await client.GetAdbVersionAsync(default).ConfigureAwait(false));
@@ -585,7 +585,7 @@ namespace Kaponata.Android.Tests.Adb
                 CallBase = true,
             };
 
-            clientMock.Setup(c => c.TryConnectToAdbAsync(default)).ReturnsAsync(protocol.Object);
+            clientMock.Setup(c => c.TryConnectToAdbAsync(default, true)).ReturnsAsync(protocol.Object);
             var client = clientMock.Object;
 
             var exception = await Assert.ThrowsAsync<AdbException>(async () => await client.GetAdbVersionAsync(default).ConfigureAwait(false));
