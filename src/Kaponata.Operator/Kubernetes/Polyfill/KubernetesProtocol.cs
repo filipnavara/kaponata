@@ -87,13 +87,6 @@ namespace Kaponata.Operator.Kubernetes.Polyfill
                 }
             }
 
-            if (this.BaseUri.Host == "0.0.0.0")
-            {
-                var builder = new UriBuilder(this.BaseUri);
-                builder.Host = "127.0.0.1";
-                this.BaseUri = builder.Uri;
-            }
-
             // set credentails for the kubernetes client
             CreateCredentials(config);
             config.AddCertificates(this.HttpClientHandler);
