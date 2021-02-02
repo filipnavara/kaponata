@@ -56,7 +56,7 @@ namespace Kaponata.Operator.Kubernetes.Polyfill
             this.loggerFactory = loggerFactory ?? throw new ArgumentNullException(nameof(loggerFactory));
 
             this.FirstMessageHandler = this.HttpClientHandler = CreateRootHandler();
-            this.FirstMessageHandler = new WatchHandler(this.HttpClientHandler);
+            this.FirstMessageHandler = new CoreApiHandler(new WatchHandler(this.HttpClientHandler));
 
             this.HttpClient = new HttpClient(this.FirstMessageHandler, false);
 

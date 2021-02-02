@@ -466,6 +466,26 @@ namespace Kaponata.Operator.Tests.Kubernetes
             }
         }
 
+        /// <summary>
+        /// The <see cref="KubernetesClient.GetClient{T}"/> method returns a client which is properly configured to request objects
+        /// of the core API group, such as Pod objects.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="Task"/> which represents the asynchronous test.
+        /// </returns>
+        [Fact]
+        [Trait("TestCategory", "IntegrationTest")]
+        public async Task GenericClient_ListPod_UsesCorrectUrl_Async()
+        {
+            using (var client = this.CreateKubernetesClient())
+            {
+                var podClient = client.GetClient<V1Pod>();
+                var pods = await podClient.ListAsync("default").ConfigureAwait(false);
+                Assert.Equal("v1", pods.ApiVersion);
+                Assert.Equal("PodList", pods.Kind);
+            }
+        }
+
         private static string FormatNameCamelCase(string value)
         {
             return value.Replace("_", "-");

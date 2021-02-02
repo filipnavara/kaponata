@@ -53,6 +53,7 @@ namespace Kaponata.Operator.Kubernetes
 
             this.knownTypes.Add(typeof(MobileDevice), MobileDevice.KubeMetadata);
             this.knownTypes.Add(typeof(WebDriverSession), WebDriverSession.KubeMetadata);
+            this.knownTypes.Add(typeof(V1Pod), new KindMetadata("core", V1Pod.KubeApiVersion, "pods"));
 
             this.mobileDeviceClient = this.GetClient<MobileDevice>();
             this.webDriverSessionClient = this.GetClient<WebDriverSession>();
