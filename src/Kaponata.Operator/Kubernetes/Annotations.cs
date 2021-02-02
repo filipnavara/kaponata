@@ -58,6 +58,22 @@ namespace Kaponata.Operator.Kubernetes
         public const string Os = "kubernetes.io/os";
 
         /// <summary>
+        /// The name of the automation provider used for a WebDriver session.
+        /// </summary>
+        public const string AutomationName = "kaponata.io/automation-name";
+
+        /// <summary>
+        /// Enumerates all automation names available.
+        /// </summary>
+        public class AutomationNames
+        {
+            /// <summary>
+            /// The fake automation provider, implemented by the appium-fake-driver driver.
+            /// </summary>
+            public const string Fake = "fake";
+        }
+
+        /// <summary>
         /// Enumerates the values of well-known computer architectures, as used by the <see cref="Arch"/> annotation and the
         /// <c>GOARCH</c> environment variable.
         /// </summary>
