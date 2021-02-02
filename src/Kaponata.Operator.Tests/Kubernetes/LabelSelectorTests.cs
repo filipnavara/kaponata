@@ -2,8 +2,10 @@
 // Copyright (c) Quamotion bv. All rights reserved.
 // </copyright>
 
+using k8s;
 using k8s.Models;
 using Kaponata.Operator.Kubernetes;
+using Kaponata.Operator.Models;
 using System;
 using Xunit;
 
@@ -153,6 +155,40 @@ namespace Kaponata.Operator.Tests.Kubernetes
         public void Create_LabelNameNotConstant_ReturnsNull()
         {
             Assert.Null(LabelSelector.Create<V1Pod>(p => p.Metadata.Labels["a".ToString()] == "b"));
+        }
+
+        /// <summary>
+        /// Calling <see cref="LabelSelector.Create"/> works with custom object types.
+        /// </summary>
+        [Fact]
+        public void Create_CustomType_Works()
+        {
+            Assert.Equal("app.kubernetes.io/managed-by=test", LabelSelector.Create<WebDriverSession>(s => s.Metadata.Labels[Annotations.ManagedBy] == "test"));
+        }
+
+        /// <summary>
+        /// Calling <see cref="LabelSelector.Create"/> throws an error if not operating on (IKubernetesObject).Metadata.Labels.
+        /// </summary>
+        [Fact]
+        public void NotAKubeType_ReturnsNull()
+        {
+            Assert.Null(LabelSelector.Create<CustomObject>(s => s.Child.Metadata.Labels[Annotations.ManagedBy] == "test"));
+        }
+
+        private class CustomObject : IKubernetesObject<V1ObjectMeta>
+        {
+            public V1ObjectMeta Metadata { get; set; } = new V1ObjectMeta();
+
+            public string ApiVersion { get; set; }
+
+            public string Kind { get; set; }
+
+            public InnerObject Child { get; set; }
+
+            public class InnerObject
+            {
+                public V1ObjectMeta Metadata { get; set; } = new V1ObjectMeta();
+            }
         }
     }
 }
