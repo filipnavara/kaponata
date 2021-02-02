@@ -37,7 +37,7 @@ namespace Kaponata.Android.Tests.Adb
         }
 
         /// <summary>
-        /// The <see cref="AdbProtocol.ReadSyncDataAsync(Stream, System.Threading.CancellationToken)"/> validates the argument.
+        /// The <see cref="AdbProtocol.CopySyncDataAsync(Stream, System.Threading.CancellationToken)"/> validates the argument.
         /// </summary>
         /// <returns>
         /// A <see cref="Task"/> which represents the asynchronous test.
@@ -48,11 +48,11 @@ namespace Kaponata.Android.Tests.Adb
             await using MemoryStream stream = new MemoryStream();
             await using var protocol = new AdbProtocol(stream, ownsStream: true, NullLogger<AdbProtocol>.Instance);
 
-            await Assert.ThrowsAsync<ArgumentNullException>(async () => await protocol.ReadSyncDataAsync((Stream)null, default).ConfigureAwait(false));
+            await Assert.ThrowsAsync<ArgumentNullException>(async () => await protocol.CopySyncDataAsync((Stream)null, default).ConfigureAwait(false));
         }
 
         /// <summary>
-        /// The <see cref="AdbProtocol.ReadSyncDataAsync(Stream, CancellationToken)"/> method reads the stream data in chuncks from the sync service.
+        /// The <see cref="AdbProtocol.CopySyncDataAsync(Stream, CancellationToken)"/> method reads the stream data in chuncks from the sync service.
         /// </summary>
         /// <param name="size">
         /// The data size.
@@ -112,7 +112,7 @@ namespace Kaponata.Android.Tests.Adb
             syncCommandTypes.ToList().ForEach(c => readCommandTypeSequence.ReturnsAsync(c));
 
             var protocol = protocolMock.Object;
-            await protocol.ReadSyncDataAsync(dataStream, default).ConfigureAwait(false);
+            await protocol.CopySyncDataAsync(dataStream, default).ConfigureAwait(false);
             dataStream.Position = 0;
 
             expected.ToList().ForEach(b => Assert.Equal(b, dataStream.ReadByte()));
@@ -120,7 +120,7 @@ namespace Kaponata.Android.Tests.Adb
         }
 
         /// <summary>
-        /// The <see cref="AdbProtocol.ReadSyncDataAsync(Stream, CancellationToken)"/> method throws an exception when there is an error in the data.
+        /// The <see cref="AdbProtocol.CopySyncDataAsync(Stream, CancellationToken)"/> method throws an exception when there is an error in the data.
         /// </summary>
         /// <returns>
         /// A <see cref="Task"/> which represents the asynchronous test.
@@ -147,11 +147,11 @@ namespace Kaponata.Android.Tests.Adb
                 .ReturnsAsync(SyncCommandType.DONE);
 
             var protocol = protocolMock.Object;
-            await Assert.ThrowsAsync<AdbException>(async () => await protocol.ReadSyncDataAsync(dataStream, default).ConfigureAwait(false));
+            await Assert.ThrowsAsync<AdbException>(async () => await protocol.CopySyncDataAsync(dataStream, default).ConfigureAwait(false));
         }
 
         /// <summary>
-        /// The <see cref="AdbProtocol.ReadSyncDataAsync(Stream, CancellationToken)"/> method throws an exception when there is an error in the data.
+        /// The <see cref="AdbProtocol.CopySyncDataAsync(Stream, CancellationToken)"/> method throws an exception when there is an error in the data.
         /// </summary>
         /// <returns>
         /// A <see cref="Task"/> which represents the asynchronous test.
@@ -178,11 +178,11 @@ namespace Kaponata.Android.Tests.Adb
                 .ReturnsAsync(SyncCommandType.DONE);
 
             var protocol = protocolMock.Object;
-            await Assert.ThrowsAsync<AdbException>(async () => await protocol.ReadSyncDataAsync(dataStream, default).ConfigureAwait(false));
+            await Assert.ThrowsAsync<AdbException>(async () => await protocol.CopySyncDataAsync(dataStream, default).ConfigureAwait(false));
         }
 
         /// <summary>
-        /// The <see cref="AdbProtocol.ReadSyncDataAsync(Stream, CancellationToken)"/> method throws an exception when there is an error in the data.
+        /// The <see cref="AdbProtocol.CopySyncDataAsync(Stream, CancellationToken)"/> method throws an exception when there is an error in the data.
         /// </summary>
         /// <returns>
         /// A <see cref="Task"/> which represents the asynchronous test.
@@ -206,11 +206,11 @@ namespace Kaponata.Android.Tests.Adb
                 .ReturnsAsync(SyncCommandType.DONE);
 
             var protocol = protocolMock.Object;
-            await Assert.ThrowsAsync<AdbException>(async () => await protocol.ReadSyncDataAsync(dataStream, default).ConfigureAwait(false));
+            await Assert.ThrowsAsync<AdbException>(async () => await protocol.CopySyncDataAsync(dataStream, default).ConfigureAwait(false));
         }
 
         /// <summary>
-        /// The <see cref="AdbProtocol.ReadSyncDataAsync(Stream, CancellationToken)"/> method throws an exception when an unexpected command type is received.
+        /// The <see cref="AdbProtocol.CopySyncDataAsync(Stream, CancellationToken)"/> method throws an exception when an unexpected command type is received.
         /// </summary>
         /// <param name="response">
         /// The invalid response.
@@ -240,7 +240,7 @@ namespace Kaponata.Android.Tests.Adb
                 .ReturnsAsync(response);
 
             var protocol = protocolMock.Object;
-            var exception = await Assert.ThrowsAsync<AdbException>(async () => await protocol.ReadSyncDataAsync(dataStream, default).ConfigureAwait(false));
+            var exception = await Assert.ThrowsAsync<AdbException>(async () => await protocol.CopySyncDataAsync(dataStream, default).ConfigureAwait(false));
 
             Assert.Equal(exceptionMessage, exception.Message);
         }

@@ -40,7 +40,7 @@ namespace Kaponata.Android.Tests.Adb
                 .Returns(Task.CompletedTask)
                 .Verifiable();
             protocolMock
-                .Setup(p => p.ReadSyncDataAsync(It.IsAny<Stream>(), default))
+                .Setup(p => p.CopySyncDataAsync(It.IsAny<Stream>(), default))
                 .Returns(Task.CompletedTask)
                 .Callback<Stream, CancellationToken>((s, c) => dataStream.CopyTo(s))
                 .Verifiable();

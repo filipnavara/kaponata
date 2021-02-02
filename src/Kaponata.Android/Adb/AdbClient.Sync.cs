@@ -100,7 +100,7 @@ namespace Kaponata.Android.Adb
 
             await using var protocol = await this.ConnectToSyncServiceAsync(device, cancellationToken).ConfigureAwait(false);
             await protocol.WriteSyncCommandAsync(SyncCommandType.RECV, remotePath, cancellationToken).ConfigureAwait(false);
-            await protocol.ReadSyncDataAsync(stream, cancellationToken).ConfigureAwait(false);
+            await protocol.CopySyncDataAsync(stream, cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>

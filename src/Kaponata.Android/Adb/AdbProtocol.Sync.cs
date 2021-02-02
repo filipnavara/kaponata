@@ -138,6 +138,23 @@ namespace Kaponata.Android.Adb
         }
 
         /// <summary>
+        /// Fills a given buffer with bytes from the specified System.IO.Stream.
+        /// </summary>
+        /// <param name="buffer">
+        /// The buffer to fill from the stream.
+        /// </param>
+        /// <param name="cancellationToken">
+        /// A <see cref="CancellationToken"/> which can be used to cancel the asynchronous operation.
+        /// </param>
+        /// <returns>
+        ///  A task that represents the asynchronous read operation. Its resulting value contains the total number of bytes read into the buffer.
+        /// </returns>
+        public async ValueTask<int> ReadBlockAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)
+        {
+            return await this.stream.ReadBlockAsync(buffer, cancellationToken).ConfigureAwait(false);
+        }
+
+        /// <summary>
         /// Reads binary data from the adb sync service.
         /// </summary>
         /// <param name="stream">
@@ -149,52 +166,15 @@ namespace Kaponata.Android.Adb
         /// <returns>
         /// A <see cref="Task"/> which represents the asynchronous operation.
         /// </returns>
-        /// <seealso href="https://android.googlesource.com/platform/system/core.git/+/brillo-m7-dev/adb/SYNC.TXT"/>
-        public virtual async Task ReadSyncDataAsync(Stream stream, CancellationToken cancellationToken)
+        public virtual async Task CopySyncDataAsync(Stream stream, CancellationToken cancellationToken)
         {
             if (stream == null)
             {
                 throw new ArgumentNullException(nameof(stream));
             }
 
-            using var lengthBuffer = this.memoryPool.Rent(4);
-
-            SyncCommandType response;
-            while ((response = await this.ReadSyncCommandTypeAsync(cancellationToken).ConfigureAwait(false)) != SyncCommandType.DONE)
-            {
-                switch (response)
-                {
-                    case SyncCommandType.FAIL:
-                        var message = await this.ReadIndefiniteLengthStringAsync(cancellationToken).ConfigureAwait(false);
-                        throw new AdbException($"Failed to pull. {message}");
-                    case SyncCommandType.DATA:
-                        if (await this.stream.ReadBlockAsync(lengthBuffer.Memory[0..4], cancellationToken).ConfigureAwait(false) != 4)
-                        {
-                            throw new AdbException("Failed to read the stream.");
-                        }
-
-                        int length = (int)BinaryPrimitives.ReadUInt32LittleEndian(lengthBuffer.Memory[0..4].Span);
-
-                        if (length > MaxBufferSize - 4)
-                        {
-                            throw new AdbException($"The adb server is sending {length} bytes of data, which exceeds the maximum chunk size {MaxBufferSize - 4}");
-                        }
-
-                        using (var buffer = this.memoryPool.Rent(length))
-                        {
-                            if (await this.stream.ReadBlockAsync(buffer.Memory[0..length], cancellationToken).ConfigureAwait(false) != length)
-                            {
-                                throw new AdbException("Failed to read the stream.");
-                            }
-
-                            await stream.WriteAsync(buffer.Memory[0..length], cancellationToken).ConfigureAwait(false);
-                        }
-
-                        break;
-                    default:
-                        throw new AdbException($"The server sent an invalid response {response}");
-                }
-            }
+            var syncStream = new SyncStream(this);
+            await syncStream.CopyToAsync(stream).ConfigureAwait(false);
         }
 
         /// <summary>
