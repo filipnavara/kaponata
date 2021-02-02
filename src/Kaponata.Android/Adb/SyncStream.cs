@@ -123,7 +123,7 @@ namespace Kaponata.Android.Adb
         }
 
         /// <inheritdoc/>
-        public override async ValueTask WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = default)
+        public override ValueTask WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = default)
         {
             throw new System.NotSupportedException();
         }
