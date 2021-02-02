@@ -49,6 +49,11 @@ namespace Kaponata.Operator.Tests.Kubernetes.Polyfill
                     protocol.HttpMessageHandlers,
                     (h) =>
                     {
+                        var apiHandler = Assert.IsType<CoreApiHandler>(h);
+                        Assert.NotNull(apiHandler.InnerHandler);
+                    },
+                    (h) =>
+                    {
                         var watchHandler = Assert.IsType<WatchHandler>(h);
                         Assert.NotNull(watchHandler.InnerHandler);
                     },
