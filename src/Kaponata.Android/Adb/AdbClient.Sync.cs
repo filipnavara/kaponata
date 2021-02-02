@@ -2,7 +2,9 @@
 // Copyright (c) Quamotion bv. All rights reserved.
 // </copyright>
 
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -11,13 +13,16 @@ namespace Kaponata.Android.Adb
     /// <summary>
     /// Contains the <c>ADB</c> sync service methods for the <see cref="AdbClient"/> class.
     /// </summary>
+    /// <seealso href="https://android.googlesource.com/platform/system/core.git/+/brillo-m7-dev/adb/SYNC.TXT"/>
     public partial class AdbClient
     {
+        private const int MaxPathLength = 1024;
+
         /// <summary>
         /// Lists the files from the remote directory.
         /// </summary>
         /// <param name="device">
-        /// The device on which the <c>apk</c> needs to be installed.
+        /// The device to be connected to the sync service.
         /// </param>
         /// <param name="remotePath">
         /// The remote path.
@@ -26,7 +31,7 @@ namespace Kaponata.Android.Adb
         /// A <see cref="CancellationToken"/> which can be used to cancel the asynchronous operation.
         /// </param>
         /// <returns>
-        /// A <see cref="Task"/> which represents the asynchronous operation.
+        /// A list of <see cref="FileStatistics"/>.
         /// </returns>
         public async Task<IList<FileStatistics>> GetDirectoryListingAsync(DeviceData device, string remotePath, CancellationToken cancellationToken)
         {
@@ -56,6 +61,142 @@ namespace Kaponata.Android.Adb
             }
 
             return entries;
+        }
+
+        /// <summary>
+        /// Pulls a remote file and writes it to the output stream.
+        /// </summary>
+        /// <param name="device">
+        /// The device to be connected to the sync service.
+        /// </param>
+        /// <param name="remotePath">
+        /// The remote path from which the file needs to be pulled.
+        /// </param>
+        /// <param name="stream">
+        /// The output stream.
+        /// </param>
+        /// <param name="cancellationToken">
+        /// A <see cref="CancellationToken"/> which can be used to cancel the asynchronous operation.
+        /// </param>
+        /// <returns>
+        /// A <see cref="Task"/> which represents the asynchronous operation.
+        /// </returns>
+        public async Task PullAsync(DeviceData device, string remotePath, Stream stream, CancellationToken cancellationToken)
+        {
+            if (stream == null)
+            {
+                throw new ArgumentNullException(nameof(stream));
+            }
+
+            if (string.IsNullOrEmpty(remotePath))
+            {
+                throw new ArgumentNullException(nameof(remotePath));
+            }
+
+            if (device == null)
+            {
+                throw new ArgumentNullException(nameof(device));
+            }
+
+            await using var protocol = await this.ConnectToSyncServiceAsync(device, cancellationToken).ConfigureAwait(false);
+            await protocol.WriteSyncCommandAsync(SyncCommandType.RECV, remotePath, cancellationToken).ConfigureAwait(false);
+            await protocol.ReadSyncDataAsync(stream, cancellationToken).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Pushes a file to the remote path.
+        /// </summary>
+        /// <param name="device">
+        /// The device to be connected to the sync service.
+        /// </param>
+        /// <param name="stream">
+        /// The input stream.
+        /// </param>
+        /// <param name="remotePath">
+        /// The remote path on which the file needs to be pushed.
+        /// </param>
+        /// <param name="permissions">
+        /// The permissions of the remote file.
+        /// </param>
+        /// <param name="timestamp">
+        /// The timestamp of the remote file.
+        /// </param>
+        /// <param name="cancellationToken">
+        /// A <see cref="CancellationToken"/> which can be used to cancel the asynchronous operation.
+        /// </param>
+        /// <returns>
+        /// A <see cref="Task"/> which represents the asynchronous operation.
+        /// </returns>
+        public async Task PushAsync(DeviceData device, Stream stream, string remotePath, int permissions, DateTimeOffset timestamp, CancellationToken cancellationToken)
+        {
+            if (stream == null)
+            {
+                throw new ArgumentNullException(nameof(stream));
+            }
+
+            if (string.IsNullOrEmpty(remotePath))
+            {
+                throw new ArgumentNullException(nameof(remotePath));
+            }
+
+            if (device == null)
+            {
+                throw new ArgumentNullException(nameof(device));
+            }
+
+            if (remotePath.Length > MaxPathLength)
+            {
+                throw new ArgumentOutOfRangeException(nameof(remotePath), $"The remote path {remotePath} exceeds the maximum path size {MaxPathLength}");
+            }
+
+            await using var protocol = await this.ConnectToSyncServiceAsync(device, cancellationToken).ConfigureAwait(false);
+            await protocol.WriteSyncCommandAsync(SyncCommandType.SEND, $"{remotePath},{permissions}", cancellationToken).ConfigureAwait(false);
+            await protocol.WriteSyncDataAsync(stream, cancellationToken).ConfigureAwait(false);
+
+            int time = (int)timestamp.ToUnixTimeSeconds();
+            await protocol.WriteSyncCommandAsync(SyncCommandType.DONE, time, cancellationToken).ConfigureAwait(false);
+            protocol.EnsureValidAdbResponse(await protocol.ReadAdbResponseAsync(cancellationToken).ConfigureAwait(false));
+        }
+
+        /// <summary>
+        /// Gets the <see cref="FileStatistics"/> of a remote file.
+        /// </summary>
+        /// <param name="device">
+        /// The device to be connected to the sync service.
+        /// </param>
+        /// <param name="remotePath">
+        /// The remote path on which the file needs to be pushed.
+        /// </param>
+        /// <param name="cancellationToken">
+        /// A <see cref="CancellationToken"/> which can be used to cancel the asynchronous operation.
+        /// </param>
+        /// <returns>
+        /// The <see cref="FileStatistics"/> for the remote file.
+        /// </returns>
+        public async Task<FileStatistics> GetFileStatisticsAsync(DeviceData device, string remotePath, CancellationToken cancellationToken)
+        {
+            if (string.IsNullOrEmpty(remotePath))
+            {
+                throw new ArgumentNullException(nameof(remotePath));
+            }
+
+            if (device == null)
+            {
+                throw new ArgumentNullException(nameof(device));
+            }
+
+            await using var protocol = await this.ConnectToSyncServiceAsync(device, cancellationToken).ConfigureAwait(false);
+            await protocol.WriteSyncCommandAsync(SyncCommandType.STAT, remotePath, cancellationToken).ConfigureAwait(false);
+            var response = await protocol.ReadSyncCommandTypeAsync(cancellationToken).ConfigureAwait(false);
+            if (response != SyncCommandType.STAT)
+            {
+                throw new AdbException($"The server returned an invalid sync response: {response}");
+            }
+
+            var fileStatistics = await protocol.ReadFileStatisticsAsync(cancellationToken).ConfigureAwait(false);
+            fileStatistics.Path = remotePath;
+
+            return fileStatistics;
         }
 
         /// <summary>

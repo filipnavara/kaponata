@@ -2,8 +2,10 @@
 // Copyright (c) Quamotion bv. All rights reserved.
 // </copyright>
 
+using Nerdbank.Streams;
 using System;
 using System.Buffers.Binary;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -14,6 +16,8 @@ namespace Kaponata.Android.Adb
     /// </summary>
     public partial class AdbProtocol
     {
+        private const int MaxBufferSize = 64 * 1024;
+
         /// <summary>
         /// Starts a sync session.
         /// </summary>
@@ -35,7 +39,7 @@ namespace Kaponata.Android.Adb
         /// <param name="commandType">
         /// The command type to be written.
         /// </param>
-        /// <param name="command">
+        /// <param name="data">
         /// The command to be written.
         /// </param>
         /// <param name="cancellationToken">
@@ -44,19 +48,19 @@ namespace Kaponata.Android.Adb
         /// <returns>
         /// A <see cref="Task"/> which represents the asynchronous operation.
         /// </returns>
-        public virtual async Task WriteSyncCommandAsync(SyncCommandType commandType, string command, CancellationToken cancellationToken)
+        public virtual async Task WriteSyncCommandAsync(SyncCommandType commandType, string data, CancellationToken cancellationToken)
         {
-            if (string.IsNullOrEmpty(command))
+            if (string.IsNullOrEmpty(data))
             {
-                throw new ArgumentNullException(nameof(command));
+                throw new ArgumentNullException(nameof(data));
             }
 
-            var commandLength = AdbEncoding.GetByteCount(command);
+            var commandLength = AdbEncoding.GetByteCount(data);
             using var messageBuffer = this.memoryPool.Rent(commandLength + 8);
 
             BinaryPrimitives.WriteInt32BigEndian(messageBuffer.Memory[0..4].Span, (int)commandType);
             BinaryPrimitives.WriteUInt32LittleEndian(messageBuffer.Memory[4..8].Span, (uint)commandLength);
-            AdbEncoding.GetBytes(command).CopyTo(messageBuffer.Memory[8..].Span);
+            AdbEncoding.GetBytes(data).CopyTo(messageBuffer.Memory[8..].Span);
 
             await this.stream.WriteAsync(messageBuffer.Memory.Slice(0, commandLength + 8), cancellationToken).ConfigureAwait(false);
             await this.stream.FlushAsync(cancellationToken).ConfigureAwait(false);
@@ -104,6 +108,138 @@ namespace Kaponata.Android.Adb
             fileStatistics.Path = await this.ReadStringAsync(length, cancellationToken).ConfigureAwait(false);
 
             return fileStatistics;
+        }
+
+        /// <summary>
+        /// Asynchronously writes a command to the <c>ADB</c> server.
+        /// </summary>
+        /// <param name="commandType">
+        /// The command type to be written.
+        /// </param>
+        /// <param name="data">
+        /// The data to be written.
+        /// </param>
+        /// <param name="cancellationToken">
+        /// A <see cref="CancellationToken"/> which can be used to cancel the asynchronous operation.
+        /// </param>
+        /// <returns>
+        /// A <see cref="Task"/> which represents the asynchronous operation.
+        /// </returns>
+        /// <seealso href="https://android.googlesource.com/platform/system/core.git/+/brillo-m7-dev/adb/SYNC.TXT"/>
+        public virtual async Task WriteSyncCommandAsync(SyncCommandType commandType, int data, CancellationToken cancellationToken)
+        {
+            using var messageBuffer = this.memoryPool.Rent(8);
+
+            BinaryPrimitives.WriteInt32BigEndian(messageBuffer.Memory[0..4].Span, (int)commandType);
+            BinaryPrimitives.WriteInt32LittleEndian(messageBuffer.Memory[4..8].Span, data);
+
+            await this.stream.WriteAsync(messageBuffer.Memory.Slice(0, 8), cancellationToken).ConfigureAwait(false);
+            await this.stream.FlushAsync(cancellationToken).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Reads binary data from the adb sync service.
+        /// </summary>
+        /// <param name="stream">
+        /// The output stream.
+        /// </param>
+        /// <param name="cancellationToken">
+        /// A <see cref="CancellationToken"/> which can be used to cancel the asynchronous operation.
+        /// </param>
+        /// <returns>
+        /// A <see cref="Task"/> which represents the asynchronous operation.
+        /// </returns>
+        /// <seealso href="https://android.googlesource.com/platform/system/core.git/+/brillo-m7-dev/adb/SYNC.TXT"/>
+        public virtual async Task ReadSyncDataAsync(Stream stream, CancellationToken cancellationToken)
+        {
+            if (stream == null)
+            {
+                throw new ArgumentNullException(nameof(stream));
+            }
+
+            using var lengthBuffer = this.memoryPool.Rent(4);
+
+            SyncCommandType response;
+            while ((response = await this.ReadSyncCommandTypeAsync(cancellationToken).ConfigureAwait(false)) != SyncCommandType.DONE)
+            {
+                switch (response)
+                {
+                    case SyncCommandType.FAIL:
+                        var message = await this.ReadIndefiniteLengthStringAsync(cancellationToken).ConfigureAwait(false);
+                        throw new AdbException($"Failed to pull. {message}");
+                    case SyncCommandType.DATA:
+                        if (await this.stream.ReadBlockAsync(lengthBuffer.Memory[0..4], cancellationToken).ConfigureAwait(false) != 4)
+                        {
+                            throw new AdbException("Failed to read the stream.");
+                        }
+
+                        int length = (int)BinaryPrimitives.ReadUInt32LittleEndian(lengthBuffer.Memory[0..4].Span);
+
+                        if (length > MaxBufferSize - 4)
+                        {
+                            throw new AdbException($"The adb server is sending {length} bytes of data, which exceeds the maximum chunk size {MaxBufferSize - 4}");
+                        }
+
+                        using (var buffer = this.memoryPool.Rent(length))
+                        {
+                            if (await this.stream.ReadBlockAsync(buffer.Memory[0..length], cancellationToken).ConfigureAwait(false) != length)
+                            {
+                                throw new AdbException("Failed to read the stream.");
+                            }
+
+                            await stream.WriteAsync(buffer.Memory[0..length], cancellationToken).ConfigureAwait(false);
+                        }
+
+                        break;
+                    default:
+                        throw new AdbException($"The server sent an invalid response {response}");
+                }
+            }
+        }
+
+        /// <summary>
+        /// Writes data to the <c>ADB</c> sync service.
+        /// </summary>
+        /// <param name="stream">
+        /// The input stream.
+        /// </param>
+        /// <param name="cancellationToken">
+        /// A <see cref="CancellationToken"/> which can be used to cancel the asynchronous operation.
+        /// </param>
+        /// <returns>
+        /// A <see cref="Task"/> which represents the asynchronous operation.
+        /// </returns>
+        /// <seealso href="https://android.googlesource.com/platform/system/core.git/+/brillo-m7-dev/adb/SYNC.TXT"/>
+        public virtual async Task WriteSyncDataAsync(Stream stream, CancellationToken cancellationToken)
+        {
+            if (stream == null)
+            {
+                throw new ArgumentNullException(nameof(stream));
+            }
+
+            var maxChunkData = MaxBufferSize - 8; // max 64k - 8 (header)
+
+            while (true)
+            {
+                var bytesToWrite = Math.Min((int)(stream.Length - stream.Position), maxChunkData);
+
+                if (bytesToWrite <= 0)
+                {
+                    break;
+                }
+
+                using (var buffer = this.memoryPool.Rent(bytesToWrite))
+                {
+                    if (await stream.ReadBlockAsync(buffer.Memory.Slice(0, bytesToWrite), cancellationToken).ConfigureAwait(false) != bytesToWrite)
+                    {
+                        throw new InvalidOperationException("Failed to read the stream.");
+                    }
+
+                    await this.WriteSyncCommandAsync(SyncCommandType.DATA, bytesToWrite, cancellationToken).ConfigureAwait(false);
+                    await this.stream.WriteAsync(buffer.Memory.Slice(0, bytesToWrite), cancellationToken).ConfigureAwait(false);
+                    await this.stream.FlushAsync(cancellationToken).ConfigureAwait(false);
+                }
+            }
         }
     }
 }

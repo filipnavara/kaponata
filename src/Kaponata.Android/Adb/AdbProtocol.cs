@@ -165,7 +165,7 @@ namespace Kaponata.Android.Adb
         }
 
         /// <summary>
-        /// Asynchronously reads an <see cref="int"/> from from the <c>ADB</c> server.
+        /// Asynchronously reads an <see cref="int"/> from from the <c>ADB</c> server which was encoded in Hex.
         /// </summary>
         /// <param name="cancellationToken">
         /// A <see cref="CancellationToken"/> which can be used to cancel the asynchronous operation.
@@ -176,7 +176,6 @@ namespace Kaponata.Android.Adb
         public virtual async Task<ushort> ReadUInt16Async(CancellationToken cancellationToken)
         {
             using var messageBuffer = this.memoryPool.Rent(4);
-            using var intBuffer = this.memoryPool.Rent(2);
 
             if (await this.stream.ReadBlockAsync(messageBuffer.Memory.Slice(0, 4), cancellationToken).ConfigureAwait(false) != 4)
             {
