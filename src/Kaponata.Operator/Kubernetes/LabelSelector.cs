@@ -85,15 +85,15 @@ namespace Kaponata.Operator.Kubernetes
         private static bool IsLabelValue(Expression expression, out string labelValue)
         {
             labelValue = null;
-            var constant = expression as ConstantExpression;
 
-            if (constant == null)
+            switch (expression)
             {
-                return false;
+                case ConstantExpression constantExpression:
+                    labelValue = constantExpression.Value as string;
+                    return true;
             }
 
-            labelValue = constant.Value as string;
-            return true;
+            return false;
         }
 
         // Extracts a label name from a method call expression. Labels are typically
