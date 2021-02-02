@@ -44,6 +44,16 @@ namespace Kaponata.Operator.Kubernetes
         }
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="NamespacedKubernetesClient{T}"/> class.
+        /// </summary>
+        /// <remarks>
+        /// Used for mocking purposes only.
+        /// </remarks>
+        protected NamespacedKubernetesClient()
+        {
+        }
+
+        /// <summary>
         /// Asynchronously creates a new <typeparamref name="T"/> object.
         /// </summary>
         /// <param name="value">

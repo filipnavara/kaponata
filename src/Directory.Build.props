@@ -17,6 +17,9 @@
     <PackageReference Include="Divergic.Logging.Xunit" Version="3.6.0" />
     <PackageReference Include="Moq" Version="4.16.0" />
     <PackageReference Include="Nerdbank.Streams" Version="2.6.81" />
+    <PackageReference Include="MELT" Version="0.6.0" />
+
+    <Content Include="$(MSBuildThisFileDirectory)\xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <PropertyGroup>

@@ -258,6 +258,29 @@ namespace Kaponata.Operator.Tests.Operators
         }
 
         /// <summary>
+        /// Sets up a <see cref="NamespacedKubernetesClient{T}"/> which is a child of this <see cref="KubernetesClient"/>.
+        /// </summary>
+        /// <typeparam name="T">
+        /// The type of objects observed by the <see cref="NamespacedKubernetesClient{T}"/>.
+        /// </typeparam>
+        /// <param name="client">
+        /// The <see cref="KubernetesClient"/> for which to configure the <see cref="NamespacedKubernetesClient{T}"/>.
+        /// </param>
+        /// <returns>
+        /// A mock of the <see cref="NamespacedKubernetesClient{T}"/> class.
+        /// </returns>
+        public static Mock<NamespacedKubernetesClient<T>> WithClient<T>(this Mock<KubernetesClient> client)
+            where T : IKubernetesObject<V1ObjectMeta>, new()
+        {
+            Mock<NamespacedKubernetesClient<T>> typedClient = new Mock<NamespacedKubernetesClient<T>>(MockBehavior.Strict);
+
+            client.Setup(s => s.GetClient<T>())
+                .Returns(typedClient.Object);
+
+            return typedClient;
+        }
+
+        /// <summary>
         /// A client which subscribed to a watch operation.
         /// </summary>
         /// <typeparam name="T">
