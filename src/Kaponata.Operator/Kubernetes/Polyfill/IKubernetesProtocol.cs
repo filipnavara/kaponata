@@ -16,11 +16,6 @@ namespace Kaponata.Operator.Kubernetes.Polyfill
     public interface IKubernetesProtocol : IKubernetes
     {
         /// <summary>
-        /// Gets the <see cref="HttpClient"/> used to send HTTP requests.
-        /// </summary>
-        HttpClient HttpClient { get; }
-
-        /// <summary>
         /// Asynchronously watches a custom resource definition.
         /// </summary>
         /// <param name="crd">
