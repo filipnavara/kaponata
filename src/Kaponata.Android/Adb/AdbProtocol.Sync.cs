@@ -54,6 +54,7 @@ namespace Kaponata.Android.Adb
             {
                 throw new ArgumentNullException(nameof(data));
             }
+
             var commandLength = AdbEncoding.GetByteCount(data);
             using var messageBuffer = this.memoryPool.Rent(commandLength + 8);
 
