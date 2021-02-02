@@ -85,15 +85,15 @@ namespace Kaponata.Operator.Kubernetes
         private static bool IsLabelValue(Expression expression, out string labelValue)
         {
             labelValue = null;
-            var constant = expression as ConstantExpression;
 
-            if (constant == null)
+            switch (expression)
             {
-                return false;
+                case ConstantExpression constantExpression:
+                    labelValue = constantExpression.Value as string;
+                    return true;
             }
 
-            labelValue = constant.Value as string;
-            return true;
+            return false;
         }
 
         // Extracts a label name from a method call expression. Labels are typically
@@ -131,7 +131,7 @@ namespace Kaponata.Operator.Kubernetes
                 return false;
             }
 
-            if (!IsProperty(metadataCall, typeof(V1Pod), nameof(V1Pod.Metadata), out var root))
+            if (!IsProperty(metadataCall, typeof(IKubernetesObject<V1ObjectMeta>), nameof(IKubernetesObject<V1ObjectMeta>.Metadata), out var root))
             {
                 return false;
             }
@@ -159,7 +159,7 @@ namespace Kaponata.Operator.Kubernetes
             var memberExpression = expression as MemberExpression;
 
             bool isProperty = memberExpression != null
-                && memberExpression.Member.ReflectedType == type
+                && memberExpression.Member.ReflectedType.IsAssignableTo(type)
                 && memberExpression.Member.Name == name;
 
             if (isProperty)
