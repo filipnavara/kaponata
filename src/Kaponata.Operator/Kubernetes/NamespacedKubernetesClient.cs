@@ -158,6 +158,50 @@ namespace Kaponata.Operator.Kubernetes
         }
 
         /// <summary>
+        /// Deletes an object if it exists.
+        /// </summary>
+        /// <param name="namespace">
+        /// The namespace in which to search for the object.
+        /// </param>
+        /// <param name="name">
+        /// The name of the object.
+        /// </param>
+        /// <param name="timeout">
+        /// The amount of time alloted to the operation.
+        /// </param>
+        /// <param name="cancellationToken">
+        /// A <see cref="CancellationToken"/> which can be used to cancel the asynchronous operation.
+        /// </param>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation, and which returns the deleted object if an object was deleted.</returns>
+        public virtual async Task<T> TryDeleteAsync(string @namespace, string name, TimeSpan timeout, CancellationToken cancellationToken)
+        {
+            if (@namespace == null)
+            {
+                throw new ArgumentNullException(nameof(@namespace));
+            }
+
+            if (name == null)
+            {
+                throw new ArgumentNullException(nameof(name));
+            }
+
+            var value = await this.TryReadAsync(@namespace, name, cancellationToken).ConfigureAwait(false);
+
+            if (value == null)
+            {
+                return default(T);
+            }
+
+            await this.DeleteAsync(
+                value,
+                new V1DeleteOptions(propagationPolicy: "Foreground"),
+                timeout,
+                cancellationToken).ConfigureAwait(false);
+
+            return value;
+        }
+
+        /// <summary>
         /// Asynchronously deletes a <typeparamref name="T"/> object.
         /// </summary>
         /// <param name="value">
@@ -172,8 +216,30 @@ namespace Kaponata.Operator.Kubernetes
         /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
         public virtual Task DeleteAsync(T value, TimeSpan timeout, CancellationToken cancellationToken)
         {
+            return this.DeleteAsync(value, options: null, timeout, cancellationToken);
+        }
+
+        /// <summary>
+        /// Asynchronously deletes a <typeparamref name="T"/> object.
+        /// </summary>
+        /// <param name="value">
+        /// The <typeparamref name="T"/> object to delete.
+        /// </param>
+        /// <param name="options">
+        /// Additional parameters which specify how the delete operation should be performed.
+        /// </param>
+        /// <param name="timeout">
+        /// The amount of time in which the <typeparamref name="T"/> object should be deleted.
+        /// </param>
+        /// <param name="cancellationToken">
+        /// A <see cref="CancellationToken"/> which can be used to cancel the asynchronous operation.
+        /// </param>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+        public virtual Task DeleteAsync(T value, V1DeleteOptions options, TimeSpan timeout, CancellationToken cancellationToken)
+        {
             return this.parent.DeleteNamespacedObjectAsync<T>(
                 value,
+                options,
                 this.DeleteAsync,
                 this.WatchAsync,
                 timeout,

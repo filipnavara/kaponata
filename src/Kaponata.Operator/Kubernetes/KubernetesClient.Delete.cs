@@ -113,8 +113,56 @@ namespace Kaponata.Operator.Kubernetes
         /// <returns>
         /// A <see cref="Task"/> representing the asynchronous operation.
         /// </returns>
-        public async Task DeleteNamespacedObjectAsync<T>(
+        public Task DeleteNamespacedObjectAsync<T>(
             T value,
+            DeleteNamespacedObjectAsyncDelegate<T> deleteAction,
+            WatchObjectAsyncDelegate<T> watchAction,
+            TimeSpan timeout,
+            CancellationToken cancellationToken)
+            where T : IKubernetesObject<V1ObjectMeta>
+        {
+            return this.DeleteNamespacedObjectAsync(
+                value,
+                options: null,
+                deleteAction,
+                watchAction,
+                timeout,
+                cancellationToken);
+        }
+
+        /// <summary>
+        /// Asynchronously deletes a namespaced object, and waits for the delete operation
+        /// to complete.
+        /// </summary>
+        /// <typeparam name="T">
+        /// The type of the Kubernetes object to delete.
+        /// </typeparam>
+        /// <param name="value">
+        /// The object to delete.
+        /// </param>
+        /// <param name="options">
+        /// Additional options which specify how the delete operation should be processed.
+        /// </param>
+        /// <param name="deleteAction">
+        /// A delegate to a method which schedules the deletion.
+        /// </param>
+        /// <param name="watchAction">
+        /// A delegate to a method which creates a watcher for the object.
+        /// Used to monitor the progress of the delete operation.
+        /// </param>
+        /// <param name="timeout">
+        /// The amount of time to wait for the object to be deleted.
+        /// </param>
+        /// <param name="cancellationToken">
+        /// A <see cref="CancellationToken"/> which can be used to cancel the
+        /// asynchronous operation.
+        /// </param>
+        /// <returns>
+        /// A <see cref="Task"/> representing the asynchronous operation.
+        /// </returns>
+        public virtual async Task DeleteNamespacedObjectAsync<T>(
+            T value,
+            V1DeleteOptions options,
             DeleteNamespacedObjectAsyncDelegate<T> deleteAction,
             WatchObjectAsyncDelegate<T> watchAction,
             TimeSpan timeout,
@@ -162,6 +210,7 @@ namespace Kaponata.Operator.Kubernetes
             await deleteAction(
                 value.Metadata.Name,
                 value.Metadata.NamespaceProperty,
+                body: options,
                 cancellationToken: cancellationToken).ConfigureAwait(false);
 
             if (await Task.WhenAny(watchTask, Task.Delay(timeout)).ConfigureAwait(false) != watchTask)
