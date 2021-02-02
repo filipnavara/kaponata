@@ -196,7 +196,7 @@ namespace Kaponata.Operator.Kubernetes
         /// <returns>
         /// A <see cref="Task"/> which represents the asynchronous operation.
         /// </returns>
-        public async Task<HttpOperationResponse<TList>> ListNamespacedObjectAsync<TObject, TList>(
+        public async virtual Task<HttpOperationResponse<TList>> ListNamespacedObjectAsync<TObject, TList>(
             KindMetadata kind,
             string namespaceParameter,
             bool? allowWatchBookmarks = null,
