@@ -109,6 +109,7 @@ namespace Kaponata.Operator.Tests.Operators
             using (var @operator = new ChildOperator<WebDriverSession, V1Pod>(
                 kubernetes,
                 configuration,
+                (session) => true,
                 (mobileDevice, pod) =>
                 {
                     pod.Spec = new V1PodSpec()

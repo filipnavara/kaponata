@@ -72,6 +72,7 @@ namespace Kaponata.Operator.Operators
         private readonly ILogger<ChildOperator<TParent, TChild>> logger;
         private readonly ChildOperatorConfiguration configuration;
         private readonly KubernetesClient kubernetes;
+        private readonly Func<TParent, bool> parentFilter;
         private readonly Action<TParent, TChild> childFactory;
         private readonly Collection<FeedbackLoop> feedbackLoops;
 
@@ -94,7 +95,10 @@ namespace Kaponata.Operator.Operators
         /// <param name="configuration">
         /// The configuration for this operator.
         /// </param>
-        /// <param name="factory">
+        /// <param name="parentFilter">
+        /// A delegate which can be used to only take a subset of the parents in consideration.
+        /// </param>
+        /// <param name="childFactory">
         /// A method which projects objects of type <typeparamref name="TParent"/> into objects of type
         /// <typeparamref name="TChild"/>.
         /// </param>
@@ -108,13 +112,15 @@ namespace Kaponata.Operator.Operators
         public ChildOperator(
             KubernetesClient kubernetes,
             ChildOperatorConfiguration configuration,
-            Action<TParent, TChild> factory,
+            Func<TParent, bool> parentFilter,
+            Action<TParent, TChild> childFactory,
             Collection<FeedbackLoop> feedbackLoops,
             ILogger<ChildOperator<TParent, TChild>> logger)
         {
             this.kubernetes = kubernetes ?? throw new ArgumentNullException(nameof(kubernetes));
             this.configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
-            this.childFactory = factory ?? throw new ArgumentNullException(nameof(factory));
+            this.parentFilter = parentFilter ?? throw new ArgumentNullException(nameof(parentFilter));
+            this.childFactory = childFactory ?? throw new ArgumentNullException(nameof(childFactory));
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
             this.feedbackLoops = feedbackLoops ?? throw new ArgumentNullException(nameof(feedbackLoops));
 
@@ -185,6 +191,12 @@ namespace Kaponata.Operator.Operators
                 {
                     this.logger.LogInformation("Processing parent {parent} for the {operator} operator", parent.Metadata.Name, this.configuration.OperatorName);
 
+                    if (!this.parentFilter(parent))
+                    {
+                        this.logger.LogInformation("Skipping parent {parent} because it is filtered out", parent.Metadata.Name, this.configuration.OperatorName);
+                        continue;
+                    }
+
                     var child = children.Items.SingleOrDefault(c => c.IsOwnedBy(parent));
                     this.logger.LogInformation("Found child {child} for parent {parent} for the {operator} operator", child?.Metadata?.Name, parent.Metadata.Name, this.configuration.OperatorName);
 
@@ -227,6 +239,12 @@ namespace Kaponata.Operator.Operators
             if (parent == null)
             {
                 throw new ArgumentNullException(nameof(parent));
+            }
+
+            if (!this.parentFilter(parent))
+            {
+                this.logger.LogInformation("{operator} operator is skipping {parent} because it is filtered out.", this.configuration.OperatorName, parent?.Metadata?.Name);
+                return;
             }
 
             try
@@ -290,10 +308,18 @@ namespace Kaponata.Operator.Operators
 
                 this.logger.LogInformation("{operator} operator: found parent {parent} for child {child}", this.configuration.OperatorName, parent?.Metadata?.Name, child?.Metadata?.Name);
 
-                if (parent != null)
+                if (parent == null)
                 {
-                    this.reconciliationBuffer.Post(new ChildOperatorContext(parent, child));
+                    return;
                 }
+
+                if (!this.parentFilter(parent))
+                {
+                    this.logger.LogInformation("{operator} operator is filtering out parent {parent} for child {child}", this.configuration.OperatorName, parent?.Metadata?.Name, child?.Metadata?.Name);
+                    return;
+                }
+
+                this.reconciliationBuffer.Post(new ChildOperatorContext(parent, child));
             }
             catch (Exception ex)
             {
@@ -430,6 +456,7 @@ namespace Kaponata.Operator.Operators
                 null,
                 async (eventType, value) =>
                 {
+                    this.logger.LogInformation("Operator {operator} got an {eventType} event for {value}", this.configuration.OperatorName, eventType, value?.Metadata?.Name);
                     await this.ScheduleReconciliationAsync(value, stoppingToken).ConfigureAwait(false);
                     return WatchResult.Continue;
                 },
@@ -442,6 +469,7 @@ namespace Kaponata.Operator.Operators
                 null,
                 async (eventType, value) =>
                 {
+                    this.logger.LogInformation("Operator {operator} got an {eventType} event for {value}", this.configuration.OperatorName, eventType, value?.Metadata?.Name);
                     await this.ScheduleReconciliationAsync(value, stoppingToken).ConfigureAwait(false);
                     return WatchResult.Continue;
                 },
