@@ -9,7 +9,7 @@ metadata:
     # operator to determine whether the CRD should be reinstalled or not.
     # Use the following command to determine that version:
     # nbgv get-version $(git rev-list -1 HEAD) -v NuGetPackageVersion
-    app.kubernetes.io/version: "0.1.133"
+    app.kubernetes.io/version: "0.2.17"
 spec:
   # group name to use for REST API: /apis/<group>/<version>
   group: kaponata.io
@@ -38,8 +38,11 @@ spec:
             status:
               type: object
               properties:
-                url:
-                  description: The URL of the WebDriver session.
+                sessionId:
+                  description: The session ID used to uniquely identify the WebDriver session.
+                  type: string
+                capabilities:
+                  description: The session capabilities, as determined by the server.
                   type: string
       # Shown in kubectl get
       additionalPrinterColumns:
