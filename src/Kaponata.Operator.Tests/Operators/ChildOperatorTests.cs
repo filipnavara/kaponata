@@ -788,11 +788,50 @@ namespace Kaponata.Operator.Tests.Operators
 
         /// <summary>
         /// <see cref="ChildOperator{TParent, TChild}.ScheduleReconciliationAsync(TChild, CancellationToken)"/>
+        /// posts a new item to to the queue.
+        /// </summary>
+        /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
+        [Fact]
+        public async Task ScheduleChildReconciliationAsync_NoParent_Skipped_Async()
+        {
+            var kubernetes = new Mock<KubernetesClient>();
+            var sessionClient = kubernetes.WithClient<WebDriverSession>();
+
+            sessionClient.WithList(
+                fieldSelector: "metadata.name=my-session",
+                labelSelector: "parent-label-selector");
+
+            var child = new V1Pod()
+            {
+                Metadata = new V1ObjectMeta()
+                {
+                    Name = "my-session",
+                    NamespaceProperty = "default",
+                    Uid = "my-uid",
+                },
+            };
+
+            using (var @operator = new ChildOperator<WebDriverSession, V1Pod>(
+                kubernetes.Object,
+                this.configuration,
+                this.filter,
+                (session, pod) => { },
+                this.feedbackLoops,
+                this.logger))
+            {
+                await @operator.ScheduleReconciliationAsync(child, default).ConfigureAwait(false);
+
+                Assert.False(@operator.ReconcilationBuffer.TryReceive(null, out var _));
+            }
+        }
+
+        /// <summary>
+        /// <see cref="ChildOperator{TParent, TChild}.ScheduleReconciliationAsync(TChild, CancellationToken)"/>
         /// skips children if their parent is skipped.
         /// </summary>
         /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
         [Fact]
-        public async Task ScheduleChildReconciliationAsync_FiltereParent_Skipped_Async()
+        public async Task ScheduleChildReconciliationAsync_FilteredParent_Skipped_Async()
         {
             var kubernetes = new Mock<KubernetesClient>();
             var sessionClient = kubernetes.WithClient<WebDriverSession>();
