@@ -10,6 +10,7 @@ using Microsoft.Rest;
 using System;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -304,6 +305,41 @@ namespace Kaponata.Operator.Kubernetes
         }
 
         /// <summary>
+        /// Creates a <see cref="HttpClient"/> which connects to a port on a specific pod.
+        /// </summary>
+        /// <param name="pod">
+        /// The pod on which the HTTP server is running.
+        /// </param>
+        /// <param name="port">
+        /// The port on the pod to which to connect.
+        /// </param>
+        /// <returns>
+        /// A <see cref="HttpClient"/> which can be used to connect to the port on the pod.
+        /// </returns>
+        public virtual HttpClient CreatePodHttpClient(V1Pod pod, int port)
+        {
+            EnsureObjectMetadata(pod);
+
+            var client = new HttpClient(
+                new SocketsHttpHandler()
+                {
+                    ConnectCallback = (SocketsHttpConnectionContext context, CancellationToken cancellationToken) =>
+                    {
+                        if (context.DnsEndPoint.Port != port
+                            || context.DnsEndPoint.Host != pod.Metadata.Name)
+                        {
+                            throw new InvalidOperationException($"This HttpClient only supports connecting to port {port} on pod {pod.Metadata.Name}");
+                        }
+
+                        return this.ConnectToPodPortAsync(pod, port, cancellationToken);
+                    },
+                });
+
+            client.BaseAddress = new Uri($"http://{pod.Metadata.Name}:{port}/");
+            return client;
+        }
+
+        /// <summary>
         /// Connects to a TCP port exposed by a pod.
         /// </summary>
         /// <param name="pod">
@@ -322,20 +358,7 @@ namespace Kaponata.Operator.Kubernetes
         /// </returns>
         public virtual async ValueTask<Stream> ConnectToPodPortAsync(V1Pod pod, int port, CancellationToken cancellationToken)
         {
-            if (pod == null)
-            {
-                throw new ArgumentNullException(nameof(pod));
-            }
-
-            if (pod.Metadata?.Name == null)
-            {
-                throw new ValidationException(ValidationRules.CannotBeNull, "pod.Metadata.Name");
-            }
-
-            if (pod.Metadata?.NamespaceProperty == null)
-            {
-                throw new ValidationException(ValidationRules.CannotBeNull, "pod.Metadata.NamespaceProperty");
-            }
+            EnsureObjectMetadata(pod);
 
             this.logger.LogInformation("Connecting to port {port} on pod {pod}", pod, pod.Metadata.Name);
 
@@ -388,6 +411,36 @@ namespace Kaponata.Operator.Kubernetes
             {
                 ex = null;
                 return false;
+            }
+        }
+
+        /// <summary>
+        /// Validates the <see cref="V1Pod"/> object by ensuring it is not <see langword="null"/>,
+        /// and its metadata contain at least the <see cref="V1ObjectMeta.Name"/> and <see cref="V1ObjectMeta.NamespaceProperty"/>.
+        /// </summary>
+        /// <param name="pod">
+        /// The pod to validate.
+        /// </param>
+        private static void EnsureObjectMetadata(V1Pod pod)
+        {
+            if (pod == null)
+            {
+                throw new ArgumentNullException(nameof(pod));
+            }
+
+            if (pod.Metadata == null)
+            {
+                throw new ValidationException(ValidationRules.CannotBeNull, "pod.Metadata");
+            }
+
+            if (pod.Metadata.Name == null)
+            {
+                throw new ValidationException(ValidationRules.CannotBeNull, "pod.Metadata.Name");
+            }
+
+            if (pod.Metadata.NamespaceProperty == null)
+            {
+                throw new ValidationException(ValidationRules.CannotBeNull, "pod.Metadata.NamespaceProperty");
             }
         }
     }

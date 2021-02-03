@@ -114,7 +114,7 @@ namespace Kaponata.Operator.Kubernetes
         }
 
         /// <inheritdoc/>
-        public void Dispose()
+        public virtual void Dispose()
         {
             this.protocol.Dispose();
         }

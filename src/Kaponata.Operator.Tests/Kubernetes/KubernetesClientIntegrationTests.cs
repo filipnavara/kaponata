@@ -12,6 +12,8 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
@@ -78,6 +80,58 @@ namespace Kaponata.Operator.Tests.Kubernetes
                     default).ConfigureAwait(false);
 
                 await client.WaitForPodRunningAsync(pod, TimeSpan.FromSeconds(100), default).ConfigureAwait(false);
+            }
+        }
+
+        /// <summary>
+        /// Runs an integration test for the <see cref="KubernetesClient.CreatePodHttpClient(V1Pod, int)"/> method.
+        /// </summary>
+        /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
+        [Fact]
+        [Trait("TestCategory", "IntegrationTest")]
+        public async Task CreatePodHttpClient_IntegrationTest_Async()
+        {
+            using (var client = this.CreateKubernetesClient())
+            {
+                V1Pod pod;
+
+                if ((pod = await client.TryReadPodAsync("default", FormatName(nameof(this.CreatePodHttpClient_IntegrationTest_Async)), default).ConfigureAwait(false)) != null)
+                {
+                    await client.DeletePodAsync(pod, TimeSpan.FromSeconds(100), default).ConfigureAwait(false);
+                }
+
+                pod = await client.CreatePodAsync(
+                    new V1Pod()
+                    {
+                        Metadata = new V1ObjectMeta()
+                        {
+                            Name = FormatName(nameof(this.CreatePodHttpClient_IntegrationTest_Async)),
+                            NamespaceProperty = "default",
+                        },
+                        Spec = new V1PodSpec()
+                        {
+                            Containers = new V1Container[]
+                            {
+                                new V1Container()
+                                {
+                                    Name = "nginx",
+                                    Image = "nginx:1.19.6",
+                                },
+                            },
+                        },
+                    },
+                    default).ConfigureAwait(false);
+
+                await client.WaitForPodRunningAsync(pod, TimeSpan.FromSeconds(100), default).ConfigureAwait(false);
+
+                using (var httpClient = client.CreatePodHttpClient(pod, 80))
+                {
+                    var response = await httpClient.GetAsync("/").ConfigureAwait(false);
+                    Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+                    Assert.Equal("nginx", response.Headers.Server.Single().Product.Name);
+                }
+
+                await client.DeletePodAsync(pod, TimeSpan.FromMinutes(1), default).ConfigureAwait(false);
             }
         }
 
