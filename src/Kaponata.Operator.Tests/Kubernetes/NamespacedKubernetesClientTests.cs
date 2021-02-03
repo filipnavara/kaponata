@@ -4,10 +4,16 @@
 
 using k8s.Models;
 using Kaponata.Operator.Kubernetes;
+using Kaponata.Operator.Kubernetes.Polyfill;
 using Kaponata.Operator.Models;
+using Microsoft.AspNetCore.JsonPatch;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Rest;
 using Moq;
+using Newtonsoft.Json;
 using System;
+using System.Net;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -120,6 +126,160 @@ namespace Kaponata.Operator.Tests.Kubernetes
             Assert.Equal(pod, await client.TryDeleteAsync("default", "my-name", TimeSpan.FromMinutes(1), default).ConfigureAwait(false));
 
             parent.Verify();
+        }
+
+        /// <summary>
+        /// <see cref="NamespacedKubernetesClient{T}.PatchAsync"/> validates its arguments.
+        /// </summary>
+        /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
+        [Fact]
+        public async Task PatchAsync_ValidatesParameters_Async()
+        {
+            var metadata = new KindMetadata(V1Pod.KubeGroup, V1Pod.KubeApiVersion, "pods");
+            var parent = new Mock<KubernetesClient>(MockBehavior.Strict);
+            var client = new NamespacedKubernetesClient<V1Pod>(parent.Object, metadata);
+
+            await Assert.ThrowsAsync<ArgumentNullException>("value", () => client.PatchAsync(null, new JsonPatchDocument<V1Pod>(), default)).ConfigureAwait(false);
+            await Assert.ThrowsAsync<ValidationException>(() => client.PatchAsync(new V1Pod(), new JsonPatchDocument<V1Pod>(), default)).ConfigureAwait(false);
+            await Assert.ThrowsAsync<ValidationException>(() => client.PatchAsync(new V1Pod() { Metadata = new V1ObjectMeta() }, new JsonPatchDocument<V1Pod>(), default)).ConfigureAwait(false);
+            await Assert.ThrowsAsync<ValidationException>(() => client.PatchAsync(new V1Pod() { Metadata = new V1ObjectMeta() { Name = "foo" } }, new JsonPatchDocument<V1Pod>(), default)).ConfigureAwait(false);
+            await Assert.ThrowsAsync<ValidationException>(() => client.PatchAsync(new V1Pod() { Metadata = new V1ObjectMeta() { NamespaceProperty = "bar" } }, new JsonPatchDocument<V1Pod>(), default)).ConfigureAwait(false);
+            await Assert.ThrowsAsync<ArgumentNullException>("patch", () => client.PatchAsync(new V1Pod() { Metadata = new V1ObjectMeta() { Name = "foo", NamespaceProperty = "bar" } }, null, default)).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// The <see cref="NamespacedKubernetesClient{T}.PatchStatusAsync"/> method correctly invokes
+        /// the underlying object.
+        /// </summary>
+        /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
+        [Fact]
+        public async Task PatchAsync_Works_Async()
+        {
+            var metadata = new KindMetadata(V1Pod.KubeGroup, V1Pod.KubeApiVersion, "pods");
+            var protocol = new Mock<IKubernetesProtocol>(MockBehavior.Strict);
+            protocol.Setup(p => p.DeserializationSettings).Returns(new JsonSerializerSettings());
+            protocol.Setup(p => p.Dispose());
+
+            var pod = new V1Pod()
+            {
+                Metadata = new V1ObjectMeta()
+                {
+                    Name = "my-pod",
+                    NamespaceProperty = "default",
+                },
+            };
+
+            protocol
+                .Setup(
+                    p => p.PatchNamespacedCustomObjectWithHttpMessagesAsync(
+                        It.IsAny<V1Patch>(),
+                        string.Empty,
+                        "v1",
+                        "default",
+                        "pods",
+                        "my-pod",
+                        null,
+                        null,
+                        null,
+                        null,
+                        default))
+                .ReturnsAsync(
+                    new HttpOperationResponse<object>()
+                    {
+                        Response = new HttpResponseMessage()
+                        {
+                            StatusCode = HttpStatusCode.OK,
+                            Content = new StringContent(JsonConvert.SerializeObject(pod)),
+                        },
+                    });
+
+            using (var parent = new KubernetesClient(protocol.Object, NullLogger<KubernetesClient>.Instance, NullLoggerFactory.Instance))
+            {
+                var client = new NamespacedKubernetesClient<V1Pod>(parent, metadata);
+
+                var patch = new JsonPatchDocument<V1Pod>();
+                patch.Replace(d => d.Spec.Containers, new V1Container[] { new V1Container() { Image = "my-image", }, });
+
+                var result = await client.PatchAsync(pod, patch, default).ConfigureAwait(false);
+                Assert.NotNull(result);
+            }
+        }
+
+        /// <summary>
+        /// <see cref="NamespacedKubernetesClient{T}.PatchStatusAsync"/> validates its arguments.
+        /// </summary>
+        /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
+        [Fact]
+        public async Task PatchStatusAsync_ValidatesParameters_Async()
+        {
+            var metadata = new KindMetadata(V1Pod.KubeGroup, V1Pod.KubeApiVersion, "pods");
+            var parent = new Mock<KubernetesClient>(MockBehavior.Strict);
+            var client = new NamespacedKubernetesClient<V1Pod>(parent.Object, metadata);
+
+            await Assert.ThrowsAsync<ArgumentNullException>("value", () => client.PatchStatusAsync(null, new JsonPatchDocument<V1Pod>(), default)).ConfigureAwait(false);
+            await Assert.ThrowsAsync<ValidationException>(() => client.PatchStatusAsync(new V1Pod(), new JsonPatchDocument<V1Pod>(), default)).ConfigureAwait(false);
+            await Assert.ThrowsAsync<ValidationException>(() => client.PatchStatusAsync(new V1Pod() { Metadata = new V1ObjectMeta() }, new JsonPatchDocument<V1Pod>(), default)).ConfigureAwait(false);
+            await Assert.ThrowsAsync<ValidationException>(() => client.PatchStatusAsync(new V1Pod() { Metadata = new V1ObjectMeta() { Name = "foo" } }, new JsonPatchDocument<V1Pod>(), default)).ConfigureAwait(false);
+            await Assert.ThrowsAsync<ValidationException>(() => client.PatchStatusAsync(new V1Pod() { Metadata = new V1ObjectMeta() { NamespaceProperty = "bar" } }, new JsonPatchDocument<V1Pod>(), default)).ConfigureAwait(false);
+            await Assert.ThrowsAsync<ArgumentNullException>("patch", () => client.PatchStatusAsync(new V1Pod() { Metadata = new V1ObjectMeta() { Name = "foo", NamespaceProperty = "bar" } }, null, default)).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// The <see cref="NamespacedKubernetesClient{T}.PatchStatusAsync"/> method correctly invokes
+        /// the underlying object.
+        /// </summary>
+        /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
+        [Fact]
+        public async Task PatchStatusAsync_Works_Async()
+        {
+            var metadata = new KindMetadata(V1Pod.KubeGroup, V1Pod.KubeApiVersion, "pods");
+            var protocol = new Mock<IKubernetesProtocol>(MockBehavior.Strict);
+            protocol.Setup(p => p.DeserializationSettings).Returns(new JsonSerializerSettings());
+            protocol.Setup(p => p.Dispose());
+
+            var pod = new V1Pod()
+            {
+                Metadata = new V1ObjectMeta()
+                {
+                    Name = "my-pod",
+                    NamespaceProperty = "default",
+                },
+            };
+
+            protocol
+                .Setup(
+                    p => p.PatchNamespacedCustomObjectStatusWithHttpMessagesAsync(
+                        It.IsAny<V1Patch>(),
+                        string.Empty,
+                        "v1",
+                        "default",
+                        "pods",
+                        "my-pod",
+                        null,
+                        null,
+                        null,
+                        null,
+                        default))
+                .ReturnsAsync(
+                    new HttpOperationResponse<object>()
+                    {
+                        Response = new HttpResponseMessage()
+                        {
+                            StatusCode = HttpStatusCode.OK,
+                            Content = new StringContent(JsonConvert.SerializeObject(pod)),
+                        },
+                    });
+
+            using (var parent = new KubernetesClient(protocol.Object, NullLogger<KubernetesClient>.Instance, NullLoggerFactory.Instance))
+            {
+                var client = new NamespacedKubernetesClient<V1Pod>(parent, metadata);
+
+                var patch = new JsonPatchDocument<V1Pod>();
+                patch.Replace(d => d.Spec.Containers, new V1Container[] { new V1Container() { Image = "my-image", }, });
+
+                var result = await client.PatchStatusAsync(pod, patch, default).ConfigureAwait(false);
+                Assert.NotNull(result);
+            }
         }
     }
 }

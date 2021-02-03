@@ -76,19 +76,7 @@ namespace Kaponata.Operator.Kubernetes
                 kind.Plural,
                 cancellationToken: cancellationToken)).ConfigureAwait(false))
             {
-                var response = operationResponse.Response;
-
-                response.EnsureSuccessStatusCode();
-
-                var responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-                try
-                {
-                    return SafeJsonConvert.DeserializeObject<T>(responseContent, this.protocol.DeserializationSettings);
-                }
-                catch (JsonException ex)
-                {
-                    throw new SerializationException("Unable to deserialize the response.", responseContent, ex);
-                }
+                return await this.GetResponseAsync<T>(operationResponse);
             }
         }
 
@@ -332,24 +320,12 @@ namespace Kaponata.Operator.Kubernetes
                 customHeaders: null,
                 cancellationToken).ConfigureAwait(false))
             {
-                var response = operationResponse.Response;
-
-                response.EnsureSuccessStatusCode();
-
-                var responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-                try
-                {
-                    // It is actually very wrong to return a T from this method, but it's a problem that is deeply rooted
-                    // within the Kubernetes client, see e.g.
-                    // - https://github.com/kubernetes-client/csharp/issues/145
-                    // - https://github.com/kubernetes-client/csharp/issues/475
-                    var status = SafeJsonConvert.DeserializeObject<V1Status>(responseContent, this.protocol.DeserializationSettings);
-                    return default;
-                }
-                catch (JsonException ex)
-                {
-                    throw new SerializationException("Unable to deserialize the response.", responseContent, ex);
-                }
+                // It is actually very wrong to return a T from this method, but it's a problem that is deeply rooted
+                // within the Kubernetes client, see e.g.
+                // - https://github.com/kubernetes-client/csharp/issues/145
+                // - https://github.com/kubernetes-client/csharp/issues/475
+                var status = await this.GetResponseAsync<V1Status>(operationResponse);
+                return default;
             }
         }
 
@@ -458,6 +434,119 @@ namespace Kaponata.Operator.Kubernetes
                 listOperation,
                 eventHandler,
                 cancellationToken);
+        }
+
+        /// <summary>
+        /// Partially updates the specified namespace scoped custom object.
+        /// </summary>
+        /// <typeparam name="T">
+        /// The type of object to patch.
+        /// </typeparam>
+        /// <param name="metadata">
+        /// Metadata which describes the object type.
+        /// </param>
+        /// <param name="namespace">
+        /// The namespace of the object to patch.
+        /// </param>
+        /// <param name="name">
+        /// The name of the object to patch.
+        /// </param>
+        /// <param name="patch">
+        /// The patch to apply to the object.
+        /// </param>
+        /// <param name="cancellationToken">
+        /// A <see cref="CancellationToken"/> which can be used to cancel the asynchronous operation.
+        /// </param>
+        /// <returns>
+        /// A <see cref="Task"/> which represents the asynchronous operation.
+        /// </returns>
+        public async Task<T> PatchNamespacedObjectAsync<T>(
+            KindMetadata metadata,
+            string @namespace,
+            string name,
+            V1Patch patch,
+            CancellationToken cancellationToken)
+        {
+            using (var operationResponse = await this.protocol.PatchNamespacedCustomObjectWithHttpMessagesAsync(
+                patch,
+                metadata.Group,
+                metadata.Version,
+                @namespace,
+                metadata.Plural,
+                name,
+                null,
+                null,
+                null,
+                null,
+                cancellationToken).ConfigureAwait(false))
+            {
+                return await this.GetResponseAsync<T>(operationResponse);
+            }
+        }
+
+        /// <summary>
+        /// Partially update status of the specified namespace scoped custom object.
+        /// </summary>
+        /// <typeparam name="T">
+        /// The type of object to patch.
+        /// </typeparam>
+        /// <param name="metadata">
+        /// Metadata which describes the object type.
+        /// </param>
+        /// <param name="namespace">
+        /// The namespace of the object to patch.
+        /// </param>
+        /// <param name="name">
+        /// The name of the object to patch.
+        /// </param>
+        /// <param name="patch">
+        /// The patch to apply to the object.
+        /// </param>
+        /// <param name="cancellationToken">
+        /// A <see cref="CancellationToken"/> which can be used to cancel the asynchronous operation.
+        /// </param>
+        /// <returns>
+        /// A <see cref="Task"/> which represents the asynchronous operation.
+        /// </returns>
+        public async Task<T> PatchNamespacedObjectStatusAsync<T>(
+            KindMetadata metadata,
+            string @namespace,
+            string name,
+            V1Patch patch,
+            CancellationToken cancellationToken)
+        {
+            using (var operationResponse = await this.protocol.PatchNamespacedCustomObjectStatusWithHttpMessagesAsync(
+                patch,
+                metadata.Group,
+                metadata.Version,
+                @namespace,
+                metadata.Plural,
+                name,
+                null,
+                null,
+                null,
+                null,
+                cancellationToken).ConfigureAwait(false))
+            {
+                return await this.GetResponseAsync<T>(operationResponse);
+            }
+        }
+
+        private async Task<T> GetResponseAsync<T>(HttpOperationResponse<object> operationResponse)
+        {
+            var response = operationResponse.Response;
+
+            response.EnsureSuccessStatusCode();
+
+            var responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+            try
+            {
+                return SafeJsonConvert.DeserializeObject<T>(responseContent, this.protocol.DeserializationSettings);
+            }
+            catch (JsonException ex)
+            {
+                throw new SerializationException("Unable to deserialize the response.", responseContent, ex);
+            }
         }
     }
 }

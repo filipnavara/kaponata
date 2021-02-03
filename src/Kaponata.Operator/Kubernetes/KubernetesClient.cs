@@ -106,7 +106,7 @@ namespace Kaponata.Operator.Kubernetes
         /// A <see cref="NamespacedKubernetesClient{T}"/> which allows you to operate on objects of <typeparamref name="T"/>.
         /// </returns>
         public virtual NamespacedKubernetesClient<T> GetClient<T>()
-            where T : IKubernetesObject<V1ObjectMeta>, new()
+            where T : class, IKubernetesObject<V1ObjectMeta>, new()
         {
             return new NamespacedKubernetesClient<T>(
                 this,

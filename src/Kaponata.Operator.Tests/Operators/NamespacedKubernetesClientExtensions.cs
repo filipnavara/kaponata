@@ -43,7 +43,7 @@ namespace Kaponata.Operator.Tests.Operators
         /// The list of pods which will be returned to the client.
         /// </returns>
         public static List<T> WithList<T>(this Mock<NamespacedKubernetesClient<T>> client, string fieldSelector, string labelSelector, params T[] values)
-            where T : IKubernetesObject<V1ObjectMeta>, new()
+            where T : class, IKubernetesObject<V1ObjectMeta>, new()
         {
             var items = new List<T>(values);
 
@@ -72,7 +72,7 @@ namespace Kaponata.Operator.Tests.Operators
         /// A collection to which newly created devices will be added.
         /// </returns>
         public static (Collection<T> items, Task<T> firstItemCreated) TrackCreatedItems<T>(this Mock<NamespacedKubernetesClient<T>> client)
-            where T : IKubernetesObject<V1ObjectMeta>, new()
+            where T : class, IKubernetesObject<V1ObjectMeta>, new()
         {
             var items = new Collection<T>();
             var firstChildCreated = new TaskCompletionSource<T>();
@@ -104,7 +104,7 @@ namespace Kaponata.Operator.Tests.Operators
         /// A collection to which deleted devices will be added.
         /// </returns>
         public static Collection<MobileDevice> TrackDeletedItems<T>(this Mock<NamespacedKubernetesClient<T>> client)
-            where T : IKubernetesObject<V1ObjectMeta>, new()
+            where T : class, IKubernetesObject<V1ObjectMeta>, new()
         {
             var devices = new Collection<MobileDevice>();
 
@@ -140,7 +140,7 @@ namespace Kaponata.Operator.Tests.Operators
         /// A <see cref="WatchClient{T}"/> which can be used to invoke the event handler (if set) and complete the watch operation.
         /// </returns>
         public static WatchClient<T> WithWatcher<T>(this Mock<NamespacedKubernetesClient<T>> client, string fieldSelector, string labelSelector)
-            where T : IKubernetesObject<V1ObjectMeta>, new()
+            where T : class, IKubernetesObject<V1ObjectMeta>, new()
         {
             var watchClient = new WatchClient<T>();
 

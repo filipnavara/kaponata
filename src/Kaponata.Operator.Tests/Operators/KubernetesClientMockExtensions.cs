@@ -270,7 +270,7 @@ namespace Kaponata.Operator.Tests.Operators
         /// A mock of the <see cref="NamespacedKubernetesClient{T}"/> class.
         /// </returns>
         public static Mock<NamespacedKubernetesClient<T>> WithClient<T>(this Mock<KubernetesClient> client)
-            where T : IKubernetesObject<V1ObjectMeta>, new()
+            where T : class, IKubernetesObject<V1ObjectMeta>, new()
         {
             Mock<NamespacedKubernetesClient<T>> typedClient = new Mock<NamespacedKubernetesClient<T>>(MockBehavior.Strict);
 

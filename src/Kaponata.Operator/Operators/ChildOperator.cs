@@ -6,9 +6,11 @@ using k8s;
 using k8s.Models;
 using Kaponata.Operator.Kubernetes;
 using Kaponata.Operator.Kubernetes.Polyfill;
+using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
@@ -64,8 +66,8 @@ namespace Kaponata.Operator.Operators
     /// </para>
     /// </remarks>
     public class ChildOperator<TParent, TChild> : BackgroundService
-        where TParent : IKubernetesObject<V1ObjectMeta>, new()
-        where TChild : IKubernetesObject<V1ObjectMeta>, new()
+        where TParent : class, IKubernetesObject<V1ObjectMeta>, new()
+        where TChild : class, IKubernetesObject<V1ObjectMeta>, new()
     {
         private readonly ILogger<ChildOperator<TParent, TChild>> logger;
         private readonly ChildOperatorConfiguration configuration;

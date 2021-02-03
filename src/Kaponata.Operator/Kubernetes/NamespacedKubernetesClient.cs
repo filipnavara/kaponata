@@ -6,6 +6,7 @@ using k8s;
 using k8s.Models;
 using Kaponata.Operator.Kubernetes.Polyfill;
 using Kaponata.Operator.Models;
+using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.Rest;
 using System;
 using System.Collections.Generic;
@@ -22,7 +23,7 @@ namespace Kaponata.Operator.Kubernetes
     /// The type of Kubernetes object being accessed using this client.
     /// </typeparam>
     public class NamespacedKubernetesClient<T>
-        where T : IKubernetesObject<V1ObjectMeta>, new()
+        where T : class, IKubernetesObject<V1ObjectMeta>, new()
     {
         private readonly KubernetesClient parent;
         private readonly KindMetadata metadata;
@@ -337,6 +338,99 @@ namespace Kaponata.Operator.Kubernetes
                 this.ListAsync,
                 eventHandler,
                 cancellationToken);
+        }
+
+        /// <summary>
+        /// Partially updates the an object.
+        /// </summary>
+        /// <param name="value">
+        /// The value to patch.
+        /// </param>
+        /// <param name="patch">
+        /// The patch to apply to the object.
+        /// </param>
+        /// <param name="cancellationToken">
+        /// A <see cref="CancellationToken"/> which can be used to cancel the asynchronous operation.
+        /// </param>
+        /// <returns>
+        /// A <see cref="Task"/> which represents the asynchronous operation.
+        /// </returns>
+        public virtual Task<T> PatchAsync(
+            T value,
+            JsonPatchDocument<T> patch,
+            CancellationToken cancellationToken)
+        {
+            EnsureObjectAndMetadata(value);
+
+            if (patch == null)
+            {
+                throw new ArgumentNullException(nameof(patch));
+            }
+
+            return this.parent.PatchNamespacedObjectAsync<T>(
+                this.metadata,
+                value.Metadata.NamespaceProperty,
+                value.Metadata.Name,
+                new V1Patch(patch, V1Patch.PatchType.JsonPatch),
+                cancellationToken);
+        }
+
+        /// <summary>
+        /// Partially updates the status of an object.
+        /// </summary>
+        /// <param name="value">
+        /// The value to patch.
+        /// </param>
+        /// <param name="patch">
+        /// The patch to apply to the object.
+        /// </param>
+        /// <param name="cancellationToken">
+        /// A <see cref="CancellationToken"/> which can be used to cancel the asynchronous operation.
+        /// </param>
+        /// <returns>
+        /// A <see cref="Task"/> which represents the asynchronous operation.
+        /// </returns>
+        public virtual Task<T> PatchStatusAsync(
+            T value,
+            JsonPatchDocument<T> patch,
+            CancellationToken cancellationToken)
+        {
+            EnsureObjectAndMetadata(value);
+
+            if (patch == null)
+            {
+                throw new ArgumentNullException(nameof(patch));
+            }
+
+            return this.parent.PatchNamespacedObjectStatusAsync<T>(
+                this.metadata,
+                value.Metadata.NamespaceProperty,
+                value.Metadata.Name,
+                new V1Patch(patch, V1Patch.PatchType.JsonPatch),
+                cancellationToken);
+        }
+
+        private static void EnsureObjectAndMetadata(T value)
+        {
+            if (value == null)
+            {
+                throw new ArgumentNullException(nameof(value));
+            }
+
+            if (value.Metadata == null)
+            {
+                throw new ValidationException(ValidationRules.CannotBeNull, "value.Metadata is required");
+            }
+
+            if (value.Metadata.Name == null)
+            {
+                throw new ValidationException(ValidationRules.CannotBeNull, "value.Metadata.Name is required");
+            }
+
+            if (value.Metadata.NamespaceProperty == null)
+            {
+                throw new ValidationException(ValidationRules.CannotBeNull, "value.Metadata.NamespaceProperty is required");
+            }
         }
 
         private Task<HttpOperationResponse<ItemList<T>>> ListAsync(
