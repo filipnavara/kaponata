@@ -12,6 +12,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using Xunit;
@@ -122,6 +123,7 @@ namespace Kaponata.Operator.Tests.Operators
                         },
                     };
                 },
+                new Collection<ChildOperator<WebDriverSession, V1Pod>.FeedbackLoop>(),
                 this.host.Services.GetRequiredService<ILogger<ChildOperator<WebDriverSession, V1Pod>>>()))
             {
                 // Start the operator
