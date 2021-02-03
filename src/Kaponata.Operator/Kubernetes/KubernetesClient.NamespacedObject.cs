@@ -467,7 +467,7 @@ namespace Kaponata.Operator.Kubernetes
             V1Patch patch,
             CancellationToken cancellationToken)
         {
-            using (var operationResponse = await this.protocol.PatchNamespacedCustomObjectWithHttpMessagesAsync(
+            using (var operationResponse = await this.RunTaskAsync(this.protocol.PatchNamespacedCustomObjectWithHttpMessagesAsync(
                 patch,
                 metadata.Group,
                 metadata.Version,
@@ -478,7 +478,7 @@ namespace Kaponata.Operator.Kubernetes
                 null,
                 null,
                 null,
-                cancellationToken).ConfigureAwait(false))
+                cancellationToken)).ConfigureAwait(false))
             {
                 return await this.GetResponseAsync<T>(operationResponse);
             }
@@ -515,7 +515,7 @@ namespace Kaponata.Operator.Kubernetes
             V1Patch patch,
             CancellationToken cancellationToken)
         {
-            using (var operationResponse = await this.protocol.PatchNamespacedCustomObjectStatusWithHttpMessagesAsync(
+            using (var operationResponse = await this.RunTaskAsync(this.protocol.PatchNamespacedCustomObjectStatusWithHttpMessagesAsync(
                 patch,
                 metadata.Group,
                 metadata.Version,
@@ -526,7 +526,7 @@ namespace Kaponata.Operator.Kubernetes
                 null,
                 null,
                 null,
-                cancellationToken).ConfigureAwait(false))
+                cancellationToken)).ConfigureAwait(false))
             {
                 return await this.GetResponseAsync<T>(operationResponse);
             }
