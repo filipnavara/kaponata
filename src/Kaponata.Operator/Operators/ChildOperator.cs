@@ -73,6 +73,7 @@ namespace Kaponata.Operator.Operators
         private readonly ChildOperatorConfiguration configuration;
         private readonly KubernetesClient kubernetes;
         private readonly Action<TParent, TChild> childFactory;
+        private readonly Collection<FeedbackLoop> feedbackLoops;
 
         // Kubernetes clients which are used to watch and upated parent and child objects.
         private readonly NamespacedKubernetesClient<TParent> parentClient;
@@ -97,6 +98,10 @@ namespace Kaponata.Operator.Operators
         /// A method which projects objects of type <typeparamref name="TParent"/> into objects of type
         /// <typeparamref name="TChild"/>.
         /// </param>
+        /// <param name="feedbackLoops">
+        /// A list of feedback loops which can update the state of the parent object depending
+        /// on the state of the child object.
+        /// </param>
         /// <param name="logger">
         /// The logger to use when logging.
         /// </param>
@@ -104,16 +109,38 @@ namespace Kaponata.Operator.Operators
             KubernetesClient kubernetes,
             ChildOperatorConfiguration configuration,
             Action<TParent, TChild> factory,
+            Collection<FeedbackLoop> feedbackLoops,
             ILogger<ChildOperator<TParent, TChild>> logger)
         {
             this.kubernetes = kubernetes ?? throw new ArgumentNullException(nameof(kubernetes));
             this.configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
             this.childFactory = factory ?? throw new ArgumentNullException(nameof(factory));
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            this.feedbackLoops = feedbackLoops ?? throw new ArgumentNullException(nameof(feedbackLoops));
 
             this.parentClient = this.kubernetes.GetClient<TParent>();
             this.childClient = this.kubernetes.GetClient<TChild>();
         }
+
+        /// <summary>
+        /// A common delegate for all feedback loops. Decides whether the operator should provide feedback to the parent
+        /// (by altering its state) and, if necessary, creates a patch document which represents the feedback.
+        /// </summary>
+        /// <param name="context">
+        /// A <see cref="ChildOperatorContext"/> object which represents the parent and child objects being
+        /// evaluated.
+        /// </param>
+        /// <param name="cancellationToken">
+        /// A <see cref="CancellationToken"/> which can be used to cancel the asynchronous operation.
+        /// </param>
+        /// <returns>
+        /// A <see cref="Task"/> which represents the asynchronous operation, and returns a <see cref="JsonPatchDocument{TModel}"/>
+        /// which describes the feedback if the child provides feedback to the parent (and the parent state should be alterated);
+        /// otherwise, <see langword="null"/>.
+        /// </returns>
+        public delegate Task<JsonPatchDocument<TParent>> FeedbackLoop(
+            ChildOperatorContext context,
+            CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets a <see cref="BufferBlock{T}"/> which contains all currently scheduled reconciliations.
@@ -363,10 +390,27 @@ namespace Kaponata.Operator.Operators
                 else
                 {
                     this.logger.LogInformation(
-                        "Skipping reconciliation for parent {parent} and child {child} for operator {operatorName} because child is null",
+                        "Running {feedbackCount} feedback loops for parent {parent} and child {child} for operator {operatorName} because child is null.",
+                        this.feedbackLoops.Count,
                         context.Parent?.Metadata?.Name,
                         context.Child?.Metadata?.Name,
                         this.configuration.OperatorName);
+
+                    JsonPatchDocument<TParent> feedback = null;
+
+                    foreach (var feedbackLoop in this.feedbackLoops)
+                    {
+                        if ((feedback = await feedbackLoop(context, cancellationToken).ConfigureAwait(false)) != null)
+                        {
+                            this.logger.LogInformation(
+                                "Applying patch {feedback} to parent {parent} for operator {operatorName}.",
+                                feedback,
+                                context.Parent?.Metadata?.Name,
+                                this.configuration.OperatorName);
+
+                            await this.parentClient.PatchAsync(context.Parent, feedback, cancellationToken).ConfigureAwait(false);
+                        }
+                    }
                 }
             }
             catch (Exception ex)
