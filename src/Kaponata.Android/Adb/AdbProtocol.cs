@@ -67,6 +67,17 @@ namespace Kaponata.Android.Adb
         public static Encoding AdbEncoding { get; } = Encoding.GetEncoding(DefaultEncoding);
 
         /// <summary>
+        /// Gets a shell output stream.
+        /// </summary>
+        /// <returns>
+        /// The shell output stream.
+        /// </returns>
+        public virtual ShellStream GetShellStream()
+        {
+            return new ShellStream(this.stream);
+        }
+
+        /// <summary>
         /// Switches the connection to the device/emulator identified by <paramref name="device"/>.
         /// </summary>
         /// <param name="device">
