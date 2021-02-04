@@ -9,7 +9,7 @@ metadata:
     # operator to determine whether the CRD should be reinstalled or not.
     # Use the following command to determine that version:
     # nbgv get-version $(git rev-list -1 HEAD) -v NuGetPackageVersion
-    app.kubernetes.io/version: "0.2.17"
+    app.kubernetes.io/version: "0.2.23"
 spec:
   # group name to use for REST API: /apis/<group>/<version>
   group: kaponata.io
@@ -44,6 +44,15 @@ spec:
                 capabilities:
                   description: The session capabilities, as determined by the server.
                   type: string
+                sessionReady:
+                  description: A value indicating whether the session is ready on the back-end pod.
+                  type: boolean
+                ingressReady:
+                  description: A value indicating whether the ingress rules are ready.
+                  type: boolean
+                serviceReady:
+                  description: A value indicating whether the service is ready.
+                  type: boolean
       # Shown in kubectl get
       additionalPrinterColumns:
       - name: URL
