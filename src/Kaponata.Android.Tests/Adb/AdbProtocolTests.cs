@@ -33,7 +33,8 @@ namespace Kaponata.Android.Tests.Adb
             {
                 var bytes = new byte[3];
                 await shellStream.ReadAsync(bytes).ConfigureAwait(false);
-                Assert.Equal(new byte[] { 1, 2, 3}, bytes);            }
+                Assert.Equal(new byte[] { 1, 2, 3 }, bytes);
+            }
 
             Assert.True(true);
         }
