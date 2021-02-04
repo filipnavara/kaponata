@@ -30,7 +30,7 @@ namespace Kaponata.Operator.Tests.Operators
         private readonly Func<WebDriverSession, bool> filter = (session) => true;
         private readonly Action<WebDriverSession, V1Pod> factory = (session, pod) => { };
         private readonly ILogger<ChildOperator<WebDriverSession, V1Pod>> logger = NullLogger<ChildOperator<WebDriverSession, V1Pod>>.Instance;
-        private readonly Collection<ChildOperator<WebDriverSession, V1Pod>.FeedbackLoop> feedbackLoops = new Collection<ChildOperator<WebDriverSession, V1Pod>.FeedbackLoop>();
+        private readonly Collection<FeedbackLoop<WebDriverSession, V1Pod>> feedbackLoops = new Collection<FeedbackLoop<WebDriverSession, V1Pod>>();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ChildOperatorTests"/> class.
@@ -252,9 +252,9 @@ namespace Kaponata.Operator.Tests.Operators
                 .ReturnsAsync(parent)
                 .Verifiable();
 
-            var feedbackLoops = new Collection<ChildOperator<WebDriverSession, V1Pod>.FeedbackLoop>()
+            var feedbackLoops = new Collection<FeedbackLoop<WebDriverSession, V1Pod>>()
             {
-                new ChildOperator<WebDriverSession, V1Pod>.FeedbackLoop((context, cancellationToken) =>
+                new FeedbackLoop<WebDriverSession, V1Pod>((context, cancellationToken) =>
                 {
                     return Task.FromResult(patch);
                 }),
@@ -293,9 +293,9 @@ namespace Kaponata.Operator.Tests.Operators
             var parent = new WebDriverSession();
             var child = new V1Pod();
 
-            var feedbackLoops = new Collection<ChildOperator<WebDriverSession, V1Pod>.FeedbackLoop>()
+            var feedbackLoops = new Collection<FeedbackLoop<WebDriverSession, V1Pod>>()
             {
-                new ChildOperator<WebDriverSession, V1Pod>.FeedbackLoop((context, cancellationToken) =>
+                new FeedbackLoop<WebDriverSession, V1Pod>((context, cancellationToken) =>
                 {
                     return Task.FromResult(patch);
                 }),
@@ -903,7 +903,7 @@ namespace Kaponata.Operator.Tests.Operators
                 this.configuration,
                 this.filter,
                 (session, pod) => { },
-                new Collection<ChildOperator<WebDriverSession, V1Pod>.FeedbackLoop>(),
+                new Collection<FeedbackLoop<WebDriverSession, V1Pod>>(),
                 this.logger))
             {
                 // Wait for the operator to start and complete initialization
