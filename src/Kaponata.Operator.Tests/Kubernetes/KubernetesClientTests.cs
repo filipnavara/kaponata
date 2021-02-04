@@ -88,6 +88,7 @@ namespace Kaponata.Operator.Tests.Kubernetes
                         Status = new V1PodStatus()
                         {
                             Phase = "Running",
+                            ContainerStatuses = new V1ContainerStatus[] { },
                         },
                     },
                     TimeSpan.FromMinutes(1),
@@ -278,8 +279,20 @@ namespace Kaponata.Operator.Tests.Kubernetes
                 // Simulate a first callback where nothing changes. The task keeps listening.
                 Assert.Equal(WatchResult.Continue, await callback(WatchEventType.Modified, pod).ConfigureAwait(false));
 
-                // The callback signals to stop watching when the pod starts.
+                // The callback signals to continue watching when the pod is running but not all containers are ready.
                 pod.Status.Phase = "Running";
+                pod.Status.ContainerStatuses =
+                    new V1ContainerStatus[]
+                    {
+                        new V1ContainerStatus()
+                        {
+                            Ready = false,
+                        },
+                    };
+                Assert.Equal(WatchResult.Continue, await callback(WatchEventType.Modified, pod).ConfigureAwait(false));
+
+                // The callback signals to stop watching when the pod starts.
+                pod.Status.ContainerStatuses[0].Ready = true;
                 Assert.Equal(WatchResult.Stop, await callback(WatchEventType.Modified, pod).ConfigureAwait(false));
 
                 // The watch completes successfully.

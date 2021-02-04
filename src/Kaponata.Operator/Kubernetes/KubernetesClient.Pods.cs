@@ -397,7 +397,8 @@ namespace Kaponata.Operator.Kubernetes
 
         private static bool IsRunning(V1Pod value)
         {
-            return value.Status.Phase == "Running";
+            return value.Status.Phase == "Running"
+                && value.Status.ContainerStatuses.All(c => c.Ready);
         }
 
         private static bool HasFailed(V1Pod value, out Exception ex)
