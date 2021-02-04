@@ -124,7 +124,7 @@ namespace Kaponata.Operator.Tests.Operators
                         },
                     };
                 },
-                new Collection<ChildOperator<WebDriverSession, V1Pod>.FeedbackLoop>(),
+                new Collection<FeedbackLoop<WebDriverSession, V1Pod>>(),
                 this.host.Services.GetRequiredService<ILogger<ChildOperator<WebDriverSession, V1Pod>>>()))
             {
                 // Start the operator

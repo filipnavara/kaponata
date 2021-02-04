@@ -97,7 +97,7 @@ namespace Kaponata.Operator.Tests.Operators
         }
 
         /// <summary>
-        /// <see cref="ChildOperatorBuilder{TParent, TChild}.PostsFeedback(ChildOperator{TParent, TChild}.FeedbackLoop)"/> validates
+        /// <see cref="ChildOperatorBuilder{TParent, TChild}.PostsFeedback"/> validates
         /// arguments passed to it.
         /// </summary>
         [Fact]

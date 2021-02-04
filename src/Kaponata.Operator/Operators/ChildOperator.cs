@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
@@ -74,14 +75,14 @@ namespace Kaponata.Operator.Operators
         private readonly KubernetesClient kubernetes;
         private readonly Func<TParent, bool> parentFilter;
         private readonly Action<TParent, TChild> childFactory;
-        private readonly Collection<FeedbackLoop> feedbackLoops;
+        private readonly Collection<FeedbackLoop<TParent, TChild>> feedbackLoops;
 
         // Kubernetes clients which are used to watch and upated parent and child objects.
         private readonly NamespacedKubernetesClient<TParent> parentClient;
         private readonly NamespacedKubernetesClient<TChild> childClient;
 
         // The queue to which items to reconcile are posted and from which they are read.
-        private readonly BufferBlock<ChildOperatorContext> reconciliationBuffer = new BufferBlock<ChildOperatorContext>();
+        private readonly BufferBlock<ChildOperatorContext<TParent, TChild>> reconciliationBuffer = new BufferBlock<ChildOperatorContext<TParent, TChild>>();
 
         // Task completion source backing the InitializationCompleted property.
         private readonly TaskCompletionSource initializationCompletedTcs = new TaskCompletionSource();
@@ -114,7 +115,7 @@ namespace Kaponata.Operator.Operators
             ChildOperatorConfiguration configuration,
             Func<TParent, bool> parentFilter,
             Action<TParent, TChild> childFactory,
-            Collection<FeedbackLoop> feedbackLoops,
+            Collection<FeedbackLoop<TParent, TChild>> feedbackLoops,
             ILogger<ChildOperator<TParent, TChild>> logger)
         {
             this.kubernetes = kubernetes ?? throw new ArgumentNullException(nameof(kubernetes));
@@ -129,29 +130,9 @@ namespace Kaponata.Operator.Operators
         }
 
         /// <summary>
-        /// A common delegate for all feedback loops. Decides whether the operator should provide feedback to the parent
-        /// (by altering its state) and, if necessary, creates a patch document which represents the feedback.
-        /// </summary>
-        /// <param name="context">
-        /// A <see cref="ChildOperatorContext"/> object which represents the parent and child objects being
-        /// evaluated.
-        /// </param>
-        /// <param name="cancellationToken">
-        /// A <see cref="CancellationToken"/> which can be used to cancel the asynchronous operation.
-        /// </param>
-        /// <returns>
-        /// A <see cref="Task"/> which represents the asynchronous operation, and returns a <see cref="JsonPatchDocument{TModel}"/>
-        /// which describes the feedback if the child provides feedback to the parent (and the parent state should be alterated);
-        /// otherwise, <see langword="null"/>.
-        /// </returns>
-        public delegate Task<JsonPatchDocument<TParent>> FeedbackLoop(
-            ChildOperatorContext context,
-            CancellationToken cancellationToken);
-
-        /// <summary>
         /// Gets a <see cref="BufferBlock{T}"/> which contains all currently scheduled reconciliations.
         /// </summary>
-        public BufferBlock<ChildOperatorContext> ReconcilationBuffer => this.reconciliationBuffer;
+        public BufferBlock<ChildOperatorContext<TParent, TChild>> ReconcilationBuffer => this.reconciliationBuffer;
 
         /// <summary>
         /// Gets a <see cref="Task"/> which completes when the initialization has completed.
@@ -200,7 +181,7 @@ namespace Kaponata.Operator.Operators
                     var child = children.Items.SingleOrDefault(c => c.IsOwnedBy(parent));
                     this.logger.LogInformation("Found child {child} for parent {parent} for the {operator} operator", child?.Metadata?.Name, parent.Metadata.Name, this.configuration.OperatorName);
 
-                    this.reconciliationBuffer.Post(new ChildOperatorContext(parent, child));
+                    this.reconciliationBuffer.Post(new ChildOperatorContext<TParent, TChild>(parent, child));
 
                     if (child != null)
                     {
@@ -212,12 +193,12 @@ namespace Kaponata.Operator.Operators
 
                 // We don't care for children without parents; these should be child objects which are being deleted
                 // because of cascading background deletions.
-                this.initializationCompletedTcs.SetResult();
+                this.initializationCompletedTcs.TrySetResult();
             }
             catch (Exception ex)
             {
                 this.logger.LogError(ex, "Caught error {errorMessage} while scheduling initializing operator {operator}", ex.Message, this.configuration.OperatorName);
-                this.initializationCompletedTcs.SetException(ex);
+                this.initializationCompletedTcs.TrySetException(ex);
             }
         }
 
@@ -263,7 +244,7 @@ namespace Kaponata.Operator.Operators
 
                 this.logger.LogInformation("{operator} operator: found child {child} for parent {parent}", this.configuration.OperatorName, child?.Metadata?.Name, parent?.Metadata?.Name);
 
-                this.reconciliationBuffer.Post(new ChildOperatorContext(parent, child));
+                this.reconciliationBuffer.Post(new ChildOperatorContext<TParent, TChild>(parent, child));
             }
             catch (Exception ex)
             {
@@ -319,7 +300,7 @@ namespace Kaponata.Operator.Operators
                     return;
                 }
 
-                this.reconciliationBuffer.Post(new ChildOperatorContext(parent, child));
+                this.reconciliationBuffer.Post(new ChildOperatorContext<TParent, TChild>(parent, child));
             }
             catch (Exception ex)
             {
@@ -356,7 +337,7 @@ namespace Kaponata.Operator.Operators
         /// Attempts to reconcile a child and parent object.
         /// </summary>
         /// <param name="context">
-        /// A <see cref="ChildOperatorContext"/> object which represents the parent and child object
+        /// A <see cref="ChildOperatorContext{TParent, TChild}"/> object which represents the parent and child object
         /// being reconciled.</param>
         /// <param name="cancellationToken">
         /// A <see cref="CancellationToken"/> which can be used to cancel the asynchronous operation.
@@ -364,7 +345,7 @@ namespace Kaponata.Operator.Operators
         /// <returns>
         /// A <see cref="Task"/> representing the asynchronous operation.
         /// </returns>
-        public async Task ReconcileAsync(ChildOperatorContext context, CancellationToken cancellationToken)
+        public async Task ReconcileAsync(ChildOperatorContext<TParent, TChild> context, CancellationToken cancellationToken)
         {
             // Let's assume Kubernetes takes care of garbage collection, so the source
             // object is always present.
@@ -389,7 +370,7 @@ namespace Kaponata.Operator.Operators
                     {
                         Metadata = new V1ObjectMeta()
                         {
-                            Labels = this.configuration.ChildLabels,
+                            Labels = new Dictionary<string, string>(this.configuration.ChildLabels),
                             Name = context.Parent.Metadata.Name,
                             NamespaceProperty = context.Parent.Metadata.NamespaceProperty,
                             OwnerReferences = new V1OwnerReference[]
@@ -484,39 +465,6 @@ namespace Kaponata.Operator.Operators
                 sourceWatch,
                 targetWatch,
                 reconcilerTask).ConfigureAwait(false);
-        }
-
-        /// <summary>
-        /// The <see cref="ChildOperatorContext"/> represents a specific instance of objects (parent + child)
-        /// which need to be reconciled.
-        /// </summary>
-        public class ChildOperatorContext
-        {
-            /// <summary>
-            /// Initializes a new instance of the <see cref="ChildOperatorContext"/> class.
-            /// </summary>
-            /// <param name="parent">
-            /// The parent object being reconciled.
-            /// </param>
-            /// <param name="child">
-            /// The child object being reconciled.
-            /// </param>
-            public ChildOperatorContext(TParent parent, TChild child)
-            {
-                this.Parent = parent ?? throw new ArgumentNullException(nameof(parent));
-                this.Child = child;
-            }
-
-            /// <summary>
-            /// Gets the parent for which the reconciliation is being executed.
-            /// </summary>
-            public TParent Parent { get; }
-
-            /// <summary>
-            /// Gets the child for which the reconciliation is being executed. Can be <see langword="null"/>
-            /// if no child exists.
-            /// </summary>
-            public TChild Child { get; }
         }
     }
 }

@@ -28,7 +28,7 @@ namespace Kaponata.Operator.Operators
     {
         private readonly ChildOperatorConfiguration configuration;
         private readonly Action<TParent, TChild> childFactory;
-        private readonly Collection<ChildOperator<TParent, TChild>.FeedbackLoop> feedbackLoops = new ();
+        private readonly Collection<FeedbackLoop<TParent, TChild>> feedbackLoops = new ();
         private readonly IHost host;
         private Func<TParent, bool> parentFilter;
 
@@ -66,7 +66,7 @@ namespace Kaponata.Operator.Operators
         /// An operator builder which can be used to further configure the operator.
         /// </returns>
         public ChildOperatorBuilder<TParent, TChild> PostsFeedback(
-            ChildOperator<TParent, TChild>.FeedbackLoop feedbackLoop)
+            FeedbackLoop<TParent, TChild> feedbackLoop)
         {
             if (feedbackLoop == null)
             {
