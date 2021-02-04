@@ -31,10 +31,9 @@ namespace Kaponata.Android.Tests.Adb
             await using (var protocol = new AdbProtocol(stream, false, NullLogger<AdbProtocol>.Instance))
             using (var shellStream = protocol.GetShellStream())
             {
-                Assert.Equal(1, shellStream.ReadByte());
-                Assert.Equal(2, shellStream.ReadByte());
-                Assert.Equal(3, shellStream.ReadByte());
-            }
+                var bytes = new byte[3];
+                await shellStream.ReadAsync(bytes).ConfigureAwait(false);
+                Assert.Equal(new byte[] { 1, 2, 3}, bytes);            }
 
             Assert.True(true);
         }

@@ -60,14 +60,11 @@ namespace Kaponata.Android.Adb
         /// <param name="cancellationToken">
         /// A <see cref="CancellationToken"/> which can be used to cancel the asynchronous operation.
         /// </param>
-        /// <param name="ownsStream">
-        /// A value indicating whether the resulting <see cref="AdbProtocol"/> instance owns the <c>ADB</c> stream or not.
-        /// </param>
         /// <returns>
         /// A <see cref="AdbProtocol"/> which represents the connection to <c>ADB</c>, or <see langword="null"/> if
         /// <c>ADB</c> is not running.
         /// </returns>
-        public virtual async Task<AdbProtocol> TryConnectToAdbAsync(CancellationToken cancellationToken, bool ownsStream = true)
+        public virtual async Task<AdbProtocol> TryConnectToAdbAsync(CancellationToken cancellationToken)
         {
             var stream = await this.socketLocator.ConnectToAdbAsync(cancellationToken).ConfigureAwait(false);
 
@@ -80,7 +77,7 @@ namespace Kaponata.Android.Adb
 
             return new AdbProtocol(
                 stream,
-                ownsStream: ownsStream,
+                ownsStream: true,
                 this.loggerFactory.CreateLogger<AdbProtocol>());
         }
     }

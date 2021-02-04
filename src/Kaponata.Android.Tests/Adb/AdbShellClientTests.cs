@@ -50,7 +50,7 @@ namespace Kaponata.Android.Tests.Adb
                 CallBase = true,
             };
 
-            clientMock.Setup(c => c.TryConnectToAdbAsync(default, false)).ReturnsAsync(adbProtocolMock.Object);
+            clientMock.Setup(c => c.TryConnectToAdbAsync(default)).ReturnsAsync(adbProtocolMock.Object);
             var client = clientMock.Object;
 
             var exception = await Assert.ThrowsAsync<AdbException>(async () => await client.ExecuteRemoteShellCommandAsync(new DeviceData() { Serial = "123" }, "testcommand", default).ConfigureAwait(false));
@@ -94,14 +94,14 @@ namespace Kaponata.Android.Tests.Adb
                 CallBase = true,
             };
 
-            clientMock.Setup(c => c.TryConnectToAdbAsync(default, false)).ReturnsAsync(adbProtocolMock.Object);
+            clientMock.Setup(c => c.TryConnectToAdbAsync(default)).ReturnsAsync(adbProtocolMock.Object);
             var client = clientMock.Object;
 
             var shellStream = await client.ExecuteRemoteShellCommandAsync(new DeviceData() { Serial = "123" }, "testcommand", default).ConfigureAwait(false);
 
-            Assert.Equal(4, shellStream.ReadByte());
-            Assert.Equal(5, shellStream.ReadByte());
-            Assert.Equal(6, shellStream.ReadByte());
+            var bytes = new byte[3];
+            await shellStream.ReadAsync(bytes).ConfigureAwait(false);
+            Assert.Equal(new byte[] { 4, 5, 6 }, bytes);
 
             adbProtocolMock.Verify();
             clientMock.Verify();

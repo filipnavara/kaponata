@@ -63,7 +63,7 @@ namespace Kaponata.Android.Tests.Adb
         }
 
         /// <summary>
-        /// The <see cref="ShellStream.ReadAsync(byte[], int, int, System.Threading.CancellationToken)"/> with zero count reads zeor bytes.
+        /// The <see cref="ShellStream.ReadAsync(Memory{byte}, System.Threading.CancellationToken)"/> with zero count reads zeor bytes.
         /// </summary>
         /// <returns>
         /// A <see cref="Task"/> which represents the asynchronous test.
@@ -81,15 +81,18 @@ namespace Kaponata.Android.Tests.Adb
         }
 
         /// <summary>
-        /// The <see cref="ShellStream.Read(byte[], int, int)"/> with zero count reads zeor bytes.
+        /// The <see cref="ShellStream.ReadAsync(byte[], int, int, System.Threading.CancellationToken)"/> with zero count reads zero bytes.
         /// </summary>
+        /// <returns>
+        /// A <see cref="Task"/> which represents the asynchronous test.
+        /// </returns>
         [Fact]
-        public void Read_CountZero()
+        public async Task Read_Array_CountZero_Async()
         {
             using var stream = GetStream("test");
 
             var buffer = new byte[] { 1, 2, 3, 4 };
-            var read = stream.Read(buffer, 0, 0);
+            var read = await stream.ReadAsync(buffer, 0, 0).ConfigureAwait(false);
 
             Assert.Equal(0, read);
             Assert.Equal(new byte[] { 1, 2, 3, 4 }, buffer);
@@ -107,6 +110,9 @@ namespace Kaponata.Android.Tests.Adb
         /// <param name="bufferSize">
         /// The size of the buffer to use.
         /// </param>
+        /// <returns>
+        /// A <see cref="Task"/> which represents the asynchronous test.
+        /// </returns>
         [Theory]
         [InlineData(
             "\r\nHello!",
@@ -144,14 +150,14 @@ namespace Kaponata.Android.Tests.Adb
             "\r\nH\ra",
             new byte[] { (byte)'\n', (byte)'H', (byte)'\r', (byte)'a' },
             100)]
-        public void Read_ReadStream(string input, byte[] expected, int bufferSize)
+        public async Task Read_Array_ReadStream_Async(string input, byte[] expected, int bufferSize)
         {
             using var stream = GetStream(input);
             var buffer = new byte[bufferSize];
             var result = new byte[expected.Length];
             int totalRead = 0;
             int read = 0;
-            while ((read = stream.Read(buffer)) > 0)
+            while ((read = await stream.ReadAsync(buffer, 0, bufferSize).ConfigureAwait(false)) > 0)
             {
                 buffer.AsMemory(0, read).CopyTo(result.AsMemory(totalRead));
                 totalRead = totalRead + read;
@@ -162,7 +168,7 @@ namespace Kaponata.Android.Tests.Adb
         }
 
         /// <summary>
-        /// The <see cref="ShellStream.ReadAsync(byte[], int, int, System.Threading.CancellationToken)"/> reads the stream and eliminates the CR character.
+        /// The <see cref="ShellStream.ReadAsync(Memory{byte}, System.Threading.CancellationToken)"/> reads the stream and eliminates the CR character.
         /// </summary>
         /// <param name="input">
         /// The input data.
@@ -231,37 +237,6 @@ namespace Kaponata.Android.Tests.Adb
         }
 
         /// <summary>
-        /// The <see cref="Stream.ReadByte()"/> reads the stream and eliminates the CR character.
-        /// </summary>
-        /// <param name="input">
-        /// The input data.
-        /// </param>
-        /// <param name="expected">
-        /// The expected output of the read operation.
-        /// </param>
-        [Theory]
-        [InlineData(
-            "\r\nHello!",
-            new byte[] { (byte)'\n', (byte)'H', (byte)'e', (byte)'l', (byte)'l', (byte)'o', (byte)'!' })]
-        [InlineData(
-            "\r\n1\r\n2\r\n3\r\n",
-            new byte[] { (byte)'\n', (byte)'1', (byte)'\n', (byte)'2', (byte)'\n', (byte)'3', (byte)'\n' })]
-        [InlineData(
-            "\r\nH\ra",
-            new byte[] { (byte)'\n', (byte)'H', (byte)'\r', (byte)'a' })]
-        public void ReadByte_ReadsByte(string input, byte[] expected)
-        {
-            using var stream = GetStream(input);
-            int received;
-            var index = 0;
-            while ((received = stream.ReadByte()) != -1)
-            {
-                Assert.Equal(expected[index], received);
-                index++;
-            }
-        }
-
-        /// <summary>
         /// The <see cref="StreamReader.ReadToEnd"/> reads the stream and eliminates the CR character.
         /// </summary>
         /// <param name="input">
@@ -270,6 +245,9 @@ namespace Kaponata.Android.Tests.Adb
         /// <param name="expected">
         /// The expected output of the read operation.
         /// </param>
+        /// <returns>
+        /// A <see cref="Task"/> which represents the asynchronous test.
+        /// </returns>
         [Theory]
         [InlineData(
             "\r\nHello!",
@@ -280,12 +258,12 @@ namespace Kaponata.Android.Tests.Adb
         [InlineData(
             "\r\nH\ra",
             "\nH\ra")]
-        public void ReadToEnd_ReadsAll(string input, string expected)
+        public async Task ReadToEnd_ReadsAll_Async(string input, string expected)
         {
             using var stream = GetStream(input);
             using var reader = new StreamReader(stream);
 
-            Assert.Equal(expected, reader.ReadToEnd());
+            Assert.Equal(expected, await reader.ReadToEndAsync().ConfigureAwait(false));
         }
 
         /// <summary>

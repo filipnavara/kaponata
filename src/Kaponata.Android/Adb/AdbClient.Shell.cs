@@ -29,7 +29,7 @@ namespace Kaponata.Android.Adb
         /// </returns>
         public virtual async Task<ShellStream> ExecuteRemoteShellCommandAsync(DeviceData device, string shellCommand, CancellationToken cancellationToken)
         {
-            var protocol = await this.TryConnectToAdbAsync(cancellationToken, false).ConfigureAwait(false);
+            var protocol = await this.TryConnectToAdbAsync(cancellationToken).ConfigureAwait(false);
             await protocol.SetDeviceAsync(device, cancellationToken).ConfigureAwait(false);
 
             await protocol.WriteAsync($"shell:{shellCommand}", cancellationToken).ConfigureAwait(false);

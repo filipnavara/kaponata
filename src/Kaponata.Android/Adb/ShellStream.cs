@@ -58,59 +58,34 @@ namespace Kaponata.Android.Adb
         }
 
         /// <inheritdoc/>
-        public override bool CanRead
-        {
-            get
-            {
-                return true;
-            }
-        }
+        public override bool CanRead => true;
 
         /// <inheritdoc/>
-        public override bool CanSeek
-        {
-            get
-            {
-                return false;
-            }
-        }
+        public override bool CanSeek => false;
 
         /// <inheritdoc/>
-        public override bool CanWrite
-        {
-            get
-            {
-                return false;
-            }
-        }
+        public override bool CanWrite => false;
 
         /// <inheritdoc/>
-        public override long Length
-        {
-            get
-            {
-                throw new NotImplementedException();
-            }
-        }
+        public override long Length => throw new NotImplementedException();
 
         /// <inheritdoc/>
         public override long Position
         {
-            get
-            {
-                throw new NotImplementedException();
-            }
-
-            set
-            {
-                throw new NotImplementedException();
-            }
+            get => throw new NotImplementedException();
+            set => throw new NotImplementedException();
         }
 
         /// <inheritdoc/>
-        public override int Read(byte[] buffer, int offset, int count)
+        public override async Task<int> ReadAsync(byte[] buffer, int offset, int length, CancellationToken cancellationToken = default)
         {
-            if (count == 0)
+            return await this.ReadAsync(buffer.AsMemory().Slice(offset, length), cancellationToken).ConfigureAwait(false);
+        }
+
+        /// <inheritdoc/>
+        public override async ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)
+        {
+            if (buffer.Length == 0)
             {
                 return 0;
             }
@@ -122,108 +97,14 @@ namespace Kaponata.Android.Adb
 
             if (this.pendingByte != null)
             {
-                buffer[offset] = this.pendingByte.Value;
-                read = this.Inner.Read(buffer, offset + 1, count - 1);
+                buffer.Span[0] = this.pendingByte.Value;
+                read = await this.Inner.ReadAsync(buffer.Slice(1, buffer.Length - 1), cancellationToken).ConfigureAwait(false);
                 read++;
                 this.pendingByte = null;
             }
             else
             {
-                read = this.Inner.Read(buffer, offset, count);
-            }
-
-            // Loop over the data, and find a LF (0x0d) character. If it is
-            // followed by a CR (0x0a) character, remove the LF chracter and
-            // keep only the LF character intact.
-            for (int i = offset; i < offset + read - 1; i++)
-            {
-                if (buffer[i] == 0x0d && buffer[i + 1] == 0x0a)
-                {
-                    buffer[i] = 0x0a;
-
-                    for (int j = i + 1; j < offset + read - 1; j++)
-                    {
-                        buffer[j] = buffer[j + 1];
-                    }
-
-                    // Reset unused data to \0
-                    buffer[offset + read - 1] = 0;
-
-                    // We have removed one byte from the array of bytes which has
-                    // been read; but the caller asked for a fixed number of bytes.
-                    // So we need to get the next byte from the base stream.
-                    // If less bytes were received than asked, we know no more data is
-                    // available so we can skip this step
-                    if (read < count)
-                    {
-                        read--;
-                        continue;
-                    }
-
-                    byte[] minibuffer = new byte[1];
-                    int miniRead = this.Inner.Read(minibuffer, 0, 1);
-
-                    if (miniRead == 0)
-                    {
-                        // If no byte was read, no more data is (currently) available, and reduce the
-                        // number of bytes by 1.
-                        read--;
-                    }
-                    else
-                    {
-                        // Append the byte to the buffer.
-                        buffer[offset + read - 1] = minibuffer[0];
-                    }
-                }
-            }
-
-            // The last byte is a special case, to find out if the next byte is 0x0a
-            // we need to read one more byte from the inner stream.
-            if (read > 0 && buffer[offset + read - 1] == 0x0d)
-            {
-                int nextByte = this.Inner.ReadByte();
-
-                if (nextByte == 0x0a)
-                {
-                    // If the next byte is 0x0a, set the last byte to 0x0a. The underlying
-                    // stream has already advanced because of the ReadByte call, so all is good.
-                    buffer[offset + read - 1] = 0x0a;
-                }
-                else
-                {
-                    // If the next byte was not 0x0a, store it as the 'pending byte' --
-                    // the next read operation will fetch this byte. We can't do a Seek here,
-                    // because e.g. the network stream doesn't support seeking.
-                    this.pendingByte = (byte)nextByte;
-                }
-            }
-
-            return read;
-        }
-
-        /// <inheritdoc/>
-        public override async Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
-        {
-            if (count == 0)
-            {
-                return 0;
-            }
-
-            // Read the raw data from the base stream. There may be a
-            // 'pending byte' from a previous operation; if that's the case,
-            // consume it.
-            int read = 0;
-
-            if (this.pendingByte != null)
-            {
-                buffer[offset] = this.pendingByte.Value;
-                read = await this.Inner.ReadAsync(buffer, offset + 1, count - 1, cancellationToken).ConfigureAwait(false);
-                read++;
-                this.pendingByte = null;
-            }
-            else
-            {
-                read = await this.Inner.ReadAsync(buffer, offset, count, cancellationToken).ConfigureAwait(false);
+                read = await this.Inner.ReadAsync(buffer.Slice(0, buffer.Length), cancellationToken).ConfigureAwait(false);
             }
 
             byte[] minibuffer = new byte[1];
@@ -231,26 +112,26 @@ namespace Kaponata.Android.Adb
             // Loop over the data, and find a LF (0x0d) character. If it is
             // followed by a CR (0x0a) character, remove the LF chracter and
             // keep only the LF character intact.
-            for (int i = offset; i < offset + read - 1; i++)
+            for (int i = 0; i < read - 1; i++)
             {
-                if (buffer[i] == 0x0d && buffer[i + 1] == 0x0a)
+                if (buffer.Span[i] == 0x0d && buffer.Span[i + 1] == 0x0a)
                 {
-                    buffer[i] = 0x0a;
+                    buffer.Span[i] = 0x0a;
 
-                    for (int j = i + 1; j < offset + read - 1; j++)
+                    for (int j = i + 1; j < read - 1; j++)
                     {
-                        buffer[j] = buffer[j + 1];
+                        buffer.Span[j] = buffer.Span[j + 1];
                     }
 
                     // Reset unused data to \0
-                    buffer[offset + read - 1] = 0;
+                    buffer.Span[read - 1] = 0;
 
                     // We have removed one byte from the array of bytes which has
                     // been read; but the caller asked for a fixed number of bytes.
                     // So we need to get the next byte from the base stream.
                     // If less bytes were received than asked, we know no more data is
                     // available so we can skip this step
-                    if (read < count)
+                    if (read < buffer.Length)
                     {
                         read--;
                         continue;
@@ -267,14 +148,14 @@ namespace Kaponata.Android.Adb
                     else
                     {
                         // Append the byte to the buffer.
-                        buffer[offset + read - 1] = minibuffer[0];
+                        buffer.Span[read - 1] = minibuffer[0];
                     }
                 }
             }
 
             // The last byte is a special case, to find out if the next byte is 0x0a
             // we need to read one more byte from the inner stream.
-            if (read > 0 && buffer[offset + read - 1] == 0x0d)
+            if (read > 0 && buffer.Span[read - 1] == 0x0d)
             {
                 int miniRead = await this.Inner.ReadAsync(minibuffer, 0, 1, cancellationToken).ConfigureAwait(false);
                 int nextByte = minibuffer[0];
@@ -283,7 +164,7 @@ namespace Kaponata.Android.Adb
                 {
                     // If the next byte is 0x0a, set the last byte to 0x0a. The underlying
                     // stream has already advanced because of the ReadByte call, so all is good.
-                    buffer[offset + read - 1] = 0x0a;
+                    buffer.Span[read - 1] = 0x0a;
                 }
                 else
                 {
@@ -298,28 +179,19 @@ namespace Kaponata.Android.Adb
         }
 
         /// <inheritdoc/>
-        public override void Flush()
-        {
-            throw new NotImplementedException();
-        }
+        public override void Flush() => throw new NotImplementedException();
 
         /// <inheritdoc/>
-        public override long Seek(long offset, SeekOrigin origin)
-        {
-            throw new NotImplementedException();
-        }
+        public override long Seek(long offset, SeekOrigin origin) => throw new NotImplementedException();
 
         /// <inheritdoc/>
-        public override void SetLength(long value)
-        {
-            throw new NotImplementedException();
-        }
+        public override void SetLength(long value) => throw new NotImplementedException();
 
         /// <inheritdoc/>
-        public override void Write(byte[] buffer, int offset, int count)
-        {
-            throw new NotImplementedException();
-        }
+        public override int Read(byte[] buffer, int offset, int count) => throw new NotImplementedException();
+
+        /// <inheritdoc/>
+        public override void Write(byte[] buffer, int offset, int count) => throw new NotImplementedException();
 
         /// <inheritdoc/>
         protected override void Dispose(bool disposing)
