@@ -191,6 +191,12 @@ namespace Kaponata.Android.Adb
         /// <inheritdoc/>
         protected override void Dispose(bool disposing)
         {
+            if (this.Inner != null)
+            {
+                this.Inner.Dispose();
+                this.Inner = null;
+            }
+
             this.Inner = null;
             base.Dispose(disposing);
         }
