@@ -18,25 +18,25 @@ namespace Kaponata.Android.Tests.Adb
     public class ShellStreamTests
     {
         /// <summary>
-        /// The <see cref="ShellStream.ShellStream(Stream, bool)"/> validates the arguments.
+        /// The <see cref="ShellStream.ShellStream(Stream)"/> validates the arguments.
         /// </summary>
         [Fact]
         public void Constructor_ValidatesArguments()
         {
-            Assert.Throws<ArgumentNullException>(() => new ShellStream(null, false));
+            Assert.Throws<ArgumentNullException>(() => new ShellStream(null));
             var streamMock = new Mock<Stream>();
             streamMock.SetupGet(s => s.CanRead).Returns(false);
-            Assert.Throws<ArgumentOutOfRangeException>(() => new ShellStream(streamMock.Object, false));
+            Assert.Throws<ArgumentOutOfRangeException>(() => new ShellStream(streamMock.Object));
         }
 
         /// <summary>
-        /// The <see cref="ShellStream.ShellStream(Stream, bool)"/> constructor initializes the instance.
+        /// The <see cref="ShellStream.ShellStream(Stream)"/> constructor initializes the instance.
         /// </summary>
         [Fact]
         public void Constructor_Initialization()
         {
             using (MemoryStream stream = new MemoryStream())
-            using (ShellStream shellStream = new ShellStream(stream, false))
+            using (ShellStream shellStream = new ShellStream(stream))
             {
                 Assert.Equal(stream, shellStream.Inner);
                 Assert.True(shellStream.CanRead);
@@ -299,7 +299,7 @@ namespace Kaponata.Android.Tests.Adb
         private static ShellStream GetStream(string text)
         {
             byte[] data = Encoding.ASCII.GetBytes(text);
-            return new ShellStream(new MemoryStream(data), true);
+            return new ShellStream(new MemoryStream(data));
         }
     }
 }

@@ -74,7 +74,7 @@ namespace Kaponata.Android.Adb
         /// </returns>
         public virtual ShellStream GetShellStream()
         {
-            return new ShellStream(this.stream, true);
+            return new ShellStream(this.stream);
         }
 
         /// <summary>

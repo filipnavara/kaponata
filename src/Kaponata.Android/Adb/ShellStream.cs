@@ -19,7 +19,6 @@ namespace Kaponata.Android.Adb
     /// <seealso href="http://stackoverflow.com/questions/13578416/read-binary-stdout-data-from-adb-shell"/>
     public class ShellStream : Stream
     {
-        private readonly bool ownsStream;
         private byte? pendingByte;
 
         /// <summary>
@@ -29,10 +28,7 @@ namespace Kaponata.Android.Adb
         /// The inner stream that contains the raw data retrieved from the shell. This stream
         /// must be readable.
         /// </param>
-        /// <param name="ownsStream">
-        /// <see langword="true"/> if the <see cref="ShellStream"/> owns the inner stream.
-        /// </param>
-        public ShellStream(Stream inner, bool ownsStream)
+        public ShellStream(Stream inner)
         {
             if (inner == null)
             {
@@ -45,7 +41,6 @@ namespace Kaponata.Android.Adb
             }
 
             this.Inner = inner;
-            this.ownsStream = ownsStream;
         }
 
         /// <summary>
@@ -196,12 +191,7 @@ namespace Kaponata.Android.Adb
         /// <inheritdoc/>
         protected override void Dispose(bool disposing)
         {
-            if (this.ownsStream && this.Inner != null)
-            {
-                this.Inner.Dispose();
-                this.Inner = null;
-            }
-
+            this.Inner = null;
             base.Dispose(disposing);
         }
     }
