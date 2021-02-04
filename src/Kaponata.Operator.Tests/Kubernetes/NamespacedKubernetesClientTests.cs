@@ -14,6 +14,7 @@ using Newtonsoft.Json;
 using System;
 using System.Net;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -280,6 +281,90 @@ namespace Kaponata.Operator.Tests.Kubernetes
                 var result = await client.PatchStatusAsync(pod, patch, default).ConfigureAwait(false);
                 Assert.NotNull(result);
             }
+        }
+
+        /// <summary>
+        /// <see cref="NamespacedKubernetesClient{T}.TryReadAsync(string, string, string, CancellationToken)"/>  validates the arguments
+        /// passed to it.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="Task"/> which represents the asynchronous test.
+        /// </returns>
+        [Fact]
+        public async Task TryReadAsync_ValidatesArguments_Async()
+        {
+            var client = new NamespacedKubernetesClient<V1Pod>(Mock.Of<KubernetesClient>(), new KindMetadata(string.Empty, string.Empty, string.Empty));
+
+            await Assert.ThrowsAsync<ArgumentNullException>("namespace", () => client.TryReadAsync(null, "name", default)).ConfigureAwait(false);
+            await Assert.ThrowsAsync<ArgumentNullException>("name", () => client.TryReadAsync("namespace", null, default)).ConfigureAwait(false);
+
+            // labelSelector can be null
+            await Assert.ThrowsAsync<ArgumentNullException>("namespace", () => client.TryReadAsync(null, "name", null, default)).ConfigureAwait(false);
+            await Assert.ThrowsAsync<ArgumentNullException>("name", () => client.TryReadAsync("namespace", null, null, default)).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// <see cref="NamespacedKubernetesClient{T}.TryReadAsync(string, string, string, CancellationToken)"/> returns the requested value
+        /// if it exists.
+        /// </summary>
+        /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
+        [Fact]
+        public async Task TryReadAsync_ItemExists_Works_Async()
+        {
+            var kubernetes = new Mock<KubernetesClient>(MockBehavior.Strict);
+            var metadata = new KindMetadata(V1Pod.KubeGroup, V1Pod.KubeApiVersion, "pods");
+
+            V1Pod pod = new V1Pod();
+            var pods = new ItemList<V1Pod>()
+            {
+                Items = new V1Pod[]
+                {
+                    pod,
+                },
+            };
+
+            kubernetes
+                .Setup(k => k.ListNamespacedObjectAsync<V1Pod, ItemList<V1Pod>>(metadata, "default", null, null, "metadata.name=name", null, null, null, null, null, null, null, null, default))
+                .ReturnsAsync(
+                    new HttpOperationResponse<ItemList<V1Pod>>()
+                    {
+                        Body = pods,
+                    });
+
+            var client = new NamespacedKubernetesClient<V1Pod>(kubernetes.Object, metadata);
+            var value = await client.TryReadAsync("default", "name", default).ConfigureAwait(false);
+
+            Assert.Same(pod, value);
+        }
+
+        /// <summary>
+        /// <see cref="NamespacedKubernetesClient{T}.TryReadAsync(string, string, string, CancellationToken)"/> returns <see langword="null"/>
+        /// if the requested value does not exist.
+        /// </summary>
+        /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
+        [Fact]
+        public async Task TryReadAsync_ItemDoesNotExist_Works_Async()
+        {
+            var kubernetes = new Mock<KubernetesClient>(MockBehavior.Strict);
+            var metadata = new KindMetadata(V1Pod.KubeGroup, V1Pod.KubeApiVersion, "pods");
+
+            var pods = new ItemList<V1Pod>()
+            {
+                Items = new V1Pod[] { },
+            };
+
+            kubernetes
+                .Setup(k => k.ListNamespacedObjectAsync<V1Pod, ItemList<V1Pod>>(metadata, "default", null, null, "metadata.name=name", null, null, null, null, null, null, null, null, default))
+                .ReturnsAsync(
+                    new HttpOperationResponse<ItemList<V1Pod>>()
+                    {
+                        Body = pods,
+                    });
+
+            var client = new NamespacedKubernetesClient<V1Pod>(kubernetes.Object, metadata);
+            var value = await client.TryReadAsync("default", "name", default).ConfigureAwait(false);
+
+            Assert.Null(value);
         }
     }
 }

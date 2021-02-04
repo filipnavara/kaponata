@@ -162,9 +162,43 @@ namespace Kaponata.Operator.Kubernetes
         /// A <see cref="Task"/> which represents the asynchronous operation, and returns the requested <typeparamref name="T"/> object, or
         /// <see langword="null"/> if the <typeparamref name="T"/> object does not exist.
         /// </returns>
-        public virtual async Task<T> TryReadAsync(string @namespace, string name, CancellationToken cancellationToken)
+        public virtual Task<T> TryReadAsync(string @namespace, string name, CancellationToken cancellationToken)
         {
-            var list = await this.parent.RunTaskAsync(this.ListAsync(namespaceParameter: @namespace, fieldSelector: $"metadata.name={name}", cancellationToken: cancellationToken)).ConfigureAwait(false);
+            return this.TryReadAsync(@namespace, name, labelSelector: null, cancellationToken);
+        }
+
+        /// <summary>
+        /// Asynchronously tries to read a <typeparamref name="T"/> object.
+        /// </summary>
+        /// <param name="namespace">
+        /// The namespace in which the <typeparamref name="T"/> object is located.
+        /// </param>
+        /// <param name="name">
+        /// The name which uniquely identifies the <typeparamref name="T"/> objectwithin the namespace.
+        /// </param>
+        /// <param name="labelSelector">
+        /// A label selector which the <typeparamref name="T"/> object must match.
+        /// </param>
+        /// <param name="cancellationToken">
+        /// A <see cref="CancellationToken"/> which can be used to cancel the asynchronous operation.
+        /// </param>
+        /// <returns>
+        /// A <see cref="Task"/> which represents the asynchronous operation, and returns the requested <typeparamref name="T"/> object, or
+        /// <see langword="null"/> if the <typeparamref name="T"/> object does not exist.
+        /// </returns>
+        public virtual async Task<T> TryReadAsync(string @namespace, string name, string labelSelector, CancellationToken cancellationToken)
+        {
+            if (@namespace == null)
+            {
+                throw new ArgumentNullException(nameof(@namespace));
+            }
+
+            if (name == null)
+            {
+                throw new ArgumentNullException(nameof(name));
+            }
+
+            var list = await this.parent.RunTaskAsync(this.ListAsync(namespaceParameter: @namespace, fieldSelector: $"metadata.name={name}", labelSelector: labelSelector, cancellationToken: cancellationToken)).ConfigureAwait(false);
             return list.Body.Items.SingleOrDefault();
         }
 
