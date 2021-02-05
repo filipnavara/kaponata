@@ -6,6 +6,7 @@ all: .arm64.docker-id .amd64.docker-id .version
 push: all
 	docker push $(registry)/$(image):latest-amd64
 	docker push $(registry)/$(image):latest-arm64
+	docker manifest rm $(registry)/$(image):$(shell cat .version) || echo "Manifest does not exist"
 	docker manifest create --amend $(registry)/$(image):$(shell cat .version) $(registry)/$(image):latest-amd64 $(registry)/$(image):latest-arm64
 	docker manifest push $(registry)/$(image):$(shell cat .version)
 
