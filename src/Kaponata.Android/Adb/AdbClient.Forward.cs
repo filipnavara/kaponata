@@ -13,6 +13,11 @@ namespace Kaponata.Android.Adb
     /// <summary>
     /// Contains the <c>ADB</c> forward methods.
     /// </summary>
+    /// <remarks>
+    /// The forward commands require the <c>host-prefix</c> while the reverse commands connect first to the device and do not send the commands with <c>host-prefix</c>.
+    /// </remarks>
+    /// <seealso href="https://android.googlesource.com/platform/system/adb/+/refs/heads/master/adb.cpp"/>
+    /// <seealso href="https://android.googlesource.com/platform/system/adb/+/refs/heads/master/SERVICES.TXT"/>
     public partial class AdbClient
     {
         /// <summary>
@@ -70,6 +75,9 @@ namespace Kaponata.Android.Adb
             string rebind = allowRebind ? string.Empty : "norebind:";
 
             await protocol.WriteAsync($"reverse:forward:{rebind}{local};{remote}", cancellationToken).ConfigureAwait(false);
+
+            // two adb reponses are being send:  1st OKAY is connect, 2nd OKAY is status.
+            // https://android.googlesource.com/platform/system/adb/+/refs/heads/master/adb.cpp
             protocol.EnsureValidAdbResponse(await protocol.ReadAdbResponseAsync(cancellationToken).ConfigureAwait(false));
             protocol.EnsureValidAdbResponse(await protocol.ReadAdbResponseAsync(cancellationToken).ConfigureAwait(false));
 
@@ -139,6 +147,9 @@ namespace Kaponata.Android.Adb
             string rebind = allowRebind ? string.Empty : "norebind:";
 
             await protocol.WriteAsync($"host-serial:{device.Serial}:forward:{rebind}{local};{remote}", cancellationToken).ConfigureAwait(false);
+
+            // two adb reponses are being send:  1st OKAY is connect, 2nd OKAY is status.
+            // https://android.googlesource.com/platform/system/adb/+/refs/heads/master/adb.cpp
             protocol.EnsureValidAdbResponse(await protocol.ReadAdbResponseAsync(cancellationToken).ConfigureAwait(false));
             protocol.EnsureValidAdbResponse(await protocol.ReadAdbResponseAsync(cancellationToken).ConfigureAwait(false));
 
