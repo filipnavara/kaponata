@@ -60,6 +60,7 @@ namespace Kaponata.Android.Tests.Adb
             Assert.Throws<NotImplementedException>(() => stream.Seek(4, SeekOrigin.Begin));
             Assert.Throws<NotImplementedException>(() => stream.SetLength(4));
             Assert.Throws<NotImplementedException>(() => stream.Write(null, 0, 4));
+            Assert.Throws<NotImplementedException>(() => stream.Read(null, 0, 4));
         }
 
         /// <summary>
