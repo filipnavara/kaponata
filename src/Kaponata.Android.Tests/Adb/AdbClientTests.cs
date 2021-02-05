@@ -67,5 +67,21 @@ namespace Kaponata.Android.Tests.Adb
             var message = await protocol.ReadStringAsync(4, default).ConfigureAwait(false);
             Assert.Equal("test", message);
         }
+
+        /// <summary>
+        /// The <see cref="AdbClient.EnsureDevice(DeviceData)"/> throws when an invalid device is passed.
+        /// </summary>
+        [Fact]
+        public void EnsureDevice_ThrowsOnInvalidDevice()
+        {
+            var client = new AdbClient(NullLogger<AdbClient>.Instance, NullLoggerFactory.Instance);
+
+            Assert.Throws<ArgumentNullException>("device", () => client.EnsureDevice(null));
+            Assert.Throws<ArgumentOutOfRangeException>("device", () => client.EnsureDevice(new DeviceData()));
+            Assert.Throws<ArgumentOutOfRangeException>("device", () => client.EnsureDevice(new DeviceData() { Serial = null }));
+            Assert.Throws<ArgumentOutOfRangeException>("device", () => client.EnsureDevice(new DeviceData() { Serial = string.Empty }));
+
+            client.EnsureDevice(new DeviceData() { Serial = "123" });
+        }
     }
 }
