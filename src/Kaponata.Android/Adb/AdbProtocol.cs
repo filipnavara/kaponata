@@ -124,7 +124,7 @@ namespace Kaponata.Android.Adb
             }
             else
             {
-                var length = await this.ReadUInt16Async(cancellationToken).ConfigureAwait(false);
+                var length = await this.ReadUInt16HexAsync(cancellationToken).ConfigureAwait(false);
                 var message = await this.ReadStringAsync(length, cancellationToken).ConfigureAwait(false);
                 return new AdbResponse(AdbResponseStatus.FAIL, message);
             }
@@ -184,7 +184,7 @@ namespace Kaponata.Android.Adb
         /// <returns>
         /// The <see cref="int"/> received from from the <c>ADB</c> server.
         /// </returns>
-        public virtual async Task<ushort> ReadUInt16Async(CancellationToken cancellationToken)
+        public virtual async Task<ushort> ReadUInt16HexAsync(CancellationToken cancellationToken)
         {
             using var messageBuffer = this.memoryPool.Rent(4);
 
@@ -194,6 +194,69 @@ namespace Kaponata.Android.Adb
             }
 
             return HexPrimitives.ReadUShort(messageBuffer.Memory.Span);
+        }
+
+        /// <summary>
+        /// Asynchronously reads an <see cref="ushort"/> from from the <c>ADB</c> server.
+        /// </summary>
+        /// <param name="cancellationToken">
+        /// A <see cref="CancellationToken"/> which can be used to cancel the asynchronous operation.
+        /// </param>
+        /// <returns>
+        /// The <see cref="int"/> received from from the <c>ADB</c> server.
+        /// </returns>
+        public virtual async Task<ushort> ReadUInt16Async(CancellationToken cancellationToken)
+        {
+            using var buffer = this.memoryPool.Rent(2);
+
+            if (await this.stream.ReadBlockAsync(buffer.Memory.Slice(0, 2), cancellationToken).ConfigureAwait(false) != 4)
+            {
+                throw new InvalidOperationException("Failed to read an integer.");
+            }
+
+            return BinaryPrimitives.ReadUInt16LittleEndian(buffer.Memory.Span);
+        }
+
+        /// <summary>
+        /// Asynchronously reads an <see cref="uint"/> from from the <c>ADB</c> server.
+        /// </summary>
+        /// <param name="cancellationToken">
+        /// A <see cref="CancellationToken"/> which can be used to cancel the asynchronous operation.
+        /// </param>
+        /// <returns>
+        /// The <see cref="int"/> received from from the <c>ADB</c> server.
+        /// </returns>
+        public virtual async Task<uint> ReadUInt32Async(CancellationToken cancellationToken)
+        {
+            using var buffer = this.memoryPool.Rent(4);
+
+            if (await this.stream.ReadBlockAsync(buffer.Memory.Slice(0, 2), cancellationToken).ConfigureAwait(false) != 4)
+            {
+                throw new InvalidOperationException("Failed to read an integer.");
+            }
+
+            return BinaryPrimitives.ReadUInt32BigEndian(buffer.Memory.Span);
+        }
+
+        /// <summary>
+        /// Asynchronously reads an <see cref="uint"/> from from the <c>ADB</c> server.
+        /// </summary>
+        /// <param name="cancellationToken">
+        /// A <see cref="CancellationToken"/> which can be used to cancel the asynchronous operation.
+        /// </param>
+        /// <returns>
+        /// The <see cref="int"/> received from from the <c>ADB</c> server.
+        /// </returns>
+        public virtual async Task<int> ReadInt32Async(CancellationToken cancellationToken)
+        {
+            using var buffer = this.memoryPool.Rent(4);
+
+            if (await this.stream.ReadBlockAsync(buffer.Memory.Slice(0, 2), cancellationToken).ConfigureAwait(false) != 4)
+            {
+                throw new InvalidOperationException("Failed to read an integer.");
+            }
+
+            return BinaryPrimitives.ReadInt32BigEndian(buffer.Memory.Span);
         }
 
         /// <summary>

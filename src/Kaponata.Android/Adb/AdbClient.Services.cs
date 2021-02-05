@@ -73,6 +73,58 @@ namespace Kaponata.Android.Adb
         }
 
         /// <summary>
+        /// Disconnects a device.
+        /// </summary>
+        /// <param name="endpoint">
+        /// The <see cref="IPEndPoint"/> at which the <c>ADB</c> server is running.
+        /// </param>
+        /// <param name="cancellationToken">
+        /// A <see cref="CancellationToken"/> which can be used to cancel the asynchronous operation.
+        /// </param>
+        /// <returns>
+        /// A <see cref="Task"/> representing the asynchronous operation.
+        /// </returns>
+        public Task DisonnectDeviceAsync(IPEndPoint endpoint, CancellationToken cancellationToken)
+        {
+            if (endpoint == null)
+            {
+                throw new ArgumentNullException(nameof(endpoint));
+            }
+
+            return this.DisconnectDeviceAsync(new DnsEndPoint(endpoint.Address.ToString(), endpoint.Port), cancellationToken);
+        }
+
+        /// <summary>
+        /// Disconnects a device.
+        /// </summary>
+        /// <param name="endpoint">
+        /// The <see cref="DnsEndPoint"/> at which the <c>ADB</c> server is running.
+        /// </param>
+        /// <param name="cancellationToken">
+        /// A <see cref="CancellationToken"/> which can be used to cancel the asynchronous operation.
+        /// </param>
+        /// <returns>
+        /// A <see cref="Task"/> representing the asynchronous operation.
+        /// </returns>
+        public async Task DisconnectDeviceAsync(DnsEndPoint endpoint, CancellationToken cancellationToken)
+        {
+            if (endpoint == null)
+            {
+                throw new ArgumentNullException(nameof(endpoint));
+            }
+
+            await using var protocol = await this.TryConnectToAdbAsync(cancellationToken).ConfigureAwait(false);
+
+            if (protocol == null)
+            {
+                throw new InvalidOperationException("Could not connect to the ADB server.");
+            }
+
+            await protocol.WriteAsync($"host:disconnect::{endpoint.Host}:{endpoint.Port}", cancellationToken).ConfigureAwait(false);
+            protocol.EnsureValidAdbResponse(await protocol.ReadAdbResponseAsync(cancellationToken).ConfigureAwait(false));
+        }
+
+        /// <summary>
         /// Gets all connected devices listed by the <c>ADB</c> server.
         /// </summary>
         /// <param name="cancellationToken">
@@ -95,12 +147,93 @@ namespace Kaponata.Android.Adb
             protocol.EnsureValidAdbResponse(await protocol.ReadAdbResponseAsync(cancellationToken).ConfigureAwait(false));
 
             // read devices response.
-            var length = await protocol.ReadUInt16Async(cancellationToken).ConfigureAwait(false);
+            var length = await protocol.ReadUInt16HexAsync(cancellationToken).ConfigureAwait(false);
             var devicesMessage = await protocol.ReadStringAsync(length, cancellationToken).ConfigureAwait(false);
 
             // Parse devices.
             var devices = devicesMessage.Split(new string[] { "\r\n", "\n" }, StringSplitOptions.RemoveEmptyEntries);
             return devices.Select(d => DeviceData.Parse(d)).ToList();
+        }
+
+        /// <summary>
+        /// Reboots the specified device in to the specified mode.
+        /// </summary>
+        /// <param name="device">
+        /// The device to reboot.
+        /// </param>
+        /// <param name="cancellationToken">
+        /// A <see cref="CancellationToken"/> which can be used to cancel the asynchronous operation.
+        /// </param>
+        /// <returns>
+        /// A <see cref="Task"/> representing the asynchronous operation.
+        /// </returns>
+        public async Task RebootDeviceAsync(DeviceData device, CancellationToken cancellationToken)
+        {
+            await this.RebootDeviceAsync(device, string.Empty, cancellationToken).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Reboots the specified device in to the specified mode.
+        /// </summary>
+        /// <param name="device">
+        /// The device to reboot.
+        /// </param>
+        /// <param name="into">
+        /// The mode into which to reboot the device.
+        /// </param>
+        /// <param name="cancellationToken">
+        /// A <see cref="CancellationToken"/> which can be used to cancel the asynchronous operation.
+        /// </param>
+        /// <returns>
+        /// A <see cref="Task"/> representing the asynchronous operation.
+        /// </returns>
+        public async Task RebootDeviceAsync(DeviceData device, string into, CancellationToken cancellationToken)
+        {
+            this.EnsureDevice(device);
+
+            await using var protocol = await this.TryConnectToAdbAsync(cancellationToken).ConfigureAwait(false);
+
+            if (protocol == null)
+            {
+                throw new InvalidOperationException("Could not connect to the ADB server.");
+            }
+
+            await protocol.SetDeviceAsync(device, cancellationToken).ConfigureAwait(false);
+            await protocol.WriteAsync($"reboot:{into}", cancellationToken).ConfigureAwait(false);
+            protocol.EnsureValidAdbResponse(await protocol.ReadAdbResponseAsync(cancellationToken).ConfigureAwait(false));
+        }
+
+        /// <summary>
+        /// Lists all features supported by the current device.
+        /// </summary>
+        /// <param name="device">
+        ///  The device for which to get the list of features supported.
+        /// </param>
+        /// <param name="cancellationToken">
+        /// A <see cref="CancellationToken"/> which can be used to cancel the asynchronous operation.
+        /// </param>
+        /// <returns>
+        /// A list of all features supported by the current device.
+        /// </returns>
+        public async Task<List<string>> GetFeatureSetAsync(DeviceData device, CancellationToken cancellationToken)
+        {
+            this.EnsureDevice(device);
+
+            await using var protocol = await this.TryConnectToAdbAsync(cancellationToken).ConfigureAwait(false);
+
+            if (protocol == null)
+            {
+                throw new InvalidOperationException("Could not connect to the ADB server.");
+            }
+
+            await protocol.WriteAsync($"host-serial:{device.Serial}:features", cancellationToken).ConfigureAwait(false);
+            protocol.EnsureValidAdbResponse(await protocol.ReadAdbResponseAsync(cancellationToken).ConfigureAwait(false));
+
+            var length = await protocol.ReadUInt16HexAsync(cancellationToken).ConfigureAwait(false);
+            var features = await protocol.ReadStringAsync(length, cancellationToken).ConfigureAwait(false);
+
+            var featureList = features.Split(new char[] { '\n', ',' }).ToList();
+            return featureList;
         }
 
         /// <summary>
@@ -126,7 +259,7 @@ namespace Kaponata.Android.Adb
             protocol.EnsureValidAdbResponse(await protocol.ReadAdbResponseAsync(cancellationToken).ConfigureAwait(false));
 
             // read version response.
-            var length = await protocol.ReadUInt16Async(cancellationToken).ConfigureAwait(false);
+            var length = await protocol.ReadUInt16HexAsync(cancellationToken).ConfigureAwait(false);
             var versionMessage = await protocol.ReadStringAsync(length, cancellationToken).ConfigureAwait(false);
 
             var adbVersion = 0;
@@ -138,6 +271,27 @@ namespace Kaponata.Android.Adb
             }
 
             return adbVersion;
+        }
+
+        /// <summary>
+        /// Kills the <c>ADB</c> server.
+        /// </summary>
+        /// <param name="cancellationToken">
+        /// A <see cref="CancellationToken"/> which can be used to cancel the asynchronous operation.
+        /// </param>
+        /// <returns>
+        /// The list of connected devices.
+        /// </returns>
+        public async Task KillAdbAsync(CancellationToken cancellationToken)
+        {
+            await using var protocol = await this.TryConnectToAdbAsync(cancellationToken).ConfigureAwait(false);
+
+            if (protocol == null)
+            {
+                throw new InvalidOperationException("Could not connect to the ADB server.");
+            }
+
+            await protocol.WriteAsync("host:kill", cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>

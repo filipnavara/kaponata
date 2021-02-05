@@ -464,7 +464,7 @@ namespace Kaponata.Android.Tests.Adb
             protocol.Setup(p => p.ReadAdbResponseAsync(default))
                     .ReturnsAsync(AdbResponse.Success)
                     .Verifiable();
-            protocol.Setup(p => p.ReadUInt16Async(default))
+            protocol.Setup(p => p.ReadUInt16HexAsync(default))
                 .ReturnsAsync((ushort)95)
                 .Verifiable();
             protocol.Setup(p => p.ReadStringAsync(95, default))
@@ -532,7 +532,7 @@ namespace Kaponata.Android.Tests.Adb
             protocol.Setup(p => p.ReadAdbResponseAsync(default))
                 .ReturnsAsync(AdbResponse.Success)
                 .Verifiable();
-            protocol.Setup(p => p.ReadUInt16Async(default))
+            protocol.Setup(p => p.ReadUInt16HexAsync(default))
                 .ReturnsAsync((ushort)4)
                 .Verifiable();
             protocol
@@ -572,7 +572,7 @@ namespace Kaponata.Android.Tests.Adb
             protocol.Setup(p => p.ReadAdbResponseAsync(default))
                 .ReturnsAsync(AdbResponse.Success)
                 .Verifiable();
-            protocol.Setup(p => p.ReadUInt16Async(default))
+            protocol.Setup(p => p.ReadUInt16HexAsync(default))
                 .ReturnsAsync((ushort)4)
                 .Verifiable();
             protocol

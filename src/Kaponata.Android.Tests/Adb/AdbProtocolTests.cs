@@ -202,7 +202,7 @@ namespace Kaponata.Android.Tests.Adb
         }
 
         /// <summary>
-        /// The <see cref="AdbProtocol.ReadUInt16Async(CancellationToken)"/> method receives an <see cref="int"/> from the <c>ADB</c> server.
+        /// The <see cref="AdbProtocol.ReadUInt16HexAsync(CancellationToken)"/> method receives an <see cref="int"/> from the <c>ADB</c> server.
         /// </summary>
         /// <param name="input">
         /// The input string.
@@ -227,13 +227,13 @@ namespace Kaponata.Android.Tests.Adb
             await writer.FlushAsync().ConfigureAwait(false);
             stream.Position = 0;
 
-            var message = await protocol.ReadUInt16Async(default).ConfigureAwait(false);
+            var message = await protocol.ReadUInt16HexAsync(default).ConfigureAwait(false);
 
             Assert.Equal(value, message);
         }
 
         /// <summary>
-        /// The <see cref="AdbProtocol.ReadUInt16Async(CancellationToken)"/> throws an exception when the int cannot be read.
+        /// The <see cref="AdbProtocol.ReadUInt16HexAsync(CancellationToken)"/> throws an exception when the int cannot be read.
         /// </summary>
         /// <returns>
         /// A <see cref="Task"/> which represents the asynchronous test.
@@ -248,7 +248,7 @@ namespace Kaponata.Android.Tests.Adb
             await writer.FlushAsync().ConfigureAwait(false);
             stream.Position = 0;
 
-            await Assert.ThrowsAsync<InvalidOperationException>(async () => await protocol.ReadUInt16Async(default).ConfigureAwait(false));
+            await Assert.ThrowsAsync<InvalidOperationException>(async () => await protocol.ReadUInt16HexAsync(default).ConfigureAwait(false));
         }
 
         /// <summary>
@@ -318,7 +318,7 @@ namespace Kaponata.Android.Tests.Adb
                 CallBase = true,
             };
 
-            protocolMock.Setup(p => p.ReadUInt16Async(CancellationToken.None)).ReturnsAsync((ushort)8);
+            protocolMock.Setup(p => p.ReadUInt16HexAsync(CancellationToken.None)).ReturnsAsync((ushort)8);
             protocolMock.Setup(p => p.ReadAdbResponseStatusAsync(CancellationToken.None)).ReturnsAsync(AdbResponseStatus.FAIL);
             protocolMock.Setup(p => p.ReadStringAsync(8, CancellationToken.None)).ReturnsAsync("UnitTest");
 
