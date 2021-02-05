@@ -265,18 +265,23 @@ namespace Kaponata.Operator.Operators
                 while (!cancellationToken.IsCancellationRequested
                     && (name = await this.reconciliationBuffer.ReceiveAsync(cancellationToken).ConfigureAwait(false)) != null)
                 {
+                    // Avoid cancelling an individual operation (let's consider this to be more or less transactional);
+                    // so give the operation a 3 second grace period for shutting down when receiving a cancellation.
+                    var operationCts = new CancellationTokenSource();
+                    cancellationToken.Register(() => operationCts.CancelAfter(TimeSpan.FromSeconds(3)));
+
                     // Start reading parent and child in parallel
                     var readParentTask = this.parentClient.TryReadAsync(
                         this.configuration.Namespace,
                         name,
                         this.configuration.ParentLabelSelector,
-                        cancellationToken);
+                        operationCts.Token);
 
                     var readChildTask = this.childClient.TryReadAsync(
                         this.configuration.Namespace,
                         name,
                         Selector.Create(this.configuration.ChildLabels),
-                        cancellationToken);
+                        operationCts.Token);
 
                     // Block until we get both
                     var parent = await readParentTask.ConfigureAwait(false);
@@ -286,7 +291,7 @@ namespace Kaponata.Operator.Operators
                     {
                         await this.ReconcileAsync(
                             new ChildOperatorContext<TParent, TChild>(parent, child),
-                            cancellationToken).ConfigureAwait(false);
+                            operationCts.Token).ConfigureAwait(false);
                     }
                     else
                     {
@@ -301,6 +306,7 @@ namespace Kaponata.Operator.Operators
             finally
             {
                 this.processingSemaphore.Release();
+                this.logger.LogInformation("Stopped performing reconciliations for operator {operator}", this.configuration.OperatorName);
             }
         }
 
@@ -439,7 +445,20 @@ namespace Kaponata.Operator.Operators
             // Schedule the initial reconciliations
             await this.InitializeAsync(stoppingToken).ConfigureAwait(false);
 
-            var reconcilerTask = this.ProcessBufferedReconciliationsAsync(stoppingToken);
+            // Allow the reconcilation loop to gracefully exit:
+            // - Signal completion by posting a null value to the buffer and then completing the buffer
+            // - Offer the reconciliaton loop a 5 second grace period to process any pending items and
+            //   then request a 'hard' cancellation.
+            var reconciliationCts = new CancellationTokenSource();
+
+            stoppingToken.Register(() =>
+            {
+                this.reconciliationBuffer.Post(null);
+                this.reconciliationBuffer.Complete();
+                reconciliationCts.CancelAfter(TimeSpan.FromSeconds(5));
+            });
+
+            var reconcilerTask = this.ProcessBufferedReconciliationsAsync(reconciliationCts.Token);
 
             await Task.WhenAny(
                 sourceWatch,

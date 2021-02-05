@@ -882,8 +882,8 @@ namespace Kaponata.Operator.Tests.Operators
             var webDriverSessionClient = kubernetes.WithClient<WebDriverSession>();
             var podClient = kubernetes.WithClient<V1Pod>();
 
-            webDriverSessionClient.Setup(c => c.TryReadAsync("default", "my-name", "parent-label-selector", default)).ReturnsAsync((WebDriverSession)null);
-            podClient.Setup(c => c.TryReadAsync("default", "my-name", "app.kubernetes.io/managed-by=ChildOperatorTests", default)).ReturnsAsync((V1Pod)null);
+            webDriverSessionClient.Setup(c => c.TryReadAsync("default", "my-name", "parent-label-selector", It.IsAny<CancellationToken>())).ReturnsAsync((WebDriverSession)null);
+            podClient.Setup(c => c.TryReadAsync("default", "my-name", "app.kubernetes.io/managed-by=ChildOperatorTests", It.IsAny<CancellationToken>())).ReturnsAsync((V1Pod)null);
 
             using (var @operator = new ChildOperator<WebDriverSession, V1Pod>(
                 kubernetes.Object,
@@ -957,8 +957,8 @@ namespace Kaponata.Operator.Tests.Operators
             var webDriverSessionClient = kubernetes.WithClient<WebDriverSession>();
             var podClient = kubernetes.WithClient<V1Pod>();
 
-            webDriverSessionClient.Setup(c => c.TryReadAsync("default", "my-name", "parent-label-selector", default)).ReturnsAsync(new WebDriverSession());
-            podClient.Setup(c => c.TryReadAsync("default", "my-name", "app.kubernetes.io/managed-by=ChildOperatorTests", default)).ReturnsAsync((V1Pod)null);
+            webDriverSessionClient.Setup(c => c.TryReadAsync("default", "my-name", "parent-label-selector", It.IsAny<CancellationToken>())).ReturnsAsync(new WebDriverSession());
+            podClient.Setup(c => c.TryReadAsync("default", "my-name", "app.kubernetes.io/managed-by=ChildOperatorTests", It.IsAny<CancellationToken>())).ReturnsAsync((V1Pod)null);
 
             using (var @operator = new ChildOperator<WebDriverSession, V1Pod>(
                 kubernetes.Object,
