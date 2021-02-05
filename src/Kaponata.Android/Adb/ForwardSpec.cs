@@ -57,10 +57,7 @@ namespace Kaponata.Android.Adb
         /// <inheritdoc/>
         public override int GetHashCode()
         {
-            return (int)this.Protocol
-                ^ this.Port
-                ^ this.ProcessId
-                ^ (this.SocketName == null ? 1 : this.SocketName.GetHashCode());
+            return HashCode.Combine((int)this.Protocol, this.Port, this.ProcessId, this.SocketName);
         }
 
         /// <inheritdoc/>
@@ -82,18 +79,10 @@ namespace Kaponata.Android.Adb
             {
                 case ForwardProtocol.JavaDebugWireProtocol:
                     return this.ProcessId == other.ProcessId;
-
                 case ForwardProtocol.Tcp:
                     return this.Port == other.Port;
-
-                case ForwardProtocol.LocalAbstract:
-                case ForwardProtocol.LocalFilesystem:
-                case ForwardProtocol.LocalReserved:
-                case ForwardProtocol.Device:
-                    return string.Equals(this.SocketName, other.SocketName);
-
                 default:
-                    return false;
+                    return string.Equals(this.SocketName, other.SocketName);
             }
         }
     }

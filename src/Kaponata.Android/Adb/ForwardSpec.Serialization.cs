@@ -99,18 +99,10 @@ namespace Kaponata.Android.Adb
             {
                 case ForwardProtocol.JavaDebugWireProtocol:
                     return $"{protocolString}:{this.ProcessId}";
-
                 case ForwardProtocol.Tcp:
                     return $"{protocolString}:{this.Port}";
-
-                case ForwardProtocol.LocalAbstract:
-                case ForwardProtocol.LocalFilesystem:
-                case ForwardProtocol.LocalReserved:
-                case ForwardProtocol.Device:
-                    return $"{protocolString}:{this.SocketName}";
-
                 default:
-                    return string.Empty;
+                    return $"{protocolString}:{this.SocketName}";
             }
         }
     }

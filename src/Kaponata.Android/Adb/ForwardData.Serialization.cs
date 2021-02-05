@@ -26,7 +26,7 @@ namespace Kaponata.Android.Adb
         {
             if (value == null)
             {
-                return null;
+                throw new ArgumentNullException(nameof(value));
             }
 
             string[] parts = value.Split(' ');
