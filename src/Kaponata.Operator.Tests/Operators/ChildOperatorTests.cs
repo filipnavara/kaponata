@@ -16,6 +16,7 @@ using System;
 using System.Collections.ObjectModel;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Threading.Tasks.Dataflow;
 using Xunit;
 
 namespace Kaponata.Operator.Tests.Operators
@@ -360,10 +361,9 @@ namespace Kaponata.Operator.Tests.Operators
             {
                 await @operator.InitializeAsync(default).ConfigureAwait(false);
 
-                Assert.True(@operator.ReconcilationBuffer.TryReceive(null, out var context));
+                Assert.True(@operator.ReconcilationBuffer.TryReceive(null, out var name));
 
-                Assert.Equal(parent, context.Parent);
-                Assert.Null(context.Child);
+                Assert.Equal("my-session", name);
 
                 Assert.False(@operator.ReconcilationBuffer.TryReceive(null, out var _));
             }
@@ -480,10 +480,9 @@ namespace Kaponata.Operator.Tests.Operators
             {
                 await @operator.InitializeAsync(default).ConfigureAwait(false);
 
-                Assert.True(@operator.ReconcilationBuffer.TryReceive(null, out var context));
+                Assert.True(@operator.ReconcilationBuffer.TryReceive(null, out var name));
 
-                Assert.Equal(parent, context.Parent);
-                Assert.Equal(child, context.Child);
+                Assert.Equal("my-session", name);
 
                 Assert.False(@operator.ReconcilationBuffer.TryReceive(null, out var _));
             }
@@ -518,12 +517,11 @@ namespace Kaponata.Operator.Tests.Operators
         }
 
         /// <summary>
-        /// <see cref="ChildOperator{TParent, TChild}.ScheduleReconciliationAsync(TParent, CancellationToken)"/>
+        /// <see cref="ChildOperator{TParent, TChild}.ScheduleReconciliation(TParent)"/>
         /// validates its arguments.
         /// </summary>
-        /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
         [Fact]
-        public async Task ScheduleParentReconciliationAsync_ValidatesArgument_Async()
+        public void ScheduleParentReconciliation_ValidatesArgument_()
         {
             using (var @operator = new ChildOperator<WebDriverSession, V1Pod>(
                 this.kubernetes,
@@ -533,51 +531,16 @@ namespace Kaponata.Operator.Tests.Operators
                 this.feedbackLoops,
                 this.logger))
             {
-                await Assert.ThrowsAsync<ArgumentNullException>("parent", () => @operator.ScheduleReconciliationAsync((WebDriverSession)null, default)).ConfigureAwait(false);
+                Assert.Throws<ArgumentNullException>("parent", () => @operator.ScheduleReconciliation((WebDriverSession)null));
             }
         }
 
         /// <summary>
-        /// <see cref="ChildOperator{TParent, TChild}.ScheduleReconciliationAsync(TParent, CancellationToken)"/> catches and logs errors.
-        /// </summary>
-        /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
-        [Fact]
-        public async Task ScheduleParentReconciliationAsync_HandlesException_Async()
-        {
-            var loggerFactory = TestLoggerFactory.Create();
-            var logger = loggerFactory.CreateLogger<ChildOperator<WebDriverSession, V1Pod>>();
-
-            var kubernetes = new Mock<KubernetesClient>(MockBehavior.Strict);
-            var sessionClient = kubernetes.WithClient<WebDriverSession>();
-            var podClient = kubernetes.WithClient<V1Pod>();
-            podClient
-                .Setup(p => p.ListAsync("default", null, "metadata.name=my-session", "app.kubernetes.io/managed-by=ChildOperatorTests", null, default))
-                .ThrowsAsync(new NotSupportedException());
-
-            using (var @operator = new ChildOperator<WebDriverSession, V1Pod>(
-                kubernetes.Object,
-                this.configuration,
-                this.filter,
-                (session, pod) => { },
-                this.feedbackLoops,
-                logger))
-            {
-                await @operator.ScheduleReconciliationAsync(new WebDriverSession() { Metadata = new V1ObjectMeta() { Name = "my-session" } }, default).ConfigureAwait(false);
-
-                Assert.Collection(
-                    loggerFactory.Sink.LogEntries,
-                    e => Assert.Equal("ChildOperatorTests operator: scheduling reconciliation for parent my-session", e.Message),
-                    e => Assert.Equal("Caught error Specified method is not supported. while scheduling parent reconciliation for operator ChildOperatorTests", e.Message));
-            }
-        }
-
-        /// <summary>
-        /// <see cref="ChildOperator{TParent, TChild}.ScheduleReconciliationAsync(TParent, CancellationToken)"/>
+        /// <see cref="ChildOperator{TParent, TChild}.ScheduleReconciliation(TParent)"/>
         /// posts a new item to to the queue.
         /// </summary>
-        /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
         [Fact]
-        public async Task ScheduleParentReconciliationAsync_PostsToQueue_Async()
+        public void ScheduleParentReconciliation_PostsToQueue()
         {
             var kubernetes = new Mock<KubernetesClient>();
             var podClient = kubernetes.WithClient<V1Pod>();
@@ -615,74 +578,22 @@ namespace Kaponata.Operator.Tests.Operators
                 this.feedbackLoops,
                 this.logger))
             {
-                await @operator.ScheduleReconciliationAsync(parent, default).ConfigureAwait(false);
+                @operator.ScheduleReconciliation(parent);
 
-                Assert.True(@operator.ReconcilationBuffer.TryReceive(null, out var context));
+                Assert.True(@operator.ReconcilationBuffer.TryReceive(null, out var name));
 
-                Assert.Equal(parent, context.Parent);
-                Assert.Equal(child, context.Child);
-
-                Assert.False(@operator.ReconcilationBuffer.TryReceive(null, out var _));
-            }
-        }
-
-        /// <summary>
-        /// <see cref="ChildOperator{TParent, TChild}.ScheduleReconciliationAsync(TParent, CancellationToken)"/>
-        /// skips parents which are filtered out.
-        /// </summary>
-        /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
-        [Fact]
-        public async Task ScheduleParentReconciliationAsync_ParentFiltered_Skipped_Async()
-        {
-            var kubernetes = new Mock<KubernetesClient>();
-            var podClient = kubernetes.WithClient<V1Pod>();
-
-            var parent = new WebDriverSession()
-            {
-                Metadata = new V1ObjectMeta()
-                {
-                    Name = "my-session",
-                    NamespaceProperty = "default",
-                    Uid = "my-uid",
-                },
-            };
-
-            var child = new V1Pod()
-            {
-                Metadata = new V1ObjectMeta()
-                {
-                    Name = "my-session",
-                    NamespaceProperty = "default",
-                    Uid = "my-uid",
-                },
-            };
-
-            podClient.WithList(
-                fieldSelector: "metadata.name=my-session",
-                labelSelector: "app.kubernetes.io/managed-by=ChildOperatorTests",
-                child);
-
-            using (var @operator = new ChildOperator<WebDriverSession, V1Pod>(
-                kubernetes.Object,
-                this.configuration,
-                (session) => false, /* all parents are filtered out */
-                (session, pod) => { },
-                this.feedbackLoops,
-                this.logger))
-            {
-                await @operator.ScheduleReconciliationAsync(parent, default).ConfigureAwait(false);
+                Assert.Equal("my-session", name);
 
                 Assert.False(@operator.ReconcilationBuffer.TryReceive(null, out var _));
             }
         }
 
         /// <summary>
-        /// <see cref="ChildOperator{TParent, TChild}.ScheduleReconciliationAsync(TChild, CancellationToken)"/>
+        /// <see cref="ChildOperator{TParent, TChild}.ScheduleReconciliation(TChild)"/>
         /// validates its arguments.
         /// </summary>
-        /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
         [Fact]
-        public async Task ScheduleChildReconciliationAsync_ValidatesArgument_Async()
+        public void ScheduleChildReconciliation_ValidatesArgument()
         {
             using (var @operator = new ChildOperator<WebDriverSession, V1Pod>(
                 this.kubernetes,
@@ -692,70 +603,19 @@ namespace Kaponata.Operator.Tests.Operators
                 this.feedbackLoops,
                 this.logger))
             {
-                await Assert.ThrowsAsync<ArgumentNullException>("child", () => @operator.ScheduleReconciliationAsync((V1Pod)null, default)).ConfigureAwait(false);
+                Assert.Throws<ArgumentNullException>("child", () => @operator.ScheduleReconciliation((V1Pod)null));
             }
         }
 
         /// <summary>
-        /// <see cref="ChildOperator{TParent, TChild}.ScheduleReconciliationAsync(TChild, CancellationToken)"/> catches and logs errors.
-        /// </summary>
-        /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
-        [Fact]
-        public async Task ScheduleChildReconciliationAsync_HandlesException_Async()
-        {
-            var loggerFactory = TestLoggerFactory.Create();
-            var logger = loggerFactory.CreateLogger<ChildOperator<WebDriverSession, V1Pod>>();
-
-            var kubernetes = new Mock<KubernetesClient>(MockBehavior.Strict);
-            var sessionClient = kubernetes.WithClient<WebDriverSession>();
-            sessionClient
-                .Setup(p => p.ListAsync("default", null, "metadata.name=my-session", "parent-label-selector", null, default))
-                .ThrowsAsync(new NotSupportedException());
-
-            var podClient = kubernetes.WithClient<V1Pod>();
-
-            using (var @operator = new ChildOperator<WebDriverSession, V1Pod>(
-                kubernetes.Object,
-                this.configuration,
-                this.filter,
-                (session, pod) => { },
-                this.feedbackLoops,
-                logger))
-            {
-                await @operator.ScheduleReconciliationAsync(new V1Pod() { Metadata = new V1ObjectMeta() { Name = "my-session" } }, default).ConfigureAwait(false);
-
-                Assert.Collection(
-                    loggerFactory.Sink.LogEntries,
-                    e => Assert.Equal("ChildOperatorTests operator: scheduling reconciliation for child my-session", e.Message),
-                    e => Assert.Equal("Caught error Specified method is not supported. while scheduling child reconciliation for operator ChildOperatorTests", e.Message));
-            }
-        }
-
-        /// <summary>
-        /// <see cref="ChildOperator{TParent, TChild}.ScheduleReconciliationAsync(TChild, CancellationToken)"/>
+        /// <see cref="ChildOperator{TParent, TChild}.ScheduleReconciliation(TChild)"/>
         /// posts a new item to to the queue.
         /// </summary>
-        /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
         [Fact]
-        public async Task ScheduleChildReconciliationAsync_PostsToQueue_Async()
+        public void ScheduleChildReconciliation_PostsToQueue()
         {
             var kubernetes = new Mock<KubernetesClient>();
             var sessionClient = kubernetes.WithClient<WebDriverSession>();
-
-            var parent = new WebDriverSession()
-            {
-                Metadata = new V1ObjectMeta()
-                {
-                    Name = "my-session",
-                    NamespaceProperty = "default",
-                    Uid = "my-uid",
-                },
-            };
-
-            sessionClient.WithList(
-                fieldSelector: "metadata.name=my-session",
-                labelSelector: "parent-label-selector",
-                parent);
 
             var child = new V1Pod()
             {
@@ -775,101 +635,11 @@ namespace Kaponata.Operator.Tests.Operators
                 this.feedbackLoops,
                 this.logger))
             {
-                await @operator.ScheduleReconciliationAsync(child, default).ConfigureAwait(false);
+                @operator.ScheduleReconciliation(child);
 
-                Assert.True(@operator.ReconcilationBuffer.TryReceive(null, out var context));
+                Assert.True(@operator.ReconcilationBuffer.TryReceive(null, out var name));
 
-                Assert.Equal(parent, context.Parent);
-                Assert.Equal(child, context.Child);
-
-                Assert.False(@operator.ReconcilationBuffer.TryReceive(null, out var _));
-            }
-        }
-
-        /// <summary>
-        /// <see cref="ChildOperator{TParent, TChild}.ScheduleReconciliationAsync(TChild, CancellationToken)"/>
-        /// posts a new item to to the queue.
-        /// </summary>
-        /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
-        [Fact]
-        public async Task ScheduleChildReconciliationAsync_NoParent_Skipped_Async()
-        {
-            var kubernetes = new Mock<KubernetesClient>();
-            var sessionClient = kubernetes.WithClient<WebDriverSession>();
-
-            sessionClient.WithList(
-                fieldSelector: "metadata.name=my-session",
-                labelSelector: "parent-label-selector");
-
-            var child = new V1Pod()
-            {
-                Metadata = new V1ObjectMeta()
-                {
-                    Name = "my-session",
-                    NamespaceProperty = "default",
-                    Uid = "my-uid",
-                },
-            };
-
-            using (var @operator = new ChildOperator<WebDriverSession, V1Pod>(
-                kubernetes.Object,
-                this.configuration,
-                this.filter,
-                (session, pod) => { },
-                this.feedbackLoops,
-                this.logger))
-            {
-                await @operator.ScheduleReconciliationAsync(child, default).ConfigureAwait(false);
-
-                Assert.False(@operator.ReconcilationBuffer.TryReceive(null, out var _));
-            }
-        }
-
-        /// <summary>
-        /// <see cref="ChildOperator{TParent, TChild}.ScheduleReconciliationAsync(TChild, CancellationToken)"/>
-        /// skips children if their parent is skipped.
-        /// </summary>
-        /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
-        [Fact]
-        public async Task ScheduleChildReconciliationAsync_FilteredParent_Skipped_Async()
-        {
-            var kubernetes = new Mock<KubernetesClient>();
-            var sessionClient = kubernetes.WithClient<WebDriverSession>();
-
-            var parent = new WebDriverSession()
-            {
-                Metadata = new V1ObjectMeta()
-                {
-                    Name = "my-session",
-                    NamespaceProperty = "default",
-                    Uid = "my-uid",
-                },
-            };
-
-            sessionClient.WithList(
-                fieldSelector: "metadata.name=my-session",
-                labelSelector: "parent-label-selector",
-                parent);
-
-            var child = new V1Pod()
-            {
-                Metadata = new V1ObjectMeta()
-                {
-                    Name = "my-session",
-                    NamespaceProperty = "default",
-                    Uid = "my-uid",
-                },
-            };
-
-            using (var @operator = new ChildOperator<WebDriverSession, V1Pod>(
-                kubernetes.Object,
-                this.configuration,
-                (session) => false, /* all parents are filtered out */
-                (session, pod) => { },
-                this.feedbackLoops,
-                this.logger))
-            {
-                await @operator.ScheduleReconciliationAsync(child, default).ConfigureAwait(false);
+                Assert.Equal("my-session", name);
 
                 Assert.False(@operator.ReconcilationBuffer.TryReceive(null, out var _));
             }
@@ -925,7 +695,7 @@ namespace Kaponata.Operator.Tests.Operators
         [Fact]
         public async Task ExecuteAsync_ParentEvent_IsProcessed_Async()
         {
-            var kubernetes = new Mock<KubernetesClient>();
+            var kubernetes = new Mock<KubernetesClient>(MockBehavior.Strict);
             var sessionClient = kubernetes.WithClient<WebDriverSession>();
             var podClient = kubernetes.WithClient<V1Pod>();
 
@@ -955,7 +725,7 @@ namespace Kaponata.Operator.Tests.Operators
                 // Similate a parent event, this should result in a child object being created.
                 var sessionWatchClient = await sessionWatcher.ClientRegistered.Task.ConfigureAwait(false);
 
-                var parent = new WebDriverSession()
+                var session = new WebDriverSession()
                 {
                     Metadata = new V1ObjectMeta()
                     {
@@ -964,15 +734,26 @@ namespace Kaponata.Operator.Tests.Operators
                     },
                 };
 
+                sessionClient
+                    .Setup(s => s.TryReadAsync("default", "my-session", "parent-label-selector", It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(session);
+
                 // Let's assume there's no child for this parent:
-                podClient.WithList(
-                    fieldSelector: "metadata.name=my-session",
-                    labelSelector: "app.kubernetes.io/managed-by=ChildOperatorTests");
+                podClient
+                    .Setup(p => p.TryReadAsync("default", "my-session", "app.kubernetes.io/managed-by=ChildOperatorTests", It.IsAny<CancellationToken>()))
+                    .ReturnsAsync((V1Pod)null);
 
                 // And capture the creation of this new child:
                 (var _, var firstPodCreated) = podClient.TrackCreatedItems();
 
-                Assert.Equal(WatchResult.Continue, await sessionWatchClient(k8s.WatchEventType.Added, parent).ConfigureAwait(false));
+                Assert.Equal(WatchResult.Continue, await sessionWatchClient(k8s.WatchEventType.Added, session).ConfigureAwait(false));
+
+                await Task.WhenAny(
+                    firstPodCreated,
+                    Task.Delay(TimeSpan.FromSeconds(5))).ConfigureAwait(false);
+
+                Assert.True(firstPodCreated.IsCompleted, "Failed to create the child pod within a timespan of 5 seconds");
+
                 var pod = await firstPodCreated.ConfigureAwait(false);
 
                 Assert.Equal("my-session", pod.Metadata.Name);
@@ -1037,6 +818,160 @@ namespace Kaponata.Operator.Tests.Operators
                 Assert.Equal(WatchResult.Continue, await podWatchClient(k8s.WatchEventType.Added, child).ConfigureAwait(false));
 
                 await @operator.StopAsync(default).ConfigureAwait(false);
+            }
+        }
+
+        /// <summary>
+        /// <see cref="ChildOperator{TParent, TChild}.ReconcileAsync(ChildOperatorContext{TParent, TChild}, CancellationToken)"/> cannot run
+        /// in parallel.
+        /// </summary>
+        /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
+        [Fact]
+        public async Task ReconcileAsync_NotConcurrent_Async()
+        {
+            var kubernetes = new Mock<KubernetesClient>(MockBehavior.Strict);
+            var webDriverSessionClient = kubernetes.WithClient<WebDriverSession>();
+            var podClient = kubernetes.WithClient<V1Pod>();
+            var createPodCalledTcs = new TaskCompletionSource();
+            var createPodTcs = new TaskCompletionSource<V1Pod>();
+            podClient
+                .Setup(p => p.CreateAsync(It.IsAny<V1Pod>(), default))
+                .Callback(() => createPodCalledTcs.TrySetResult())
+                .Returns(createPodTcs.Task);
+
+            var parent = new WebDriverSession()
+            {
+                Metadata = new V1ObjectMeta()
+                {
+                    Name = "name",
+                    NamespaceProperty = "default",
+                },
+            };
+
+            var context = new ChildOperatorContext<WebDriverSession, V1Pod>(
+                parent,
+                null);
+
+            using (var @operator = new ChildOperator<WebDriverSession, V1Pod>(
+                kubernetes.Object,
+                this.configuration,
+                this.filter,
+                (session, pod) => { },
+                this.feedbackLoops,
+                this.logger))
+            {
+                var firstTask = @operator.ReconcileAsync(context, default);
+
+                await createPodCalledTcs.Task.ConfigureAwait(false);
+                await Assert.ThrowsAsync<InvalidOperationException>(() => @operator.ReconcileAsync(context, default)).ConfigureAwait(false);
+
+                createPodTcs.SetResult(new V1Pod());
+            }
+        }
+
+        /// <summary>
+        /// <see cref="ChildOperator{TParent, TChild}.ProcessBufferedReconciliationsAsync(CancellationToken)"/> does nothing
+        /// when the parent could not be found.
+        /// </summary>
+        /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
+        [Fact]
+        public async Task ProcessBufferedReconciliationsAsync_ParentNotFound_DoesNothing_Async()
+        {
+            var kubernetes = new Mock<KubernetesClient>(MockBehavior.Strict);
+
+            var webDriverSessionClient = kubernetes.WithClient<WebDriverSession>();
+            var podClient = kubernetes.WithClient<V1Pod>();
+
+            webDriverSessionClient.Setup(c => c.TryReadAsync("default", "my-name", "parent-label-selector", default)).ReturnsAsync((WebDriverSession)null);
+            podClient.Setup(c => c.TryReadAsync("default", "my-name", "app.kubernetes.io/managed-by=ChildOperatorTests", default)).ReturnsAsync((V1Pod)null);
+
+            using (var @operator = new ChildOperator<WebDriverSession, V1Pod>(
+                kubernetes.Object,
+                this.configuration,
+                this.filter,
+                (session, pod) => { },
+                this.feedbackLoops,
+                this.logger))
+            {
+                @operator.ReconcilationBuffer.Post("my-name");
+                @operator.ReconcilationBuffer.Post(null);
+                @operator.ReconcilationBuffer.Complete();
+
+                // Any attempts by the operator to try to create a child object would be intercepted by
+                // Moq.
+                await @operator.ProcessBufferedReconciliationsAsync(default).ConfigureAwait(false);
+
+                Assert.Equal(0, @operator.ReconcilationBuffer.Count);
+            }
+        }
+
+        /// <summary>
+        /// <see cref="ChildOperator{TParent, TChild}.ProcessBufferedReconciliationsAsync(CancellationToken)"/> does nothing
+        /// when the parent is filtered out.
+        /// </summary>
+        /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
+        [Fact]
+        public async Task ProcessBufferedReconciliationsAsync_ParentSkippedFound_DoesNothing_Async()
+        {
+            var kubernetes = new Mock<KubernetesClient>(MockBehavior.Strict);
+
+            var webDriverSessionClient = kubernetes.WithClient<WebDriverSession>();
+            var podClient = kubernetes.WithClient<V1Pod>();
+
+            webDriverSessionClient.Setup(c => c.TryReadAsync("default", "my-name", "parent-label-selector", default)).ReturnsAsync(new WebDriverSession());
+            podClient.Setup(c => c.TryReadAsync("default", "my-name", "app.kubernetes.io/managed-by=ChildOperatorTests", default)).ReturnsAsync((V1Pod)null);
+
+            using (var @operator = new ChildOperator<WebDriverSession, V1Pod>(
+                kubernetes.Object,
+                this.configuration,
+                (session) => false, /* skip everything */
+                (session, pod) => { },
+                this.feedbackLoops,
+                this.logger))
+            {
+                @operator.ReconcilationBuffer.Post("my-name");
+                @operator.ReconcilationBuffer.Post(null);
+                @operator.ReconcilationBuffer.Complete();
+
+                // Any attempts by the operator to try to create a child object would be intercepted by
+                // Moq.
+                await @operator.ProcessBufferedReconciliationsAsync(default).ConfigureAwait(false);
+
+                Assert.Equal(0, @operator.ReconcilationBuffer.Count);
+            }
+        }
+
+        /// <summary>
+        /// <see cref="ChildOperator{TParent, TChild}.ProcessBufferedReconciliationsAsync(CancellationToken)"/>
+        /// logs an error when an exception is raised.
+        /// </summary>
+        /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
+        [Fact]
+        public async Task ProcessBufferedReconciliationsAsync_Exception_LogsError_Async()
+        {
+            var kubernetes = new Mock<KubernetesClient>(MockBehavior.Strict);
+
+            var webDriverSessionClient = kubernetes.WithClient<WebDriverSession>();
+            var podClient = kubernetes.WithClient<V1Pod>();
+
+            webDriverSessionClient.Setup(c => c.TryReadAsync("default", "my-name", "parent-label-selector", default)).ThrowsAsync(new InvalidOperationException());
+            podClient.Setup(c => c.TryReadAsync("default", "my-name", "app.kubernetes.io/managed-by=ChildOperatorTests", default)).ThrowsAsync(new InvalidOperationException());
+
+            using (var @operator = new ChildOperator<WebDriverSession, V1Pod>(
+                kubernetes.Object,
+                this.configuration,
+                (session) => false, /* skip everything */
+                (session, pod) => { },
+                this.feedbackLoops,
+                this.logger))
+            {
+                @operator.ReconcilationBuffer.Post("my-name");
+
+                // Any attempts by the operator to try to create a child object would be intercepted by
+                // Moq.
+                await @operator.ProcessBufferedReconciliationsAsync(default).ConfigureAwait(false);
+
+                Assert.Equal(0, @operator.ReconcilationBuffer.Count);
             }
         }
     }

@@ -2,6 +2,8 @@
 // Copyright (c) Quamotion bv. All rights reserved.
 // </copyright>
 
+using Kaponata.Operator.Models;
+
 namespace Kaponata.Operator.Kubernetes
 {
     /// <summary>
@@ -61,6 +63,12 @@ namespace Kaponata.Operator.Kubernetes
         /// The name of the automation provider used for a WebDriver session.
         /// </summary>
         public const string AutomationName = "kaponata.io/automation-name";
+
+        /// <summary>
+        /// The name of the <see cref="WebDriverSession"/> object which owns
+        /// this object.
+        /// </summary>
+        public const string SessionName = "kaponata.io/session-name";
 
         /// <summary>
         /// Enumerates all automation names available.

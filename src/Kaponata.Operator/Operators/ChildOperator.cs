@@ -82,10 +82,13 @@ namespace Kaponata.Operator.Operators
         private readonly NamespacedKubernetesClient<TChild> childClient;
 
         // The queue to which items to reconcile are posted and from which they are read.
-        private readonly BufferBlock<ChildOperatorContext<TParent, TChild>> reconciliationBuffer = new BufferBlock<ChildOperatorContext<TParent, TChild>>();
+        private readonly BufferBlock<string> reconciliationBuffer = new BufferBlock<string>();
 
         // Task completion source backing the InitializationCompleted property.
         private readonly TaskCompletionSource initializationCompletedTcs = new TaskCompletionSource();
+
+        // A semaphore used to protect the ReconcileAsync method; only one reconciliation can happen at a time.
+        private readonly SemaphoreSlim reconciliationSemaphore = new SemaphoreSlim(1);
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ChildOperator{TParent, TChild}"/> class.
@@ -132,7 +135,7 @@ namespace Kaponata.Operator.Operators
         /// <summary>
         /// Gets a <see cref="BufferBlock{T}"/> which contains all currently scheduled reconciliations.
         /// </summary>
-        public BufferBlock<ChildOperatorContext<TParent, TChild>> ReconcilationBuffer => this.reconciliationBuffer;
+        public BufferBlock<string> ReconcilationBuffer => this.reconciliationBuffer;
 
         /// <summary>
         /// Gets a <see cref="Task"/> which completes when the initialization has completed.
@@ -181,7 +184,7 @@ namespace Kaponata.Operator.Operators
                     var child = children.Items.SingleOrDefault(c => c.IsOwnedBy(parent));
                     this.logger.LogInformation("Found child {child} for parent {parent} for the {operator} operator", child?.Metadata?.Name, parent.Metadata.Name, this.configuration.OperatorName);
 
-                    this.reconciliationBuffer.Post(new ChildOperatorContext<TParent, TChild>(parent, child));
+                    this.reconciliationBuffer.Post(parent.Metadata.Name);
 
                     if (child != null)
                     {
@@ -207,49 +210,17 @@ namespace Kaponata.Operator.Operators
         /// reconciliation to actually be performed.
         /// </summary>
         /// <param name="parent">
-        /// A parent object, which has been modified.</param>
-        /// <param name="cancellationToken">
-        /// A <see cref="CancellationToken"/> which can be used to cancel the asynchronous operation.
+        /// A parent object, which has been modified.
         /// </param>
-        /// <returns>
-        /// A <see cref="Task"/> which represents the asynchronous operation of scheduling
-        /// the reconciliation.
-        /// </returns>
-        public async Task ScheduleReconciliationAsync(TParent parent, CancellationToken cancellationToken)
+        public void ScheduleReconciliation(TParent parent)
         {
             if (parent == null)
             {
                 throw new ArgumentNullException(nameof(parent));
             }
 
-            if (!this.parentFilter(parent))
-            {
-                this.logger.LogInformation("{operator} operator is skipping {parent} because it is filtered out.", this.configuration.OperatorName, parent?.Metadata?.Name);
-                return;
-            }
-
-            try
-            {
-                this.logger.LogInformation("{operator} operator: scheduling reconciliation for parent {parent}", this.configuration.OperatorName, parent?.Metadata?.Name);
-
-                // Get the child
-                var children = await this.childClient.ListAsync(
-                    this.configuration.Namespace,
-                    null,
-                    $"metadata.name={parent.Metadata.Name}",
-                    Selector.Create(this.configuration.ChildLabels),
-                    null,
-                    cancellationToken).ConfigureAwait(false);
-                var child = children.Items.SingleOrDefault();
-
-                this.logger.LogInformation("{operator} operator: found child {child} for parent {parent}", this.configuration.OperatorName, child?.Metadata?.Name, parent?.Metadata?.Name);
-
-                this.reconciliationBuffer.Post(new ChildOperatorContext<TParent, TChild>(parent, child));
-            }
-            catch (Exception ex)
-            {
-                this.logger.LogError(ex, "Caught error {errorMessage} while scheduling parent reconciliation for operator {operator}", ex.Message, this.configuration.OperatorName);
-            }
+            this.logger.LogInformation("{operator} operator: scheduling reconciliation for parent {parent}", this.configuration.OperatorName, parent.Metadata?.Name);
+            this.reconciliationBuffer.Post(parent.Metadata.Name);
         }
 
         /// <summary>
@@ -259,53 +230,15 @@ namespace Kaponata.Operator.Operators
         /// <param name="child">
         /// A child object, which has been modified.
         /// </param>
-        /// <param name="cancellationToken">
-        /// A <see cref="CancellationToken"/> which can be used to cancel the asynchronous
-        /// operation.
-        /// </param>
-        /// <returns>
-        /// A <see cref="Task"/> representing the asynchronous operation.
-        /// </returns>
-        public async Task ScheduleReconciliationAsync(TChild child, CancellationToken cancellationToken)
+        public void ScheduleReconciliation(TChild child)
         {
             if (child == null)
             {
                 throw new ArgumentNullException(nameof(child));
             }
 
-            try
-            {
-                this.logger.LogInformation("{operator} operator: scheduling reconciliation for child {parent}", this.configuration.OperatorName, child?.Metadata?.Name);
-
-                // Get the parent
-                var parents = await this.parentClient.ListAsync(
-                    this.configuration.Namespace,
-                    null,
-                    $"metadata.name={child.Metadata.Name}",
-                    this.configuration.ParentLabelSelector,
-                    null,
-                    cancellationToken);
-                var parent = parents.Items.SingleOrDefault();
-
-                this.logger.LogInformation("{operator} operator: found parent {parent} for child {child}", this.configuration.OperatorName, parent?.Metadata?.Name, child?.Metadata?.Name);
-
-                if (parent == null)
-                {
-                    return;
-                }
-
-                if (!this.parentFilter(parent))
-                {
-                    this.logger.LogInformation("{operator} operator is filtering out parent {parent} for child {child}", this.configuration.OperatorName, parent?.Metadata?.Name, child?.Metadata?.Name);
-                    return;
-                }
-
-                this.reconciliationBuffer.Post(new ChildOperatorContext<TParent, TChild>(parent, child));
-            }
-            catch (Exception ex)
-            {
-                this.logger.LogError(ex, "Caught error {errorMessage} while scheduling child reconciliation for operator {operator}", ex.Message, this.configuration.OperatorName);
-            }
+            this.logger.LogInformation("{operator} operator: scheduling reconciliation for child {child}", this.configuration.OperatorName, child.Metadata?.Name);
+            this.reconciliationBuffer.Post(child.Metadata.Name);
         }
 
         /// <summary>
@@ -317,14 +250,42 @@ namespace Kaponata.Operator.Operators
         /// <returns>
         /// A <see cref="Task"/> which represents the asynchronous operation.
         /// </returns>
-        public async Task ExecuteReconcilationsAsync(CancellationToken cancellationToken)
+        public async Task ProcessBufferedReconciliationsAsync(CancellationToken cancellationToken)
         {
             try
             {
-                while (!cancellationToken.IsCancellationRequested)
+                string name;
+
+                while (!cancellationToken.IsCancellationRequested
+                    && (name = await this.reconciliationBuffer.ReceiveAsync(cancellationToken).ConfigureAwait(false)) != null)
                 {
-                    var context = await this.reconciliationBuffer.ReceiveAsync(cancellationToken).ConfigureAwait(false);
-                    await this.ReconcileAsync(context, cancellationToken).ConfigureAwait(false);
+                    // Start reading parent and child in parallel
+                    var readParentTask = this.parentClient.TryReadAsync(
+                        this.configuration.Namespace,
+                        name,
+                        this.configuration.ParentLabelSelector,
+                        cancellationToken);
+
+                    var readChildTask = this.childClient.TryReadAsync(
+                        this.configuration.Namespace,
+                        name,
+                        Selector.Create(this.configuration.ChildLabels),
+                        cancellationToken);
+
+                    // Block until we get both
+                    var parent = await readParentTask.ConfigureAwait(false);
+                    var child = await readChildTask.ConfigureAwait(false);
+
+                    if (parent != null && this.parentFilter(parent))
+                    {
+                        await this.ReconcileAsync(
+                            new ChildOperatorContext<TParent, TChild>(parent, child),
+                            cancellationToken).ConfigureAwait(false);
+                    }
+                    else
+                    {
+                        this.logger.LogWarning("{operator} operator is skipping reconciliation for {name} because the parent was null or filtered out", this.configuration.OperatorName, name);
+                    }
                 }
             }
             catch (Exception ex)
@@ -355,6 +316,11 @@ namespace Kaponata.Operator.Operators
             // they should never enter the reconcile loop.
             Debug.Assert(context.Parent != null, "Cannot have a child object without a parent object");
 
+            if (!await this.reconciliationSemaphore.WaitAsync(0).ConfigureAwait(false))
+            {
+                throw new InvalidOperationException("Only one instance of ReconcileAsync can run at a time.");
+            }
+
             try
             {
                 this.logger.LogInformation(
@@ -375,15 +341,15 @@ namespace Kaponata.Operator.Operators
                             NamespaceProperty = context.Parent.Metadata.NamespaceProperty,
                             OwnerReferences = new V1OwnerReference[]
                             {
-                            new V1OwnerReference()
-                            {
-                                Kind = context.Parent.Kind,
-                                ApiVersion = context.Parent.ApiVersion,
-                                BlockOwnerDeletion = false,
-                                Controller = false,
-                                Name = context.Parent.Metadata.Name,
-                                Uid = context.Parent.Metadata.Uid,
-                            },
+                                new V1OwnerReference()
+                                {
+                                    Kind = context.Parent.Kind,
+                                    ApiVersion = context.Parent.ApiVersion,
+                                    BlockOwnerDeletion = false,
+                                    Controller = false,
+                                    Name = context.Parent.Metadata.Name,
+                                    Uid = context.Parent.Metadata.Uid,
+                                },
                             },
                         },
                     };
@@ -424,6 +390,10 @@ namespace Kaponata.Operator.Operators
             {
                 this.logger.LogError(ex, "Caught error {errorMessage} while executing reconciliation for operator {operator}", ex.Message, this.configuration.OperatorName);
             }
+            finally
+            {
+                this.reconciliationSemaphore.Release();
+            }
         }
 
         /// <inheritdoc/>
@@ -435,11 +405,11 @@ namespace Kaponata.Operator.Operators
                 fieldSelector: null,
                 this.configuration.ParentLabelSelector,
                 null,
-                async (eventType, value) =>
+                (eventType, value) =>
                 {
                     this.logger.LogInformation("Operator {operator} got an {eventType} event for {value}", this.configuration.OperatorName, eventType, value?.Metadata?.Name);
-                    await this.ScheduleReconciliationAsync(value, stoppingToken).ConfigureAwait(false);
-                    return WatchResult.Continue;
+                    this.ScheduleReconciliation(value);
+                    return Task.FromResult(WatchResult.Continue);
                 },
                 stoppingToken);
 
@@ -448,18 +418,18 @@ namespace Kaponata.Operator.Operators
                 fieldSelector: null,
                 Selector.Create(this.configuration.ChildLabels),
                 null,
-                async (eventType, value) =>
+                (eventType, value) =>
                 {
                     this.logger.LogInformation("Operator {operator} got an {eventType} event for {value}", this.configuration.OperatorName, eventType, value?.Metadata?.Name);
-                    await this.ScheduleReconciliationAsync(value, stoppingToken).ConfigureAwait(false);
-                    return WatchResult.Continue;
+                    this.ScheduleReconciliation(value);
+                    return Task.FromResult(WatchResult.Continue);
                 },
                 stoppingToken);
 
             // Schedule the initial reconciliations
             await this.InitializeAsync(stoppingToken).ConfigureAwait(false);
 
-            var reconcilerTask = this.ExecuteReconcilationsAsync(stoppingToken);
+            var reconcilerTask = this.ProcessBufferedReconciliationsAsync(stoppingToken);
 
             await Task.WhenAny(
                 sourceWatch,
