@@ -4,11 +4,16 @@ ENV DEBIAN_FRONTEND=noninteractive
 
 ARG arch=arm64
 ARG version=2.0.1
+ARG tini_version=0.19.0
 
 # Download and compile
 WORKDIR /src
 
 RUN npm install --target-arch=$arch --only=production --global-style appium-fake-driver@$version
+
+# https://github.com/nodejs/docker-node/blob/master/docs/BestPractices.md#handling-kernel-signals
+RUN wget https://github.com/krallin/tini/releases/download/v${tini_version}/tini-${arch} -O /bin/tini \
+&& chmod +x /bin/tini
 
 FROM gcr.io/distroless/nodejs:14
 
@@ -35,5 +40,7 @@ LABEL org.opencontainers.image.revision=$GIT_COMMIT_ID
 LABEL org.opencontainers.image.ref.name=$GIT_REF
 
 COPY --from=build /src/node_modules/ /app/
+COPY --from=build /bin/tini /bin/
 
+ENTRYPOINT [ "/bin/tini", "--", "/nodejs/bin/node" ]
 CMD [ "/app/appium-fake-driver/build/index.js", "--host", "0.0.0.0" ]
