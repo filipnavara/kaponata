@@ -906,6 +906,45 @@ namespace Kaponata.Operator.Tests.Operators
         }
 
         /// <summary>
+        /// <see cref="ChildOperator{TParent, TChild}.ProcessBufferedReconciliationsAsync(CancellationToken)"/> throws
+        /// if an instance is already running.
+        /// </summary>
+        /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
+        [Fact]
+        public async Task ProcessBufferedReconciliationsAsync_AlreadyRunning_Throws_Async()
+        {
+            var kubernetes = new Mock<KubernetesClient>(MockBehavior.Strict);
+
+            var webDriverSessionClient = kubernetes.WithClient<WebDriverSession>();
+            var podClient = kubernetes.WithClient<V1Pod>();
+
+            var readWebDriverTask = new TaskCompletionSource<WebDriverSession>();
+            webDriverSessionClient.Setup(c => c.TryReadAsync("default", "my-name", "parent-label-selector", default)).Returns(readWebDriverTask.Task);
+            podClient.Setup(c => c.TryReadAsync("default", "my-name", "app.kubernetes.io/managed-by=ChildOperatorTests", default)).ReturnsAsync((V1Pod)null);
+
+            using (var @operator = new ChildOperator<WebDriverSession, V1Pod>(
+                kubernetes.Object,
+                this.configuration,
+                (session) => false, /* skip everything */
+                (session, pod) => { },
+                this.feedbackLoops,
+                this.logger))
+            {
+                @operator.ReconcilationBuffer.Post("my-name");
+                @operator.ReconcilationBuffer.Post(null);
+                @operator.ReconcilationBuffer.Complete();
+
+                // Any attempts by the operator to try to create a child object would be intercepted by
+                // Moq.
+                var reconcileTask = @operator.ProcessBufferedReconciliationsAsync(default).ConfigureAwait(false);
+
+                await Assert.ThrowsAsync<InvalidOperationException>(() => @operator.ProcessBufferedReconciliationsAsync(default)).ConfigureAwait(false);
+
+                readWebDriverTask.SetCanceled();
+            }
+        }
+
+        /// <summary>
         /// <see cref="ChildOperator{TParent, TChild}.ProcessBufferedReconciliationsAsync(CancellationToken)"/> does nothing
         /// when the parent is filtered out.
         /// </summary>
