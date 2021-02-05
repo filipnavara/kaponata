@@ -57,6 +57,27 @@ namespace Kaponata.Operator.Operators
         }
 
         /// <summary>
+        /// Gets the configuration for the operator.
+        /// </summary>
+        public ChildOperatorConfiguration Configuration => this.configuration;
+
+        /// <summary>
+        /// Gets the parent filter which defines which parent objects are considered, and which not.
+        /// </summary>
+        public Func<TParent, bool> ParentFilter => this.parentFilter;
+
+        /// <summary>
+        /// Gets a method which projects objects of type <typeparamref name="TParent"/> into objects of type
+        /// <typeparamref name="TChild"/>.
+        /// </summary>
+        public Action<TParent, TChild> ChildFactory => this.childFactory;
+
+        /// <summary>
+        /// Gets a collection of feedback loops which are being used.
+        /// </summary>
+        public Collection<FeedbackLoop<TParent, TChild>> FeedbackLoops => this.feedbackLoops;
+
+        /// <summary>
         /// Adds a feedback loop to the operator.
         /// </summary>
         /// <param name="feedbackLoop">
