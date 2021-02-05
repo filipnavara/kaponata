@@ -164,10 +164,14 @@ namespace Kaponata.Operator.Tests.Kubernetes.Polyfill
                 },
                 cts.Token);
 
-            Assert.True(!watchTask.IsCompleted);
+            Assert.False(watchTask.IsCompleted);
             cts.Cancel();
 
-            await Assert.ThrowsAsync<TaskCanceledException>(() => watchTask).ConfigureAwait(false);
+            await Task.WhenAny(
+                watchTask,
+                Task.Delay(TimeSpan.FromSeconds(5))).ConfigureAwait(false);
+
+            Assert.True(watchTask.IsCompletedSuccessfully);
 
             stream.Verify();
         }

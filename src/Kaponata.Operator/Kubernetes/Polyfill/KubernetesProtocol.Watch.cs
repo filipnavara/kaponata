@@ -195,14 +195,12 @@ namespace Kaponata.Operator.Kubernetes.Polyfill
             using (var stream = await content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false))
             using (var reader = new StreamReader(stream))
             {
-                cancellationToken.Register(watchContent.Dispose);
-
                 string line;
 
                 // ReadLineAsync will return null when we've reached the end of the stream.
                 try
                 {
-                    while ((line = await reader.ReadLineAsync().ConfigureAwait(false)) != null)
+                    while ((line = await reader.ReadLineAsync(cancellationToken).ConfigureAwait(false)) != null)
                     {
                         var genericEvent =
                             SafeJsonConvert.DeserializeObject<Watcher<KubernetesObject>.WatchEvent>(line);
