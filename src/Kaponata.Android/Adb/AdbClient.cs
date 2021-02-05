@@ -80,5 +80,26 @@ namespace Kaponata.Android.Adb
                 ownsStream: true,
                 this.loggerFactory.CreateLogger<AdbProtocol>());
         }
+
+        /// <summary>
+        /// Throws an <see cref="ArgumentNullException"/> if the <paramref name="device"/>
+        /// parameter is <see langword="null"/>, and a <see cref="ArgumentOutOfRangeException"/>
+        /// if <paramref name="device"/> does not have a valid serial number.
+        /// </summary>
+        /// <param name="device">
+        /// A <see cref="DeviceData"/> object to validate.
+        /// </param>
+        public virtual void EnsureDevice(DeviceData device)
+        {
+            if (device == null)
+            {
+                throw new ArgumentNullException(nameof(device));
+            }
+
+            if (string.IsNullOrEmpty(device.Serial))
+            {
+                throw new ArgumentOutOfRangeException(nameof(device), "You must specific a serial number for the device");
+            }
+        }
     }
 }
