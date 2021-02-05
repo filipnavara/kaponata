@@ -36,4 +36,4 @@ LABEL org.opencontainers.image.ref.name=$GIT_REF
 
 COPY --from=build /src/node_modules/ /app/
 
-CMD [ "/app/appium-fake-driver/build/index.js" ]
+CMD [ "/app/appium-fake-driver/build/index.js", "--host", "0.0.0.0" ]
