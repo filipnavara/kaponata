@@ -89,6 +89,7 @@ namespace Kaponata.Operator.Operators
 
         // A semaphore used to protect the ReconcileAsync method; only one reconciliation can happen at a time.
         private readonly SemaphoreSlim reconciliationSemaphore = new SemaphoreSlim(1);
+        private readonly SemaphoreSlim processingSemaphore = new SemaphoreSlim(1);
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ChildOperator{TParent, TChild}"/> class.
@@ -252,6 +253,11 @@ namespace Kaponata.Operator.Operators
         /// </returns>
         public async Task ProcessBufferedReconciliationsAsync(CancellationToken cancellationToken)
         {
+            if (!await this.processingSemaphore.WaitAsync(0).ConfigureAwait(false))
+            {
+                throw new InvalidOperationException("Only one instance of ProcessBufferedReconciliationsAsync can run at a time.");
+            }
+
             try
             {
                 string name;
@@ -291,6 +297,10 @@ namespace Kaponata.Operator.Operators
             catch (Exception ex)
             {
                 this.logger.LogError(ex, "Caught error {errorMessage} while executing reconciliations for operator {operator}", ex.Message, this.configuration.OperatorName);
+            }
+            finally
+            {
+                this.processingSemaphore.Release();
             }
         }
 
