@@ -5,6 +5,16 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Models\MobileDevice.yaml" />
+    <None Remove="Models\WebDriverSession.yaml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Models\MobileDevice.yaml" />
+    <EmbeddedResource Include="Models\WebDriverSession.yaml" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="KubernetesClient" Version="4.0.10" />
     <PackageReference Include="Microsoft.AspNetCore.JsonPatch" Version="5.0.0" />
   </ItemGroup>

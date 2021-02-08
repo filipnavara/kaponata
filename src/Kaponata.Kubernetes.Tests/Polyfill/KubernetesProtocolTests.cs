@@ -30,8 +30,8 @@ namespace Kaponata.Operator.Tests.Kubernetes.Polyfill
             Assert.Throws<ArgumentNullException>("loggerFactory", () => new KubernetesProtocol(new SocketsHttpHandler(), NullLogger<KubernetesProtocol>.Instance, null));
 
             Assert.Throws<KubeConfigException>(() => new KubernetesProtocol((KubernetesClientConfiguration)null, NullLogger<KubernetesProtocol>.Instance, NullLoggerFactory.Instance));
-            Assert.Throws<ArgumentNullException>("logger", () => new KubernetesProtocol(KubernetesClientConfiguration.BuildConfigFromConfigFile("Kubernetes/Polyfill/kubeconfig.yml"), null, NullLoggerFactory.Instance));
-            Assert.Throws<ArgumentNullException>("loggerFactory", () => new KubernetesProtocol(KubernetesClientConfiguration.BuildConfigFromConfigFile("Kubernetes/Polyfill/kubeconfig.yml"), NullLogger<KubernetesProtocol>.Instance, null));
+            Assert.Throws<ArgumentNullException>("logger", () => new KubernetesProtocol(KubernetesClientConfiguration.BuildConfigFromConfigFile("Polyfill/kubeconfig.yml"), null, NullLoggerFactory.Instance));
+            Assert.Throws<ArgumentNullException>("loggerFactory", () => new KubernetesProtocol(KubernetesClientConfiguration.BuildConfigFromConfigFile("Polyfill/kubeconfig.yml"), NullLogger<KubernetesProtocol>.Instance, null));
         }
 
         /// <summary>
@@ -41,7 +41,7 @@ namespace Kaponata.Operator.Tests.Kubernetes.Polyfill
         public void KubernetesClient_IsConfigured()
         {
             using (var protocol = new KubernetesProtocol(
-                KubernetesClientConfiguration.BuildConfigFromConfigFile("Kubernetes/Polyfill/kubeconfig.yml"),
+                KubernetesClientConfiguration.BuildConfigFromConfigFile("Polyfill/kubeconfig.yml"),
                 NullLogger<KubernetesProtocol>.Instance,
                 NullLoggerFactory.Instance))
             {
