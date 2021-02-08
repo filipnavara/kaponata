@@ -5,7 +5,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Kaponata.Operator.Kubernetes
+namespace Kaponata.Kubernetes
 {
     /// <summary>
     /// Provides helper methods for working with Kubernetes selector strings.

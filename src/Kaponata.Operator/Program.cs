@@ -2,9 +2,7 @@
 // Copyright (c) Quamotion bv. All rights reserved.
 // </copyright>
 
-using k8s;
-using Kaponata.Operator.Kubernetes;
-using Kaponata.Operator.Kubernetes.Polyfill;
+using Kaponata.Kubernetes;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;

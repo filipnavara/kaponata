@@ -4,10 +4,10 @@
 
 using k8s;
 using k8s.Models;
-using Kaponata.Operator.Kubernetes;
+using Kaponata.Kubernetes;
 using Newtonsoft.Json;
 
-namespace Kaponata.Operator.Models
+namespace Kaponata.Kubernetes.Models
 {
     /// <summary>
     /// A <see cref="MobileDevice"/> represents a physical iOS or Android devices connected to one of the nodes

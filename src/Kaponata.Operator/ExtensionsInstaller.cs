@@ -3,8 +3,8 @@
 // </copyright>
 
 using k8s.Models;
-using Kaponata.Operator.Kubernetes;
-using Kaponata.Operator.Models;
+using Kaponata.Kubernetes;
+using Kaponata.Kubernetes.Models;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;

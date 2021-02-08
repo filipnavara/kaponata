@@ -2,13 +2,13 @@
 // Copyright (c) Quamotion bv. All rights reserved.
 // </copyright>
 
-using Kaponata.Operator.Kubernetes.Polyfill;
-using Kaponata.Operator.Models;
+using Kaponata.Kubernetes.Models;
+using Kaponata.Kubernetes.Polyfill;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Kaponata.Operator.Kubernetes
+namespace Kaponata.Kubernetes
 {
     /// <summary>
     /// Implements the <see cref="WebDriverSession"/> operations.

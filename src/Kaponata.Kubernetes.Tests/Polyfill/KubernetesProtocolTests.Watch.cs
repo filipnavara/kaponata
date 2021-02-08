@@ -5,7 +5,7 @@
 using Divergic.Logging.Xunit;
 using k8s;
 using k8s.Models;
-using Kaponata.Operator.Kubernetes.Polyfill;
+using Kaponata.Kubernetes.Polyfill;
 using Microsoft.Extensions.Logging;
 using Microsoft.Rest;
 using Moq;
@@ -24,7 +24,7 @@ using Xunit.Abstractions;
 #pragma warning disable VSTHRD003 // Avoid awaiting foreign Tasks
 #pragma warning disable CS0419 // Ambiguous reference in cref attribute
 
-namespace Kaponata.Operator.Tests.Kubernetes.Polyfill
+namespace Kaponata.Kubernetes.Tests.Polyfill
 {
     /// <summary>
     /// Tests the <see cref="KubernetesProtocol.WatchNamespacedObjectAsync"/> method.

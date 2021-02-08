@@ -2,7 +2,7 @@
 // Copyright (c) Quamotion bv. All rights reserved.
 // </copyright>
 
-namespace Kaponata.Operator.Models
+namespace Kaponata.Kubernetes.Models
 {
     /// <summary>
     /// A list of <see cref="WebDriverSession"/> objects.

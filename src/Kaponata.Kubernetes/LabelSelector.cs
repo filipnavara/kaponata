@@ -9,7 +9,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq.Expressions;
 
-namespace Kaponata.Operator.Kubernetes
+namespace Kaponata.Kubernetes
 {
     /// <summary>
     /// Supports converting lambda expressions to label selectors.

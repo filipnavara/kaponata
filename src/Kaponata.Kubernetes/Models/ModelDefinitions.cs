@@ -6,7 +6,7 @@ using k8s;
 using k8s.Models;
 using System.IO;
 
-namespace Kaponata.Operator.Models
+namespace Kaponata.Kubernetes.Models
 {
     /// <summary>
     /// Provides access to the <see cref="V1CustomResourceDefinition"/> used by Kaponata.

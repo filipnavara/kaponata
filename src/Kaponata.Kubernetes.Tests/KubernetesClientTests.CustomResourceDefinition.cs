@@ -4,8 +4,7 @@
 
 using k8s;
 using k8s.Models;
-using Kaponata.Operator.Kubernetes;
-using Kaponata.Operator.Kubernetes.Polyfill;
+using Kaponata.Kubernetes.Polyfill;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Rest;
 using Moq;
@@ -19,7 +18,7 @@ using Xunit;
 
 #pragma warning disable VSTHRD003 // Avoid awaiting foreign Tasks
 
-namespace Kaponata.Operator.Tests.Kubernetes
+namespace Kaponata.Kubernetes.Tests
 {
     /// <summary>
     /// Tests the CRD-specific methods in the <see cref="KubernetesClient"/> class.

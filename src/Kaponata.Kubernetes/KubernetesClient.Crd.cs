@@ -4,14 +4,14 @@
 
 using k8s;
 using k8s.Models;
-using Kaponata.Operator.Kubernetes.Polyfill;
+using Kaponata.Kubernetes.Polyfill;
 using Microsoft.Rest;
 using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Kaponata.Operator.Kubernetes
+namespace Kaponata.Kubernetes
 {
     /// <summary>
     /// Contains methods for working with Custom Resource Definitions.

@@ -2,14 +2,14 @@
 // Copyright (c) Quamotion bv. All rights reserved.
 // </copyright>
 
-using Kaponata.Operator.Kubernetes.Polyfill;
+using Kaponata.Kubernetes.Polyfill;
 using System;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace Kaponata.Operator.Tests.Kubernetes.Polyfill
+namespace Kaponata.Kubernetes.Tests.Polyfill
 {
     /// <summary>
     /// Tests the <see cref="CoreApiHandler"/> class.

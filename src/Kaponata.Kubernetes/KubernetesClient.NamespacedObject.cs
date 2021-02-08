@@ -4,7 +4,7 @@
 
 using k8s;
 using k8s.Models;
-using Kaponata.Operator.Kubernetes.Polyfill;
+using Kaponata.Kubernetes.Polyfill;
 using Microsoft.Rest;
 using Microsoft.Rest.Serialization;
 using Newtonsoft.Json;
@@ -15,7 +15,7 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Kaponata.Operator.Kubernetes
+namespace Kaponata.Kubernetes
 {
     /// <summary>
     /// Contains helper methods for working with generic, namespaced objects.

@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Net.Http;
 
-namespace Kaponata.Operator.Kubernetes.Polyfill
+namespace Kaponata.Kubernetes.Polyfill
 {
     /// <summary>
     /// The <see cref="KubernetesProtocol"/> class extends the <see cref="k8s.Kubernetes"/> class

@@ -3,11 +3,11 @@
 // </copyright>
 
 using k8s;
-using Kaponata.Operator.Kubernetes.Polyfill;
+using Kaponata.Kubernetes.Polyfill;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 
-namespace Kaponata.Operator.Kubernetes
+namespace Kaponata.Kubernetes
 {
     /// <summary>
     /// Extension methods for setting up Kubernetes services in an <see cref="IServiceCollection"/>.

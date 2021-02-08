@@ -4,7 +4,7 @@
 
 using System;
 
-namespace Kaponata.Operator.Kubernetes
+namespace Kaponata.Kubernetes
 {
     /// <summary>
     /// Contains the metadata of an Kubernetes object type, which is used to construct

@@ -7,7 +7,7 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Kaponata.Operator.Tests.Kubernetes.Polyfill
+namespace Kaponata.Kubernetes.Tests.Polyfill
 {
     /// <summary>
     /// A dummy <see cref="HttpMessageHandler"/> which can be used for testing purposes.

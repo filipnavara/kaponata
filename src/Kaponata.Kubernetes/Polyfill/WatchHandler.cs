@@ -7,7 +7,7 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Kaponata.Operator.Kubernetes.Polyfill
+namespace Kaponata.Kubernetes.Polyfill
 {
     /// <summary>
     /// A <see cref="DelegatingHandler"/> which intercepts GET requests with the <c>watch=true</c> parameter in the querystring,

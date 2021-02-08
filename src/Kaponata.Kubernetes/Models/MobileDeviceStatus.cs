@@ -4,7 +4,7 @@
 
 using Newtonsoft.Json;
 
-namespace Kaponata.Operator.Models
+namespace Kaponata.Kubernetes.Models
 {
     /// <summary>
     /// Describes the status of a <see cref="MobileDevice"/> object.

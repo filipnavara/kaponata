@@ -4,7 +4,7 @@
 
 using Newtonsoft.Json;
 
-namespace Kaponata.Operator.Models
+namespace Kaponata.Kubernetes.Models
 {
     /// <summary>
     /// Defines the specifications (invariant data) related to a <see cref="MobileDevice"/> object.

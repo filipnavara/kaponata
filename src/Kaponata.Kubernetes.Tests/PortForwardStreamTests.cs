@@ -2,7 +2,7 @@
 // Copyright (c) Quamotion bv. All rights reserved.
 // </copyright>
 
-using Kaponata.Operator.Kubernetes;
+using Kaponata.Kubernetes;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using System;
@@ -13,7 +13,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace Kaponata.Operator.Tests.Kubernetes
+namespace Kaponata.Kubernetes.Tests
 {
     /// <summary>
     /// Tests the <see cref="PortForwardStream"/> class.

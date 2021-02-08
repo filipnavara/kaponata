@@ -4,7 +4,7 @@
 
 using k8s;
 using k8s.Models;
-using Kaponata.Operator.Kubernetes.Polyfill;
+using Kaponata.Kubernetes.Polyfill;
 using Microsoft.Extensions.Logging;
 using Microsoft.Rest;
 using System;
@@ -14,7 +14,7 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Kaponata.Operator.Kubernetes
+namespace Kaponata.Kubernetes
 {
     /// <summary>
     /// Contains methods for working with Kubernetes pods.

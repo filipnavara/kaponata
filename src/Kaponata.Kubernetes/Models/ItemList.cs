@@ -7,7 +7,7 @@ using k8s.Models;
 using Newtonsoft.Json;
 using System.Collections.Generic;
 
-namespace Kaponata.Operator.Models
+namespace Kaponata.Kubernetes.Models
 {
     /// <summary>
     /// A list of Kubernetes objects.

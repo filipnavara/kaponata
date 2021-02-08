@@ -9,7 +9,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Kaponata.Operator.Kubernetes.Polyfill
+namespace Kaponata.Kubernetes.Polyfill
 {
     /// <summary>
     /// List or watch objects of kind <typeparamref name="TObject"/>.

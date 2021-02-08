@@ -6,7 +6,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Kaponata.Operator.Kubernetes.Polyfill
+namespace Kaponata.Kubernetes.Polyfill
 {
     /// <summary>
     /// Provides extension methods for the <see cref="StreamReader"/> class.

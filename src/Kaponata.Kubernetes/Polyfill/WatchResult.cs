@@ -2,7 +2,7 @@
 // Copyright (c) Quamotion bv. All rights reserved.
 // </copyright>
 
-namespace Kaponata.Operator.Kubernetes.Polyfill
+namespace Kaponata.Kubernetes.Polyfill
 {
     /// <summary>
     /// Defines the action the watcher should take after an event has been received

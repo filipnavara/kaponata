@@ -3,8 +3,7 @@
 // </copyright>
 
 using k8s.Models;
-using Kaponata.Operator.Kubernetes;
-using Kaponata.Operator.Kubernetes.Polyfill;
+using Kaponata.Kubernetes.Polyfill;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Rest;
 using Moq;
@@ -15,7 +14,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace Kaponata.Operator.Tests.Kubernetes
+namespace Kaponata.Kubernetes.Tests
 {
     /// <summary>
     /// Tests the pod-specific methods in the <see cref="KubernetesClient"/> class.

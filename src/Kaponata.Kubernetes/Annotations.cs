@@ -2,9 +2,9 @@
 // Copyright (c) Quamotion bv. All rights reserved.
 // </copyright>
 
-using Kaponata.Operator.Models;
+using Kaponata.Kubernetes.Models;
 
-namespace Kaponata.Operator.Kubernetes
+namespace Kaponata.Kubernetes
 {
     /// <summary>
     /// Defines annotations commonly used by Kubernetes.

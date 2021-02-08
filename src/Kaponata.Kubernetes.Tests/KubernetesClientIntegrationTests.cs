@@ -5,9 +5,8 @@
 using Divergic.Logging.Xunit;
 using k8s;
 using k8s.Models;
-using Kaponata.Operator.Kubernetes;
-using Kaponata.Operator.Kubernetes.Polyfill;
-using Kaponata.Operator.Models;
+using Kaponata.Kubernetes.Models;
+using Kaponata.Kubernetes.Polyfill;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -18,7 +17,7 @@ using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Kaponata.Operator.Tests.Kubernetes
+namespace Kaponata.Kubernetes.Tests
 {
     /// <summary>
     /// Contains integration tests for the <see cref="KubernetesClient"/> class.

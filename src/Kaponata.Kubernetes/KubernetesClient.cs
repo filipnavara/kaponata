@@ -4,8 +4,8 @@
 
 using k8s;
 using k8s.Models;
-using Kaponata.Operator.Kubernetes.Polyfill;
-using Kaponata.Operator.Models;
+using Kaponata.Kubernetes.Models;
+using Kaponata.Kubernetes.Polyfill;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Rest;
@@ -18,7 +18,7 @@ using System.Threading.Tasks;
 
 #pragma warning disable VSTHRD003 // Avoid awaiting foreign Tasks
 
-namespace Kaponata.Operator.Kubernetes
+namespace Kaponata.Kubernetes
 {
     /// <summary>
     /// Performs high-level transactions (such as creating a Pod, waiting for a pod to enter a specific state,...)

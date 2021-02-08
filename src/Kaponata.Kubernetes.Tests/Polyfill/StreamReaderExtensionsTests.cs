@@ -2,14 +2,14 @@
 // Copyright (c) Quamotion bv. All rights reserved.
 // </copyright>
 
-using Kaponata.Operator.Kubernetes.Polyfill;
+using Kaponata.Kubernetes.Polyfill;
 using Nerdbank.Streams;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace Kaponata.Operator.Tests.Kubernetes.Polyfill
+namespace Kaponata.Kubernetes.Tests.Polyfill
 {
     /// <summary>
     /// Tests the <see cref="StreamReaderExtensions"/> class.

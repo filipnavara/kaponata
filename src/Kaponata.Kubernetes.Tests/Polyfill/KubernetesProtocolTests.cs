@@ -4,7 +4,7 @@
 
 using k8s;
 using k8s.Exceptions;
-using Kaponata.Operator.Kubernetes.Polyfill;
+using Kaponata.Kubernetes.Polyfill;
 using Microsoft.Extensions.Logging.Abstractions;
 using System;
 using System.Linq;
@@ -12,7 +12,7 @@ using System.Net.Http;
 using System.Security.Cryptography.X509Certificates;
 using Xunit;
 
-namespace Kaponata.Operator.Tests.Kubernetes.Polyfill
+namespace Kaponata.Kubernetes.Tests.Polyfill
 {
     /// <summary>
     /// Tests the <see cref="KubernetesProtocol"/> class.

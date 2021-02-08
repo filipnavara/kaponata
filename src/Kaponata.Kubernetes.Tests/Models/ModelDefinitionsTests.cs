@@ -2,10 +2,10 @@
 // Copyright (c) Quamotion bv. All rights reserved.
 // </copyright>
 
-using Kaponata.Operator.Models;
+using Kaponata.Kubernetes.Models;
 using Xunit;
 
-namespace Kaponata.Operator.Tests.Models
+namespace Kaponata.Kubernetes.Tests.Models
 {
     /// <summary>
     /// Tests the <see cref="ModelDefinitions"/> class.

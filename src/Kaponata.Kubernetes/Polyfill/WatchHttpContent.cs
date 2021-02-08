@@ -8,7 +8,7 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 
-namespace Kaponata.Operator.Kubernetes.Polyfill
+namespace Kaponata.Kubernetes.Polyfill
 {
     /// <summary>
     /// The <see cref="HttpContent"/> which is returned by the <see cref="WatchHandler"/>. The <see cref="WatchHttpContent"/>

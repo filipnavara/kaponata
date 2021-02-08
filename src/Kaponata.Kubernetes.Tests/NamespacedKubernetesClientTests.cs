@@ -3,9 +3,8 @@
 // </copyright>
 
 using k8s.Models;
-using Kaponata.Operator.Kubernetes;
-using Kaponata.Operator.Kubernetes.Polyfill;
-using Kaponata.Operator.Models;
+using Kaponata.Kubernetes.Models;
+using Kaponata.Kubernetes.Polyfill;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Rest;
@@ -18,7 +17,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace Kaponata.Operator.Tests.Kubernetes
+namespace Kaponata.Kubernetes.Tests
 {
     /// <summary>
     /// Tests the <see cref="NamespacedKubernetesClient{T}"/> class.

@@ -3,8 +3,8 @@
 // </copyright>
 
 using k8s.Models;
-using Kaponata.Operator.Kubernetes;
-using Kaponata.Operator.Models;
+using Kaponata.Kubernetes;
+using Kaponata.Kubernetes.Models;
 using Kaponata.Operator.Operators;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.Extensions.DependencyInjection;

@@ -4,9 +4,8 @@
 
 using k8s;
 using k8s.Models;
-using Kaponata.Operator.Kubernetes;
-using Kaponata.Operator.Kubernetes.Polyfill;
-using Kaponata.Operator.Models;
+using Kaponata.Kubernetes.Models;
+using Kaponata.Kubernetes.Polyfill;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Rest;
 using Moq;
@@ -19,7 +18,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace Kaponata.Operator.Tests.Kubernetes
+namespace Kaponata.Kubernetes.Tests
 {
     /// <summary>
     /// Tests the WebDriverSession-related code in <see cref="KubernetesClient"/>.

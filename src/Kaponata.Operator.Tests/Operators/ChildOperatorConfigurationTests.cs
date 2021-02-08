@@ -2,7 +2,7 @@
 // Copyright (c) Quamotion bv. All rights reserved.
 // </copyright>
 
-using Kaponata.Operator.Kubernetes;
+using Kaponata.Kubernetes;
 using Kaponata.Operator.Operators;
 using System;
 using Xunit;

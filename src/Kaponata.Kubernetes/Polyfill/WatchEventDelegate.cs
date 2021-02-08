@@ -6,7 +6,7 @@ using k8s;
 using k8s.Models;
 using System.Threading.Tasks;
 
-namespace Kaponata.Operator.Kubernetes.Polyfill
+namespace Kaponata.Kubernetes.Polyfill
 {
     /// <summary>
     /// The definition of a callback which is invoked when a the Kubernetes API server sends a watch event.

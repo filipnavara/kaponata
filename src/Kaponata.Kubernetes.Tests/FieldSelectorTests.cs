@@ -3,12 +3,12 @@
 // </copyright>
 
 using k8s.Models;
-using Kaponata.Operator.Kubernetes;
-using Kaponata.Operator.Models;
+using Kaponata.Kubernetes;
+using Kaponata.Kubernetes.Models;
 using System;
 using Xunit;
 
-namespace Kaponata.Operator.Tests.Kubernetes
+namespace Kaponata.Kubernetes.Tests
 {
     /// <summary>
     /// Tests the <see cref="FieldSelector"/> class.

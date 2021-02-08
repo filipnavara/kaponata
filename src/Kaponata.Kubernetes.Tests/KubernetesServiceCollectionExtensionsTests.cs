@@ -2,12 +2,12 @@
 // Copyright (c) Quamotion bv. All rights reserved.
 // </copyright>
 
-using Kaponata.Operator.Kubernetes;
+using Kaponata.Kubernetes;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using Xunit;
 
-namespace Kaponata.Operator.Tests.Kubernetes
+namespace Kaponata.Kubernetes.Tests
 {
     /// <summary>
     /// Tests the <see cref="KubernetesServiceCollectionExtensions"/> class.
