@@ -30,6 +30,31 @@ namespace Kaponata.Operator.Models
         public bool SessionReady { get; set; }
 
         /// <summary>
+        /// Gets or sets a string indicating the error code. The session failed to start if this
+        /// value is set.
+        /// </summary>
+        [JsonProperty("error")]
+        public string Error { get; set; }
+
+        /// <summary>
+        /// Gets or sets an implementation-defined string with a human readable description of the kind of error that occurred.
+        /// </summary>
+        [JsonProperty("message")]
+        public string Message { get; set; }
+
+        /// <summary>
+        /// Gets or sets an implementation-defined string with a stack trace report of the active stack frames at the time when the error occurred.
+        /// </summary>
+        [JsonProperty("stacktrace")]
+        public string StackTrace { get; set; }
+
+        /// <summary>
+        /// Gets or sets additional error data helpful in diagnosing the error.
+        /// </summary>
+        [JsonProperty("data")]
+        public string Data { get; set; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether the ingress rules are ready.
         /// </summary>
         [JsonProperty("ingressReady")]
