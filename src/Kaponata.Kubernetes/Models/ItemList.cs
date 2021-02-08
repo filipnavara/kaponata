@@ -7,6 +7,8 @@ using k8s.Models;
 using Newtonsoft.Json;
 using System.Collections.Generic;
 
+#nullable disable
+
 namespace Kaponata.Kubernetes.Models
 {
     /// <summary>
