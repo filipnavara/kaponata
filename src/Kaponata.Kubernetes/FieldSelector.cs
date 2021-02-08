@@ -10,6 +10,8 @@ using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 
+#nullable disable
+
 namespace Kaponata.Kubernetes
 {
     /// <summary>
