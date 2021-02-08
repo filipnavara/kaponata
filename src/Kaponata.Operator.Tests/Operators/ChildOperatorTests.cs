@@ -919,8 +919,8 @@ namespace Kaponata.Operator.Tests.Operators
             var podClient = kubernetes.WithClient<V1Pod>();
 
             var readWebDriverTask = new TaskCompletionSource<WebDriverSession>();
-            webDriverSessionClient.Setup(c => c.TryReadAsync("default", "my-name", "parent-label-selector", default)).Returns(readWebDriverTask.Task);
-            podClient.Setup(c => c.TryReadAsync("default", "my-name", "app.kubernetes.io/managed-by=ChildOperatorTests", default)).ReturnsAsync((V1Pod)null);
+            webDriverSessionClient.Setup(c => c.TryReadAsync("default", "my-name", "parent-label-selector", It.IsAny<CancellationToken>())).Returns(readWebDriverTask.Task);
+            podClient.Setup(c => c.TryReadAsync("default", "my-name", "app.kubernetes.io/managed-by=ChildOperatorTests", It.IsAny<CancellationToken>())).ReturnsAsync((V1Pod)null);
 
             using (var @operator = new ChildOperator<WebDriverSession, V1Pod>(
                 kubernetes.Object,
