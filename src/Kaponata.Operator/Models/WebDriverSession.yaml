@@ -9,7 +9,7 @@ metadata:
     # operator to determine whether the CRD should be reinstalled or not.
     # Use the following command to determine that version:
     # nbgv get-version $(git rev-list -1 HEAD) -v NuGetPackageVersion
-    app.kubernetes.io/version: "0.2.23"
+    app.kubernetes.io/version: "0.2.46"
 spec:
   # group name to use for REST API: /apis/<group>/<version>
   group: kaponata.io
@@ -32,18 +32,48 @@ spec:
             spec:
               type: object
               properties:
-                desiredCapabilities:
-                  description: The desired capabilities, as requested by the client.
+                capabilities:
+                  description: The capabilities requested by the client.
                   type: string
             status:
               type: object
               properties:
+                # NOTE:
+                # The first set of fields (sessionId, capabilities, error, message, stackTrace and data)
+                # are specific to the WebDriver protocol; the other fields are specific to how Kaponata
+                # provisions sessions.
+                # It may make sense break the 'status' value into two separate objects, one WebDriver
+                # specific, and the other Kubernetes specific.
+
+                # WebDriver status fields when session created successfully; see
+                # https://www.w3.org/TR/webdriver/#new-session (step 11)
                 sessionId:
                   description: The session ID used to uniquely identify the WebDriver session.
                   type: string
                 capabilities:
                   description: The session capabilities, as determined by the server.
                   type: string
+
+                # WebDriver status fields when session creation failed; see
+                # https://www.w3.org/TR/webdriver/#errors
+                error:
+                  description: A string indicating the error code.
+                  type: string
+
+                message:
+                  description: An implementation-defined string with a human readable description of the kind of error that occurred.
+                  type: string
+
+                stacktrace:
+                  description: An implementation-defined string with a stack trace report of the active stack frames at the time when the error occurred.
+                  type: string
+
+                data:
+                  description: Additional error data helpful in diagnosing the error.
+                  type: string
+
+                # A detailed description of the status of the various components which are provisioned when a session is
+                # being created.
                 sessionReady:
                   description: A value indicating whether the session is ready on the back-end pod.
                   type: boolean
@@ -53,6 +83,7 @@ spec:
                 serviceReady:
                   description: A value indicating whether the service is ready.
                   type: boolean
+
       # Shown in kubectl get
       additionalPrinterColumns:
       - name: URL

@@ -12,9 +12,9 @@ namespace Kaponata.Operator.Models
     public class WebDriverSessionSpec
     {
         /// <summary>
-        /// Gets or sets the desired capabilities, as requested by the client.
+        /// Gets or sets the capabilities requested by the client.
         /// </summary>
-        [JsonProperty(PropertyName = "desiredCapabilities")]
-        public string DesiredCapabilities { get; set; }
+        [JsonProperty(PropertyName = "capabilities")]
+        public string Capabilities { get; set; }
     }
 }
