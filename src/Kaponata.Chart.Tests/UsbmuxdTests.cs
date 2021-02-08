@@ -5,8 +5,9 @@
 using Divergic.Logging.Xunit;
 using k8s;
 using Kaponata.iOS.Muxer;
+using Kaponata.Kubernetes;
+using Kaponata.Kubernetes.Polyfill;
 using Kaponata.Operator.Kubernetes;
-using Kaponata.Operator.Kubernetes.Polyfill;
 using Microsoft.Extensions.Logging;
 using System;
 using System.IO;

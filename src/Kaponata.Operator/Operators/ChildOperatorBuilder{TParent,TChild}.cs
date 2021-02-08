@@ -4,7 +4,7 @@
 
 using k8s;
 using k8s.Models;
-using Kaponata.Operator.Kubernetes;
+using Kaponata.Kubernetes;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;

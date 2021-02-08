@@ -4,8 +4,8 @@
 
 using k8s;
 using k8s.Models;
-using Kaponata.Operator.Kubernetes;
-using Kaponata.Operator.Kubernetes.Polyfill;
+using Kaponata.Kubernetes;
+using Kaponata.Kubernetes.Polyfill;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;

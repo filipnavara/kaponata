@@ -5,7 +5,7 @@
 using k8s;
 using k8s.Models;
 using Kaponata.iOS.Muxer;
-using Kaponata.Operator.Kubernetes;
+using Kaponata.Kubernetes;
 using Microsoft.Extensions.Logging;
 using System;
 using System.IO;

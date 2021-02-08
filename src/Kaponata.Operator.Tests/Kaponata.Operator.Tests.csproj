@@ -14,8 +14,4 @@
     <ProjectReference Include="..\Kaponata.Operator\Kaponata.Operator.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <None Update="Kubernetes\Polyfill\kubeconfig.yml" CopyToOutputDirectory="PreserveNewest" />
-  </ItemGroup>
-
 </Project>

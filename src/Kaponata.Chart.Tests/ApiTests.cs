@@ -4,8 +4,8 @@
 
 using Divergic.Logging.Xunit;
 using k8s;
-using Kaponata.Operator.Kubernetes;
-using Kaponata.Operator.Kubernetes.Polyfill;
+using Kaponata.Kubernetes;
+using Kaponata.Kubernetes.Polyfill;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Net;

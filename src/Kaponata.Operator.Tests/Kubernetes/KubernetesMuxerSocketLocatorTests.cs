@@ -4,6 +4,7 @@
 
 using k8s;
 using k8s.Models;
+using Kaponata.Kubernetes;
 using Kaponata.Operator.Kubernetes;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
