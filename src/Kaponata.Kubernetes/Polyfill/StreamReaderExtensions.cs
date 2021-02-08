@@ -25,9 +25,9 @@ namespace Kaponata.Kubernetes.Polyfill
         /// after which the method will return <see langword="null"/>.
         /// </param>
         /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-        public static async Task<string> ReadLineAsync(this StreamReader reader, CancellationToken cancellationToken)
+        public static async Task<string?> ReadLineAsync(this StreamReader reader, CancellationToken cancellationToken)
         {
-            var tcs = new TaskCompletionSource<string>();
+            var tcs = new TaskCompletionSource<string?>();
             cancellationToken.Register(() => tcs.SetResult(null));
 
             var completedTask = await Task.WhenAny(reader.ReadLineAsync(), tcs.Task).ConfigureAwait(false);

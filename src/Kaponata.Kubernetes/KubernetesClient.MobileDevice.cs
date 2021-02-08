@@ -91,7 +91,13 @@ namespace Kaponata.Kubernetes
         /// <returns>
         /// A <see cref="MobileDeviceList"/> which represents the mobile devices which match the query.
         /// </returns>
-        public virtual Task<ItemList<MobileDevice>> ListMobileDeviceAsync(string @namespace, string @continue = null, string fieldSelector = null, string labelSelector = null, int? limit = null, CancellationToken cancellationToken = default)
+        public virtual Task<ItemList<MobileDevice>> ListMobileDeviceAsync(
+            string @namespace,
+            string? @continue = null,
+            string? fieldSelector = null,
+            string? labelSelector = null,
+            int? limit = null,
+            CancellationToken cancellationToken = default)
         {
             return this.mobileDeviceClient.ListAsync(
                 @namespace: @namespace,
@@ -118,7 +124,7 @@ namespace Kaponata.Kubernetes
         /// A <see cref="Task"/> which represents the asynchronous operation, and returns the requested mobile device, or
         /// <see langword="null"/> if the mobile device does not exist.
         /// </returns>
-        public virtual Task<MobileDevice> TryReadMobileDeviceAsync(string @namespace, string name, CancellationToken cancellationToken)
+        public virtual Task<MobileDevice?> TryReadMobileDeviceAsync(string @namespace, string name, CancellationToken cancellationToken)
         {
             return this.mobileDeviceClient.TryReadAsync(@namespace, name, cancellationToken);
         }

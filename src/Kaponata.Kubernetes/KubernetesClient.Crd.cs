@@ -54,7 +54,7 @@ namespace Kaponata.Kubernetes
         /// A <see cref="Task"/> which represents the asynchronous operation, and returns the requested custom resource definition., or
         /// <see langword="null"/> if the custom resource definition does not exist.
         /// </returns>
-        public virtual async Task<V1CustomResourceDefinition> TryReadCustomResourceDefinitionAsync(string name, CancellationToken cancellationToken)
+        public virtual async Task<V1CustomResourceDefinition?> TryReadCustomResourceDefinitionAsync(string name, CancellationToken cancellationToken)
         {
             var list = await this.RunTaskAsync(this.protocol.ListCustomResourceDefinitionAsync(fieldSelector: $"metadata.name={name}", cancellationToken: cancellationToken)).ConfigureAwait(false);
             return list.Items.SingleOrDefault();

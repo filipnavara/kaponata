@@ -112,16 +112,16 @@ namespace Kaponata.Kubernetes.Polyfill
         Task<HttpOperationResponse<TList>> ListNamespacedObjectWithHttpMessagesAsync<TObject, TList>(
         string namespaceParameter,
         bool? allowWatchBookmarks = null,
-        string continueParameter = null,
-        string fieldSelector = null,
-        string labelSelector = null,
+        string? continueParameter = null,
+        string? fieldSelector = null,
+        string? labelSelector = null,
         int? limit = null,
-        string resourceVersion = null,
-        string resourceVersionMatch = null,
+        string? resourceVersion = null,
+        string? resourceVersionMatch = null,
         int? timeoutSeconds = null,
         bool? watch = null,
-        string pretty = null,
-        Dictionary<string, List<string>> customHeaders = null,
+        string? pretty = null,
+        Dictionary<string, List<string>>? customHeaders = null,
         CancellationToken cancellationToken = default)
         where TObject : IKubernetesObject<V1ObjectMeta>
         where TList : IItems<TObject>;

@@ -64,15 +64,15 @@ namespace Kaponata.Kubernetes
         /// <returns>
         /// A <see cref="Task"/> which represents the asynchronous operation.
         /// </returns>
-        public delegate Task<T> DeleteNamespacedObjectAsyncDelegate<T>(
+        public delegate Task<T?> DeleteNamespacedObjectAsyncDelegate<T>(
             string name,
             string namespaceParameter,
-            V1DeleteOptions body = null,
-            string dryRun = null,
+            V1DeleteOptions? body = null,
+            string? dryRun = null,
             int? gracePeriodSeconds = null,
             bool? orphanDependents = null,
-            string propagationPolicy = null,
-            string pretty = null,
+            string? propagationPolicy = null,
+            string? pretty = null,
             CancellationToken cancellationToken = default)
             where T : IKubernetesObject<V1ObjectMeta>;
 
@@ -162,7 +162,7 @@ namespace Kaponata.Kubernetes
         /// </returns>
         public virtual async Task DeleteNamespacedObjectAsync<T>(
             T value,
-            V1DeleteOptions options,
+            V1DeleteOptions? options,
             DeleteNamespacedObjectAsyncDelegate<T> deleteAction,
             WatchObjectAsyncDelegate<T> watchAction,
             TimeSpan timeout,

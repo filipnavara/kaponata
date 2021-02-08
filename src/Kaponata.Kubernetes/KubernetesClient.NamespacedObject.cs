@@ -188,16 +188,16 @@ namespace Kaponata.Kubernetes
             KindMetadata kind,
             string namespaceParameter,
             bool? allowWatchBookmarks = null,
-            string continueParameter = null,
-            string fieldSelector = null,
-            string labelSelector = null,
+            string? continueParameter = null,
+            string? fieldSelector = null,
+            string? labelSelector = null,
             int? limit = null,
-            string resourceVersion = null,
-            string resourceVersionMatch = null,
+            string? resourceVersion = null,
+            string? resourceVersionMatch = null,
             int? timeoutSeconds = null,
             bool? watch = null,
-            string pretty = null,
-            Dictionary<string, List<string>> customHeaders = null,
+            string? pretty = null,
+            Dictionary<string, List<string>>? customHeaders = null,
             CancellationToken cancellationToken = default)
             where TList : IItems<TObject>
             where TObject : IKubernetesObject<V1ObjectMeta>
@@ -293,16 +293,16 @@ namespace Kaponata.Kubernetes
         /// <returns>
         /// A <see cref="Task"/> which represents the asynchronous operation.
         /// </returns>
-        public async Task<T> DeleteNamespacedObjectAsync<T>(
+        public async Task<T?> DeleteNamespacedObjectAsync<T>(
             KindMetadata kind,
             string name,
             string namespaceParameter,
-            V1DeleteOptions body = null,
-            string dryRun = null,
+            V1DeleteOptions? body = null,
+            string? dryRun = null,
             int? gracePeriodSeconds = null,
             bool? orphanDependents = null,
-            string propagationPolicy = null,
-            string pretty = null,
+            string? propagationPolicy = null,
+            string? pretty = null,
             CancellationToken cancellationToken = default)
             where T : IKubernetesObject<V1ObjectMeta>
         {

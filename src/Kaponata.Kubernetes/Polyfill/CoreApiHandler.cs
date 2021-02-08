@@ -33,7 +33,7 @@ namespace Kaponata.Kubernetes.Polyfill
             HttpRequestMessage request,
             CancellationToken cancellationToken)
         {
-            if (request.RequestUri.AbsolutePath.StartsWith("/apis/core/v1/"))
+            if (request.RequestUri != null && request.RequestUri.AbsolutePath.StartsWith("/apis/core/v1/"))
             {
                 var builder = new UriBuilder(request.RequestUri);
                 builder.Path = builder.Path.Replace("/apis/core/v1/", "/api/v1/");

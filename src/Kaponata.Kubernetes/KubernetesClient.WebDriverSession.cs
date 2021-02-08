@@ -91,7 +91,13 @@ namespace Kaponata.Kubernetes
         /// <returns>
         /// A <see cref="MobileDeviceList"/> which represents the mobile devices which match the query.
         /// </returns>
-        public virtual Task<ItemList<WebDriverSession>> ListWebDriverSessionAsync(string @namespace, string @continue = null, string fieldSelector = null, string labelSelector = null, int? limit = null, CancellationToken cancellationToken = default)
+        public virtual Task<ItemList<WebDriverSession>> ListWebDriverSessionAsync(
+            string @namespace,
+            string? @continue = null,
+            string? fieldSelector = null,
+            string? labelSelector = null,
+            int? limit = null,
+            CancellationToken cancellationToken = default)
         {
             return this.webDriverSessionClient.ListAsync(@namespace, @continue, fieldSelector, labelSelector, limit, cancellationToken);
         }
@@ -112,7 +118,7 @@ namespace Kaponata.Kubernetes
         /// A <see cref="Task"/> which represents the asynchronous operation, and returns the requested WebDriver session, or
         /// <see langword="null"/> if the WebDriver session does not exist.
         /// </returns>
-        public virtual Task<WebDriverSession> TryReadWebDriverSessionAsync(string @namespace, string name, CancellationToken cancellationToken)
+        public virtual Task<WebDriverSession?> TryReadWebDriverSessionAsync(string @namespace, string name, CancellationToken cancellationToken)
         {
             return this.webDriverSessionClient.TryReadAsync(@namespace, name, cancellationToken);
         }
