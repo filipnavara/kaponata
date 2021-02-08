@@ -16,9 +16,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Kaponata.iOS\Kaponata.iOS.csproj" />
-
-    <PackageReference Include="KubernetesClient" Version="4.0.10" />
-    <PackageReference Include="Microsoft.AspNetCore.JsonPatch" Version="5.0.0" />
+    <ProjectReference Include="..\Kaponata.Kubernetes\Kaponata.Kubernetes.csproj" />
     <PackageReference Include="System.CommandLine" Version="2.0.0-beta1.20574.7" />
     <PackageReference Include="System.CommandLine.Hosting" Version="0.3.0-alpha.20574.7" />
   </ItemGroup>
