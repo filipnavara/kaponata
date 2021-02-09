@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
@@ -10,6 +11,15 @@
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <PlatformTarget></PlatformTarget>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="ScrCpy\scrcpy-server-v1.17" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="ScrCpy\scrcpy-server-v1.17" />
+  </ItemGroup>
 
 </Project>

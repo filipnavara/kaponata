@@ -2,9 +2,12 @@
 // Copyright (c) Quamotion bv. All rights reserved.
 // </copyright>
 
+using Kaponata.Android.Common;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -74,19 +77,22 @@ namespace Kaponata.Android.Adb
             await protocol.SetDeviceAsync(device, cancellationToken).ConfigureAwait(false);
             string rebind = allowRebind ? string.Empty : "norebind:";
 
-            await protocol.WriteAsync($"reverse:forward:{rebind}{local};{remote}", cancellationToken).ConfigureAwait(false);
+            await protocol.WriteAsync($"reverse:forward:{rebind}{remote};{local}", cancellationToken).ConfigureAwait(false);
 
             // two adb reponses are being send:  1st OKAY is connect, 2nd OKAY is status.
             // https://android.googlesource.com/platform/system/adb/+/refs/heads/master/adb.cpp
             protocol.EnsureValidAdbResponse(await protocol.ReadAdbResponseAsync(cancellationToken).ConfigureAwait(false));
             protocol.EnsureValidAdbResponse(await protocol.ReadAdbResponseAsync(cancellationToken).ConfigureAwait(false));
 
-            var length = await protocol.ReadUInt16Async(cancellationToken).ConfigureAwait(false);
-            var data = await protocol.ReadStringAsync(length, cancellationToken).ConfigureAwait(false);
-
-            if (data != null && int.TryParse(data, out int port))
+            if (remote.Equals("tcp:0", StringComparison.OrdinalIgnoreCase))
             {
-                return port;
+                var length = await protocol.ReadUInt16Async(cancellationToken).ConfigureAwait(false);
+                var data = await protocol.ReadStringAsync(length, cancellationToken).ConfigureAwait(false);
+
+                if (data != null && int.TryParse(data, out int port))
+                {
+                    return port;
+                }
             }
 
             return 0;
@@ -317,6 +323,55 @@ namespace Kaponata.Android.Adb
             var parts = data.Split(new char[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
 
             return parts.Select(p => ForwardData.FromString(p)).ToList();
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="device"></param>
+        /// <param name="deviceSocket"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public async Task<IPEndPoint> CreateReverseForwardAsync(DeviceData device, string deviceSocket, CancellationToken cancellationToken)
+        {
+            // If the port is already being forwarded, recycle that port. This prevent us from opening a new
+            // socket every time.
+            // This could create a problem in the following scenario:
+            // - Another service have created that port.
+            // - We detect that port & recycle the port.
+            // - The other service closes the port while we're still using it.
+            // Then again, which other service would be interested in the ports we are using on the remote device?
+            // For now, we're taking the risk, but it is easy to revert back by simply deleting this block of code :-).
+            var allForwards = await this.ListReverseForwardAsync(device, cancellationToken).ConfigureAwait(false);
+            var existingForwards = allForwards.Where(f => deviceSocket.Equals(f.RemoteSpec.ToString(), StringComparison.OrdinalIgnoreCase));
+
+            if (existingForwards.Count() > 1)
+            {
+                this.logger.LogInformation($"Multiple reverse port forwards exists for socket {deviceSocket} on device {device}");
+            }
+
+            // Taking the last if there are multiple sockets open.
+            // The choise is rather arbitrary but reusing the first and only is as dangerous.
+            ForwardData existingForward = existingForwards.LastOrDefault();
+
+            var host = this.socketLocator.GetAdbSocket().Item2.Address;
+
+            if (existingForward != null)
+            {
+                int recycledPort = existingForward.LocalSpec.Port;
+                this.logger.LogInformation($"Recycled port forwarding for socket {deviceSocket} on device {device.Serial}; the local endpoint is {recycledPort}.");
+                return new IPEndPoint(host, recycledPort);
+            }
+
+            // Find an available port
+            using var portReservation = TcpPort.GetAvailablePort();
+            var port = portReservation.PortNumber;
+
+            await this.CreateReverseForwardAsync(device, deviceSocket, $"tcp:{port}", true, cancellationToken).ConfigureAwait(false);
+
+            this.logger.LogInformation($"Created reverse port forwarding for socket {deviceSocket} on device {device.Serial}; the local port is {port}.");
+
+            return new IPEndPoint(host, port);
         }
     }
 }

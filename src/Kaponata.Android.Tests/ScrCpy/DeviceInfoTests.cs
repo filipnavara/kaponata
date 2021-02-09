@@ -9,18 +9,18 @@ using Xunit;
 namespace Kaponata.Android.Tests.ScrCpy
 {
     /// <summary>
-    /// Tests the <see cref="DeviceInfo"/> class.
+    /// Tests the <see cref="ScrCpyDeviceInfo"/> class.
     /// </summary>
     public class DeviceInfoTests
     {
         /// <summary>
-        /// The <see cref="DeviceInfo.Read(System.Span{byte})"/> method creates a <see cref="DeviceInfo"/> struct from the data.
+        /// The <see cref="ScrCpyDeviceInfo.Read(System.Span{byte})"/> method creates a <see cref="ScrCpyDeviceInfo"/> struct from the data.
         /// </summary>
         [Fact]
         public void Read_ReadsHeader()
         {
             var deviceInfoData = File.ReadAllBytes("ScrCpy/device_info.bin");
-            var deviceInfo = DeviceInfo.Read(deviceInfoData);
+            var deviceInfo = ScrCpyDeviceInfo.Read(deviceInfoData);
 
             Assert.Equal("SM-G950F", deviceInfo.DeviceName);
             Assert.Equal(2960, deviceInfo.Width);

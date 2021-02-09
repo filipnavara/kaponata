@@ -59,7 +59,15 @@ namespace Kaponata.Android.Adb
         /// <inheritdoc/>
         public override string ToString()
         {
-            return $"{this.SerialNumber} {this.LocalSpec} {this.RemoteSpec}";
+            // swap if it is a reverse forward.
+            if (this.SerialNumber.Contains("reverse"))
+            {
+                return $"{this.SerialNumber} {this.RemoteSpec} {this.LocalSpec}";
+            }
+            else
+            {
+                return $"{this.SerialNumber} {this.LocalSpec} {this.RemoteSpec}";
+            }
         }
     }
 }

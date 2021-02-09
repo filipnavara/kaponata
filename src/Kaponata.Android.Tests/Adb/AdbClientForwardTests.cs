@@ -63,6 +63,12 @@ namespace Kaponata.Android.Tests.Adb
         /// <param name="expectedCommand">
         /// The expected write command.
         /// </param>
+        /// <param name="local">
+        /// The local forward specification.
+        /// </param>
+        /// <param name="remote">
+        /// The remote forward specification.
+        /// </param>
         /// <param name="adbPortResponse">
         /// The response containting the port in string format.
         /// </param>
@@ -73,11 +79,11 @@ namespace Kaponata.Android.Tests.Adb
         /// A <see cref="Task"/> which represents the asynchrounous test.
         /// </returns>
         [Theory]
-        [InlineData(true, "reverse:forward:tcp:1;tcp:2", "100", 100)]
-        [InlineData(false, "reverse:forward:norebind:tcp:1;tcp:2", "100", 100)]
-        [InlineData(false, "reverse:forward:norebind:tcp:1;tcp:2", null, 0)]
-        [InlineData(false, "reverse:forward:norebind:tcp:1;tcp:2", "abd", 0)]
-        public async Task CreateReverseForward_CreatesReverseForward_Async(bool allowRebind, string expectedCommand, string adbPortResponse, int expectedPort)
+        [InlineData(true, "tcp:1", "tcp:2", "reverse:forward:tcp:1;tcp:2", "100", 100)]
+        [InlineData(false, "tcp:1", "tcp:2", "reverse:forward:norebind:tcp:1;tcp:2", "100", 100)]
+        [InlineData(false, "tcp:1", "tcp:2", "reverse:forward:norebind:tcp:1;tcp:2", null, 0)]
+        [InlineData(false, "tcp:1", "tcp:2", "reverse:forward:norebind:tcp:1;tcp:2", "abd", 0)]
+        public async Task CreateReverseForward_CreatesReverseForward_Async(bool allowRebind, string local, string remote, string expectedCommand, string adbPortResponse, int expectedPort)
         {
             var protocolMock = new Mock<AdbProtocol>()
             {
@@ -106,7 +112,7 @@ namespace Kaponata.Android.Tests.Adb
             clientMock.Setup(c => c.TryConnectToAdbAsync(default)).ReturnsAsync(protocolMock.Object);
 
             var client = clientMock.Object;
-            var port = await client.CreateReverseForwardAsync(new DeviceData() { Serial = "1234" }, "tcp:2", "tcp:1", allowRebind, default).ConfigureAwait(false);
+            var port = await client.CreateReverseForwardAsync(new DeviceData() { Serial = "1234" }, remote, local, allowRebind, default).ConfigureAwait(false);
             Assert.Equal(expectedPort, port);
 
             protocolMock.Verify();

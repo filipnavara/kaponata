@@ -47,10 +47,10 @@ namespace Kaponata.Android.Adb
         /// A <see cref="AdbProtocol"/> which represents the connection to <c>ADB</c>, or <see langword="null"/> if
         /// <c>ADB</c> server is not running.
         /// </returns>
-        public virtual (Socket, EndPoint) GetAdbSocket()
+        public virtual (Socket, IPEndPoint) GetAdbSocket()
         {
             Socket socket;
-            EndPoint endPoint;
+            IPEndPoint endPoint;
 
             var socketAddress = this.GetSocketAddressEnvironmentVariable();
 
@@ -58,7 +58,7 @@ namespace Kaponata.Android.Adb
             {
                 var separator = socketAddress.IndexOf(':');
                 var host = IPAddress.Parse(socketAddress.Substring(0, separator));
-                var port = int.Parse(socketAddress[(separator + 1) ..]);
+                var port = int.Parse(socketAddress[(separator + 1)..]);
 
                 socket = new Socket(SocketType.Stream, ProtocolType.Tcp);
                 endPoint = new IPEndPoint(host, port);

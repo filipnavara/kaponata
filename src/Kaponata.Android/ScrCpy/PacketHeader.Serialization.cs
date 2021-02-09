@@ -13,6 +13,17 @@ namespace Kaponata.Android.ScrCpy
     public partial struct PacketHeader
     {
         /// <summary>
+        /// Gets the binary size of a packet header.
+        /// </summary>
+        public static int BinarySize
+        {
+            get
+            {
+                return 12;
+            }
+        }
+
+        /// <summary>
         /// Reads a <see cref="PacketHeader"/> value from a buffer.
         /// </summary>
         /// <param name="buffer">
