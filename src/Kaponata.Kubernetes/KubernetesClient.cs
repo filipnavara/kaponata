@@ -61,6 +61,7 @@ namespace Kaponata.Kubernetes
             this.webDriverSessionClient = this.GetClient<WebDriverSession>();
         }
 
+#nullable disable
         /// <summary>
         /// Initializes a new instance of the <see cref="KubernetesClient"/> class.
         /// </summary>
@@ -72,6 +73,7 @@ namespace Kaponata.Kubernetes
             this.logger = NullLogger<KubernetesClient>.Instance;
             this.loggerFactory = NullLoggerFactory.Instance;
         }
+#nullable restore
 
         /// <summary>
         /// A delegate for a method which asynchronously watches a (namespaced) object.

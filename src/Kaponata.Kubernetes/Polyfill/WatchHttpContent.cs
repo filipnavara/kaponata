@@ -35,7 +35,7 @@ namespace Kaponata.Kubernetes.Polyfill
         { get; private set; }
 
         /// <inheritdoc/>
-        protected override Task SerializeToStreamAsync(Stream stream, TransportContext context)
+        protected override Task SerializeToStreamAsync(Stream stream, TransportContext? context)
         {
             return Task.CompletedTask;
         }

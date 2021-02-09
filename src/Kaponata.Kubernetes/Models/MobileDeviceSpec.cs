@@ -4,6 +4,8 @@
 
 using Newtonsoft.Json;
 
+#nullable disable
+
 namespace Kaponata.Kubernetes.Models
 {
     /// <summary>

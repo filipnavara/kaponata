@@ -4,8 +4,9 @@
 
 using k8s;
 using k8s.Models;
-using Kaponata.Kubernetes;
 using Newtonsoft.Json;
+
+#nullable disable
 
 namespace Kaponata.Kubernetes.Models
 {

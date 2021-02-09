@@ -34,7 +34,7 @@ namespace Kaponata.Kubernetes.Polyfill
             var originResponse = await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
 
             // all watches are GETs, so we can ignore others
-            if (originResponse.IsSuccessStatusCode && request.Method == HttpMethod.Get)
+            if (originResponse.IsSuccessStatusCode && request.Method == HttpMethod.Get && request.RequestUri != null)
             {
                 var query = request.RequestUri.Query;
                 var index = query.IndexOf("watch=true", StringComparison.InvariantCulture);

@@ -44,6 +44,7 @@ namespace Kaponata.Kubernetes
             this.metadata = metadata ?? throw new ArgumentNullException(nameof(metadata));
         }
 
+#nullable disable
         /// <summary>
         /// Initializes a new instance of the <see cref="NamespacedKubernetesClient{T}"/> class.
         /// </summary>
@@ -53,6 +54,7 @@ namespace Kaponata.Kubernetes
         protected NamespacedKubernetesClient()
         {
         }
+#nullable restore
 
         /// <summary>
         /// Asynchronously creates a new <typeparamref name="T"/> object.
@@ -133,7 +135,7 @@ namespace Kaponata.Kubernetes
         /// <returns>
         /// A <see cref="ItemList{T}"/> which represents the mobile devices which match the query.
         /// </returns>
-        public async virtual Task<ItemList<T>> ListAsync(string @namespace, string @continue = null, string fieldSelector = null, string labelSelector = null, int? limit = null, CancellationToken cancellationToken = default)
+        public async virtual Task<ItemList<T>> ListAsync(string @namespace, string? @continue = null, string? fieldSelector = null, string? labelSelector = null, int? limit = null, CancellationToken cancellationToken = default)
         {
             using (var operationResponse = await this.ListAsync(
                 namespaceParameter: @namespace,
@@ -162,7 +164,7 @@ namespace Kaponata.Kubernetes
         /// A <see cref="Task"/> which represents the asynchronous operation, and returns the requested <typeparamref name="T"/> object, or
         /// <see langword="null"/> if the <typeparamref name="T"/> object does not exist.
         /// </returns>
-        public virtual Task<T> TryReadAsync(string @namespace, string name, CancellationToken cancellationToken)
+        public virtual Task<T?> TryReadAsync(string @namespace, string name, CancellationToken cancellationToken)
         {
             return this.TryReadAsync(@namespace, name, labelSelector: null, cancellationToken);
         }
@@ -186,7 +188,7 @@ namespace Kaponata.Kubernetes
         /// A <see cref="Task"/> which represents the asynchronous operation, and returns the requested <typeparamref name="T"/> object, or
         /// <see langword="null"/> if the <typeparamref name="T"/> object does not exist.
         /// </returns>
-        public virtual async Task<T> TryReadAsync(string @namespace, string name, string labelSelector, CancellationToken cancellationToken)
+        public virtual async Task<T?> TryReadAsync(string @namespace, string name, string? labelSelector, CancellationToken cancellationToken)
         {
             if (@namespace == null)
             {
@@ -199,7 +201,7 @@ namespace Kaponata.Kubernetes
             }
 
             var list = await this.parent.RunTaskAsync(this.ListAsync(namespaceParameter: @namespace, fieldSelector: $"metadata.name={name}", labelSelector: labelSelector, cancellationToken: cancellationToken)).ConfigureAwait(false);
-            return list.Body.Items.SingleOrDefault();
+            return list.Body?.Items?.SingleOrDefault();
         }
 
         /// <summary>
@@ -218,7 +220,7 @@ namespace Kaponata.Kubernetes
         /// A <see cref="CancellationToken"/> which can be used to cancel the asynchronous operation.
         /// </param>
         /// <returns>A <see cref="Task"/> representing the asynchronous operation, and which returns the deleted object if an object was deleted.</returns>
-        public virtual async Task<T> TryDeleteAsync(string @namespace, string name, TimeSpan timeout, CancellationToken cancellationToken)
+        public virtual async Task<T?> TryDeleteAsync(string @namespace, string name, TimeSpan timeout, CancellationToken cancellationToken)
         {
             if (@namespace == null)
             {
@@ -280,7 +282,7 @@ namespace Kaponata.Kubernetes
         /// A <see cref="CancellationToken"/> which can be used to cancel the asynchronous operation.
         /// </param>
         /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-        public virtual Task DeleteAsync(T value, V1DeleteOptions options, TimeSpan timeout, CancellationToken cancellationToken)
+        public virtual Task DeleteAsync(T value, V1DeleteOptions? options, TimeSpan timeout, CancellationToken cancellationToken)
         {
             return this.parent.DeleteNamespacedObjectAsync<T>(
                 value,
@@ -470,16 +472,16 @@ namespace Kaponata.Kubernetes
         private Task<HttpOperationResponse<ItemList<T>>> ListAsync(
             string namespaceParameter,
             bool? allowWatchBookmarks = null,
-            string continueParameter = null,
-            string fieldSelector = null,
-            string labelSelector = null,
+            string? continueParameter = null,
+            string? fieldSelector = null,
+            string? labelSelector = null,
             int? limit = null,
-            string resourceVersion = null,
-            string resourceVersionMatch = null,
+            string? resourceVersion = null,
+            string? resourceVersionMatch = null,
             int? timeoutSeconds = null,
             bool? watch = null,
-            string pretty = null,
-            Dictionary<string, List<string>> customHeaders = null,
+            string? pretty = null,
+            Dictionary<string, List<string>>? customHeaders = null,
             CancellationToken cancellationToken = default)
         {
             return this.parent.ListNamespacedObjectAsync<T, ItemList<T>>(
@@ -499,15 +501,15 @@ namespace Kaponata.Kubernetes
                 cancellationToken);
         }
 
-        private Task<T> DeleteAsync(
+        private Task<T?> DeleteAsync(
             string name,
             string namespaceParameter,
-            V1DeleteOptions body = null,
-            string dryRun = null,
+            V1DeleteOptions? body = null,
+            string? dryRun = null,
             int? gracePeriodSeconds = null,
             bool? orphanDependents = null,
-            string propagationPolicy = null,
-            string pretty = null,
+            string? propagationPolicy = null,
+            string? pretty = null,
             CancellationToken cancellationToken = default)
         {
             return this.parent.DeleteNamespacedObjectAsync<T>(

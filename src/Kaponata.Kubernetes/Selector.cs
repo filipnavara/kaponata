@@ -21,7 +21,7 @@ namespace Kaponata.Kubernetes
         /// <returns>
         /// The equivalent selector string.
         /// </returns>
-        public static string Create(Dictionary<string, string> values)
+        public static string? Create(Dictionary<string, string> values)
         {
             if (values == null || values.Count == 0)
             {

@@ -8,6 +8,7 @@ using Kaponata.Kubernetes.Polyfill;
 using Microsoft.Extensions.Logging;
 using Microsoft.Rest;
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -65,7 +66,7 @@ namespace Kaponata.Kubernetes
         /// A <see cref="Task"/> which represents the asynchronous operation, and returns the requested pod, or
         /// <see langword="null"/> if the pod does not exist.
         /// </returns>
-        public virtual async Task<V1Pod> TryReadPodAsync(string @namespace, string name, CancellationToken cancellationToken)
+        public virtual async Task<V1Pod?> TryReadPodAsync(string @namespace, string name, CancellationToken cancellationToken)
         {
             var list = await this.RunTaskAsync(this.protocol.ListNamespacedPodAsync(@namespace, fieldSelector: $"metadata.name={name}", cancellationToken: cancellationToken)).ConfigureAwait(false);
             return list.Items.SingleOrDefault();
@@ -129,7 +130,7 @@ namespace Kaponata.Kubernetes
         /// <returns>
         /// A <see cref="V1PodList"/> which represents the mobile devices which match the query.
         /// </returns>
-        public async virtual Task<V1PodList> ListPodAsync(string @namespace, string @continue = null, string fieldSelector = null, string labelSelector = null, int? limit = null, CancellationToken cancellationToken = default)
+        public async virtual Task<V1PodList> ListPodAsync(string @namespace, string? @continue = null, string? fieldSelector = null, string? labelSelector = null, int? limit = null, CancellationToken cancellationToken = default)
         {
             using (var operationResponse = await this.RunTaskAsync(this.protocol.ListNamespacedPodWithHttpMessagesAsync(
                 namespaceParameter: @namespace,
@@ -253,7 +254,7 @@ namespace Kaponata.Kubernetes
                 return value;
             }
 
-            if (HasFailed(value, out Exception ex))
+            if (HasFailed(value, out Exception? ex))
             {
                 throw ex;
             }
@@ -279,7 +280,7 @@ namespace Kaponata.Kubernetes
                         return Task.FromResult(WatchResult.Stop);
                     }
 
-                    if (HasFailed(value, out Exception ex))
+                    if (HasFailed(value, out Exception? ex))
                     {
                         throw ex;
                     }
@@ -401,7 +402,7 @@ namespace Kaponata.Kubernetes
                 && value.Status.ContainerStatuses.All(c => c.Ready);
         }
 
-        private static bool HasFailed(V1Pod value, out Exception ex)
+        private static bool HasFailed(V1Pod value, [NotNullWhen(true)] out Exception? ex)
         {
             if (value.Status.Phase == "Failed")
             {

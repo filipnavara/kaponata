@@ -92,9 +92,9 @@ namespace Kaponata.Kubernetes.Polyfill
         /// <inheritdoc/>
         public async Task<WatchExitReason> WatchNamespacedObjectAsync<TObject, TList>(
             string @namespace,
-            string fieldSelector,
-            string labelSelector,
-            string resourceVersion,
+            string? fieldSelector,
+            string? labelSelector,
+            string? resourceVersion,
             ListNamespacedObjectWithHttpMessagesAsync<TObject, TList> listOperation,
             WatchEventDelegate<TObject> eventHandler,
             CancellationToken cancellationToken)
@@ -195,7 +195,7 @@ namespace Kaponata.Kubernetes.Polyfill
             using (var stream = await content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false))
             using (var reader = new StreamReader(stream))
             {
-                string line;
+                string? line;
 
                 // ReadLineAsync will return null when we've reached the end of the stream.
                 try

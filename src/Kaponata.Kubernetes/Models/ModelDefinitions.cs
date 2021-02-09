@@ -20,7 +20,7 @@ namespace Kaponata.Kubernetes.Models
         {
             get
             {
-                using (Stream stream = typeof(ModelDefinitions).Assembly.GetManifestResourceStream("Kaponata.Kubernetes.Models.MobileDevice.yaml"))
+                using (Stream stream = typeof(ModelDefinitions).Assembly.GetManifestResourceStream("Kaponata.Kubernetes.Models.MobileDevice.yaml") !)
                 using (StreamReader reader = new StreamReader(stream))
                 {
                     return Yaml.LoadFromString<V1CustomResourceDefinition>(reader.ReadToEnd());
@@ -35,7 +35,7 @@ namespace Kaponata.Kubernetes.Models
         {
             get
             {
-                using (Stream stream = typeof(ModelDefinitions).Assembly.GetManifestResourceStream("Kaponata.Kubernetes.Models.WebDriverSession.yaml"))
+                using (Stream stream = typeof(ModelDefinitions).Assembly.GetManifestResourceStream("Kaponata.Kubernetes.Models.WebDriverSession.yaml") !)
                 using (StreamReader reader = new StreamReader(stream))
                 {
                     return Yaml.LoadFromString<V1CustomResourceDefinition>(reader.ReadToEnd());
