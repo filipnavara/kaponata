@@ -26,7 +26,7 @@ namespace Kaponata.Api
         /// <param name="console">
         /// The console to use by the application.
         /// </param>
-        public Program(IConsole console = null)
+        public Program(IConsole? console = null)
         {
             this.console = console ?? new SystemConsole();
         }

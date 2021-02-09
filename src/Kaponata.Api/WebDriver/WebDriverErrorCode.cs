@@ -136,7 +136,7 @@ namespace Kaponata.Api.WebDriver
         }
 
         /// <inheritdoc/>
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             var other = obj as WebDriverErrorCode;
 
