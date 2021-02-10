@@ -18,16 +18,21 @@ namespace Kaponata.Api
     [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None)]
     public class WebDriverController : Controller
     {
+        private readonly KubernetesWebDriver webDriver;
         private readonly ILogger<WebDriverController> logger;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="WebDriverController"/> class.
         /// </summary>
+        /// <param name="webDriver">
+        /// The <see cref="KubernetesWebDriver"/> which contains the back-end WebDriver implementation.
+        /// </param>
         /// <param name="logger">
         /// The logger to use when logging.
         /// </param>
-        public WebDriverController(ILogger<WebDriverController> logger)
+        public WebDriverController(KubernetesWebDriver webDriver, ILogger<WebDriverController> logger)
         {
+            this.webDriver = webDriver ?? throw new ArgumentNullException(nameof(webDriver));
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
@@ -45,14 +50,10 @@ namespace Kaponata.Api
         /// </returns>
         /// <seealso href="https://www.w3.org/TR/webdriver/#new-session"/>
         [HttpPost("/wd/hub/session")]
-        public Task<WebDriverResult> NewSessionAsync(object request, CancellationToken cancellationToken)
+        public async Task<WebDriverResult> NewSessionAsync(NewSessionRequest request, CancellationToken cancellationToken)
         {
-            return Task.FromResult(
-                new WebDriverResult(
-                    new WebDriverResponse(
-                        new WebDriverError(
-                        WebDriverErrorCode.SessionNotCreated,
-                        "This version of Kaponata does not support creating any sessions."))));
+            var response = await this.webDriver.CreateSessionAsync(request, cancellationToken).ConfigureAwait(false);
+            return new WebDriverResult(response);
         }
 
         /// <summary>
@@ -69,14 +70,10 @@ namespace Kaponata.Api
         /// </returns>
         /// <seealso href="https://www.w3.org/TR/webdriver/#delete-session"/>
         [HttpDelete("/wd/hub/session/{sessionId}")]
-        public Task<WebDriverResult> DeleteAsync(string sessionId, CancellationToken cancellationToken)
+        public async Task<WebDriverResult> DeleteAsync(string sessionId, CancellationToken cancellationToken)
         {
-            return Task.FromResult(
-                new WebDriverResult(
-                    new WebDriverResponse(
-                        new WebDriverError(
-                    WebDriverErrorCode.InvalidSessionId,
-                    $"A session with session id '{sessionId}' could not be found"))));
+            var response = await this.webDriver.DeleteSessionAsync(sessionId, cancellationToken).ConfigureAwait(false);
+            return new WebDriverResult(response);
         }
 
         /// <summary>
