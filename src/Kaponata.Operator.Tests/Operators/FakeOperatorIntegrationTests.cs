@@ -38,7 +38,7 @@ namespace Kaponata.Operator.Tests.Operators
             builder.ConfigureServices(
                 (services) =>
                 {
-                    services.AddKubernetes();
+                    services.AddKubernetes(@namespace: "tests");
                     services.AddLogging(
                         (loggingBuilder) =>
                         {
@@ -121,7 +121,6 @@ namespace Kaponata.Operator.Tests.Operators
                         {
                             { Annotations.AutomationName, Annotations.AutomationNames.Fake },
                         },
-                        NamespaceProperty = "default",
                         Name = name,
                     },
                     Spec = new WebDriverSessionSpec()
@@ -236,7 +235,6 @@ namespace Kaponata.Operator.Tests.Operators
                         {
                             { Annotations.AutomationName, Annotations.AutomationNames.Fake },
                         },
-                        NamespaceProperty = "default",
                         Name = name,
                     },
                     Spec = new WebDriverSessionSpec()

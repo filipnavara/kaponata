@@ -58,6 +58,7 @@ namespace Kaponata.Kubernetes.Tests
                             Metadata = new V1ObjectMeta()
                             {
                                 Name = "test",
+                                NamespaceProperty = "my-namespace",
                             },
                         },
                         default)).ConfigureAwait(false);

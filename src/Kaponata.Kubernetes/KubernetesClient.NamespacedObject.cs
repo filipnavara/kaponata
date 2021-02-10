@@ -435,9 +435,6 @@ namespace Kaponata.Kubernetes
         /// <param name="metadata">
         /// Metadata which describes the object type.
         /// </param>
-        /// <param name="namespace">
-        /// The namespace of the object to patch.
-        /// </param>
         /// <param name="name">
         /// The name of the object to patch.
         /// </param>

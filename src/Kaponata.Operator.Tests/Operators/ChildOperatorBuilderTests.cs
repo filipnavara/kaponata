@@ -38,7 +38,7 @@ namespace Kaponata.Operator.Tests.Operators
             builder.ConfigureServices(
                 (services) =>
                 {
-                    services.AddKubernetes();
+                    services.AddKubernetes(@namespace: "tests");
                     services.AddLogging(
                         (loggingBuilder) =>
                         {
