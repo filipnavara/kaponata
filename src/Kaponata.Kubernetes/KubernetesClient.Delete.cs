@@ -78,12 +78,12 @@ namespace Kaponata.Kubernetes
 
         private delegate Task<V1Status> DeleteObjectAsyncDelegate(
             string name,
-            V1DeleteOptions body = null,
-            string dryRun = null,
+            V1DeleteOptions? body = null,
+            string? dryRun = null,
             int? gracePeriodSeconds = null,
             bool? orphanDependents = null,
-            string propagationPolicy = null,
-            string pretty = null,
+            string? propagationPolicy = null,
+            string? pretty = null,
             CancellationToken cancellationToken = default);
 
         /// <summary>

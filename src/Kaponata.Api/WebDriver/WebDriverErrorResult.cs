@@ -18,7 +18,7 @@ namespace Kaponata.Api.WebDriver
         /// <param name="errorCode">
         /// The error code which describes the error.
         /// </param>
-        public WebDriverErrorResult(WebDriverErrorCode errorCode)
+        public WebDriverErrorResult(WebDriverErrorCode? errorCode)
             : this(errorCode, errorCode?.Message)
         {
         }
@@ -33,7 +33,7 @@ namespace Kaponata.Api.WebDriver
         /// <param name="message">
         /// A message which describes the error.
         /// </param>
-        public WebDriverErrorResult(WebDriverErrorCode errorCode, string message)
+        public WebDriverErrorResult(WebDriverErrorCode? errorCode, string? message)
             : base(new WebDriverErrorData())
         {
             if (errorCode == null)

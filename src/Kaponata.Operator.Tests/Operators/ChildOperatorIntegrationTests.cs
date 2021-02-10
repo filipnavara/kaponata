@@ -164,12 +164,16 @@ namespace Kaponata.Operator.Tests.Operators
                     },
                     default).ConfigureAwait(false);
 
+                await Task.WhenAny(podCreated.Task, Task.Delay(TimeSpan.FromMinutes(1))).ConfigureAwait(false);
+                Assert.True(podCreated.Task.IsCompleted, "Failed to create the pod within a timespan of 1 minute");
                 var createdPod = await podCreated.Task.ConfigureAwait(false);
                 Assert.Equal($"{name}-fake", createdPod.Metadata.Name);
 
                 // Deleting the sessions should result in the associated pod being deleted, too.
                 await sessionClient.DeleteAsync(emptySession, new V1DeleteOptions(propagationPolicy: "Foreground"), TimeSpan.FromMinutes(1), default).ConfigureAwait(false);
                 await sessionClient.DeleteAsync(fakeSession, new V1DeleteOptions(propagationPolicy: "Foreground"), TimeSpan.FromMinutes(1), default).ConfigureAwait(false);
+                await Task.WhenAny(podDeleted.Task, Task.Delay(TimeSpan.FromMinutes(1))).ConfigureAwait(false);
+                Assert.True(podDeleted.Task.IsCompleted, "Failed to delete the pod within a timespan of 1 minute");
                 var deletedPod = await podDeleted.Task.ConfigureAwait(false);
                 Assert.Equal($"{name}-fake", deletedPod.Metadata.Name);
 

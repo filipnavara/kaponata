@@ -32,6 +32,6 @@ namespace Kaponata.Api.WebDriver
         /// <summary>
         /// Gets or sets the embedded data.
         /// </summary>
-        public object Data { get; set; }
+        public object? Data { get; set; }
     }
 }

@@ -18,6 +18,6 @@ namespace Kaponata.Api.WebDriver
         /// <summary>
         /// Gets or sets a message which describes the state.
         /// </summary>
-        public string Message { get; set; }
+        public string? Message { get; set; }
     }
 }

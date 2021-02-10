@@ -18,7 +18,7 @@ namespace Kaponata.Api
     /// </summary>
     public class Program
     {
-        private IConsole console;
+        private readonly IConsole console;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Program"/> class.
@@ -26,7 +26,7 @@ namespace Kaponata.Api
         /// <param name="console">
         /// The console to use by the application.
         /// </param>
-        public Program(IConsole console = null)
+        public Program(IConsole? console = null)
         {
             this.console = console ?? new SystemConsole();
         }
@@ -75,8 +75,10 @@ namespace Kaponata.Api
         public Task<int> MainAsync(string[] args)
         {
             // Create a root command with default options
-            var rootCommand = new RootCommand();
-            rootCommand.Handler = CommandHandler.Create(() => CreateHostBuilder(args).Build().RunAsync());
+            var rootCommand = new RootCommand
+            {
+                Handler = CommandHandler.Create(() => CreateHostBuilder(args).Build().RunAsync()),
+            };
 
             return new CommandLineBuilder(rootCommand)
                 .UseDefaults()
