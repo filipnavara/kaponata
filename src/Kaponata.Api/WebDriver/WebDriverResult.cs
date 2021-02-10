@@ -16,22 +16,10 @@ namespace Kaponata.Api.WebDriver
         /// Initializes a new instance of the <see cref="WebDriverResult"/> class.
         /// </summary>
         /// <param name="data">
-        /// The result data which will be embedded in the <see cref="JsonResult.Value"/>
-        /// property.
-        /// </param>
-        public WebDriverResult(object data)
-            : this(new WebDriverData(data))
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="WebDriverResult"/> class.
-        /// </summary>
-        /// <param name="data">
         /// The WebDriver-formatted result data.
         /// </param>
-        public WebDriverResult(WebDriverData data)
-            : base(data ?? new WebDriverData())
+        public WebDriverResult(WebDriverResponse data)
+            : base(data)
         {
             this.SerializerSettings = new JsonSerializerOptions()
             {
@@ -39,7 +27,17 @@ namespace Kaponata.Api.WebDriver
             };
 
             this.ContentType = "application/json; charset=utf-8";
-            this.StatusCode = 200;
+
+            switch (data.Value)
+            {
+                case WebDriverError errorData when data.Value is WebDriverError:
+                    this.StatusCode = (int)errorData.ErrorCode.HttpStatusCode;
+                    break;
+
+                default:
+                    this.StatusCode = 200;
+                    break;
+            }
         }
     }
 }

@@ -8,21 +8,21 @@ using Xunit;
 namespace Kaponata.Api.Tests.WebDriver
 {
     /// <summary>
-    /// Tests the <see cref="WebDriverData"/> class.
+    /// Tests the <see cref="WebDriverResponse"/> class.
     /// </summary>
     public class WebDriverDataTests
     {
         /// <summary>
-        /// The <see cref="WebDriverData"/> constructors work correctly.
+        /// The <see cref="WebDriverResponse"/> constructors work correctly.
         /// </summary>
         [Fact]
         public void DefaultConstructor_Works()
         {
-            Assert.Null(new WebDriverData().Data);
-            Assert.Null(new WebDriverData(null).Data);
+            Assert.Null(new WebDriverResponse().Value);
+            Assert.Null(new WebDriverResponse(null).Value);
 
             var data = new object();
-            Assert.Same(data, new WebDriverData(data).Data);
+            Assert.Same(data, new WebDriverResponse(data).Value);
         }
     }
 }

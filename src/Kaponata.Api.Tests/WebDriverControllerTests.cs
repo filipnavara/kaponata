@@ -37,11 +37,10 @@ namespace Kaponata.Api.Tests
         {
             var controller = new WebDriverController(NullLogger<WebDriverController>.Instance);
             var result = await controller.NewSessionAsync(null, default).ConfigureAwait(false);
+            Assert.Equal(500, result.StatusCode);
 
-            var webDriverResult = Assert.IsType<WebDriverErrorResult>(result);
-            Assert.Equal(500, webDriverResult.StatusCode);
-
-            var error = Assert.IsType<WebDriverErrorData>(webDriverResult.Value);
+            var response = Assert.IsType<WebDriverResponse>(result.Value);
+            var error = Assert.IsType<WebDriverError>(response.Value);
             Assert.Equal("session not created", error.Error);
         }
 
@@ -57,11 +56,10 @@ namespace Kaponata.Api.Tests
         {
             var controller = new WebDriverController(NullLogger<WebDriverController>.Instance);
             var result = await controller.DeleteAsync(null, default).ConfigureAwait(false);
+            Assert.Equal(404, result.StatusCode);
 
-            var webDriverResult = Assert.IsType<WebDriverErrorResult>(result);
-            Assert.Equal(404, webDriverResult.StatusCode);
-
-            var error = Assert.IsType<WebDriverErrorData>(webDriverResult.Value);
+            var response = Assert.IsType<WebDriverResponse>(result.Value);
+            var error = Assert.IsType<WebDriverError>(response.Value);
             Assert.Equal("invalid session id", error.Error);
         }
 
@@ -77,12 +75,10 @@ namespace Kaponata.Api.Tests
         {
             var controller = new WebDriverController(NullLogger<WebDriverController>.Instance);
             var result = await controller.StatusAsync(default).ConfigureAwait(false);
+            Assert.Equal(200, result.StatusCode);
 
-            var webDriverResult = Assert.IsType<WebDriverResult>(result);
-            Assert.Equal(200, webDriverResult.StatusCode);
-
-            var data = Assert.IsType<WebDriverData>(webDriverResult.Value);
-            var status = Assert.IsType<WebDriverStatus>(data.Data);
+            var response = Assert.IsType<WebDriverResponse>(result.Value);
+            var status = Assert.IsType<WebDriverStatus>(response.Value);
         }
     }
 }

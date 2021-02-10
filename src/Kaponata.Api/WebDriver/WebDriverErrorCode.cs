@@ -130,12 +130,6 @@ namespace Kaponata.Api.WebDriver
         public string Message { get; }
 
         /// <inheritdoc/>
-        public override string ToString()
-        {
-            return this.JsonErrorCode;
-        }
-
-        /// <inheritdoc/>
         public override bool Equals(object? obj)
         {
             var other = obj as WebDriverErrorCode;
@@ -153,6 +147,12 @@ namespace Kaponata.Api.WebDriver
         public override int GetHashCode()
         {
             return HashCode.Combine(this.JsonErrorCode, this.HttpStatusCode);
+        }
+
+        /// <inheritdoc/>
+        public override string ToString()
+        {
+            return this.JsonErrorCode;
         }
     }
 }
