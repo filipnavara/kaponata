@@ -22,7 +22,7 @@ namespace Kaponata.Operator.Tests.Operators
     internal static class KubernetesClientMockExtensions
     {
         /// <summary>
-        /// Mocks the value of the <see cref="KubernetesClient.ListPodAsync(string, string, string, string, int?, CancellationToken)"/> method.
+        /// Mocks the value of the <see cref="KubernetesClient.ListPodAsync(string, string, string, int?, CancellationToken)"/> method.
         /// </summary>
         /// <param name="client">
         /// The mock to configure.
@@ -41,7 +41,7 @@ namespace Kaponata.Operator.Tests.Operators
             var items = new List<V1Pod>(pods);
 
             client
-                .Setup(k => k.ListPodAsync("default", null, null, labelSelector, null, It.IsAny<CancellationToken>()))
+                .Setup(k => k.ListPodAsync(null, null, labelSelector, null, It.IsAny<CancellationToken>()))
                 .Returns(Task.FromResult(
                     new V1PodList()
                     {
@@ -52,7 +52,7 @@ namespace Kaponata.Operator.Tests.Operators
         }
 
         /// <summary>
-        /// Mocks the value of the <see cref="KubernetesClient.ListMobileDeviceAsync(string, string, string, string, int?, CancellationToken)"/> method.
+        /// Mocks the value of the <see cref="KubernetesClient.ListMobileDeviceAsync(string, string, string, int?, CancellationToken)"/> method.
         /// </summary>
         /// <param name="client">
         /// The mock to configure.
@@ -71,7 +71,7 @@ namespace Kaponata.Operator.Tests.Operators
             var items = new List<MobileDevice>(devices);
 
             client
-                .Setup(k => k.ListMobileDeviceAsync("default", null, null, labelSelector, null, It.IsAny<CancellationToken>()))
+                .Setup(k => k.ListMobileDeviceAsync(null, null, labelSelector, null, It.IsAny<CancellationToken>()))
                 .Returns(Task.FromResult<ItemList<MobileDevice>>(
                     new MobileDeviceList()
                     {
@@ -186,7 +186,7 @@ namespace Kaponata.Operator.Tests.Operators
         }
 
         /// <summary>
-        /// Configures the <see cref="KubernetesClient.WatchPodAsync(string, string, string, string, WatchEventDelegate{V1Pod}, CancellationToken)"/> method
+        /// Configures the <see cref="KubernetesClient.WatchPodAsync(string, string, string, WatchEventDelegate{V1Pod}, CancellationToken)"/> method
         /// on the mock.
         /// </summary>
         /// <param name="client">
@@ -204,14 +204,13 @@ namespace Kaponata.Operator.Tests.Operators
 
             client
                 .Setup(k => k.WatchPodAsync(
-                    "default",
                     null /* fieldSelector */,
                     labelSelector /* labelSelector */,
                     null /* resourceVersion */,
                     It.IsAny<WatchEventDelegate<V1Pod>>(),
                     It.IsAny<CancellationToken>()))
-                .Callback<string, string, string, string, WatchEventDelegate<V1Pod>, CancellationToken>(
-                (@namespace, fieldSelector, labelSelector, resourceVersion, eventHandler, cancellationToken) =>
+                .Callback<string, string, string, WatchEventDelegate<V1Pod>, CancellationToken>(
+                (fieldSelector, labelSelector, resourceVersion, eventHandler, cancellationToken) =>
                 {
                     cancellationToken.Register(watchClient.TaskCompletionSource.SetCanceled);
                     watchClient.ClientRegistered.SetResult(eventHandler);
@@ -222,7 +221,7 @@ namespace Kaponata.Operator.Tests.Operators
         }
 
         /// <summary>
-        /// Configures the <see cref="KubernetesClient.WatchMobileDeviceAsync(string, string, string, string, WatchEventDelegate{MobileDevice}, CancellationToken)"/> method
+        /// Configures the <see cref="KubernetesClient.WatchMobileDeviceAsync(string, string, string, WatchEventDelegate{MobileDevice}, CancellationToken)"/> method
         /// on the mock.
         /// </summary>
         /// <param name="client">
@@ -240,14 +239,13 @@ namespace Kaponata.Operator.Tests.Operators
 
             client
                 .Setup(k => k.WatchMobileDeviceAsync(
-                    "default",
                     null /* fieldSelector */,
                     labelSelector, /* labelSelector */
                     null /* resourceVersion */,
                     It.IsAny<WatchEventDelegate<MobileDevice>>(),
                     It.IsAny<CancellationToken>()))
-                .Callback<string, string, string, string, WatchEventDelegate<MobileDevice>, CancellationToken>(
-                (@namespace, fieldSelector, labelSelector, resourceVersion, eventHandler, cancellationToken) =>
+                .Callback<string, string, string, WatchEventDelegate<MobileDevice>, CancellationToken>(
+                (fieldSelector, labelSelector, resourceVersion, eventHandler, cancellationToken) =>
                 {
                     cancellationToken.Register(watchClient.TaskCompletionSource.SetCanceled);
                     watchClient.ClientRegistered.SetResult(eventHandler);

@@ -93,9 +93,6 @@ namespace Kaponata.Kubernetes
         /// A <see cref="KindMetadata"/> object which describes the type of object to generate,
         /// such as the API version or plural name.
         /// </param>
-        /// <param name="namespaceParameter">
-        /// The namespace in which to list the objects.
-        /// </param>
         /// <param name="allowWatchBookmarks">
         /// allowWatchBookmarks requests watch events with type "BOOKMARK". Servers that
         /// do not implement bookmarks may ignore this flag and bookmarks are sent at the
@@ -186,7 +183,6 @@ namespace Kaponata.Kubernetes
         /// </returns>
         public async virtual Task<HttpOperationResponse<TList>> ListNamespacedObjectAsync<TObject, TList>(
             KindMetadata kind,
-            string namespaceParameter,
             bool? allowWatchBookmarks = null,
             string? continueParameter = null,
             string? fieldSelector = null,
@@ -208,7 +204,7 @@ namespace Kaponata.Kubernetes
             var operationResponse = await this.RunTaskAsync(this.protocol.ListNamespacedCustomObjectWithHttpMessagesAsync(
                 kind.Group,
                 kind.Version,
-                namespaceParameter,
+                this.options.Value.Namespace,
                 kind.Plural,
                 continueParameter: continueParameter,
                 fieldSelector: fieldSelector,
@@ -255,9 +251,6 @@ namespace Kaponata.Kubernetes
         /// <param name="name">
         /// The name of the object to delete.
         /// </param>
-        /// <param name="namespaceParameter">
-        /// The namespace in which to delete the object.
-        /// </param>
         /// <param name="body">
         /// Specific delete options.
         /// </param>
@@ -296,7 +289,6 @@ namespace Kaponata.Kubernetes
         public async Task<T?> DeleteNamespacedObjectAsync<T>(
             KindMetadata kind,
             string name,
-            string namespaceParameter,
             V1DeleteOptions? body = null,
             string? dryRun = null,
             int? gracePeriodSeconds = null,
@@ -309,7 +301,7 @@ namespace Kaponata.Kubernetes
             using (var operationResponse = await this.protocol.DeleteNamespacedCustomObjectWithHttpMessagesAsync(
                 kind.Group,
                 kind.Version,
-                namespaceParameter,
+                this.options.Value.Namespace,
                 kind.Plural,
                 name,
                 body,
@@ -382,9 +374,6 @@ namespace Kaponata.Kubernetes
         /// <typeparam name="TList">
         /// The type of a list of <typeparamref name="TObject"/> objects.
         /// </typeparam>
-        /// <param name="namespace">
-        /// The namespace in which to watch for <typeparamref name="TObject"/> objects.
-        /// </param>
         /// <param name="fieldSelector">
         /// A selector to restrict the list of returned objects by their fields. Defaults
         /// to everything.
@@ -416,7 +405,6 @@ namespace Kaponata.Kubernetes
         /// loop errors.
         /// </returns>
         public Task<WatchExitReason> WatchNamespacedObjectAsync<TObject, TList>(
-            string @namespace,
             string fieldSelector,
             string labelSelector,
             string resourceVersion,
@@ -427,7 +415,7 @@ namespace Kaponata.Kubernetes
             where TList : IItems<TObject>
         {
             return this.protocol.WatchNamespacedObjectAsync<TObject, TList>(
-                @namespace,
+                this.options.Value.Namespace,
                 fieldSelector,
                 labelSelector,
                 resourceVersion,
@@ -493,9 +481,6 @@ namespace Kaponata.Kubernetes
         /// <param name="metadata">
         /// Metadata which describes the object type.
         /// </param>
-        /// <param name="namespace">
-        /// The namespace of the object to patch.
-        /// </param>
         /// <param name="name">
         /// The name of the object to patch.
         /// </param>
@@ -510,7 +495,6 @@ namespace Kaponata.Kubernetes
         /// </returns>
         public async Task<T> PatchNamespacedObjectStatusAsync<T>(
             KindMetadata metadata,
-            string @namespace,
             string name,
             V1Patch patch,
             CancellationToken cancellationToken)
@@ -519,7 +503,7 @@ namespace Kaponata.Kubernetes
                 patch,
                 metadata.Group,
                 metadata.Version,
-                @namespace,
+                this.options.Value.Namespace,
                 metadata.Plural,
                 name,
                 null,

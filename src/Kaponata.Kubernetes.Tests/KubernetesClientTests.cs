@@ -32,9 +32,10 @@ namespace Kaponata.Kubernetes.Tests
         [Fact]
         public void Constructor_ValidatesArguments()
         {
-            Assert.Throws<ArgumentNullException>("protocol", () => new KubernetesClient(null, NullLogger<KubernetesClient>.Instance, NullLoggerFactory.Instance));
-            Assert.Throws<ArgumentNullException>("logger", () => new KubernetesClient(Mock.Of<IKubernetesProtocol>(), null, NullLoggerFactory.Instance));
-            Assert.Throws<ArgumentNullException>("loggerFactory", () => new KubernetesClient(Mock.Of<IKubernetesProtocol>(), NullLogger<KubernetesClient>.Instance, null));
+            Assert.Throws<ArgumentNullException>("protocol", () => new KubernetesClient(null, KubernetesOptions.Default, NullLogger<KubernetesClient>.Instance, NullLoggerFactory.Instance));
+            Assert.Throws<ArgumentNullException>("options", () => new KubernetesClient(Mock.Of<IKubernetesProtocol>(), null, NullLogger<KubernetesClient>.Instance, NullLoggerFactory.Instance));
+            Assert.Throws<ArgumentNullException>("logger", () => new KubernetesClient(Mock.Of<IKubernetesProtocol>(), KubernetesOptions.Default, null, NullLoggerFactory.Instance));
+            Assert.Throws<ArgumentNullException>("loggerFactory", () => new KubernetesClient(Mock.Of<IKubernetesProtocol>(), KubernetesOptions.Default, NullLogger<KubernetesClient>.Instance, null));
         }
 
         /// <summary>
@@ -46,7 +47,7 @@ namespace Kaponata.Kubernetes.Tests
             var protocol = new Mock<IKubernetesProtocol>(MockBehavior.Strict);
             protocol.Setup(p => p.Dispose()).Verifiable();
 
-            var client = new KubernetesClient(protocol.Object, NullLogger<KubernetesClient>.Instance, NullLoggerFactory.Instance);
+            var client = new KubernetesClient(protocol.Object, KubernetesOptions.Default, NullLogger<KubernetesClient>.Instance, NullLoggerFactory.Instance);
             client.Dispose();
 
             protocol.Verify();
@@ -62,7 +63,7 @@ namespace Kaponata.Kubernetes.Tests
             var protocol = new Mock<IKubernetesProtocol>(MockBehavior.Strict);
             protocol.Setup(p => p.Dispose()).Verifiable();
 
-            using (var client = new KubernetesClient(protocol.Object, NullLogger<KubernetesClient>.Instance, NullLoggerFactory.Instance))
+            using (var client = new KubernetesClient(protocol.Object, KubernetesOptions.Default, NullLogger<KubernetesClient>.Instance, NullLoggerFactory.Instance))
             {
                 await Assert.ThrowsAsync<ArgumentNullException>("value", () => client.WaitForPodRunningAsync(null, TimeSpan.FromMinutes(1), default)).ConfigureAwait(false);
             }
@@ -80,7 +81,7 @@ namespace Kaponata.Kubernetes.Tests
             var protocol = new Mock<IKubernetesProtocol>(MockBehavior.Strict);
             protocol.Setup(p => p.Dispose()).Verifiable();
 
-            using (var client = new KubernetesClient(protocol.Object, NullLogger<KubernetesClient>.Instance, NullLoggerFactory.Instance))
+            using (var client = new KubernetesClient(protocol.Object, KubernetesOptions.Default, NullLogger<KubernetesClient>.Instance, NullLoggerFactory.Instance))
             {
                 await client.WaitForPodRunningAsync(
                     new V1Pod()
@@ -108,7 +109,7 @@ namespace Kaponata.Kubernetes.Tests
             var protocol = new Mock<IKubernetesProtocol>(MockBehavior.Strict);
             protocol.Setup(p => p.Dispose()).Verifiable();
 
-            using (var client = new KubernetesClient(protocol.Object, NullLogger<KubernetesClient>.Instance, NullLoggerFactory.Instance))
+            using (var client = new KubernetesClient(protocol.Object, KubernetesOptions.Default, NullLogger<KubernetesClient>.Instance, NullLoggerFactory.Instance))
             {
                 var ex = await Assert.ThrowsAsync<KubernetesException>(() => client.WaitForPodRunningAsync(
                     new V1Pod()
@@ -166,7 +167,7 @@ namespace Kaponata.Kubernetes.Tests
                     return watchTask.Task;
                 });
 
-            using (var client = new KubernetesClient(protocol.Object, NullLogger<KubernetesClient>.Instance, NullLoggerFactory.Instance))
+            using (var client = new KubernetesClient(protocol.Object, KubernetesOptions.Default, NullLogger<KubernetesClient>.Instance, NullLoggerFactory.Instance))
             {
                 var task = client.WaitForPodRunningAsync(pod, TimeSpan.FromMinutes(1), default);
                 Assert.NotNull(callback);
@@ -217,7 +218,7 @@ namespace Kaponata.Kubernetes.Tests
                     return watchTask.Task;
                 });
 
-            using (var client = new KubernetesClient(protocol.Object, NullLogger<KubernetesClient>.Instance, NullLoggerFactory.Instance))
+            using (var client = new KubernetesClient(protocol.Object, KubernetesOptions.Default, NullLogger<KubernetesClient>.Instance, NullLoggerFactory.Instance))
             {
                 var task = client.WaitForPodRunningAsync(pod, TimeSpan.FromMinutes(1), default);
                 Assert.NotNull(callback);
@@ -271,7 +272,7 @@ namespace Kaponata.Kubernetes.Tests
                     return watchTask.Task;
                 });
 
-            using (var client = new KubernetesClient(protocol.Object, NullLogger<KubernetesClient>.Instance, NullLoggerFactory.Instance))
+            using (var client = new KubernetesClient(protocol.Object, KubernetesOptions.Default, NullLogger<KubernetesClient>.Instance, NullLoggerFactory.Instance))
             {
                 var task = client.WaitForPodRunningAsync(pod, TimeSpan.FromMinutes(1), default);
                 Assert.NotNull(callback);
@@ -337,7 +338,7 @@ namespace Kaponata.Kubernetes.Tests
                     return watchTask.Task;
                 });
 
-            using (var client = new KubernetesClient(protocol.Object, NullLogger<KubernetesClient>.Instance, NullLoggerFactory.Instance))
+            using (var client = new KubernetesClient(protocol.Object, KubernetesOptions.Default, NullLogger<KubernetesClient>.Instance, NullLoggerFactory.Instance))
             {
                 var task = client.WaitForPodRunningAsync(pod, TimeSpan.FromMinutes(1), default);
                 Assert.NotNull(callback);
@@ -387,7 +388,7 @@ namespace Kaponata.Kubernetes.Tests
                     return watchTask.Task;
                 });
 
-            using (var client = new KubernetesClient(protocol.Object, NullLogger<KubernetesClient>.Instance, NullLoggerFactory.Instance))
+            using (var client = new KubernetesClient(protocol.Object, KubernetesOptions.Default, NullLogger<KubernetesClient>.Instance, NullLoggerFactory.Instance))
             {
                 var task = client.WaitForPodRunningAsync(pod, TimeSpan.Zero, default);
                 Assert.NotNull(callback);
@@ -410,7 +411,7 @@ namespace Kaponata.Kubernetes.Tests
             var protocol = new Mock<IKubernetesProtocol>(MockBehavior.Strict);
             protocol.Setup(p => p.Dispose()).Verifiable();
 
-            using (var client = new KubernetesClient(protocol.Object, NullLogger<KubernetesClient>.Instance, NullLoggerFactory.Instance))
+            using (var client = new KubernetesClient(protocol.Object, KubernetesOptions.Default, NullLogger<KubernetesClient>.Instance, NullLoggerFactory.Instance))
             {
                 await Assert.ThrowsAsync<ArgumentNullException>("value", () => client.DeletePodAsync(null, TimeSpan.FromMinutes(1), default)).ConfigureAwait(false);
             }
@@ -457,7 +458,7 @@ namespace Kaponata.Kubernetes.Tests
                     return watchTask.Task;
                 });
 
-            using (var client = new KubernetesClient(protocol.Object, NullLogger<KubernetesClient>.Instance, NullLoggerFactory.Instance))
+            using (var client = new KubernetesClient(protocol.Object, KubernetesOptions.Default, NullLogger<KubernetesClient>.Instance, NullLoggerFactory.Instance))
             {
                 var task = client.DeletePodAsync(pod, TimeSpan.FromMinutes(1), default);
                 Assert.NotNull(callback);
@@ -513,7 +514,7 @@ namespace Kaponata.Kubernetes.Tests
                     return watchTask.Task;
                 });
 
-            using (var client = new KubernetesClient(protocol.Object, NullLogger<KubernetesClient>.Instance, NullLoggerFactory.Instance))
+            using (var client = new KubernetesClient(protocol.Object, KubernetesOptions.Default, NullLogger<KubernetesClient>.Instance, NullLoggerFactory.Instance))
             {
                 var task = client.DeletePodAsync(pod, TimeSpan.FromMinutes(1), default);
                 Assert.NotNull(callback);
@@ -569,7 +570,7 @@ namespace Kaponata.Kubernetes.Tests
                     return watchTask.Task;
                 });
 
-            using (var client = new KubernetesClient(protocol.Object, NullLogger<KubernetesClient>.Instance, NullLoggerFactory.Instance))
+            using (var client = new KubernetesClient(protocol.Object, KubernetesOptions.Default, NullLogger<KubernetesClient>.Instance, NullLoggerFactory.Instance))
             {
                 var task = client.DeletePodAsync(pod, TimeSpan.Zero, default);
                 Assert.NotNull(callback);
@@ -592,7 +593,7 @@ namespace Kaponata.Kubernetes.Tests
             var protocol = new Mock<IKubernetesProtocol>(MockBehavior.Strict);
             protocol.Setup(p => p.Dispose()).Verifiable();
 
-            using (var client = new KubernetesClient(protocol.Object, NullLogger<KubernetesClient>.Instance, NullLoggerFactory.Instance))
+            using (var client = new KubernetesClient(protocol.Object, KubernetesOptions.Default, NullLogger<KubernetesClient>.Instance, NullLoggerFactory.Instance))
             {
                 await Assert.ThrowsAsync<ArgumentNullException>("value", () => client.CreatePodAsync(null, default)).ConfigureAwait(false);
                 await Assert.ThrowsAsync<ValidationException>(() => client.CreatePodAsync(new V1Pod(), default)).ConfigureAwait(false);
@@ -630,7 +631,7 @@ namespace Kaponata.Kubernetes.Tests
 
             protocol.Setup(p => p.Dispose()).Verifiable();
 
-            using (var client = new KubernetesClient(protocol.Object, NullLogger<KubernetesClient>.Instance, NullLoggerFactory.Instance))
+            using (var client = new KubernetesClient(protocol.Object, KubernetesOptions.Default, NullLogger<KubernetesClient>.Instance, NullLoggerFactory.Instance))
             {
                 var ex = await Assert.ThrowsAsync<KubernetesException>(() => client.CreatePodAsync(pod, default)).ConfigureAwait(false);
                 Assert.Equal("pods 'waitforpodrunning-integrationtest-async' already exists", ex.Message);
@@ -671,14 +672,14 @@ namespace Kaponata.Kubernetes.Tests
 
             protocol.Setup(p => p.Dispose()).Verifiable();
 
-            using (var client = new KubernetesClient(protocol.Object, NullLogger<KubernetesClient>.Instance, NullLoggerFactory.Instance))
+            using (var client = new KubernetesClient(protocol.Object, KubernetesOptions.Default, NullLogger<KubernetesClient>.Instance, NullLoggerFactory.Instance))
             {
                 await Assert.ThrowsAsync<HttpOperationException>(() => client.CreatePodAsync(pod, default)).ConfigureAwait(false);
             }
         }
 
         /// <summary>
-        /// <see cref="KubernetesClient.TryReadPodAsync(string, string, CancellationToken)"/> returns the object if the pod exists.
+        /// <see cref="KubernetesClient.TryReadPodAsync(string, CancellationToken)"/> returns the object if the pod exists.
         /// </summary>
         /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
         [Fact]
@@ -693,14 +694,14 @@ namespace Kaponata.Kubernetes.Tests
 
             protocol.Setup(p => p.Dispose()).Verifiable();
 
-            using (var client = new KubernetesClient(protocol.Object, NullLogger<KubernetesClient>.Instance, NullLoggerFactory.Instance))
+            using (var client = new KubernetesClient(protocol.Object, KubernetesOptions.Default, NullLogger<KubernetesClient>.Instance, NullLoggerFactory.Instance))
             {
-                Assert.Equal(pod, await client.TryReadPodAsync("default", "my-pod", default).ConfigureAwait(false));
+                Assert.Equal(pod, await client.TryReadPodAsync("my-pod", default).ConfigureAwait(false));
             }
         }
 
         /// <summary>
-        /// <see cref="KubernetesClient.TryReadPodAsync(string, string, CancellationToken)"/> returns <see langword="null"/> if the pod does exist.
+        /// <see cref="KubernetesClient.TryReadPodAsync(string, CancellationToken)"/> returns <see langword="null"/> if the pod does exist.
         /// </summary>
         /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
         [Fact]
@@ -713,9 +714,9 @@ namespace Kaponata.Kubernetes.Tests
 
             protocol.Setup(p => p.Dispose()).Verifiable();
 
-            using (var client = new KubernetesClient(protocol.Object, NullLogger<KubernetesClient>.Instance, NullLoggerFactory.Instance))
+            using (var client = new KubernetesClient(protocol.Object, KubernetesOptions.Default, NullLogger<KubernetesClient>.Instance, NullLoggerFactory.Instance))
             {
-                Assert.Null(await client.TryReadPodAsync("default", "my-pod", default).ConfigureAwait(false));
+                Assert.Null(await client.TryReadPodAsync("my-pod", default).ConfigureAwait(false));
             }
         }
 
@@ -729,7 +730,7 @@ namespace Kaponata.Kubernetes.Tests
             var protocol = new Mock<IKubernetesProtocol>(MockBehavior.Strict);
             protocol.Setup(p => p.Dispose()).Verifiable();
 
-            using (var client = new KubernetesClient(protocol.Object, NullLogger<KubernetesClient>.Instance, NullLoggerFactory.Instance))
+            using (var client = new KubernetesClient(protocol.Object, KubernetesOptions.Default, NullLogger<KubernetesClient>.Instance, NullLoggerFactory.Instance))
             {
                 await Assert.ThrowsAsync<ArgumentNullException>(() => client.ConnectToPodPortAsync(null, 1, default).AsTask()).ConfigureAwait(false);
                 await Assert.ThrowsAsync<ValidationException>(() => client.ConnectToPodPortAsync(new V1Pod { }, 1, default).AsTask()).ConfigureAwait(false);
@@ -767,7 +768,7 @@ namespace Kaponata.Kubernetes.Tests
                 .Verifiable();
             protocol.Setup(p => p.Dispose()).Verifiable();
 
-            using (var client = new KubernetesClient(protocol.Object, NullLogger<KubernetesClient>.Instance, NullLoggerFactory.Instance))
+            using (var client = new KubernetesClient(protocol.Object, KubernetesOptions.Default, NullLogger<KubernetesClient>.Instance, NullLoggerFactory.Instance))
             using (var stream = await client.ConnectToPodPortAsync(pod, 27015, default))
             {
                 var portForwardStream = Assert.IsType<PortForwardStream>(stream);
@@ -788,13 +789,13 @@ namespace Kaponata.Kubernetes.Tests
             var response = new HttpOperationResponse<V1PodList>() { Body = list };
             var protocol = new Mock<IKubernetesProtocol>(MockBehavior.Strict);
             protocol
-                .Setup(p => p.ListNamespacedPodWithHttpMessagesAsync("namespace", null, "continue", "fieldSelector", "labelSelector", 1, null, null, null, null, null, null, default))
+                .Setup(p => p.ListNamespacedPodWithHttpMessagesAsync("default", null, "continue", "fieldSelector", "labelSelector", 1, null, null, null, null, null, null, default))
                 .ReturnsAsync(response);
             protocol.Setup(p => p.Dispose()).Verifiable();
 
-            using (var client = new KubernetesClient(protocol.Object, NullLogger<KubernetesClient>.Instance, NullLoggerFactory.Instance))
+            using (var client = new KubernetesClient(protocol.Object, KubernetesOptions.Default, NullLogger<KubernetesClient>.Instance, NullLoggerFactory.Instance))
             {
-                Assert.Same(list, await client.ListPodAsync("namespace", "continue", "fieldSelector", "labelSelector", 1, default).ConfigureAwait(false));
+                Assert.Same(list, await client.ListPodAsync("continue", "fieldSelector", "labelSelector", 1, default).ConfigureAwait(false));
             }
 
             protocol.Verify();
@@ -811,13 +812,13 @@ namespace Kaponata.Kubernetes.Tests
 
             var protocol = new Mock<IKubernetesProtocol>(MockBehavior.Strict);
             protocol
-                .Setup(p => p.WatchNamespacedObjectAsync("namespace", "fieldSelector", "labelSelector", "resourceVersion", protocol.Object.ListNamespacedPodWithHttpMessagesAsync, eventHandler, default))
+                .Setup(p => p.WatchNamespacedObjectAsync("default", "fieldSelector", "labelSelector", "resourceVersion", protocol.Object.ListNamespacedPodWithHttpMessagesAsync, eventHandler, default))
                 .Returns(tcs.Task);
             protocol.Setup(p => p.Dispose()).Verifiable();
 
-            using (var client = new KubernetesClient(protocol.Object, NullLogger<KubernetesClient>.Instance, NullLoggerFactory.Instance))
+            using (var client = new KubernetesClient(protocol.Object, KubernetesOptions.Default, NullLogger<KubernetesClient>.Instance, NullLoggerFactory.Instance))
             {
-                Assert.Same(tcs.Task, client.WatchPodAsync("namespace", "fieldSelector", "labelSelector", "resourceVersion", eventHandler, default));
+                Assert.Same(tcs.Task, client.WatchPodAsync("fieldSelector", "labelSelector", "resourceVersion", eventHandler, default));
             }
 
             protocol.Verify();

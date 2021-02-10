@@ -51,7 +51,7 @@ namespace Kaponata.Kubernetes.Tests
             {
                 V1Pod pod;
 
-                if ((pod = await client.TryReadPodAsync("default", FormatName(nameof(this.WaitForPodRunning_IntegrationTest_Async)), default).ConfigureAwait(false)) != null)
+                if ((pod = await client.TryReadPodAsync(FormatName(nameof(this.WaitForPodRunning_IntegrationTest_Async)), default).ConfigureAwait(false)) != null)
                 {
                     await client.DeletePodAsync(pod, TimeSpan.FromSeconds(100), default).ConfigureAwait(false);
                 }
@@ -94,7 +94,7 @@ namespace Kaponata.Kubernetes.Tests
             {
                 V1Pod pod;
 
-                if ((pod = await client.TryReadPodAsync("default", FormatName(nameof(this.CreatePodHttpClient_IntegrationTest_Async)), default).ConfigureAwait(false)) != null)
+                if ((pod = await client.TryReadPodAsync(FormatName(nameof(this.CreatePodHttpClient_IntegrationTest_Async)), default).ConfigureAwait(false)) != null)
                 {
                     await client.DeletePodAsync(pod, TimeSpan.FromSeconds(100), default).ConfigureAwait(false);
                 }
@@ -337,7 +337,7 @@ namespace Kaponata.Kubernetes.Tests
             {
                 MobileDevice currentDevice = null;
 
-                if ((currentDevice = await client.TryReadMobileDeviceAsync("default", name, default).ConfigureAwait(false)) != null)
+                if ((currentDevice = await client.TryReadMobileDeviceAsync(name, default).ConfigureAwait(false)) != null)
                 {
                     await client.DeleteMobileDeviceAsync(currentDevice, TimeSpan.FromSeconds(100), default).ConfigureAwait(false);
                 }
@@ -354,12 +354,12 @@ namespace Kaponata.Kubernetes.Tests
                 var newDevice = await client.CreateMobileDeviceAsync(device, default).ConfigureAwait(false);
                 Assert.NotNull(newDevice);
 
-                var readDevice = await client.TryReadMobileDeviceAsync("default", name, default).ConfigureAwait(false);
+                var readDevice = await client.TryReadMobileDeviceAsync(name, default).ConfigureAwait(false);
                 Assert.NotNull(readDevice);
 
                 await client.DeleteMobileDeviceAsync(newDevice, TimeSpan.FromMinutes(1), default).ConfigureAwait(false);
 
-                Assert.Null(await client.TryReadMobileDeviceAsync("default", name, default).ConfigureAwait(false));
+                Assert.Null(await client.TryReadMobileDeviceAsync(name, default).ConfigureAwait(false));
             }
         }
 
@@ -378,7 +378,7 @@ namespace Kaponata.Kubernetes.Tests
                 Collection<(WatchEventType, MobileDevice)> watchEvents = new Collection<(WatchEventType, MobileDevice)>();
                 MobileDevice currentDevice = null;
 
-                if ((currentDevice = await client.TryReadMobileDeviceAsync("default", name, default).ConfigureAwait(false)) != null)
+                if ((currentDevice = await client.TryReadMobileDeviceAsync(name, default).ConfigureAwait(false)) != null)
                 {
                     await client.DeleteMobileDeviceAsync(currentDevice, TimeSpan.FromSeconds(100), default).ConfigureAwait(false);
                 }
@@ -435,7 +435,7 @@ namespace Kaponata.Kubernetes.Tests
             {
                 WebDriverSession currentDevice = null;
 
-                if ((currentDevice = await client.TryReadWebDriverSessionAsync("default", name, default).ConfigureAwait(false)) != null)
+                if ((currentDevice = await client.TryReadWebDriverSessionAsync(name, default).ConfigureAwait(false)) != null)
                 {
                     await client.DeleteWebDriverSessionAsync(currentDevice, TimeSpan.FromSeconds(100), default).ConfigureAwait(false);
                 }
@@ -452,12 +452,12 @@ namespace Kaponata.Kubernetes.Tests
                 var newSession = await client.CreateWebDriverSessionAsync(session, default).ConfigureAwait(false);
                 Assert.NotNull(newSession);
 
-                var readSession = await client.TryReadWebDriverSessionAsync("default", name, default).ConfigureAwait(false);
+                var readSession = await client.TryReadWebDriverSessionAsync(name, default).ConfigureAwait(false);
                 Assert.NotNull(readSession);
 
                 await client.DeleteWebDriverSessionAsync(newSession, TimeSpan.FromMinutes(1), default).ConfigureAwait(false);
 
-                Assert.Null(await client.TryReadWebDriverSessionAsync("default", name, default).ConfigureAwait(false));
+                Assert.Null(await client.TryReadWebDriverSessionAsync(name, default).ConfigureAwait(false));
             }
         }
 
@@ -476,7 +476,7 @@ namespace Kaponata.Kubernetes.Tests
                 var watchEvents = new Collection<(WatchEventType, WebDriverSession)>();
                 WebDriverSession currentSession = null;
 
-                if ((currentSession = await client.TryReadWebDriverSessionAsync("default", name, default).ConfigureAwait(false)) != null)
+                if ((currentSession = await client.TryReadWebDriverSessionAsync(name, default).ConfigureAwait(false)) != null)
                 {
                     await client.DeleteWebDriverSessionAsync(currentSession, TimeSpan.FromSeconds(100), default).ConfigureAwait(false);
                 }
@@ -533,7 +533,7 @@ namespace Kaponata.Kubernetes.Tests
             using (var client = this.CreateKubernetesClient())
             {
                 var podClient = client.GetClient<V1Pod>();
-                var pods = await podClient.ListAsync("default").ConfigureAwait(false);
+                var pods = await podClient.ListAsync().ConfigureAwait(false);
                 Assert.Equal("v1", pods.ApiVersion);
                 Assert.Equal("PodList", pods.Kind);
             }
@@ -556,6 +556,7 @@ namespace Kaponata.Kubernetes.Tests
                     KubernetesClientConfiguration.BuildDefaultConfig(),
                     this.loggerFactory.CreateLogger<KubernetesProtocol>(),
                     this.loggerFactory),
+                KubernetesOptions.Default,
                 this.loggerFactory.CreateLogger<KubernetesClient>(),
                 this.loggerFactory);
         }

@@ -76,7 +76,6 @@ namespace Kaponata.Operator.Tests.Operators
             var podClient = kubernetes.GetClient<V1Pod>();
             var podWatcher =
                 podClient.WatchAsync(
-                    "default",
                     fieldSelector: null,
                     labelSelector: $"{Annotations.ManagedBy}={name}",
                     null,
@@ -101,10 +100,10 @@ namespace Kaponata.Operator.Tests.Operators
 
             // Delete all objects which may have been created by this test.
             await Task.WhenAll(
-                sessionClient.TryDeleteAsync("default", $"{name}-empty", TimeSpan.FromMinutes(1), default),
-                sessionClient.TryDeleteAsync("default", $"{name}-fake", TimeSpan.FromMinutes(1), default),
-                podClient.TryDeleteAsync("default", $"{name}-empty", TimeSpan.FromMinutes(1), default),
-                podClient.TryDeleteAsync("default", $"{name}-fake", TimeSpan.FromMinutes(1), default)).ConfigureAwait(false);
+                sessionClient.TryDeleteAsync($"{name}-empty", TimeSpan.FromMinutes(1), default),
+                sessionClient.TryDeleteAsync($"{name}-fake", TimeSpan.FromMinutes(1), default),
+                podClient.TryDeleteAsync($"{name}-empty", TimeSpan.FromMinutes(1), default),
+                podClient.TryDeleteAsync($"{name}-fake", TimeSpan.FromMinutes(1), default)).ConfigureAwait(false);
 
             using (var @operator = new ChildOperator<WebDriverSession, V1Pod>(
                 kubernetes,

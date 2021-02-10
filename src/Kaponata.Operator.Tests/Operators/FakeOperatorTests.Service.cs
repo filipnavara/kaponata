@@ -80,7 +80,6 @@ namespace Kaponata.Operator.Tests.Operators
                     Assert.Equal("WebDriverSession-ServiceOperator", l.Value);
                 });
 
-            Assert.Equal("default", builder.Configuration.Namespace);
             Assert.Equal("WebDriverSession-ServiceOperator", builder.Configuration.OperatorName);
             Assert.Null(builder.Configuration.ParentLabelSelector);
 

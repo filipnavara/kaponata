@@ -225,7 +225,6 @@ namespace Kaponata.Operator.Tests.Operators
                     Assert.Equal("WebDriverSession-FakeDriver-PodOperator", l.Value);
                 });
 
-            Assert.Equal("default", builder.Configuration.Namespace);
             Assert.Equal("WebDriverSession-FakeDriver-PodOperator", builder.Configuration.OperatorName);
             Assert.Equal("kaponata.io/automation-name=fake", builder.Configuration.ParentLabelSelector);
 

@@ -8,6 +8,7 @@ using Kaponata.Kubernetes.Models;
 using Kaponata.Kubernetes.Polyfill;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
 using Microsoft.Rest;
 using Microsoft.Rest.Serialization;
 using System;
@@ -32,6 +33,7 @@ namespace Kaponata.Kubernetes
         private readonly ILoggerFactory loggerFactory;
         private readonly NamespacedKubernetesClient<MobileDevice> mobileDeviceClient;
         private readonly NamespacedKubernetesClient<WebDriverSession> webDriverSessionClient;
+        private readonly IOptions<KubernetesOptions> options;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="KubernetesClient"/> class.
@@ -39,17 +41,21 @@ namespace Kaponata.Kubernetes
         /// <param name="protocol">
         /// The protocol to use to communicate with the Kubernetes API server.
         /// </param>
+        /// <param name="options">
+        /// General options for the <see cref="KubernetesClient"/>.
+        /// </param>
         /// <param name="logger">
         /// The logger to use when logging.
         /// </param>
         /// <param name="loggerFactory">
         /// The logger factory to use when creating child objects.
         /// </param>
-        public KubernetesClient(IKubernetesProtocol protocol, ILogger<KubernetesClient> logger, ILoggerFactory loggerFactory)
+        public KubernetesClient(IKubernetesProtocol protocol, IOptions<KubernetesOptions> options, ILogger<KubernetesClient> logger, ILoggerFactory loggerFactory)
         {
             this.protocol = protocol ?? throw new ArgumentNullException(nameof(protocol));
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
             this.loggerFactory = loggerFactory ?? throw new ArgumentNullException(nameof(loggerFactory));
+            this.options = options ?? throw new ArgumentNullException(nameof(options));
 
             this.knownTypes.Add(typeof(MobileDevice), MobileDevice.KubeMetadata);
             this.knownTypes.Add(typeof(WebDriverSession), WebDriverSession.KubeMetadata);
@@ -72,6 +78,7 @@ namespace Kaponata.Kubernetes
         {
             this.logger = NullLogger<KubernetesClient>.Instance;
             this.loggerFactory = NullLoggerFactory.Instance;
+            this.options = KubernetesOptions.Default;
         }
 #nullable restore
 
@@ -99,6 +106,11 @@ namespace Kaponata.Kubernetes
             WatchEventDelegate<T> onEvent,
             CancellationToken cancellationToken)
             where T : IKubernetesObject<V1ObjectMeta>;
+
+        /// <summary>
+        /// Gets the <see cref="KubernetesOptions"/> which configure this <see cref="KubernetesClient"/>.
+        /// </summary>
+        public KubernetesOptions Options => this.options.Value;
 
         /// <summary>
         /// Gets a <see cref="NamespacedKubernetesClient{T}"/> which allows you to interact with objects of <typeparamref name="T"/>.

@@ -53,9 +53,6 @@ namespace Kaponata.Kubernetes
         /// <summary>
         /// Asynchronously tries to read a pod.
         /// </summary>
-        /// <param name="namespace">
-        /// The namespace in which the pod is located.
-        /// </param>
         /// <param name="name">
         /// The name which uniquely identifies the pod within the namespace.
         /// </param>
@@ -66,18 +63,18 @@ namespace Kaponata.Kubernetes
         /// A <see cref="Task"/> which represents the asynchronous operation, and returns the requested pod, or
         /// <see langword="null"/> if the pod does not exist.
         /// </returns>
-        public virtual async Task<V1Pod?> TryReadPodAsync(string @namespace, string name, CancellationToken cancellationToken)
+        public virtual async Task<V1Pod?> TryReadPodAsync(string name, CancellationToken cancellationToken)
         {
-            var list = await this.RunTaskAsync(this.protocol.ListNamespacedPodAsync(@namespace, fieldSelector: $"metadata.name={name}", cancellationToken: cancellationToken)).ConfigureAwait(false);
+            var list = await this.RunTaskAsync(this.protocol.ListNamespacedPodAsync(
+                this.options.Value.Namespace,
+                fieldSelector: $"metadata.name={name}",
+                cancellationToken: cancellationToken)).ConfigureAwait(false);
             return list.Items.SingleOrDefault();
         }
 
         /// <summary>
         /// Asynchronously lists <see cref="V1Pod"/> objects.
         /// </summary>
-        /// <param name="namespace">
-        /// The namespace in which to list <see cref="V1Pod"/> objects.
-        /// </param>
         /// <param name="continue">
         /// The continue option should be set when retrieving more results from the server.
         /// Since this value is server defined, clients may only use the continue value from
@@ -130,10 +127,10 @@ namespace Kaponata.Kubernetes
         /// <returns>
         /// A <see cref="V1PodList"/> which represents the mobile devices which match the query.
         /// </returns>
-        public async virtual Task<V1PodList> ListPodAsync(string @namespace, string? @continue = null, string? fieldSelector = null, string? labelSelector = null, int? limit = null, CancellationToken cancellationToken = default)
+        public async virtual Task<V1PodList> ListPodAsync(string? @continue = null, string? fieldSelector = null, string? labelSelector = null, int? limit = null, CancellationToken cancellationToken = default)
         {
             using (var operationResponse = await this.RunTaskAsync(this.protocol.ListNamespacedPodWithHttpMessagesAsync(
-                namespaceParameter: @namespace,
+                this.options.Value.Namespace,
                 continueParameter: @continue,
                 fieldSelector: fieldSelector,
                 labelSelector: labelSelector,
@@ -179,9 +176,6 @@ namespace Kaponata.Kubernetes
         /// <summary>
         /// Asynchronously watches pods.
         /// </summary>
-        /// <param name="namespace">
-        /// The namespace in which to watch for <see cref="V1Pod"/> objects.
-        /// </param>
         /// <param name="fieldSelector">
         /// A selector to restrict the list of returned objects by their fields. Defaults
         /// to everything.
@@ -210,7 +204,6 @@ namespace Kaponata.Kubernetes
         /// loop errors.
         /// </returns>
         public virtual Task<WatchExitReason> WatchPodAsync(
-            string @namespace,
             string fieldSelector,
             string labelSelector,
             string resourceVersion,
@@ -218,7 +211,7 @@ namespace Kaponata.Kubernetes
             CancellationToken cancellationToken)
         {
             return this.protocol.WatchNamespacedObjectAsync(
-                @namespace,
+                this.options.Value.Namespace,
                 fieldSelector: fieldSelector,
                 labelSelector: labelSelector,
                 resourceVersion: resourceVersion,

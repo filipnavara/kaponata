@@ -80,9 +80,6 @@ namespace Kaponata.Kubernetes
         /// <summary>
         /// Asynchronously list or watch <typeparamref name="T"/> objects.
         /// </summary>
-        /// <param name="namespace">
-        /// The namespace in which to list or watch objects.
-        /// </param>
         /// <param name="continue">
         /// The continue option should be set when retrieving more results from the server.
         /// Since this value is server defined, clients may only use the continue value from
@@ -135,10 +132,10 @@ namespace Kaponata.Kubernetes
         /// <returns>
         /// A <see cref="ItemList{T}"/> which represents the mobile devices which match the query.
         /// </returns>
-        public async virtual Task<ItemList<T>> ListAsync(string @namespace, string? @continue = null, string? fieldSelector = null, string? labelSelector = null, int? limit = null, CancellationToken cancellationToken = default)
+        public async virtual Task<ItemList<T>> ListAsync(string? @continue = null, string? fieldSelector = null, string? labelSelector = null, int? limit = null, CancellationToken cancellationToken = default)
         {
             using (var operationResponse = await this.ListAsync(
-                namespaceParameter: @namespace,
+                namespaceParameter: this.parent.Options.Namespace,
                 continueParameter: @continue,
                 fieldSelector: fieldSelector,
                 labelSelector: labelSelector,
@@ -151,9 +148,6 @@ namespace Kaponata.Kubernetes
         /// <summary>
         /// Asynchronously tries to read a <typeparamref name="T"/> object.
         /// </summary>
-        /// <param name="namespace">
-        /// The namespace in which the <typeparamref name="T"/> object is located.
-        /// </param>
         /// <param name="name">
         /// The name which uniquely identifies the <typeparamref name="T"/> objectwithin the namespace.
         /// </param>
@@ -164,17 +158,14 @@ namespace Kaponata.Kubernetes
         /// A <see cref="Task"/> which represents the asynchronous operation, and returns the requested <typeparamref name="T"/> object, or
         /// <see langword="null"/> if the <typeparamref name="T"/> object does not exist.
         /// </returns>
-        public virtual Task<T?> TryReadAsync(string @namespace, string name, CancellationToken cancellationToken)
+        public virtual Task<T?> TryReadAsync(string name, CancellationToken cancellationToken)
         {
-            return this.TryReadAsync(@namespace, name, labelSelector: null, cancellationToken);
+            return this.TryReadAsync(name, labelSelector: null, cancellationToken);
         }
 
         /// <summary>
         /// Asynchronously tries to read a <typeparamref name="T"/> object.
         /// </summary>
-        /// <param name="namespace">
-        /// The namespace in which the <typeparamref name="T"/> object is located.
-        /// </param>
         /// <param name="name">
         /// The name which uniquely identifies the <typeparamref name="T"/> objectwithin the namespace.
         /// </param>
@@ -188,28 +179,20 @@ namespace Kaponata.Kubernetes
         /// A <see cref="Task"/> which represents the asynchronous operation, and returns the requested <typeparamref name="T"/> object, or
         /// <see langword="null"/> if the <typeparamref name="T"/> object does not exist.
         /// </returns>
-        public virtual async Task<T?> TryReadAsync(string @namespace, string name, string? labelSelector, CancellationToken cancellationToken)
+        public virtual async Task<T?> TryReadAsync(string name, string? labelSelector, CancellationToken cancellationToken)
         {
-            if (@namespace == null)
-            {
-                throw new ArgumentNullException(nameof(@namespace));
-            }
-
             if (name == null)
             {
                 throw new ArgumentNullException(nameof(name));
             }
 
-            var list = await this.parent.RunTaskAsync(this.ListAsync(namespaceParameter: @namespace, fieldSelector: $"metadata.name={name}", labelSelector: labelSelector, cancellationToken: cancellationToken)).ConfigureAwait(false);
-            return list.Body?.Items?.SingleOrDefault();
+            var list = await this.parent.RunTaskAsync(this.ListAsync(fieldSelector: $"metadata.name={name}", labelSelector: labelSelector, cancellationToken: cancellationToken)).ConfigureAwait(false);
+            return list.Items?.SingleOrDefault();
         }
 
         /// <summary>
         /// Deletes an object if it exists.
         /// </summary>
-        /// <param name="namespace">
-        /// The namespace in which to search for the object.
-        /// </param>
         /// <param name="name">
         /// The name of the object.
         /// </param>
@@ -220,19 +203,14 @@ namespace Kaponata.Kubernetes
         /// A <see cref="CancellationToken"/> which can be used to cancel the asynchronous operation.
         /// </param>
         /// <returns>A <see cref="Task"/> representing the asynchronous operation, and which returns the deleted object if an object was deleted.</returns>
-        public virtual async Task<T?> TryDeleteAsync(string @namespace, string name, TimeSpan timeout, CancellationToken cancellationToken)
+        public virtual async Task<T?> TryDeleteAsync(string name, TimeSpan timeout, CancellationToken cancellationToken)
         {
-            if (@namespace == null)
-            {
-                throw new ArgumentNullException(nameof(@namespace));
-            }
-
             if (name == null)
             {
                 throw new ArgumentNullException(nameof(name));
             }
 
-            var value = await this.TryReadAsync(@namespace, name, cancellationToken).ConfigureAwait(false);
+            var value = await this.TryReadAsync(name, cancellationToken).ConfigureAwait(false);
 
             if (value == null)
             {
@@ -328,9 +306,6 @@ namespace Kaponata.Kubernetes
         /// <summary>
         /// Asynchronously watches <typeparamref name="T"/> objects.
         /// </summary>
-        /// <param name="namespace">
-        /// The namespace in which to watch for <typeparamref name="T"/> objects.
-        /// </param>
         /// <param name="fieldSelector">
         /// A selector to restrict the list of returned objects by their fields. Defaults
         /// to everything.
@@ -359,7 +334,6 @@ namespace Kaponata.Kubernetes
         /// loop errors.
         /// </returns>
         public virtual Task<WatchExitReason> WatchAsync(
-            string @namespace,
             string fieldSelector,
             string labelSelector,
             string resourceVersion,
@@ -367,7 +341,6 @@ namespace Kaponata.Kubernetes
             CancellationToken cancellationToken)
         {
             return this.parent.WatchNamespacedObjectAsync<T, ItemList<T>>(
-                @namespace,
                 fieldSelector,
                 labelSelector,
                 resourceVersion,
@@ -440,7 +413,6 @@ namespace Kaponata.Kubernetes
 
             return this.parent.PatchNamespacedObjectStatusAsync<T>(
                 this.metadata,
-                value.Metadata.NamespaceProperty,
                 value.Metadata.Name,
                 new V1Patch(patch, V1Patch.PatchType.JsonPatch),
                 cancellationToken);
@@ -484,9 +456,13 @@ namespace Kaponata.Kubernetes
             Dictionary<string, List<string>>? customHeaders = null,
             CancellationToken cancellationToken = default)
         {
+            if (namespaceParameter != this.parent.Options.Namespace)
+            {
+                throw new InvalidOperationException($"This client is scoped to the {this.parent.Options.Namespace} namespace");
+            }
+
             return this.parent.ListNamespacedObjectAsync<T, ItemList<T>>(
                 this.metadata,
-                namespaceParameter,
                 allowWatchBookmarks,
                 continueParameter,
                 fieldSelector,
@@ -512,10 +488,14 @@ namespace Kaponata.Kubernetes
             string? pretty = null,
             CancellationToken cancellationToken = default)
         {
+            if (namespaceParameter != this.parent.Options.Namespace)
+            {
+                throw new InvalidOperationException($"This client is scoped to the {this.parent.Options.Namespace} namespace");
+            }
+
             return this.parent.DeleteNamespacedObjectAsync<T>(
                 this.metadata,
                 name,
-                namespaceParameter,
                 body,
                 dryRun,
                 gracePeriodSeconds,

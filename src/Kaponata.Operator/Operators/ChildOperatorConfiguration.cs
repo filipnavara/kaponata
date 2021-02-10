@@ -26,11 +26,6 @@ namespace Kaponata.Operator.Operators
         }
 
         /// <summary>
-        /// Gets or sets the name of the namespace in which the operator observes object.
-        /// </summary>
-        public string Namespace { get; set; } = "default";
-
-        /// <summary>
         /// Gets the name of the operator.
         /// </summary>
         public string OperatorName { get; }

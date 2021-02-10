@@ -58,6 +58,7 @@ namespace Kaponata.Chart.Tests
                 this.loggerFactory))
             using (var client = new KubernetesClient(
                 kubernetes,
+                KubernetesOptions.Default,
                 this.output.BuildLoggerFor<KubernetesClient>(),
                 this.loggerFactory))
             {
