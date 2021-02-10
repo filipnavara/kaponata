@@ -46,8 +46,7 @@ namespace Kaponata.Kubernetes.Tests
 
             var client = new NamespacedKubernetesClient<V1Pod>(parent.Object, metadata);
 
-            await Assert.ThrowsAsync<ArgumentNullException>("namespace", () => client.TryDeleteAsync(null, "test", TimeSpan.Zero, default)).ConfigureAwait(false);
-            await Assert.ThrowsAsync<ArgumentNullException>("name", () => client.TryDeleteAsync("test", null, TimeSpan.Zero, default)).ConfigureAwait(false);
+            await Assert.ThrowsAsync<ArgumentNullException>("name", () => client.TryDeleteAsync(null, TimeSpan.Zero, default)).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -62,7 +61,7 @@ namespace Kaponata.Kubernetes.Tests
 
             // Return an empty list when searching for the requested pod.
             parent
-                .Setup(l => l.ListNamespacedObjectAsync<V1Pod, ItemList<V1Pod>>(metadata, "default", null, null, "metadata.name=my-name", null, null, null, null, null, null, null, null, default))
+                .Setup(l => l.ListNamespacedObjectAsync<V1Pod, ItemList<V1Pod>>(metadata, null, null, "metadata.name=my-name", null, null, null, null, null, null, null, null, default))
                 .ReturnsAsync(
                     new HttpOperationResponse<ItemList<V1Pod>>()
                     {
@@ -73,7 +72,7 @@ namespace Kaponata.Kubernetes.Tests
                     });
 
             var client = new NamespacedKubernetesClient<V1Pod>(parent.Object, metadata);
-            Assert.Null(await client.TryDeleteAsync("default", "my-name", TimeSpan.FromMinutes(1), default).ConfigureAwait(false));
+            Assert.Null(await client.TryDeleteAsync("my-name", TimeSpan.FromMinutes(1), default).ConfigureAwait(false));
         }
 
         /// <summary>
@@ -98,7 +97,7 @@ namespace Kaponata.Kubernetes.Tests
             };
 
             parent
-                .Setup(l => l.ListNamespacedObjectAsync<V1Pod, ItemList<V1Pod>>(metadata, "default", null, null, "metadata.name=my-name", null, null, null, null, null, null, null, null, default))
+                .Setup(l => l.ListNamespacedObjectAsync<V1Pod, ItemList<V1Pod>>(metadata, null, null, "metadata.name=my-name", null, null, null, null, null, null, null, null, default))
                 .ReturnsAsync(
                     new HttpOperationResponse<ItemList<V1Pod>>()
                     {
@@ -123,7 +122,7 @@ namespace Kaponata.Kubernetes.Tests
                 .Verifiable();
 
             var client = new NamespacedKubernetesClient<V1Pod>(parent.Object, metadata);
-            Assert.Equal(pod, await client.TryDeleteAsync("default", "my-name", TimeSpan.FromMinutes(1), default).ConfigureAwait(false));
+            Assert.Equal(pod, await client.TryDeleteAsync("my-name", TimeSpan.FromMinutes(1), default).ConfigureAwait(false));
 
             parent.Verify();
         }
@@ -193,7 +192,7 @@ namespace Kaponata.Kubernetes.Tests
                         },
                     });
 
-            using (var parent = new KubernetesClient(protocol.Object, NullLogger<KubernetesClient>.Instance, NullLoggerFactory.Instance))
+            using (var parent = new KubernetesClient(protocol.Object, KubernetesOptions.Default, NullLogger<KubernetesClient>.Instance, NullLoggerFactory.Instance))
             {
                 var client = new NamespacedKubernetesClient<V1Pod>(parent, metadata);
 
@@ -270,7 +269,7 @@ namespace Kaponata.Kubernetes.Tests
                         },
                     });
 
-            using (var parent = new KubernetesClient(protocol.Object, NullLogger<KubernetesClient>.Instance, NullLoggerFactory.Instance))
+            using (var parent = new KubernetesClient(protocol.Object, KubernetesOptions.Default, NullLogger<KubernetesClient>.Instance, NullLoggerFactory.Instance))
             {
                 var client = new NamespacedKubernetesClient<V1Pod>(parent, metadata);
 
@@ -283,7 +282,7 @@ namespace Kaponata.Kubernetes.Tests
         }
 
         /// <summary>
-        /// <see cref="NamespacedKubernetesClient{T}.TryReadAsync(string, string, string, CancellationToken)"/>  validates the arguments
+        /// <see cref="NamespacedKubernetesClient{T}.TryReadAsync(string, string, CancellationToken)"/>  validates the arguments
         /// passed to it.
         /// </summary>
         /// <returns>
@@ -294,16 +293,11 @@ namespace Kaponata.Kubernetes.Tests
         {
             var client = new NamespacedKubernetesClient<V1Pod>(Mock.Of<KubernetesClient>(), new KindMetadata(string.Empty, string.Empty, string.Empty));
 
-            await Assert.ThrowsAsync<ArgumentNullException>("namespace", () => client.TryReadAsync(null, "name", default)).ConfigureAwait(false);
-            await Assert.ThrowsAsync<ArgumentNullException>("name", () => client.TryReadAsync("namespace", null, default)).ConfigureAwait(false);
-
-            // labelSelector can be null
-            await Assert.ThrowsAsync<ArgumentNullException>("namespace", () => client.TryReadAsync(null, "name", null, default)).ConfigureAwait(false);
-            await Assert.ThrowsAsync<ArgumentNullException>("name", () => client.TryReadAsync("namespace", null, null, default)).ConfigureAwait(false);
+            await Assert.ThrowsAsync<ArgumentNullException>("name", () => client.TryReadAsync(null, "selector", default)).ConfigureAwait(false);
         }
 
         /// <summary>
-        /// <see cref="NamespacedKubernetesClient{T}.TryReadAsync(string, string, string, CancellationToken)"/> returns the requested value
+        /// <see cref="NamespacedKubernetesClient{T}.TryReadAsync(string, string, CancellationToken)"/> returns the requested value
         /// if it exists.
         /// </summary>
         /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
@@ -323,7 +317,7 @@ namespace Kaponata.Kubernetes.Tests
             };
 
             kubernetes
-                .Setup(k => k.ListNamespacedObjectAsync<V1Pod, ItemList<V1Pod>>(metadata, "default", null, null, "metadata.name=name", null, null, null, null, null, null, null, null, default))
+                .Setup(k => k.ListNamespacedObjectAsync<V1Pod, ItemList<V1Pod>>(metadata, null, null, "metadata.name=name", null, null, null, null, null, null, null, null, default))
                 .ReturnsAsync(
                     new HttpOperationResponse<ItemList<V1Pod>>()
                     {
@@ -331,13 +325,13 @@ namespace Kaponata.Kubernetes.Tests
                     });
 
             var client = new NamespacedKubernetesClient<V1Pod>(kubernetes.Object, metadata);
-            var value = await client.TryReadAsync("default", "name", default).ConfigureAwait(false);
+            var value = await client.TryReadAsync("name", null, default).ConfigureAwait(false);
 
             Assert.Same(pod, value);
         }
 
         /// <summary>
-        /// <see cref="NamespacedKubernetesClient{T}.TryReadAsync(string, string, string, CancellationToken)"/> returns <see langword="null"/>
+        /// <see cref="NamespacedKubernetesClient{T}.TryReadAsync(string, string, CancellationToken)"/> returns <see langword="null"/>
         /// if the requested value does not exist.
         /// </summary>
         /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
@@ -353,7 +347,7 @@ namespace Kaponata.Kubernetes.Tests
             };
 
             kubernetes
-                .Setup(k => k.ListNamespacedObjectAsync<V1Pod, ItemList<V1Pod>>(metadata, "default", null, null, "metadata.name=name", null, null, null, null, null, null, null, null, default))
+                .Setup(k => k.ListNamespacedObjectAsync<V1Pod, ItemList<V1Pod>>(metadata, null, null, "metadata.name=name", null, null, null, null, null, null, null, null, default))
                 .ReturnsAsync(
                     new HttpOperationResponse<ItemList<V1Pod>>()
                     {
@@ -361,7 +355,7 @@ namespace Kaponata.Kubernetes.Tests
                     });
 
             var client = new NamespacedKubernetesClient<V1Pod>(kubernetes.Object, metadata);
-            var value = await client.TryReadAsync("default", "name", default).ConfigureAwait(false);
+            var value = await client.TryReadAsync("name", null, default).ConfigureAwait(false);
 
             Assert.Null(value);
         }

@@ -74,13 +74,12 @@ namespace Kaponata.Operator.Tests.Operators
             var ingressClient = kubernetes.GetClient<V1Ingress>();
 
             await Task.WhenAll(
-                sessionClient.TryDeleteAsync("default", name, TimeSpan.FromMinutes(1), default),
-                podClient.TryDeleteAsync("default", name, TimeSpan.FromMinutes(1), default),
-                serviceClient.TryDeleteAsync("default", name, TimeSpan.FromMinutes(1), default),
-                ingressClient.TryDeleteAsync("default", name, TimeSpan.FromMinutes(1), default)).ConfigureAwait(false);
+                sessionClient.TryDeleteAsync(name, TimeSpan.FromMinutes(1), default),
+                podClient.TryDeleteAsync(name, TimeSpan.FromMinutes(1), default),
+                serviceClient.TryDeleteAsync(name, TimeSpan.FromMinutes(1), default),
+                ingressClient.TryDeleteAsync(name, TimeSpan.FromMinutes(1), default)).ConfigureAwait(false);
 
             var sessionWatcher = sessionClient.WatchAsync(
-                "default",
                 $"metadata.name={name}",
                 null,
                 null,
@@ -149,7 +148,7 @@ namespace Kaponata.Operator.Tests.Operators
 
             Assert.True(sessionWatcher.IsCompletedSuccessfully, "Failed to properly configure the session within a timeout of 1 minute");
 
-            var session = await sessionClient.TryReadAsync("default", name, default).ConfigureAwait(false);
+            var session = await sessionClient.TryReadAsync(name, default).ConfigureAwait(false);
 
             Assert.NotNull(session.Status.Capabilities);
             Assert.Null(session.Status.Data);
@@ -190,13 +189,12 @@ namespace Kaponata.Operator.Tests.Operators
             var ingressClient = kubernetes.GetClient<V1Ingress>();
 
             await Task.WhenAll(
-                sessionClient.TryDeleteAsync("default", name, TimeSpan.FromMinutes(1), default),
-                podClient.TryDeleteAsync("default", name, TimeSpan.FromMinutes(1), default),
-                serviceClient.TryDeleteAsync("default", name, TimeSpan.FromMinutes(1), default),
-                ingressClient.TryDeleteAsync("default", name, TimeSpan.FromMinutes(1), default)).ConfigureAwait(false);
+                sessionClient.TryDeleteAsync(name, TimeSpan.FromMinutes(1), default),
+                podClient.TryDeleteAsync(name, TimeSpan.FromMinutes(1), default),
+                serviceClient.TryDeleteAsync(name, TimeSpan.FromMinutes(1), default),
+                ingressClient.TryDeleteAsync(name, TimeSpan.FromMinutes(1), default)).ConfigureAwait(false);
 
             var sessionWatcher = sessionClient.WatchAsync(
-                "default",
                 $"metadata.name={name}",
                 null,
                 null,
@@ -267,7 +265,7 @@ namespace Kaponata.Operator.Tests.Operators
 
             Assert.True(sessionWatcher.IsCompletedSuccessfully, "Failed to properly configure the session within a timeout of 1 minute");
 
-            var session = await sessionClient.TryReadAsync("default", name, default).ConfigureAwait(false);
+            var session = await sessionClient.TryReadAsync(name, default).ConfigureAwait(false);
 
             Assert.Null(session.Status.Capabilities);
             Assert.Null(session.Status.Data);

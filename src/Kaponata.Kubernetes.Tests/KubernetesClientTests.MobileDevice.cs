@@ -37,7 +37,7 @@ namespace Kaponata.Kubernetes.Tests
             var protocol = new Mock<IKubernetesProtocol>(MockBehavior.Strict);
             protocol.Setup(p => p.Dispose()).Verifiable();
 
-            using (var client = new KubernetesClient(protocol.Object, NullLogger<KubernetesClient>.Instance, NullLoggerFactory.Instance))
+            using (var client = new KubernetesClient(protocol.Object, KubernetesOptions.Default, NullLogger<KubernetesClient>.Instance, NullLoggerFactory.Instance))
             {
                 await Assert.ThrowsAsync<ArgumentNullException>("value", () => client.CreateMobileDeviceAsync(null, default)).ConfigureAwait(false);
                 await Assert.ThrowsAsync<ValidationException>(
@@ -122,7 +122,7 @@ namespace Kaponata.Kubernetes.Tests
                             });
                     });
 
-            using (var client = new KubernetesClient(protocol.Object, NullLogger<KubernetesClient>.Instance, NullLoggerFactory.Instance))
+            using (var client = new KubernetesClient(protocol.Object, KubernetesOptions.Default, NullLogger<KubernetesClient>.Instance, NullLoggerFactory.Instance))
             {
                 var result = await client.CreateMobileDeviceAsync(mobileDevice, default).ConfigureAwait(false);
                 Assert.NotNull(result);
@@ -177,7 +177,7 @@ namespace Kaponata.Kubernetes.Tests
                             });
                     });
 
-            using (var client = new KubernetesClient(protocol.Object, NullLogger<KubernetesClient>.Instance, NullLoggerFactory.Instance))
+            using (var client = new KubernetesClient(protocol.Object, KubernetesOptions.Default, NullLogger<KubernetesClient>.Instance, NullLoggerFactory.Instance))
             {
                 await Assert.ThrowsAsync<SerializationException>(() => client.CreateMobileDeviceAsync(mobileDevice, default)).ConfigureAwait(false);
             }
@@ -186,7 +186,7 @@ namespace Kaponata.Kubernetes.Tests
         }
 
         /// <summary>
-        /// <see cref="KubernetesClient.ListMobileDeviceAsync(string, string, string, string, int?, CancellationToken)"/> returns a typed object
+        /// <see cref="KubernetesClient.ListMobileDeviceAsync(string, string, string, int?, CancellationToken)"/> returns a typed object
         /// when the operation completes successfully.
         /// </summary>
         /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
@@ -244,9 +244,9 @@ namespace Kaponata.Kubernetes.Tests
                     },
                 });
 
-            using (var client = new KubernetesClient(protocol.Object, NullLogger<KubernetesClient>.Instance, NullLoggerFactory.Instance))
+            using (var client = new KubernetesClient(protocol.Object, KubernetesOptions.Default, NullLogger<KubernetesClient>.Instance, NullLoggerFactory.Instance))
             {
-                var list = await client.ListMobileDeviceAsync("default").ConfigureAwait(false);
+                var list = await client.ListMobileDeviceAsync().ConfigureAwait(false);
                 Assert.Collection(
                     list.Items,
                     d => { Assert.Equal("device1", d.Metadata.Name); },
@@ -257,7 +257,7 @@ namespace Kaponata.Kubernetes.Tests
         }
 
         /// <summary>
-        /// <see cref="KubernetesClient.ListMobileDeviceAsync(string, string, string, string, int?, CancellationToken)"/> throws a <see cref="JsonException"/>
+        /// <see cref="KubernetesClient.ListMobileDeviceAsync(string, string, string, int?, CancellationToken)"/> throws a <see cref="JsonException"/>
         /// when invalid data is returned by the server.
         /// </summary>
         /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
@@ -293,16 +293,16 @@ namespace Kaponata.Kubernetes.Tests
                     },
                 });
 
-            using (var client = new KubernetesClient(protocol.Object, NullLogger<KubernetesClient>.Instance, NullLoggerFactory.Instance))
+            using (var client = new KubernetesClient(protocol.Object, KubernetesOptions.Default, NullLogger<KubernetesClient>.Instance, NullLoggerFactory.Instance))
             {
-                await Assert.ThrowsAsync<SerializationException>(() => client.ListMobileDeviceAsync("default")).ConfigureAwait(false);
+                await Assert.ThrowsAsync<SerializationException>(() => client.ListMobileDeviceAsync()).ConfigureAwait(false);
             }
 
             protocol.Verify();
         }
 
         /// <summary>
-        /// <see cref="KubernetesClient.TryReadMobileDeviceAsync(string, string, CancellationToken)"/> returns <see langword="null"/>
+        /// <see cref="KubernetesClient.TryReadMobileDeviceAsync(string, CancellationToken)"/> returns <see langword="null"/>
         /// if the requested device does not exist.
         /// </summary>
         /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
@@ -337,16 +337,16 @@ namespace Kaponata.Kubernetes.Tests
                     },
                 });
 
-            using (var client = new KubernetesClient(protocol.Object, NullLogger<KubernetesClient>.Instance, NullLoggerFactory.Instance))
+            using (var client = new KubernetesClient(protocol.Object, KubernetesOptions.Default, NullLogger<KubernetesClient>.Instance, NullLoggerFactory.Instance))
             {
-                Assert.Null(await client.TryReadMobileDeviceAsync("default", "my-device", default).ConfigureAwait(false));
+                Assert.Null(await client.TryReadMobileDeviceAsync("my-device", default).ConfigureAwait(false));
             }
 
             protocol.Verify();
         }
 
         /// <summary>
-        /// <see cref="KubernetesClient.TryReadMobileDeviceAsync(string, string, CancellationToken)"/> returns a <see cref="MobileDevice"/>
+        /// <see cref="KubernetesClient.TryReadMobileDeviceAsync(string, CancellationToken)"/> returns a <see cref="MobileDevice"/>
         /// object if the requested device exists.
         /// </summary>
         /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
@@ -381,9 +381,9 @@ namespace Kaponata.Kubernetes.Tests
                     },
                 });
 
-            using (var client = new KubernetesClient(protocol.Object, NullLogger<KubernetesClient>.Instance, NullLoggerFactory.Instance))
+            using (var client = new KubernetesClient(protocol.Object, KubernetesOptions.Default, NullLogger<KubernetesClient>.Instance, NullLoggerFactory.Instance))
             {
-                var device = await client.TryReadMobileDeviceAsync("default", "my-device", default).ConfigureAwait(false);
+                var device = await client.TryReadMobileDeviceAsync("my-device", default).ConfigureAwait(false);
                 Assert.Equal("my-device", device.Metadata.Name);
             }
 
@@ -419,7 +419,7 @@ namespace Kaponata.Kubernetes.Tests
                 .Returns(tcs.Task);
             protocol.Setup(p => p.Dispose()).Verifiable();
 
-            using (var client = new KubernetesClient(protocol.Object, NullLogger<KubernetesClient>.Instance, NullLoggerFactory.Instance))
+            using (var client = new KubernetesClient(protocol.Object, KubernetesOptions.Default, NullLogger<KubernetesClient>.Instance, NullLoggerFactory.Instance))
             {
                 var task = client.WatchMobileDeviceAsync(
                     device,
@@ -449,13 +449,13 @@ namespace Kaponata.Kubernetes.Tests
 
             var protocol = new Mock<IKubernetesProtocol>(MockBehavior.Strict);
             protocol
-                .Setup(p => p.WatchNamespacedObjectAsync("namespace", "fieldSelector", "labelSelector", "resourceVersion", It.IsAny<ListNamespacedObjectWithHttpMessagesAsync<MobileDevice, ItemList<MobileDevice>>>(), eventHandler, default))
+                .Setup(p => p.WatchNamespacedObjectAsync("default", "fieldSelector", "labelSelector", "resourceVersion", It.IsAny<ListNamespacedObjectWithHttpMessagesAsync<MobileDevice, ItemList<MobileDevice>>>(), eventHandler, default))
                 .Returns(tcs.Task);
             protocol.Setup(p => p.Dispose()).Verifiable();
 
-            using (var client = new KubernetesClient(protocol.Object, NullLogger<KubernetesClient>.Instance, NullLoggerFactory.Instance))
+            using (var client = new KubernetesClient(protocol.Object, KubernetesOptions.Default, NullLogger<KubernetesClient>.Instance, NullLoggerFactory.Instance))
             {
-                Assert.Same(tcs.Task, client.WatchMobileDeviceAsync("namespace", "fieldSelector", "labelSelector", "resourceVersion", eventHandler, default));
+                Assert.Same(tcs.Task, client.WatchMobileDeviceAsync("fieldSelector", "labelSelector", "resourceVersion", eventHandler, default));
             }
 
             protocol.Verify();
@@ -473,7 +473,7 @@ namespace Kaponata.Kubernetes.Tests
             var protocol = new Mock<IKubernetesProtocol>(MockBehavior.Strict);
             protocol.Setup(p => p.Dispose()).Verifiable();
 
-            using (var client = new KubernetesClient(protocol.Object, NullLogger<KubernetesClient>.Instance, NullLoggerFactory.Instance))
+            using (var client = new KubernetesClient(protocol.Object, KubernetesOptions.Default, NullLogger<KubernetesClient>.Instance, NullLoggerFactory.Instance))
             {
                 await Assert.ThrowsAsync<ArgumentNullException>(() => client.DeleteMobileDeviceAsync(null, TimeSpan.FromMinutes(1), default)).ConfigureAwait(false);
                 await Assert.ThrowsAsync<ValidationException>(() => client.DeleteMobileDeviceAsync(new MobileDevice() { }, TimeSpan.FromMinutes(1), default)).ConfigureAwait(false);
@@ -567,7 +567,7 @@ namespace Kaponata.Kubernetes.Tests
                         default))
                 .Returns(Task.FromResult(new HttpOperationResponse<object>() { Body = mobileDevice, Response = new HttpResponseMessage(HttpStatusCode.OK) })).Verifiable();
 
-            using (var client = new KubernetesClient(protocol.Object, NullLogger<KubernetesClient>.Instance, NullLoggerFactory.Instance))
+            using (var client = new KubernetesClient(protocol.Object, KubernetesOptions.Default, NullLogger<KubernetesClient>.Instance, NullLoggerFactory.Instance))
             {
                 var task = client.DeleteMobileDeviceAsync(mobileDevice, TimeSpan.FromMinutes(1), default);
                 Assert.NotNull(callback);
@@ -639,7 +639,7 @@ namespace Kaponata.Kubernetes.Tests
                         default))
                 .Returns(Task.FromResult(new HttpOperationResponse<object>() { Body = mobileDevice, Response = new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("--") } })).Verifiable();
 
-            using (var client = new KubernetesClient(protocol.Object, NullLogger<KubernetesClient>.Instance, NullLoggerFactory.Instance))
+            using (var client = new KubernetesClient(protocol.Object, KubernetesOptions.Default, NullLogger<KubernetesClient>.Instance, NullLoggerFactory.Instance))
             {
                 await Assert.ThrowsAsync<SerializationException>(() => client.DeleteMobileDeviceAsync(mobileDevice, TimeSpan.FromMinutes(1), default)).ConfigureAwait(false);
             }
@@ -702,7 +702,7 @@ namespace Kaponata.Kubernetes.Tests
                         default))
                 .Returns(Task.FromResult(new HttpOperationResponse<object>() { Body = mobileDevice, Response = new HttpResponseMessage(HttpStatusCode.OK) })).Verifiable();
 
-            using (var client = new KubernetesClient(protocol.Object, NullLogger<KubernetesClient>.Instance, NullLoggerFactory.Instance))
+            using (var client = new KubernetesClient(protocol.Object, KubernetesOptions.Default, NullLogger<KubernetesClient>.Instance, NullLoggerFactory.Instance))
             {
                 var task = client.DeleteMobileDeviceAsync(mobileDevice, TimeSpan.FromMinutes(1), default);
                 Assert.NotNull(callback);
@@ -773,7 +773,7 @@ namespace Kaponata.Kubernetes.Tests
                         default))
                 .Returns(Task.FromResult(new HttpOperationResponse<object>() { Body = mobileDevice, Response = new HttpResponseMessage(HttpStatusCode.OK) })).Verifiable();
 
-            using (var client = new KubernetesClient(protocol.Object, NullLogger<KubernetesClient>.Instance, NullLoggerFactory.Instance))
+            using (var client = new KubernetesClient(protocol.Object, KubernetesOptions.Default, NullLogger<KubernetesClient>.Instance, NullLoggerFactory.Instance))
             {
                 var task = client.DeleteMobileDeviceAsync(mobileDevice, TimeSpan.Zero, default);
                 Assert.NotNull(callback);

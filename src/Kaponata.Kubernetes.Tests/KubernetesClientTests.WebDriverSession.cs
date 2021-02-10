@@ -75,7 +75,7 @@ namespace Kaponata.Kubernetes.Tests
                             });
                     });
 
-            using (var client = new KubernetesClient(protocol.Object, NullLogger<KubernetesClient>.Instance, NullLoggerFactory.Instance))
+            using (var client = new KubernetesClient(protocol.Object, KubernetesOptions.Default, NullLogger<KubernetesClient>.Instance, NullLoggerFactory.Instance))
             {
                 var result = await client.CreateWebDriverSessionAsync(session, default).ConfigureAwait(false);
                 Assert.NotNull(result);
@@ -85,7 +85,7 @@ namespace Kaponata.Kubernetes.Tests
         }
 
         /// <summary>
-        /// <see cref="KubernetesClient.ListWebDriverSessionAsync(string, string, string, string, int?, CancellationToken)"/> returns a typed object
+        /// <see cref="KubernetesClient.ListWebDriverSessionAsync(string, string, string, int?, CancellationToken)"/> returns a typed object
         /// when the operation completes successfully.
         /// </summary>
         /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
@@ -143,9 +143,9 @@ namespace Kaponata.Kubernetes.Tests
                     },
                 });
 
-            using (var client = new KubernetesClient(protocol.Object, NullLogger<KubernetesClient>.Instance, NullLoggerFactory.Instance))
+            using (var client = new KubernetesClient(protocol.Object, KubernetesOptions.Default, NullLogger<KubernetesClient>.Instance, NullLoggerFactory.Instance))
             {
-                var list = await client.ListWebDriverSessionAsync("default").ConfigureAwait(false);
+                var list = await client.ListWebDriverSessionAsync().ConfigureAwait(false);
                 Assert.Collection(
                     list.Items,
                     d => { Assert.Equal("session1", d.Metadata.Name); },
@@ -156,7 +156,7 @@ namespace Kaponata.Kubernetes.Tests
         }
 
         /// <summary>
-        /// <see cref="KubernetesClient.TryReadWebDriverSessionAsync(string, string, CancellationToken)"/> returns a <see cref="WebDriverSession"/>
+        /// <see cref="KubernetesClient.TryReadWebDriverSessionAsync(string, CancellationToken)"/> returns a <see cref="WebDriverSession"/>
         /// object if the requested session exists.
         /// </summary>
         /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
@@ -191,9 +191,9 @@ namespace Kaponata.Kubernetes.Tests
                     },
                 });
 
-            using (var client = new KubernetesClient(protocol.Object, NullLogger<KubernetesClient>.Instance, NullLoggerFactory.Instance))
+            using (var client = new KubernetesClient(protocol.Object, KubernetesOptions.Default, NullLogger<KubernetesClient>.Instance, NullLoggerFactory.Instance))
             {
-                var device = await client.TryReadWebDriverSessionAsync("default", "my-session", default).ConfigureAwait(false);
+                var device = await client.TryReadWebDriverSessionAsync("my-session", default).ConfigureAwait(false);
                 Assert.Equal("my-session", device.Metadata.Name);
             }
 
@@ -229,7 +229,7 @@ namespace Kaponata.Kubernetes.Tests
                 .Returns(tcs.Task);
             protocol.Setup(p => p.Dispose()).Verifiable();
 
-            using (var client = new KubernetesClient(protocol.Object, NullLogger<KubernetesClient>.Instance, NullLoggerFactory.Instance))
+            using (var client = new KubernetesClient(protocol.Object, KubernetesOptions.Default, NullLogger<KubernetesClient>.Instance, NullLoggerFactory.Instance))
             {
                 var task = client.WatchWebDriverSessionAsync(
                     session,
@@ -259,13 +259,13 @@ namespace Kaponata.Kubernetes.Tests
 
             var protocol = new Mock<IKubernetesProtocol>(MockBehavior.Strict);
             protocol
-                .Setup(p => p.WatchNamespacedObjectAsync("namespace", "fieldSelector", "labelSelector", "resourceVersion", It.IsAny<ListNamespacedObjectWithHttpMessagesAsync<WebDriverSession, ItemList<WebDriverSession>>>(), eventHandler, default))
+                .Setup(p => p.WatchNamespacedObjectAsync("default", "fieldSelector", "labelSelector", "resourceVersion", It.IsAny<ListNamespacedObjectWithHttpMessagesAsync<WebDriverSession, ItemList<WebDriverSession>>>(), eventHandler, default))
                 .Returns(tcs.Task);
             protocol.Setup(p => p.Dispose()).Verifiable();
 
-            using (var client = new KubernetesClient(protocol.Object, NullLogger<KubernetesClient>.Instance, NullLoggerFactory.Instance))
+            using (var client = new KubernetesClient(protocol.Object, KubernetesOptions.Default, NullLogger<KubernetesClient>.Instance, NullLoggerFactory.Instance))
             {
-                Assert.Same(tcs.Task, client.WatchWebDriverSessionAsync("namespace", "fieldSelector", "labelSelector", "resourceVersion", eventHandler, default));
+                Assert.Same(tcs.Task, client.WatchWebDriverSessionAsync("fieldSelector", "labelSelector", "resourceVersion", eventHandler, default));
             }
 
             protocol.Verify();
@@ -326,7 +326,7 @@ namespace Kaponata.Kubernetes.Tests
                         default))
                 .Returns(Task.FromResult(new HttpOperationResponse<object>() { Body = session, Response = new HttpResponseMessage(HttpStatusCode.OK) })).Verifiable();
 
-            using (var client = new KubernetesClient(protocol.Object, NullLogger<KubernetesClient>.Instance, NullLoggerFactory.Instance))
+            using (var client = new KubernetesClient(protocol.Object, KubernetesOptions.Default, NullLogger<KubernetesClient>.Instance, NullLoggerFactory.Instance))
             {
                 var task = client.DeleteWebDriverSessionAsync(session, TimeSpan.FromMinutes(1), default);
                 Assert.NotNull(callback);

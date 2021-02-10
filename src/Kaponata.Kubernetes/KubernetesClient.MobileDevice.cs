@@ -36,9 +36,6 @@ namespace Kaponata.Kubernetes
         /// <summary>
         /// Asynchronously list or watch <see cref="MobileDevice"/> objects.
         /// </summary>
-        /// <param name="namespace">
-        /// The namespace in which to list or watch objects.
-        /// </param>
         /// <param name="continue">
         /// The continue option should be set when retrieving more results from the server.
         /// Since this value is server defined, clients may only use the continue value from
@@ -92,7 +89,6 @@ namespace Kaponata.Kubernetes
         /// A <see cref="MobileDeviceList"/> which represents the mobile devices which match the query.
         /// </returns>
         public virtual Task<ItemList<MobileDevice>> ListMobileDeviceAsync(
-            string @namespace,
             string? @continue = null,
             string? fieldSelector = null,
             string? labelSelector = null,
@@ -100,7 +96,6 @@ namespace Kaponata.Kubernetes
             CancellationToken cancellationToken = default)
         {
             return this.mobileDeviceClient.ListAsync(
-                @namespace: @namespace,
                 @continue: @continue,
                 fieldSelector: fieldSelector,
                 labelSelector: labelSelector,
@@ -111,9 +106,6 @@ namespace Kaponata.Kubernetes
         /// <summary>
         /// Asynchronously tries to read a mobile device.
         /// </summary>
-        /// <param name="namespace">
-        /// The namespace in which the mobile device is located.
-        /// </param>
         /// <param name="name">
         /// The name which uniquely identifies the mobile device within the namespace.
         /// </param>
@@ -124,9 +116,9 @@ namespace Kaponata.Kubernetes
         /// A <see cref="Task"/> which represents the asynchronous operation, and returns the requested mobile device, or
         /// <see langword="null"/> if the mobile device does not exist.
         /// </returns>
-        public virtual Task<MobileDevice?> TryReadMobileDeviceAsync(string @namespace, string name, CancellationToken cancellationToken)
+        public virtual Task<MobileDevice?> TryReadMobileDeviceAsync(string name, CancellationToken cancellationToken)
         {
-            return this.mobileDeviceClient.TryReadAsync(@namespace, name, cancellationToken);
+            return this.mobileDeviceClient.TryReadAsync(name: name, cancellationToken);
         }
 
         /// <summary>
@@ -178,9 +170,6 @@ namespace Kaponata.Kubernetes
         /// <summary>
         /// Asynchronously watches <see cref="MobileDevice"/> objects.
         /// </summary>
-        /// <param name="namespace">
-        /// The namespace in which to watch for <see cref="MobileDevice"/> objects.
-        /// </param>
         /// <param name="fieldSelector">
         /// A selector to restrict the list of returned objects by their fields. Defaults
         /// to everything.
@@ -209,14 +198,13 @@ namespace Kaponata.Kubernetes
         /// loop errors.
         /// </returns>
         public virtual Task<WatchExitReason> WatchMobileDeviceAsync(
-            string @namespace,
             string fieldSelector,
             string labelSelector,
             string resourceVersion,
             WatchEventDelegate<MobileDevice> eventHandler,
             CancellationToken cancellationToken)
         {
-            return this.mobileDeviceClient.WatchAsync(@namespace, fieldSelector, labelSelector, resourceVersion, eventHandler, cancellationToken);
+            return this.mobileDeviceClient.WatchAsync(fieldSelector, labelSelector, resourceVersion, eventHandler, cancellationToken);
         }
     }
 }

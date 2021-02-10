@@ -36,9 +36,6 @@ namespace Kaponata.Kubernetes
         /// <summary>
         /// Asynchronously list or watch <see cref="WebDriverSession"/> objects.
         /// </summary>
-        /// <param name="namespace">
-        /// The namespace in which to list or watch objects.
-        /// </param>
         /// <param name="continue">
         /// The continue option should be set when retrieving more results from the server.
         /// Since this value is server defined, clients may only use the continue value from
@@ -92,22 +89,23 @@ namespace Kaponata.Kubernetes
         /// A <see cref="MobileDeviceList"/> which represents the mobile devices which match the query.
         /// </returns>
         public virtual Task<ItemList<WebDriverSession>> ListWebDriverSessionAsync(
-            string @namespace,
             string? @continue = null,
             string? fieldSelector = null,
             string? labelSelector = null,
             int? limit = null,
             CancellationToken cancellationToken = default)
         {
-            return this.webDriverSessionClient.ListAsync(@namespace, @continue, fieldSelector, labelSelector, limit, cancellationToken);
+            return this.webDriverSessionClient.ListAsync(
+                @continue,
+                fieldSelector,
+                labelSelector,
+                limit,
+                cancellationToken);
         }
 
         /// <summary>
         /// Asynchronously tries to read a WebDriver session.
         /// </summary>
-        /// <param name="namespace">
-        /// The namespace in which the WebDriver session is located.
-        /// </param>
         /// <param name="name">
         /// The name which uniquely identifies the WebDriver session within the namespace.
         /// </param>
@@ -118,9 +116,9 @@ namespace Kaponata.Kubernetes
         /// A <see cref="Task"/> which represents the asynchronous operation, and returns the requested WebDriver session, or
         /// <see langword="null"/> if the WebDriver session does not exist.
         /// </returns>
-        public virtual Task<WebDriverSession?> TryReadWebDriverSessionAsync(string @namespace, string name, CancellationToken cancellationToken)
+        public virtual Task<WebDriverSession?> TryReadWebDriverSessionAsync(string name, CancellationToken cancellationToken)
         {
-            return this.webDriverSessionClient.TryReadAsync(@namespace, name, cancellationToken);
+            return this.webDriverSessionClient.TryReadAsync(name: name, cancellationToken);
         }
 
         /// <summary>
@@ -172,9 +170,6 @@ namespace Kaponata.Kubernetes
         /// <summary>
         /// Asynchronously watches <see cref="WebDriverSession"/> objects.
         /// </summary>
-        /// <param name="namespace">
-        /// The namespace in which to watch for <see cref="WebDriverSession"/> objects.
-        /// </param>
         /// <param name="fieldSelector">
         /// A selector to restrict the list of returned objects by their fields. Defaults
         /// to everything.
@@ -203,14 +198,18 @@ namespace Kaponata.Kubernetes
         /// loop errors.
         /// </returns>
         public virtual Task<WatchExitReason> WatchWebDriverSessionAsync(
-            string @namespace,
             string fieldSelector,
             string labelSelector,
             string resourceVersion,
             WatchEventDelegate<WebDriverSession> eventHandler,
             CancellationToken cancellationToken)
         {
-            return this.webDriverSessionClient.WatchAsync(@namespace, fieldSelector, labelSelector, resourceVersion, eventHandler, cancellationToken);
+            return this.webDriverSessionClient.WatchAsync(
+                fieldSelector,
+                labelSelector,
+                resourceVersion,
+                eventHandler,
+                cancellationToken);
         }
     }
 }

@@ -161,14 +161,12 @@ namespace Kaponata.Operator.Operators
 
                 // List all parent and child objects
                 var parents = await this.parentClient.ListAsync(
-                    this.configuration.Namespace,
                     fieldSelector: null,
                     labelSelector: this.configuration.ParentLabelSelector,
                     cancellationToken: cancellationToken).ConfigureAwait(false);
                 this.logger.LogInformation("Found {count} parents for the {operator} operator.", parents.Items.Count, this.configuration.OperatorName);
 
                 var children = await this.childClient.ListAsync(
-                    this.configuration.Namespace,
                     labelSelector: Selector.Create(this.configuration.ChildLabels)).ConfigureAwait(false);
                 this.logger.LogInformation("Found {count} children for the {operator} operator.", children.Items.Count, this.configuration.OperatorName);
 
@@ -272,13 +270,11 @@ namespace Kaponata.Operator.Operators
 
                     // Start reading parent and child in parallel
                     var readParentTask = this.parentClient.TryReadAsync(
-                        this.configuration.Namespace,
                         name,
                         this.configuration.ParentLabelSelector,
                         operationCts.Token);
 
                     var readChildTask = this.childClient.TryReadAsync(
-                        this.configuration.Namespace,
                         name,
                         Selector.Create(this.configuration.ChildLabels),
                         operationCts.Token);
@@ -417,7 +413,6 @@ namespace Kaponata.Operator.Operators
         {
             // Watch child objects
             var sourceWatch = this.parentClient.WatchAsync(
-                this.configuration.Namespace,
                 fieldSelector: null,
                 this.configuration.ParentLabelSelector,
                 null,
@@ -430,7 +425,6 @@ namespace Kaponata.Operator.Operators
                 stoppingToken);
 
             var targetWatch = this.childClient.WatchAsync(
-                this.configuration.Namespace,
                 fieldSelector: null,
                 Selector.Create(this.configuration.ChildLabels),
                 null,

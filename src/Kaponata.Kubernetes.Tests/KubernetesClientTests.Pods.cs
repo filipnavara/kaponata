@@ -30,7 +30,7 @@ namespace Kaponata.Kubernetes.Tests
             var protocol = new Mock<IKubernetesProtocol>(MockBehavior.Strict);
             protocol.Setup(p => p.Dispose()).Verifiable();
 
-            using (var client = new KubernetesClient(protocol.Object, NullLogger<KubernetesClient>.Instance, NullLoggerFactory.Instance))
+            using (var client = new KubernetesClient(protocol.Object, KubernetesOptions.Default, NullLogger<KubernetesClient>.Instance, NullLoggerFactory.Instance))
             {
                 Assert.Throws<ArgumentNullException>("pod", () => client.CreatePodHttpClient(null, 80));
                 Assert.Throws<ValidationException>(() => client.CreatePodHttpClient(new V1Pod(), 80));

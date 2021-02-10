@@ -80,7 +80,6 @@ namespace Kaponata.Operator.Tests.Operators
                     Assert.Equal("WebDriverSession-IngressOperator", l.Value);
                 });
 
-            Assert.Equal("default", builder.Configuration.Namespace);
             Assert.Equal("WebDriverSession-IngressOperator", builder.Configuration.OperatorName);
             Assert.Null(builder.Configuration.ParentLabelSelector);
 

@@ -34,6 +34,7 @@ namespace Kaponata.Kubernetes.Polyfill
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
             this.loggerFactory = loggerFactory ?? throw new ArgumentNullException(nameof(loggerFactory));
 
+            this.Namespace = "default";
             this.HttpClient = new HttpClient(handler);
         }
 
@@ -54,6 +55,8 @@ namespace Kaponata.Kubernetes.Polyfill
         {
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
             this.loggerFactory = loggerFactory ?? throw new ArgumentNullException(nameof(loggerFactory));
+
+            this.Namespace = config.Namespace ?? "default";
 
             this.FirstMessageHandler = this.HttpClientHandler = CreateRootHandler();
             this.FirstMessageHandler = new CoreApiHandler(new WatchHandler(this.HttpClientHandler));
@@ -91,5 +94,10 @@ namespace Kaponata.Kubernetes.Polyfill
             CreateCredentials(config);
             config.AddCertificates(this.HttpClientHandler);
         }
+
+        /// <summary>
+        /// Gets the name of the namespace in which this client creates objects.
+        /// </summary>
+        public string Namespace { get; }
     }
 }

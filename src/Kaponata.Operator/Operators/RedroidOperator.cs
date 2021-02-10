@@ -24,7 +24,6 @@ namespace Kaponata.Operator.Operators
     {
         private readonly ILogger<RedroidOperator> logger;
         private readonly KubernetesClient kubernetes;
-        private readonly string @namespace = "default";
 
         /// <summary>
         /// A semaphore which prevents multiple iterations of the <see cref="ReconcileAsync(CancellationToken)"/>
@@ -113,12 +112,12 @@ namespace Kaponata.Operator.Operators
             {
                 // Enumerate all Android emulator pods
                 this.logger.LogInformation("Listing all emulator pods");
-                var pods = await this.kubernetes.ListPodAsync(this.@namespace, labelSelector: this.PodLabelSelector, cancellationToken: cancellationToken).ConfigureAwait(false);
+                var pods = await this.kubernetes.ListPodAsync(labelSelector: this.PodLabelSelector, cancellationToken: cancellationToken).ConfigureAwait(false);
                 this.logger.LogInformation("Found {count} emulator pods", pods.Items.Count);
 
                 // Enumerate all Android emulator devices
                 this.logger.LogInformation("Listing all emulator devices");
-                var devices = await this.kubernetes.ListMobileDeviceAsync(this.@namespace, labelSelector: this.DeviceLabelSelector, cancellationToken: cancellationToken).ConfigureAwait(false);
+                var devices = await this.kubernetes.ListMobileDeviceAsync(labelSelector: this.DeviceLabelSelector, cancellationToken: cancellationToken).ConfigureAwait(false);
                 this.logger.LogInformation("Found {count} emulator devices", devices.Items.Count);
 
                 // Loop over all Android emulator pods. Process them one by one; remove the equivalent device from the device list
@@ -206,7 +205,6 @@ namespace Kaponata.Operator.Operators
                 var watchTasks = new Task<WatchExitReason>[]
                 {
                     this.kubernetes.WatchMobileDeviceAsync(
-                        @namespace: this.@namespace,
                         fieldSelector: null,
                         labelSelector: this.DeviceLabelSelector,
                         resourceVersion: null,
@@ -217,7 +215,6 @@ namespace Kaponata.Operator.Operators
                         },
                         cancellationToken),
                     this.kubernetes.WatchPodAsync(
-                        @namespace: this.@namespace,
                         fieldSelector: null,
                         labelSelector: this.PodLabelSelector,
                         resourceVersion: null,
