@@ -28,6 +28,7 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kaponata.Kubernetes", "Kaponata.Kubernetes\Kaponata.Kubernetes.csproj", "{E36E9F58-18DE-4F48-869E-A1CA318D467C}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kaponata.Kubernetes.Tests", "Kaponata.Kubernetes.Tests\Kaponata.Kubernetes.Tests.csproj", "{13F56EC8-811D-4E26-A72E-DB5DCC17AA7E}"
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kaponata.Multimedia", "Kaponata.Multimedia\Kaponata.Multimedia.csproj", "{0648AAC2-6B75-491D-B12E-2A891DD6912C}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kaponata.Multimedia.Tests", "Kaponata.Multimedia.Tests\Kaponata.Multimedia.Tests.csproj", "{D0C399C8-2CF9-4912-823A-A27B30CC8FF8}"
