@@ -14,25 +14,17 @@ namespace Kaponata.Multimedia.FFMpeg
     /// </summary>
     public unsafe class AVCodec : IDisposable
     {
-        private readonly AVCodecHandle handle;
+        private readonly NativeAVCodec* native;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AVCodec"/> class.
         /// </summary>
-        /// <param name="handle">
+        /// <param name="native">
         /// A pointer to the unmanaged structure which backs this <see cref="AVCodec"/> class.
         /// </param>
-        public AVCodec(AVCodecHandle handle)
+        public AVCodec(NativeAVCodec* native)
         {
-            this.handle = handle;
-        }
-
-        /// <summary>
-        /// Gets the unmanaged structure which back this <see cref="AVCodec"/> class.
-        /// </summary>
-        public NativeAVCodec* NativeObject
-        {
-            get { return (NativeAVCodec*)this.handle.DangerousGetHandle(); }
+            this.native = native;
         }
 
         /// <summary>
@@ -42,7 +34,7 @@ namespace Kaponata.Multimedia.FFMpeg
         /// </summary>
         public string Name
         {
-            get { return new string((sbyte*)this.NativeObject->name); }
+            get { return new string((sbyte*)this.native->name); }
         }
 
         /// <summary>
@@ -50,7 +42,7 @@ namespace Kaponata.Multimedia.FFMpeg
         /// </summary>
         public string LongName
         {
-            get { return new string((sbyte*)this.NativeObject->long_name); }
+            get { return new string((sbyte*)this.native->long_name); }
         }
 
         /// <summary>
@@ -58,7 +50,7 @@ namespace Kaponata.Multimedia.FFMpeg
         /// </summary>
         public AVCodecID Id
         {
-            get { return this.NativeObject->id; }
+            get { return this.native->id; }
         }
 
         /// <summary>
@@ -66,7 +58,7 @@ namespace Kaponata.Multimedia.FFMpeg
         /// </summary>
         public AVCodecCapabilities Capabilities
         {
-            get { return (AVCodecCapabilities)this.NativeObject->capabilities; }
+            get { return (AVCodecCapabilities)this.native->capabilities; }
         }
 
         /// <summary>
@@ -74,7 +66,7 @@ namespace Kaponata.Multimedia.FFMpeg
         /// </summary>
         public bool IsEncoder
         {
-            get { return ffmpeg.av_codec_is_encoder(this.NativeObject) == 1; }
+            get { return ffmpeg.av_codec_is_encoder(this.native) == 1; }
         }
 
         /// <summary>
@@ -82,13 +74,12 @@ namespace Kaponata.Multimedia.FFMpeg
         /// </summary>
         public bool IsDecoder
         {
-            get { return ffmpeg.av_codec_is_decoder(this.NativeObject) == 1; }
+            get { return ffmpeg.av_codec_is_decoder(this.native) == 1; }
         }
 
         /// <inheritdoc/>
         public void Dispose()
         {
-            this.handle.Dispose();
         }
 
         /// <inheritdoc/>

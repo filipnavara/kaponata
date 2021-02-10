@@ -25,23 +25,6 @@ namespace Kaponata.Multimedia.Tests
         }
 
         /// <summary>
-        /// The <see cref="AVCodec.AVCodec(AVCodecHandle)"/> initializes the  instance.
-        /// </summary>s
-        [Fact]
-        public void Constructor_InitializesInstance()
-        {
-            NativeAVCodec nativeCodec = new NativeAVCodec
-            {
-            };
-
-            var handle = new AVCodecHandle(&nativeCodec);
-
-            var codec = new AVCodec(handle);
-
-            Assert.Equal((int)&nativeCodec, (int)codec.NativeObject);
-        }
-
-        /// <summary>
         /// The <see cref="AVCodec.Name"/> property returns the name of the native avcodec.
         /// </summary>
         [Fact]
@@ -55,8 +38,7 @@ namespace Kaponata.Multimedia.Tests
                     name = p,
                 };
 
-                var handle = new AVCodecHandle(&nativeCodec);
-                var codec = new AVCodec(handle);
+                var codec = new AVCodec(&nativeCodec);
 
                 Assert.Equal("test", codec.Name);
             }
@@ -76,8 +58,7 @@ namespace Kaponata.Multimedia.Tests
                     long_name = p,
                 };
 
-                var handle = new AVCodecHandle(&nativeCodec);
-                var codec = new AVCodec(handle);
+                var codec = new AVCodec(&nativeCodec);
 
                 Assert.Equal("test", codec.LongName);
             }
@@ -96,8 +77,7 @@ namespace Kaponata.Multimedia.Tests
                 {
                 };
 
-                var handle = new AVCodecHandle(&nativeCodec);
-                var codec = new AVCodec(handle);
+                var codec = new AVCodec(&nativeCodec);
 
                 Assert.False(codec.IsEncoder);
             }
@@ -116,8 +96,7 @@ namespace Kaponata.Multimedia.Tests
                 {
                 };
 
-                var handle = new AVCodecHandle(&nativeCodec);
-                var codec = new AVCodec(handle);
+                var codec = new AVCodec(&nativeCodec);
 
                 Assert.False(codec.IsDecoder);
             }
@@ -136,8 +115,7 @@ namespace Kaponata.Multimedia.Tests
                 capabilities = (int)capabilities,
             };
 
-            var handle = new AVCodecHandle(&nativeCodec);
-            var codec = new AVCodec(handle);
+            var codec = new AVCodec(&nativeCodec);
 
             Assert.Equal(capabilities, codec.Capabilities);
         }
@@ -153,8 +131,7 @@ namespace Kaponata.Multimedia.Tests
                 id = AVCodecID.AV_CODEC_ID_4XM,
             };
 
-            var handle = new AVCodecHandle(&nativeCodec);
-            var codec = new AVCodec(handle);
+            var codec = new AVCodec(&nativeCodec);
 
             Assert.Equal(AVCodecID.AV_CODEC_ID_4XM, codec.Id);
         }
@@ -174,8 +151,7 @@ namespace Kaponata.Multimedia.Tests
                     long_name = p,
                 };
 
-                var handle = new AVCodecHandle(&nativeCodec);
-                var codec = new AVCodec(handle);
+                var codec = new AVCodec(&nativeCodec);
 
                 Assert.Equal("test (test)", codec.ToString());
             }

@@ -60,8 +60,7 @@ namespace Kaponata.Multimedia.FFMpeg
 
             while ((codec = ffmpeg.av_codec_iterate(&iter)) != null)
             {
-                var handle = new AVCodecHandle(codec);
-                codecs.Add(new AVCodec(handle));
+                codecs.Add(new AVCodec(codec));
             }
 
             return codecs;
@@ -78,8 +77,7 @@ namespace Kaponata.Multimedia.FFMpeg
         /// </returns>
         public unsafe AVCodec avcodec_find_decoder(AVCodecID id)
         {
-            var handle = new AVCodecHandle(ffmpeg.avcodec_find_decoder(id));
-            return new AVCodec(handle);
+            return new AVCodec(ffmpeg.avcodec_find_decoder(id));
         }
     }
 }
