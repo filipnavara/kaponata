@@ -30,6 +30,7 @@ namespace Kaponata.Operator
 
             services.AddKubernetes();
             services.AddHostedService<RedroidOperator>();
+            services.AddFakeOperators();
         }
 
         /// <summary>

@@ -32,24 +32,24 @@ namespace Kaponata.Operator.Operators
         /// Builds an operator which provides a Fake driver pod for each <see cref="WebDriverSession"/> which uses
         /// the Fake driver.
         /// </summary>
-        /// <param name="host">
-        /// A service host from which to host services.
+        /// <param name="services">
+        /// A service collection from which to host services.
         /// </param>
         /// <returns>
         /// A configured operator.
         /// </returns>
-        public static ChildOperatorBuilder<WebDriverSession, V1Pod> BuildPodOperator(IHost host)
+        public static ChildOperatorBuilder<WebDriverSession, V1Pod> BuildPodOperator(IServiceProvider services)
         {
-            if (host == null)
+            if (services == null)
             {
-                throw new ArgumentNullException(nameof(host));
+                throw new ArgumentNullException(nameof(services));
             }
 
-            var kubernetes = host.Services.GetRequiredService<KubernetesClient>();
-            var loggerFactory = host.Services.GetRequiredService<ILoggerFactory>();
+            var kubernetes = services.GetRequiredService<KubernetesClient>();
+            var loggerFactory = services.GetRequiredService<ILoggerFactory>();
             var logger = loggerFactory.CreateLogger("FakeOperator");
 
-            return new ChildOperatorBuilder(host)
+            return new ChildOperatorBuilder(services)
                 .CreateOperator("WebDriverSession-FakeDriver-PodOperator")
                 .Watches<WebDriverSession>()
                 .WithLabels(s => s.Metadata.Labels[Annotations.AutomationName] == Annotations.AutomationNames.Fake)
@@ -182,24 +182,24 @@ namespace Kaponata.Operator.Operators
         /// Builds an operator which provisions ingress rules for <see cref="WebDriverSession"/> objects which
         /// use the Fake driver.
         /// </summary>
-        /// <param name="host">
-        /// A service host from which to host services.
+        /// <param name="services">
+        /// A service provider from which to host services.
         /// </param>
         /// <returns>
         /// A configured operator.
         /// </returns>
-        public static ChildOperatorBuilder<WebDriverSession, V1Ingress> BuildIngressOperator(IHost host)
+        public static ChildOperatorBuilder<WebDriverSession, V1Ingress> BuildIngressOperator(IServiceProvider services)
         {
-            if (host == null)
+            if (services == null)
             {
-                throw new ArgumentNullException(nameof(host));
+                throw new ArgumentNullException(nameof(services));
             }
 
-            var kubernetes = host.Services.GetRequiredService<KubernetesClient>();
-            var loggerFactory = host.Services.GetRequiredService<ILoggerFactory>();
+            var kubernetes = services.GetRequiredService<KubernetesClient>();
+            var loggerFactory = services.GetRequiredService<ILoggerFactory>();
             var logger = loggerFactory.CreateLogger("FakeOperator");
 
-            return new ChildOperatorBuilder(host)
+            return new ChildOperatorBuilder(services)
                 .CreateOperator("WebDriverSession-IngressOperator")
                 .Watches<WebDriverSession>()
                 .Where(s => s.Status?.SessionId != null)
@@ -260,24 +260,24 @@ namespace Kaponata.Operator.Operators
         /// Builds an operator which provisions services for <see cref="WebDriverSession"/> objects which
         /// use the Fake driver.
         /// </summary>
-        /// <param name="host">
-        /// A service host from which to host services.
+        /// <param name="services">
+        /// A service provider from which to host services.
         /// </param>
         /// <returns>
         /// A configured operator.
         /// </returns>
-        public static ChildOperatorBuilder<WebDriverSession, V1Service> BuildServiceOperator(IHost host)
+        public static ChildOperatorBuilder<WebDriverSession, V1Service> BuildServiceOperator(IServiceProvider services)
         {
-            if (host == null)
+            if (services == null)
             {
-                throw new ArgumentNullException(nameof(host));
+                throw new ArgumentNullException(nameof(services));
             }
 
-            var kubernetes = host.Services.GetRequiredService<KubernetesClient>();
-            var loggerFactory = host.Services.GetRequiredService<ILoggerFactory>();
+            var kubernetes = services.GetRequiredService<KubernetesClient>();
+            var loggerFactory = services.GetRequiredService<ILoggerFactory>();
             var logger = loggerFactory.CreateLogger("WebDriverSession-ServiceOperator");
 
-            return new ChildOperatorBuilder(host)
+            return new ChildOperatorBuilder(services)
                 .CreateOperator("WebDriverSession-ServiceOperator")
                 .Watches<WebDriverSession>()
                 .Where(s => s.Status?.SessionId != null)

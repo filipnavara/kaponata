@@ -6,7 +6,6 @@ using k8s;
 using k8s.Models;
 using Kaponata.Kubernetes;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.ObjectModel;
@@ -29,13 +28,13 @@ namespace Kaponata.Operator.Operators
         private readonly ChildOperatorConfiguration configuration;
         private readonly Action<TParent, TChild> childFactory;
         private readonly Collection<FeedbackLoop<TParent, TChild>> feedbackLoops = new ();
-        private readonly IHost host;
+        private readonly IServiceProvider services;
         private Func<TParent, bool> parentFilter;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ChildOperatorBuilder{TParent, TChild}"/> class.
         /// </summary>
-        /// <param name="host">
+        /// <param name="services">
         /// The host from which to source required services.
         /// </param>
         /// <param name="configuration">
@@ -48,9 +47,9 @@ namespace Kaponata.Operator.Operators
         /// A method which projects objects of type <typeparamref name="TParent"/> into objects of type
         /// <typeparamref name="TChild"/>.
         /// </param>
-        public ChildOperatorBuilder(IHost host, ChildOperatorConfiguration configuration, Func<TParent, bool> parentFilter, Action<TParent, TChild> childFactory)
+        public ChildOperatorBuilder(IServiceProvider services, ChildOperatorConfiguration configuration, Func<TParent, bool> parentFilter, Action<TParent, TChild> childFactory)
         {
-            this.host = host ?? throw new ArgumentNullException(nameof(host));
+            this.services = services ?? throw new ArgumentNullException(nameof(services));
             this.configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
             this.parentFilter = parentFilter ?? throw new ArgumentNullException(nameof(parentFilter));
             this.childFactory = childFactory ?? throw new ArgumentNullException(nameof(childFactory));
@@ -107,8 +106,8 @@ namespace Kaponata.Operator.Operators
         /// </returns>
         public ChildOperator<TParent, TChild> Build()
         {
-            var kubernetesClient = this.host.Services.GetRequiredService<KubernetesClient>();
-            var loggerFactory = this.host.Services.GetRequiredService<ILoggerFactory>();
+            var kubernetesClient = this.services.GetRequiredService<KubernetesClient>();
+            var loggerFactory = this.services.GetRequiredService<ILoggerFactory>();
 
             return new ChildOperator<TParent, TChild>(
                 kubernetesClient,

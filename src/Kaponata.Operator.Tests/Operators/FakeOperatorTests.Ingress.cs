@@ -55,21 +55,21 @@ namespace Kaponata.Operator.Tests.Operators
         }
 
         /// <summary>
-        /// <see cref="FakeOperators.BuildIngressOperator(IHost)"/> throws when passed a <see langword="null"/> value.
+        /// <see cref="FakeOperators.BuildIngressOperator(IServiceProvider)"/> throws when passed a <see langword="null"/> value.
         /// </summary>
         [Fact]
         public void BuildIngressOperator_Null_Throws()
         {
-            Assert.Throws<ArgumentNullException>("host", () => FakeOperators.BuildIngressOperator(null));
+            Assert.Throws<ArgumentNullException>("services", () => FakeOperators.BuildIngressOperator(null));
         }
 
         /// <summary>
-        /// <see cref="FakeOperators.BuildIngressOperator(IHost)"/> correctly populates the standard properties.
+        /// <see cref="FakeOperators.BuildIngressOperator(IServiceProvider)"/> correctly populates the standard properties.
         /// </summary>
         [Fact]
         public void BuildIngressOperator_SimpleProperties_Test()
         {
-            var builder = FakeOperators.BuildIngressOperator(this.host);
+            var builder = FakeOperators.BuildIngressOperator(this.host.Services);
 
             // Name, namespace and labels
             Assert.Collection(
@@ -96,12 +96,12 @@ namespace Kaponata.Operator.Tests.Operators
         }
 
         /// <summary>
-        /// <see cref="FakeOperators.BuildIngressOperator(IHost)"/> correctly configures the child pod.
+        /// <see cref="FakeOperators.BuildIngressOperator(IServiceProvider)"/> correctly configures the child pod.
         /// </summary>
         [Fact]
         public void BuildIngressOperator_ConfiguresIngress_Test()
         {
-            var builder = FakeOperators.BuildIngressOperator(this.host);
+            var builder = FakeOperators.BuildIngressOperator(this.host.Services);
 
             var session = new WebDriverSession()
             {
@@ -128,7 +128,7 @@ namespace Kaponata.Operator.Tests.Operators
         }
 
         /// <summary>
-        /// <see cref="FakeOperators.BuildIngressOperator(IHost)"/> does nto provide any feedback when the sessions or pod are not ready.
+        /// <see cref="FakeOperators.BuildIngressOperator(IServiceProvider)"/> does nto provide any feedback when the sessions or pod are not ready.
         /// </summary>
         /// <param name="context">
         /// The context on which to operate.
@@ -138,19 +138,19 @@ namespace Kaponata.Operator.Tests.Operators
         [MemberData(nameof(BuildIngressOperator_NoFeedback_Data))]
         public async Task BuildIngressOperator_NoFeedback_Async(ChildOperatorContext<WebDriverSession, V1Ingress> context)
         {
-            var builder = FakeOperators.BuildIngressOperator(this.host);
+            var builder = FakeOperators.BuildIngressOperator(this.host.Services);
             var feedback = Assert.Single(builder.FeedbackLoops);
             Assert.Null(await feedback(context, default).ConfigureAwait(false));
         }
 
         /// <summary>
-        /// <see cref="FakeOperators.BuildIngressOperator(IHost)"/> provides correct feedback when session creation fails.
+        /// <see cref="FakeOperators.BuildIngressOperator(IServiceProvider)"/> provides correct feedback when session creation fails.
         /// </summary>
         /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
         [Fact]
         public async Task BuildIngressOperator_Feedback_Async()
         {
-            var builder = FakeOperators.BuildIngressOperator(this.host);
+            var builder = FakeOperators.BuildIngressOperator(this.host.Services);
             var feedback = Assert.Single(builder.FeedbackLoops);
 
             var context = new ChildOperatorContext<WebDriverSession, V1Ingress>(

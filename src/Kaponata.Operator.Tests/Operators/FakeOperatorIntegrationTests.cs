@@ -63,9 +63,9 @@ namespace Kaponata.Operator.Tests.Operators
             var loggerFactory = this.host.Services.GetRequiredService<ILoggerFactory>();
             var logger = loggerFactory.CreateLogger(name);
 
-            var podOperator = FakeOperators.BuildPodOperator(this.host).Build();
-            var serviceOperator = FakeOperators.BuildServiceOperator(this.host).Build();
-            var ingressOperator = FakeOperators.BuildIngressOperator(this.host).Build();
+            var podOperator = FakeOperators.BuildPodOperator(this.host.Services).Build();
+            var serviceOperator = FakeOperators.BuildServiceOperator(this.host.Services).Build();
+            var ingressOperator = FakeOperators.BuildIngressOperator(this.host.Services).Build();
 
             // Create a session and monitor the progress of the session.
             var sessionClient = kubernetes.GetClient<WebDriverSession>();
@@ -178,9 +178,9 @@ namespace Kaponata.Operator.Tests.Operators
             var loggerFactory = this.host.Services.GetRequiredService<ILoggerFactory>();
             var logger = loggerFactory.CreateLogger(name);
 
-            var podOperator = FakeOperators.BuildPodOperator(this.host).Build();
-            var serviceOperator = FakeOperators.BuildServiceOperator(this.host).Build();
-            var ingressOperator = FakeOperators.BuildIngressOperator(this.host).Build();
+            var podOperator = FakeOperators.BuildPodOperator(this.host.Services).Build();
+            var serviceOperator = FakeOperators.BuildServiceOperator(this.host.Services).Build();
+            var ingressOperator = FakeOperators.BuildIngressOperator(this.host.Services).Build();
 
             // Create a session and monitor the progress of the session.
             var sessionClient = kubernetes.GetClient<WebDriverSession>();

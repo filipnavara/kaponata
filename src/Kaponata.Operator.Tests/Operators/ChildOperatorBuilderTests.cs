@@ -56,7 +56,7 @@ namespace Kaponata.Operator.Tests.Operators
         [Fact]
         public void Builder1_Constructor_ValidatesArguments()
         {
-            Assert.Throws<ArgumentNullException>("host", () => new ChildOperatorBuilder(null));
+            Assert.Throws<ArgumentNullException>("services", () => new ChildOperatorBuilder(null));
         }
 
         /// <summary>
@@ -65,8 +65,8 @@ namespace Kaponata.Operator.Tests.Operators
         [Fact]
         public void Builder2_Constructor_ValidatesArguments()
         {
-            Assert.Throws<ArgumentNullException>("host", () => new ChildOperatorBuilder<WebDriverSession>(null, new ChildOperatorConfiguration(string.Empty)));
-            Assert.Throws<ArgumentNullException>("configuration", () => new ChildOperatorBuilder<WebDriverSession>(Mock.Of<IHost>(), null));
+            Assert.Throws<ArgumentNullException>("services", () => new ChildOperatorBuilder<WebDriverSession>(null, new ChildOperatorConfiguration(string.Empty)));
+            Assert.Throws<ArgumentNullException>("configuration", () => new ChildOperatorBuilder<WebDriverSession>(Mock.Of<IServiceProvider>(), null));
         }
 
         /// <summary>
@@ -75,15 +75,15 @@ namespace Kaponata.Operator.Tests.Operators
         [Fact]
         public void Builder3_Constructor_ValidatesArguments()
         {
-            var host = Mock.Of<IHost>();
+            var serviceProvider = Mock.Of<IServiceProvider>();
             var configuration = new ChildOperatorConfiguration(string.Empty);
             Func<WebDriverSession, bool> parentFilter = (session) => true;
             Action<WebDriverSession, V1Pod> childFactory = (session, pod) => { };
 
-            Assert.Throws<ArgumentNullException>("host", () => new ChildOperatorBuilder<WebDriverSession, V1Pod>(null, configuration, parentFilter, childFactory));
-            Assert.Throws<ArgumentNullException>("configuration", () => new ChildOperatorBuilder<WebDriverSession, V1Pod>(host, null, parentFilter, childFactory));
-            Assert.Throws<ArgumentNullException>("parentFilter", () => new ChildOperatorBuilder<WebDriverSession, V1Pod>(host, configuration, null, childFactory));
-            Assert.Throws<ArgumentNullException>("childFactory", () => new ChildOperatorBuilder<WebDriverSession, V1Pod>(host, configuration, parentFilter, null));
+            Assert.Throws<ArgumentNullException>("services", () => new ChildOperatorBuilder<WebDriverSession, V1Pod>(null, configuration, parentFilter, childFactory));
+            Assert.Throws<ArgumentNullException>("configuration", () => new ChildOperatorBuilder<WebDriverSession, V1Pod>(serviceProvider, null, parentFilter, childFactory));
+            Assert.Throws<ArgumentNullException>("parentFilter", () => new ChildOperatorBuilder<WebDriverSession, V1Pod>(serviceProvider, configuration, null, childFactory));
+            Assert.Throws<ArgumentNullException>("childFactory", () => new ChildOperatorBuilder<WebDriverSession, V1Pod>(serviceProvider, configuration, parentFilter, null));
         }
 
         /// <summary>
@@ -92,7 +92,7 @@ namespace Kaponata.Operator.Tests.Operators
         [Fact]
         public void Where_ValidatesArguments()
         {
-            var builder = new ChildOperatorBuilder<WebDriverSession>(Mock.Of<IHost>(), new ChildOperatorConfiguration(string.Empty));
+            var builder = new ChildOperatorBuilder<WebDriverSession>(Mock.Of<IServiceProvider>(), new ChildOperatorConfiguration(string.Empty));
             Assert.Throws<ArgumentNullException>("parentFilter", () => builder.Where(null));
         }
 
@@ -103,7 +103,7 @@ namespace Kaponata.Operator.Tests.Operators
         [Fact]
         public void PostsFeedback_ValidatesArguments()
         {
-            var builder = new ChildOperatorBuilder<WebDriverSession, V1Pod>(Mock.Of<IHost>(), new ChildOperatorConfiguration(string.Empty), (session) => true, (session, pod) => { });
+            var builder = new ChildOperatorBuilder<WebDriverSession, V1Pod>(Mock.Of<IServiceProvider>(), new ChildOperatorConfiguration(string.Empty), (session) => true, (session, pod) => { });
 
             Assert.Throws<ArgumentNullException>("feedbackLoop", () => builder.PostsFeedback(null));
         }

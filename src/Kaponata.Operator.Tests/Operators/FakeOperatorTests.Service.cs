@@ -55,21 +55,21 @@ namespace Kaponata.Operator.Tests.Operators
         }
 
         /// <summary>
-        /// <see cref="FakeOperators.BuildServiceOperator(IHost)"/> throws when passed a <see langword="null"/> value.
+        /// <see cref="FakeOperators.BuildServiceOperator(IServiceProvider)"/> throws when passed a <see langword="null"/> value.
         /// </summary>
         [Fact]
         public void BuildServiceOperator_Null_Throws()
         {
-            Assert.Throws<ArgumentNullException>("host", () => FakeOperators.BuildServiceOperator(null));
+            Assert.Throws<ArgumentNullException>("services", () => FakeOperators.BuildServiceOperator(null));
         }
 
         /// <summary>
-        /// <see cref="FakeOperators.BuildServiceOperator(IHost)"/> correctly populates the standard properties.
+        /// <see cref="FakeOperators.BuildServiceOperator(IServiceProvider)"/> correctly populates the standard properties.
         /// </summary>
         [Fact]
         public void BuildServiceOperator_SimpleProperties_Test()
         {
-            var builder = FakeOperators.BuildServiceOperator(this.host);
+            var builder = FakeOperators.BuildServiceOperator(this.host.Services);
 
             // Name, namespace and labels
             Assert.Collection(
@@ -96,12 +96,12 @@ namespace Kaponata.Operator.Tests.Operators
         }
 
         /// <summary>
-        /// <see cref="FakeOperators.BuildServiceOperator(IHost)"/> correctly configures the child pod.
+        /// <see cref="FakeOperators.BuildServiceOperator(IServiceProvider)"/> correctly configures the child pod.
         /// </summary>
         [Fact]
         public void BuildServiceOperator_ConfiguresService_Test()
         {
-            var builder = FakeOperators.BuildServiceOperator(this.host);
+            var builder = FakeOperators.BuildServiceOperator(this.host.Services);
 
             var session = new WebDriverSession()
             {
@@ -127,7 +127,7 @@ namespace Kaponata.Operator.Tests.Operators
         }
 
         /// <summary>
-        /// <see cref="FakeOperators.BuildServiceOperator(IHost)"/> does nto provide any feedback when the sessions or pod are not ready.
+        /// <see cref="FakeOperators.BuildServiceOperator(IServiceProvider)"/> does nto provide any feedback when the sessions or pod are not ready.
         /// </summary>
         /// <param name="context">
         /// The context on which to operate.
@@ -137,19 +137,19 @@ namespace Kaponata.Operator.Tests.Operators
         [MemberData(nameof(BuildServiceOperator_NoFeedback_Data))]
         public async Task BuildServiceOperator_NoFeedback_Async(ChildOperatorContext<WebDriverSession, V1Service> context)
         {
-            var builder = FakeOperators.BuildServiceOperator(this.host);
+            var builder = FakeOperators.BuildServiceOperator(this.host.Services);
             var feedback = Assert.Single(builder.FeedbackLoops);
             Assert.Null(await feedback(context, default).ConfigureAwait(false));
         }
 
         /// <summary>
-        /// <see cref="FakeOperators.BuildServiceOperator(IHost)"/> provides correct feedback when session creation fails.
+        /// <see cref="FakeOperators.BuildServiceOperator(IServiceProvider)"/> provides correct feedback when session creation fails.
         /// </summary>
         /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
         [Fact]
         public async Task BuildServiceOperator_Feedback_Async()
         {
-            var builder = FakeOperators.BuildServiceOperator(this.host);
+            var builder = FakeOperators.BuildServiceOperator(this.host.Services);
             var feedback = Assert.Single(builder.FeedbackLoops);
 
             var context = new ChildOperatorContext<WebDriverSession, V1Service>(
