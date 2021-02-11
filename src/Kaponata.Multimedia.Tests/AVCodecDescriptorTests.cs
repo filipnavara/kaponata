@@ -32,7 +32,7 @@ namespace Kaponata.Multimedia.Tests
         {
             var ffmpeg = new FFMpegClient();
 
-            var codecs = ffmpeg.GetAvailableCodecIDs();
+            var codecs = ffmpeg.GetAvailableCodecDescriptors();
             var descriptor = codecs.Single(c => c.Id == AVCodecID.AV_CODEC_ID_012V);
 
             Assert.Equal(AVCodecID.AV_CODEC_ID_012V, descriptor.Id);

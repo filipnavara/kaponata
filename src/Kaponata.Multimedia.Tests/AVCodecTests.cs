@@ -165,15 +165,13 @@ namespace Kaponata.Multimedia.Tests
         {
             var ffmpeg = new FFMpegClient();
 
-            using (var codec = ffmpeg.avcodec_find_decoder(AVCodecID.AV_CODEC_ID_H264))
-            {
-                Assert.Equal("H.264 / AVC / MPEG-4 AVC / MPEG-4 part 10", codec.LongName);
-                Assert.Equal("H.264 / AVC / MPEG-4 AVC / MPEG-4 part 10 (h264)", codec.ToString());
-                Assert.Equal("h264", codec.Name);
-                Assert.Equal(AVCodecCapabilities.DR1 | AVCodecCapabilities.Delay | AVCodecCapabilities.Threads | AVCodecCapabilities.SliceThreads, codec.Capabilities);
-                Assert.True(codec.IsDecoder);
-                Assert.False(codec.IsEncoder);
-            }
+            var codec = ffmpeg.avcodec_find_decoder(AVCodecID.AV_CODEC_ID_H264);
+            Assert.Equal("H.264 / AVC / MPEG-4 AVC / MPEG-4 part 10", codec.LongName);
+            Assert.Equal("H.264 / AVC / MPEG-4 AVC / MPEG-4 part 10 (h264)", codec.ToString());
+            Assert.Equal("h264", codec.Name);
+            Assert.Equal(AVCodecCapabilities.DR1 | AVCodecCapabilities.Delay | AVCodecCapabilities.Threads | AVCodecCapabilities.SliceThreads, codec.Capabilities);
+            Assert.True(codec.IsDecoder);
+            Assert.False(codec.IsEncoder);
         }
 
         /// <summary>
