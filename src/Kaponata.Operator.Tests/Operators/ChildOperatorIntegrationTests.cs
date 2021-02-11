@@ -39,7 +39,7 @@ namespace Kaponata.Operator.Tests.Operators
             builder.ConfigureServices(
                 (services) =>
                 {
-                    services.AddKubernetes();
+                    services.AddKubernetes(@namespace: "tests");
                     services.AddLogging(
                         (loggingBuilder) =>
                         {
@@ -137,7 +137,6 @@ namespace Kaponata.Operator.Tests.Operators
                         Metadata = new V1ObjectMeta()
                         {
                             Name = $"{name}-empty",
-                            NamespaceProperty = "default",
                             Labels = new Dictionary<string, string>()
                             {
                                 { Annotations.ManagedBy, name },
@@ -153,7 +152,6 @@ namespace Kaponata.Operator.Tests.Operators
                         Metadata = new V1ObjectMeta()
                         {
                             Name = $"{name}-fake",
-                            NamespaceProperty = "default",
                             Labels = new Dictionary<string, string>()
                             {
                                 { Annotations.ManagedBy, name },

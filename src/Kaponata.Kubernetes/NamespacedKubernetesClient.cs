@@ -378,7 +378,6 @@ namespace Kaponata.Kubernetes
 
             return this.parent.PatchNamespacedObjectAsync<T>(
                 this.metadata,
-                value.Metadata.NamespaceProperty,
                 value.Metadata.Name,
                 new V1Patch(patch, V1Patch.PatchType.JsonPatch),
                 cancellationToken);

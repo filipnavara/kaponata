@@ -20,3 +20,11 @@ rules:
 - apiGroups: [ "networking.k8s.io" ]
   resources: [ "ingresses" ]
   verbs: [ "get", "list", "watch", "create", "delete" ]
+
+- apiGroups: [ "kaponata.io" ]
+  resources: [ "webdriversessions" ]
+  verbs: [ "get", "list", "watch", "create", "patch", "delete" ]
+
+- apiGroups: [ "kaponata.io" ]
+  resources: [ "mobiledevices" ]
+  verbs: [ "get", "list", "watch", "create", "patch", "delete" ]

@@ -142,6 +142,7 @@ jobs:
       - name: Create k3d cluster
         run: |
           k3d cluster create --api-port 6433 -p "80:80@loadbalancer"
+          kubectl create namespace tests
 
       # We don't built Docker crossarch manifests during CI, so tag the {version}-amd64 image
       # as the {version} image. Then, import the image into k3d.

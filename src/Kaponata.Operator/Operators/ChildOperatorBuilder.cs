@@ -4,7 +4,6 @@
 
 using k8s;
 using k8s.Models;
-using Microsoft.Extensions.Hosting;
 using System;
 
 namespace Kaponata.Operator.Operators
@@ -14,18 +13,18 @@ namespace Kaponata.Operator.Operators
     /// </summary>
     public class ChildOperatorBuilder
     {
-        private readonly IHost host;
+        private readonly IServiceProvider services;
         private ChildOperatorConfiguration configuration;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ChildOperatorBuilder"/> class.
         /// </summary>
-        /// <param name="host">
+        /// <param name="services">
         /// A host from which required services can be sourced.
         /// </param>
-        public ChildOperatorBuilder(IHost host)
+        public ChildOperatorBuilder(IServiceProvider services)
         {
-            this.host = host ?? throw new ArgumentNullException(nameof(host));
+            this.services = services ?? throw new ArgumentNullException(nameof(services));
         }
 
         /// <summary>
@@ -56,7 +55,7 @@ namespace Kaponata.Operator.Operators
             where TParent : class, IKubernetesObject<V1ObjectMeta>, new()
         {
             return new ChildOperatorBuilder<TParent>(
-                this.host,
+                this.services,
                 this.configuration);
         }
     }

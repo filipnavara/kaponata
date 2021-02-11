@@ -63,16 +63,18 @@ namespace Kaponata.Kubernetes
                 throw new ValidationException(ValidationRules.CannotBeNull, "value.Metadata.Name");
             }
 
-            if (value.Metadata.NamespaceProperty == null)
+            // Null values will default to the namespace configured in the options. If the caller was explicit about the
+            // namespace, accept it if it is the configured namespace, and throw if it was not.
+            if (value.Metadata.NamespaceProperty != null && value.Metadata.NamespaceProperty != this.Options.Namespace)
             {
-                throw new ValidationException(ValidationRules.CannotBeNull, "value.Metadata.NamespaceProperty");
+                throw new ValidationException(ValidationRules.Pattern, "value.Metadata.NamespaceProperty must match the namespace in the Kubernetes options.");
             }
 
             using (var operationResponse = await this.RunTaskAsync(this.protocol.CreateNamespacedCustomObjectWithHttpMessagesAsync(
                 value,
                 kind.Group,
                 kind.Version,
-                value.Metadata.NamespaceProperty,
+                this.Options.Namespace,
                 kind.Plural,
                 cancellationToken: cancellationToken)).ConfigureAwait(false))
             {
@@ -433,9 +435,6 @@ namespace Kaponata.Kubernetes
         /// <param name="metadata">
         /// Metadata which describes the object type.
         /// </param>
-        /// <param name="namespace">
-        /// The namespace of the object to patch.
-        /// </param>
         /// <param name="name">
         /// The name of the object to patch.
         /// </param>
@@ -450,7 +449,6 @@ namespace Kaponata.Kubernetes
         /// </returns>
         public async Task<T> PatchNamespacedObjectAsync<T>(
             KindMetadata metadata,
-            string @namespace,
             string name,
             V1Patch patch,
             CancellationToken cancellationToken)
@@ -459,7 +457,7 @@ namespace Kaponata.Kubernetes
                 patch,
                 metadata.Group,
                 metadata.Version,
-                @namespace,
+                this.Options.Namespace,
                 metadata.Plural,
                 name,
                 null,
@@ -503,7 +501,7 @@ namespace Kaponata.Kubernetes
                 patch,
                 metadata.Group,
                 metadata.Version,
-                this.options.Value.Namespace,
+                this.Options.Namespace,
                 metadata.Plural,
                 name,
                 null,

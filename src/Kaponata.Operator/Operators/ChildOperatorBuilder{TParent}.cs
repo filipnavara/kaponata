@@ -5,7 +5,6 @@
 using k8s;
 using k8s.Models;
 using Kaponata.Kubernetes;
-using Microsoft.Extensions.Hosting;
 using System;
 using System.Linq.Expressions;
 
@@ -20,22 +19,22 @@ namespace Kaponata.Operator.Operators
     public class ChildOperatorBuilder<TParent>
             where TParent : class, IKubernetesObject<V1ObjectMeta>, new()
     {
-        private readonly IHost host;
+        private readonly IServiceProvider services;
         private readonly ChildOperatorConfiguration configuration;
         private Func<TParent, bool> parentFilter = (parent) => true;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ChildOperatorBuilder{TParent}"/> class.
         /// </summary>
-        /// <param name="host">
-        /// The host from which to source required services.
+        /// <param name="services">
+        /// The service collection from which to source required services.
         /// </param>
         /// <param name="configuration">
         /// The configuration to apply to the operator.
         /// </param>
-        public ChildOperatorBuilder(IHost host, ChildOperatorConfiguration configuration)
+        public ChildOperatorBuilder(IServiceProvider services, ChildOperatorConfiguration configuration)
         {
-            this.host = host ?? throw new ArgumentNullException(nameof(host));
+            this.services = services ?? throw new ArgumentNullException(nameof(services));
             this.configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
         }
 
@@ -102,7 +101,7 @@ namespace Kaponata.Operator.Operators
             Action<TParent, TChild> childFactory)
             where TChild : class, IKubernetesObject<V1ObjectMeta>, new()
         {
-            return new ChildOperatorBuilder<TParent, TChild>(this.host, this.configuration, this.parentFilter, childFactory);
+            return new ChildOperatorBuilder<TParent, TChild>(this.services, this.configuration, this.parentFilter, childFactory);
         }
     }
 }

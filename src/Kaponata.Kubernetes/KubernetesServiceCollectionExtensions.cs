@@ -20,19 +20,29 @@ namespace Kaponata.Kubernetes
         /// <param name="services">
         /// The <see cref="IServiceCollection"/> to add services to.
         /// </param>
+        /// <param name="namespace">
+        /// The namespace in which to operate. The default value is <c>default</c>.
+        /// </param>
         /// <returns>
         /// The <see cref="IServiceCollection"/> so that additional calls can be chained.
         /// </returns>
-        public static IServiceCollection AddKubernetes(this IServiceCollection services)
+        public static IServiceCollection AddKubernetes(this IServiceCollection services, string @namespace = "default")
         {
             if (services == null)
             {
                 throw new ArgumentNullException(nameof(services));
             }
 
+            if (@namespace == null)
+            {
+                throw new ArgumentNullException(nameof(@namespace));
+            }
+
             services.AddSingleton<KubernetesClientConfiguration>(KubernetesClientConfiguration.BuildDefaultConfig());
             services.AddSingleton<IKubernetesProtocol, KubernetesProtocol>();
             services.AddSingleton<KubernetesClient>();
+
+            services.AddOptions<KubernetesOptions>().Configure(c => c.Namespace = @namespace);
             return services;
         }
     }
