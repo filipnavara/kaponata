@@ -14,7 +14,7 @@ using System.Collections.ObjectModel;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Kaponata.Operator.Tests.Operators
+namespace Kaponata.Tests.Shared
 {
     /// <summary>
     /// Extensions for mocks of the <see cref="NamespacedKubernetesClient{T}"/> class.
@@ -153,6 +153,43 @@ namespace Kaponata.Operator.Tests.Operators
                     It.IsAny<CancellationToken>()))
                 .Callback<string, string, string, WatchEventDelegate<T>, CancellationToken>(
                 (fieldSelector, labelSelector, resourceVersion, eventHandler, cancellationToken) =>
+                {
+                    cancellationToken.Register(watchClient.TaskCompletionSource.SetCanceled);
+                    watchClient.ClientRegistered.SetResult(eventHandler);
+                })
+                .Returns(watchClient.TaskCompletionSource.Task);
+
+            return watchClient;
+        }
+
+        /// <summary>
+        /// Configures the <see cref="NamespacedKubernetesClient{T}.WatchAsync(T, WatchEventDelegate{T}, CancellationToken)"/> method
+        /// on the mock.
+        /// </summary>
+        /// <param name="client">
+        /// The mock to configure.
+        /// </param>
+        /// <param name="value">
+        /// The value to wach.
+        /// </param>
+        /// <typeparam name="T">
+        /// The type of objects observed by the client.
+        /// </typeparam>
+        /// <returns>
+        /// A <see cref="WatchClient{T}"/> which can be used to invoke the event handler (if set) and complete the watch operation.
+        /// </returns>
+        public static WatchClient<T> WithWatcher<T>(this Mock<NamespacedKubernetesClient<T>> client, T value)
+            where T : class, IKubernetesObject<V1ObjectMeta>, new()
+        {
+            var watchClient = new WatchClient<T>();
+
+            client
+                .Setup(k => k.WatchAsync(
+                    value,
+                    It.IsAny<WatchEventDelegate<T>>(),
+                    It.IsAny<CancellationToken>()))
+                .Callback<T, WatchEventDelegate<T>, CancellationToken>(
+                (value, eventHandler, cancellationToken) =>
                 {
                     cancellationToken.Register(watchClient.TaskCompletionSource.SetCanceled);
                     watchClient.ClientRegistered.SetResult(eventHandler);

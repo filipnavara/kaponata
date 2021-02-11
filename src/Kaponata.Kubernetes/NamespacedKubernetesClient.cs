@@ -291,7 +291,7 @@ namespace Kaponata.Kubernetes
         /// return value describes why the watcher stopped. The task errors if the watch
         /// loop errors.
         /// </returns>
-        public Task<WatchExitReason> WatchAsync(
+        public virtual Task<WatchExitReason> WatchAsync(
             T value,
             WatchEventDelegate<T> eventHandler,
             CancellationToken cancellationToken)
