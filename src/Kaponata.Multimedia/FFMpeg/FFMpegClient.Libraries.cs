@@ -53,8 +53,7 @@ namespace Kaponata.Multimedia.FFMpeg
                 return;
             }
 
-            if (RuntimeInformation.OSArchitecture == Architecture.Arm64
-                && RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 // Try to load the libraries from a shared location. Requires libavformat-dev and friends
                 var libraryNames = new string[] { "avutil", "avcodec", "avformat", "swscale", "swresample" };
