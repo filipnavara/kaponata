@@ -10,6 +10,7 @@ namespace Kaponata.Multimedia.FFMpeg
     /// <summary>
     /// Represents the capabilities of an codec.
     /// </summary>
+    /// <seealso href="http://ffmpeg.org/doxygen/trunk/codec_8h.html"/>
     [Flags]
     public enum AVCodecCapabilities : uint
     {

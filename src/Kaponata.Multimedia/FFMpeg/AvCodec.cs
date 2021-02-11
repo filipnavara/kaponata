@@ -12,7 +12,8 @@ namespace Kaponata.Multimedia.FFMpeg
     /// <summary>
     /// Represents a coder or decoder which can encode or decode audio and video files.
     /// </summary>
-    public unsafe class AVCodec : IDisposable
+    /// <seealso href="https://ffmpeg.org/doxygen/2.5/structAVCodec.html"/>
+    public unsafe class AVCodec
     {
         private readonly NativeAVCodec* native;
 
@@ -75,11 +76,6 @@ namespace Kaponata.Multimedia.FFMpeg
         public bool IsDecoder
         {
             get { return ffmpeg.av_codec_is_decoder(this.native) == 1; }
-        }
-
-        /// <inheritdoc/>
-        public void Dispose()
-        {
         }
 
         /// <inheritdoc/>

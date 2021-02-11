@@ -3,10 +3,8 @@
 // </copyright>
 
 using FFmpeg.AutoGen;
-using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Runtime.InteropServices;
 using NativeAVCodec = FFmpeg.AutoGen.AVCodec;
 using NativeAVCodecDescriptor = FFmpeg.AutoGen.AVCodecDescriptor;
 
@@ -25,20 +23,13 @@ namespace Kaponata.Multimedia.FFMpeg
         /// <returns>
         /// A list of available codecs IDs.
         /// </returns>
-        public unsafe List<AVCodecDescriptor> GetAvailableCodecIDs()
+        public unsafe List<AVCodecDescriptor> GetAvailableCodecDescriptors()
         {
             List<AVCodecDescriptor> codecs = new List<AVCodecDescriptor>();
             NativeAVCodecDescriptor* descriptor = null;
 
-            while (true)
+            while ((descriptor = ffmpeg.avcodec_descriptor_next(descriptor)) != null)
             {
-                descriptor = ffmpeg.avcodec_descriptor_next(descriptor);
-
-                if (descriptor == null)
-                {
-                    break;
-                }
-
                 codecs.Add(new AVCodecDescriptor(descriptor));
             }
 

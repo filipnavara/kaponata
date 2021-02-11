@@ -9,6 +9,7 @@ namespace Kaponata.Multimedia.FFMpeg
     /// <summary>
     /// Defines additional properties of a codec.
     /// </summary>
+    /// <seealso href="https://ffmpeg.org/doxygen/2.5/group__lavc__core.html"/>
     public enum AVCodecProps
     {
         /// <summary>

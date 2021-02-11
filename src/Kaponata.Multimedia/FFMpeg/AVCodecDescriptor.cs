@@ -10,6 +10,7 @@ namespace Kaponata.Multimedia.FFMpeg
     /// <summary>
     /// Describes an instance of an audio or video codec.
     /// </summary>
+    /// <seealso href="https://ffmpeg.org/doxygen/2.5/structAVCodecDescriptor.html"/>
     public unsafe class AVCodecDescriptor
     {
         private readonly NativeAVCodecDescriptor* native;
