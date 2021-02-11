@@ -47,10 +47,12 @@ namespace Kaponata.Api
         [HttpPost("/wd/hub/session")]
         public Task<WebDriverResult> NewSessionAsync(object request, CancellationToken cancellationToken)
         {
-            return Task.FromResult<WebDriverResult>(
-                new WebDriverErrorResult(
-                    WebDriverErrorCode.SessionNotCreated,
-                    "This version of Kaponata does not support creating any sessions."));
+            return Task.FromResult(
+                new WebDriverResult(
+                    new WebDriverResponse(
+                        new WebDriverError(
+                        WebDriverErrorCode.SessionNotCreated,
+                        "This version of Kaponata does not support creating any sessions."))));
         }
 
         /// <summary>
@@ -69,10 +71,12 @@ namespace Kaponata.Api
         [HttpDelete("/wd/hub/session/{sessionId}")]
         public Task<WebDriverResult> DeleteAsync(string sessionId, CancellationToken cancellationToken)
         {
-            return Task.FromResult<WebDriverResult>(
-                new WebDriverErrorResult(
+            return Task.FromResult(
+                new WebDriverResult(
+                    new WebDriverResponse(
+                        new WebDriverError(
                     WebDriverErrorCode.InvalidSessionId,
-                    $"A session with session id '{sessionId}' could not be found"));
+                    $"A session with session id '{sessionId}' could not be found"))));
         }
 
         /// <summary>
@@ -86,14 +90,15 @@ namespace Kaponata.Api
         /// </returns>
         [HttpGet("/wd/hub/status")]
         public Task<WebDriverResult> StatusAsync(CancellationToken cancellationToken)
-        {
-            return Task.FromResult<WebDriverResult>(
+    {
+            return Task.FromResult(
                 new WebDriverResult(
-                    new WebDriverStatus()
-                    {
-                        Ready = false,
-                        Message = "This version of Kaponata does not support creating any sessions.",
-                    }));
+                    new WebDriverResponse(
+                        new WebDriverStatus()
+                            {
+                                Ready = false,
+                                Message = "This version of Kaponata does not support creating any sessions.",
+                            })));
         }
     }
 }

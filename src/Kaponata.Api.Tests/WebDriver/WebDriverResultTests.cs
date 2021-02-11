@@ -14,44 +14,34 @@ namespace Kaponata.Api.Tests.WebDriver
     public class WebDriverResultTests
     {
         /// <summary>
-        /// The <see cref="WebDriverResult.WebDriverResult(object)"/> constructor
-        /// embeds the data in a <see cref="WebDriverData"/> class.
-        /// </summary>
-        [Fact]
-        public void Constructor_EmbedsData()
-        {
-            string value = "test";
-
-            WebDriverResult result = new WebDriverResult(value);
-            var data = Assert.IsType<WebDriverData>(result.Value);
-            Assert.Equal(value, data.Data);
-        }
-
-        /// <summary>
-        /// The <see cref="WebDriverResult.WebDriverResult(object)"/> constructor
-        /// copies the <see cref="WebDriverData"/> value passed to it.
+        /// The <see cref="WebDriverResult.WebDriverResult(WebDriverResponse)"/> constructor
+        /// copies the <see cref="WebDriverResponse"/> value passed to it.
         /// </summary>
         [Fact]
         public void Constructor_CopiesData()
         {
-            var data = new WebDriverData();
+            var data = new WebDriverResponse();
 
             WebDriverResult result = new WebDriverResult(data);
             Assert.Same(data, result.Value);
+            Assert.Equal("application/json; charset=utf-8", result.ContentType);
+            Assert.Equal(200, result.StatusCode);
         }
 
         /// <summary>
-        /// The <see cref="WebDriverResult"/> constructor initializes the <see cref="JsonResult.Value"/>
-        /// to an empty <see cref="WebDriverData"/> object.
+        /// The <see cref="WebDriverResult.WebDriverResult(WebDriverResponse)"/> constructor
+        /// properly initializes the status code when processing errors.
         /// </summary>
         [Fact]
-        public void Constructor_InitializesEmptyData()
+        public void Constructor_Error()
         {
-            var result = new WebDriverResult((WebDriverData)null);
-            Assert.IsType<WebDriverData>(result.Value);
+            var data = new WebDriverResponse(
+                new WebDriverError(WebDriverErrorCode.InvalidSessionId));
 
-            result = new WebDriverResult((object)null);
-            Assert.IsType<WebDriverData>(result.Value);
+            WebDriverResult result = new WebDriverResult(data);
+            Assert.Same(data, result.Value);
+            Assert.Equal("application/json; charset=utf-8", result.ContentType);
+            Assert.Equal(404, result.StatusCode);
         }
     }
 }
