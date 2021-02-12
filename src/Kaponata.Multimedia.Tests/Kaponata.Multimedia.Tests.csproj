@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+    <IsPackable>false</IsPackable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Update="**/*.bin" CopyToOutputDirectory="PreserveNewest" />
+    <None Update="**/*.xml" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Kaponata.Multimedia\Kaponata.Multimedia.csproj" />
+    <PackageReference Include="FFmpeg.AutoGen" Version="4.3.1" />
+  </ItemGroup>
+
+</Project>
