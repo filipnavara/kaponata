@@ -121,7 +121,8 @@ namespace Kaponata.Kubernetes
         {
             return new NamespacedKubernetesClient<T>(
                 this,
-                this.knownTypes[typeof(T)]);
+                this.knownTypes[typeof(T)],
+                this.loggerFactory.CreateLogger<NamespacedKubernetesClient<T>>());
         }
 
         /// <inheritdoc/>

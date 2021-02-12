@@ -34,8 +34,9 @@ namespace Kaponata.Kubernetes.Tests
         [Fact]
         public void Constructor_ValidatesArguments()
         {
-            Assert.Throws<ArgumentNullException>("parent", () => new NamespacedKubernetesClient<V1Pod>(null, new KindMetadata(V1Pod.KubeGroup, V1Pod.KubeApiVersion, "core")));
-            Assert.Throws<ArgumentNullException>("metadata", () => new NamespacedKubernetesClient<V1Pod>(Mock.Of<KubernetesClient>(), null));
+            Assert.Throws<ArgumentNullException>("parent", () => new NamespacedKubernetesClient<V1Pod>(null, new KindMetadata(V1Pod.KubeGroup, V1Pod.KubeApiVersion, "core"), NullLogger<NamespacedKubernetesClient<V1Pod>>.Instance));
+            Assert.Throws<ArgumentNullException>("metadata", () => new NamespacedKubernetesClient<V1Pod>(Mock.Of<KubernetesClient>(), null, NullLogger<NamespacedKubernetesClient<V1Pod>>.Instance));
+            Assert.Throws<ArgumentNullException>("logger", () => new NamespacedKubernetesClient<V1Pod>(Mock.Of<KubernetesClient>(), new KindMetadata(V1Pod.KubeGroup, V1Pod.KubeApiVersion, "core"), null));
         }
 
         /// <summary>
@@ -659,7 +660,7 @@ namespace Kaponata.Kubernetes.Tests
             var metadata = new KindMetadata(V1Pod.KubeGroup, V1Pod.KubeApiVersion, "pods");
             var parent = new Mock<KubernetesClient>(MockBehavior.Strict);
 
-            var client = new NamespacedKubernetesClient<V1Pod>(parent.Object, metadata);
+            var client = new NamespacedKubernetesClient<V1Pod>(parent.Object, metadata, NullLogger<NamespacedKubernetesClient<V1Pod>>.Instance);
 
             await Assert.ThrowsAsync<ArgumentNullException>("name", () => client.TryDeleteAsync(null, TimeSpan.Zero, default)).ConfigureAwait(false);
         }
@@ -686,7 +687,7 @@ namespace Kaponata.Kubernetes.Tests
                         },
                     });
 
-            var client = new NamespacedKubernetesClient<V1Pod>(parent.Object, metadata);
+            var client = new NamespacedKubernetesClient<V1Pod>(parent.Object, metadata, NullLogger<NamespacedKubernetesClient<V1Pod>>.Instance);
             Assert.Null(await client.TryDeleteAsync("my-name", TimeSpan.FromMinutes(1), default).ConfigureAwait(false));
         }
 
@@ -736,7 +737,7 @@ namespace Kaponata.Kubernetes.Tests
                 .Returns(Task.CompletedTask)
                 .Verifiable();
 
-            var client = new NamespacedKubernetesClient<V1Pod>(parent.Object, metadata);
+            var client = new NamespacedKubernetesClient<V1Pod>(parent.Object, metadata, NullLogger<NamespacedKubernetesClient<V1Pod>>.Instance);
             Assert.Equal(pod, await client.TryDeleteAsync("my-name", TimeSpan.FromMinutes(1), default).ConfigureAwait(false));
 
             parent.Verify();
@@ -751,7 +752,7 @@ namespace Kaponata.Kubernetes.Tests
         {
             var metadata = new KindMetadata(V1Pod.KubeGroup, V1Pod.KubeApiVersion, "pods");
             var parent = new Mock<KubernetesClient>(MockBehavior.Strict);
-            var client = new NamespacedKubernetesClient<V1Pod>(parent.Object, metadata);
+            var client = new NamespacedKubernetesClient<V1Pod>(parent.Object, metadata, NullLogger<NamespacedKubernetesClient<V1Pod>>.Instance);
 
             await Assert.ThrowsAsync<ArgumentNullException>("value", () => client.PatchAsync(null, new JsonPatchDocument<V1Pod>(), default)).ConfigureAwait(false);
             await Assert.ThrowsAsync<ValidationException>(() => client.PatchAsync(new V1Pod(), new JsonPatchDocument<V1Pod>(), default)).ConfigureAwait(false);
@@ -809,7 +810,7 @@ namespace Kaponata.Kubernetes.Tests
 
             using (var parent = new KubernetesClient(protocol.Object, KubernetesOptions.Default, NullLogger<KubernetesClient>.Instance, NullLoggerFactory.Instance))
             {
-                var client = new NamespacedKubernetesClient<V1Pod>(parent, metadata);
+                var client = new NamespacedKubernetesClient<V1Pod>(parent, metadata, NullLogger<NamespacedKubernetesClient<V1Pod>>.Instance);
 
                 var patch = new JsonPatchDocument<V1Pod>();
                 patch.Replace(d => d.Spec.Containers, new V1Container[] { new V1Container() { Image = "my-image", }, });
@@ -828,7 +829,7 @@ namespace Kaponata.Kubernetes.Tests
         {
             var metadata = new KindMetadata(V1Pod.KubeGroup, V1Pod.KubeApiVersion, "pods");
             var parent = new Mock<KubernetesClient>(MockBehavior.Strict);
-            var client = new NamespacedKubernetesClient<V1Pod>(parent.Object, metadata);
+            var client = new NamespacedKubernetesClient<V1Pod>(parent.Object, metadata, NullLogger<NamespacedKubernetesClient<V1Pod>>.Instance);
 
             await Assert.ThrowsAsync<ArgumentNullException>("value", () => client.PatchStatusAsync(null, new JsonPatchDocument<V1Pod>(), default)).ConfigureAwait(false);
             await Assert.ThrowsAsync<ValidationException>(() => client.PatchStatusAsync(new V1Pod(), new JsonPatchDocument<V1Pod>(), default)).ConfigureAwait(false);
@@ -886,7 +887,7 @@ namespace Kaponata.Kubernetes.Tests
 
             using (var parent = new KubernetesClient(protocol.Object, KubernetesOptions.Default, NullLogger<KubernetesClient>.Instance, NullLoggerFactory.Instance))
             {
-                var client = new NamespacedKubernetesClient<V1Pod>(parent, metadata);
+                var client = new NamespacedKubernetesClient<V1Pod>(parent, metadata, NullLogger<NamespacedKubernetesClient<V1Pod>>.Instance);
 
                 var patch = new JsonPatchDocument<V1Pod>();
                 patch.Replace(d => d.Spec.Containers, new V1Container[] { new V1Container() { Image = "my-image", }, });
@@ -906,7 +907,7 @@ namespace Kaponata.Kubernetes.Tests
         [Fact]
         public async Task TryReadAsync_ValidatesArguments_Async()
         {
-            var client = new NamespacedKubernetesClient<V1Pod>(Mock.Of<KubernetesClient>(), new KindMetadata(string.Empty, string.Empty, string.Empty));
+            var client = new NamespacedKubernetesClient<V1Pod>(Mock.Of<KubernetesClient>(), new KindMetadata(string.Empty, string.Empty, string.Empty), NullLogger<NamespacedKubernetesClient<V1Pod>>.Instance);
 
             await Assert.ThrowsAsync<ArgumentNullException>("name", () => client.TryReadAsync(null, "selector", default)).ConfigureAwait(false);
         }
@@ -939,7 +940,7 @@ namespace Kaponata.Kubernetes.Tests
                         Body = pods,
                     });
 
-            var client = new NamespacedKubernetesClient<V1Pod>(kubernetes.Object, metadata);
+            var client = new NamespacedKubernetesClient<V1Pod>(kubernetes.Object, metadata, NullLogger<NamespacedKubernetesClient<V1Pod>>.Instance);
             var value = await client.TryReadAsync("name", null, default).ConfigureAwait(false);
 
             Assert.Same(pod, value);
@@ -969,10 +970,129 @@ namespace Kaponata.Kubernetes.Tests
                         Body = pods,
                     });
 
-            var client = new NamespacedKubernetesClient<V1Pod>(kubernetes.Object, metadata);
+            var client = new NamespacedKubernetesClient<V1Pod>(kubernetes.Object, metadata, NullLogger<NamespacedKubernetesClient<V1Pod>>.Instance);
             var value = await client.TryReadAsync("name", null, default).ConfigureAwait(false);
 
             Assert.Null(value);
+        }
+
+        /// <summary>
+        /// <see cref="NamespacedKubernetesClient{T}.WatchAsync(string, string, string, WatchEventDelegate{T}, CancellationToken)"/>
+        /// exits when <see cref="KubernetesClient.WatchNamespacedObjectAsync{TObject, TList}(string, string, string, ListNamespacedObjectWithHttpMessagesAsync{TObject, TList}, WatchEventDelegate{TObject}, CancellationToken)"/>
+        /// returns <see cref="WatchExitReason.ClientDisconnected"/>.
+        /// </summary>
+        /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
+        [Fact]
+        public async Task WatchAsync_ClientDisconnects_Returns_Async()
+        {
+            var kubernetes = new Mock<KubernetesClient>(MockBehavior.Strict);
+            kubernetes
+                .Setup(w => w.WatchNamespacedObjectAsync<V1Pod, ItemList<V1Pod>>("fieldSelector", "labelSelector", "resourceVersion", It.IsAny<ListNamespacedObjectWithHttpMessagesAsync<V1Pod, ItemList<V1Pod>>>(), It.IsAny<WatchEventDelegate<V1Pod>>(), default))
+                .ReturnsAsync(WatchExitReason.ClientDisconnected)
+                .Verifiable();
+            var metadata = new KindMetadata(V1Pod.KubeGroup, V1Pod.KubeApiVersion, "pods");
+
+            var client = new NamespacedKubernetesClient<V1Pod>(kubernetes.Object, metadata, NullLogger<NamespacedKubernetesClient<V1Pod>>.Instance);
+            WatchEventDelegate<V1Pod> eventHandler = (eventType, value) => { return Task.FromResult(WatchResult.Stop); };
+
+            // WatchAsync will exit when WatchNamespacedObjectAsync returns ClientDisconnected
+            await client.WatchAsync("fieldSelector", "labelSelector", "resourceVersion", eventHandler, default).ConfigureAwait(false);
+
+            kubernetes.Verify();
+        }
+
+        /// <summary>
+        /// <see cref="NamespacedKubernetesClient{T}.WatchAsync(string, string, string, WatchEventDelegate{T}, CancellationToken)"/>
+        /// throws when <see cref="KubernetesClient.WatchNamespacedObjectAsync{TObject, TList}(string, string, string, ListNamespacedObjectWithHttpMessagesAsync{TObject, TList}, WatchEventDelegate{TObject}, CancellationToken)"/>
+        /// throws.
+        /// </summary>
+        /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
+        [Fact]
+        public async Task WatchAsync_Throws_Async()
+        {
+            var kubernetes = new Mock<KubernetesClient>(MockBehavior.Strict);
+            kubernetes
+                .Setup(w => w.WatchNamespacedObjectAsync<V1Pod, ItemList<V1Pod>>("fieldSelector", "labelSelector", "resourceVersion", It.IsAny<ListNamespacedObjectWithHttpMessagesAsync<V1Pod, ItemList<V1Pod>>>(), It.IsAny<WatchEventDelegate<V1Pod>>(), default))
+                .ThrowsAsync(new HttpOperationException())
+                .Verifiable();
+            var metadata = new KindMetadata(V1Pod.KubeGroup, V1Pod.KubeApiVersion, "pods");
+
+            var client = new NamespacedKubernetesClient<V1Pod>(kubernetes.Object, metadata, NullLogger<NamespacedKubernetesClient<V1Pod>>.Instance);
+            WatchEventDelegate<V1Pod> eventHandler = (eventType, value) => { return Task.FromResult(WatchResult.Stop); };
+
+            // WatchAsync will throw when WatchNamespacedObjectAsync throws
+            await Assert.ThrowsAsync<HttpOperationException>(() => client.WatchAsync("fieldSelector", "labelSelector", "resourceVersion", eventHandler, default)).ConfigureAwait(false);
+
+            kubernetes.Verify();
+        }
+
+        /// <summary>
+        /// <see cref="NamespacedKubernetesClient{T}.WatchAsync(string, string, string, WatchEventDelegate{T}, CancellationToken)"/>
+        /// handles a bookmark event by updating the inner resource version and filtering out the bookmark event.
+        /// </summary>
+        /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
+        [Fact]
+        public async Task WatchAsync_HandlesBookmark_Async()
+        {
+            var kubernetes = new Mock<KubernetesClient>(MockBehavior.Strict);
+
+            // First invocation with 'resourceVersion' will return ServerDisconnected, second invocation with 'my-bookmark' will return ClientDisconnected
+            kubernetes
+                .Setup(w => w.WatchNamespacedObjectAsync<V1Pod, ItemList<V1Pod>>("fieldSelector", "labelSelector", "resourceVersion", It.IsAny<ListNamespacedObjectWithHttpMessagesAsync<V1Pod, ItemList<V1Pod>>>(), It.IsAny<WatchEventDelegate<V1Pod>>(), default))
+                .Callback<string, string, string, ListNamespacedObjectWithHttpMessagesAsync<V1Pod, ItemList<V1Pod>>, WatchEventDelegate<V1Pod>, CancellationToken>(
+                (fieldSelector, labelSelector, resourceVersion, listOperation, innerEventHandler, cancellationToken) =>
+                {
+                    Assert.Equal(WatchResult.Continue, innerEventHandler(k8s.WatchEventType.Bookmark, new V1Pod() { Metadata = new V1ObjectMeta() { ResourceVersion = "my-bookmark" } }).Result);
+                })
+                .ReturnsAsync(WatchExitReason.ServerDisconnected)
+                .Verifiable();
+
+            kubernetes
+                .Setup(w => w.WatchNamespacedObjectAsync<V1Pod, ItemList<V1Pod>>("fieldSelector", "labelSelector", "my-bookmark", It.IsAny<ListNamespacedObjectWithHttpMessagesAsync<V1Pod, ItemList<V1Pod>>>(), It.IsAny<WatchEventDelegate<V1Pod>>(), default))
+                .ReturnsAsync(WatchExitReason.ClientDisconnected)
+                .Verifiable();
+
+            var metadata = new KindMetadata(V1Pod.KubeGroup, V1Pod.KubeApiVersion, "pods");
+
+            var client = new NamespacedKubernetesClient<V1Pod>(kubernetes.Object, metadata, NullLogger<NamespacedKubernetesClient<V1Pod>>.Instance);
+            WatchEventDelegate<V1Pod> eventHandler = (eventType, value) => { throw new NotImplementedException(); };
+
+            // WatchAsync will throw when WatchNamespacedObjectAsync throws
+            await client.WatchAsync("fieldSelector", "labelSelector", "resourceVersion", eventHandler, default).ConfigureAwait(false);
+
+            kubernetes.Verify();
+        }
+
+        /// <summary>
+        /// <see cref="NamespacedKubernetesClient{T}.WatchAsync(string, string, string, WatchEventDelegate{T}, CancellationToken)"/>
+        /// forwards non-bookmark events to the parent handler.
+        /// </summary>
+        /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
+        [Fact]
+        public async Task WatchAsync_ForwardsEvents_Async()
+        {
+            var kubernetes = new Mock<KubernetesClient>(MockBehavior.Strict);
+
+            // First invocation with 'resourceVersion' will return ServerDisconnected, second invocation with 'my-bookmark' will return ClientDisconnected
+            kubernetes
+                .Setup(w => w.WatchNamespacedObjectAsync<V1Pod, ItemList<V1Pod>>("fieldSelector", "labelSelector", "resourceVersion", It.IsAny<ListNamespacedObjectWithHttpMessagesAsync<V1Pod, ItemList<V1Pod>>>(), It.IsAny<WatchEventDelegate<V1Pod>>(), default))
+                .Callback<string, string, string, ListNamespacedObjectWithHttpMessagesAsync<V1Pod, ItemList<V1Pod>>, WatchEventDelegate<V1Pod>, CancellationToken>(
+                (fieldSelector, labelSelector, resourceVersion, listOperation, innerEventHandler, cancellationToken) =>
+                {
+                    Assert.Equal(WatchResult.Stop, innerEventHandler(k8s.WatchEventType.Modified, new V1Pod() { Metadata = new V1ObjectMeta() { ResourceVersion = "my-bookmark" } }).Result);
+                })
+                .ReturnsAsync(WatchExitReason.ClientDisconnected)
+                .Verifiable();
+
+            var metadata = new KindMetadata(V1Pod.KubeGroup, V1Pod.KubeApiVersion, "pods");
+
+            var client = new NamespacedKubernetesClient<V1Pod>(kubernetes.Object, metadata, NullLogger<NamespacedKubernetesClient<V1Pod>>.Instance);
+            WatchEventDelegate<V1Pod> eventHandler = (eventType, value) => { return Task.FromResult(WatchResult.Stop); };
+
+            // WatchAsync will throw when WatchNamespacedObjectAsync throws
+            await client.WatchAsync("fieldSelector", "labelSelector", "resourceVersion", eventHandler, default).ConfigureAwait(false);
+
+            kubernetes.Verify();
         }
     }
 }

@@ -412,7 +412,7 @@ namespace Kaponata.Kubernetes
         /// return value describes why the watcher stopped. The task errors if the watch
         /// loop errors.
         /// </returns>
-        public Task<WatchExitReason> WatchNamespacedObjectAsync<TObject, TList>(
+        public virtual Task<WatchExitReason> WatchNamespacedObjectAsync<TObject, TList>(
             string fieldSelector,
             string labelSelector,
             string resourceVersion,

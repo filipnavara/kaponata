@@ -111,7 +111,7 @@ namespace Kaponata.Kubernetes.Tests.Polyfill
                 handler.Requests,
                 r =>
                 {
-                    Assert.Equal(new Uri("http://localhost/api/v1/namespaces/default/pods?fieldSelector=metadata.name%3Dpod&resourceVersion=1&watch=true"), r.RequestUri);
+                    Assert.Equal(new Uri("http://localhost/api/v1/namespaces/default/pods?allowWatchBookmarks=true&fieldSelector=metadata.name%3Dpod&resourceVersion=1&watch=true"), r.RequestUri);
                 });
         }
 
