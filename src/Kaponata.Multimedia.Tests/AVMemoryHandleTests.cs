@@ -41,8 +41,6 @@ namespace Kaponata.Multimedia.Tests
             }
 
             ffmpegMock.Verify();
-
-            FFmpeg.AutoGen.ffmpeg.av_free(&test);
         }
     }
 }

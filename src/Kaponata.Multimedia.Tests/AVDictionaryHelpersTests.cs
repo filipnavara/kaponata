@@ -31,10 +31,10 @@ namespace Kaponata.Multimedia.Tests
             var nativeDictionary = new NativeAVDictionary
             {
             };
-            var ptr = new IntPtr(&nativeDictionary);
+            var ptr = (NativeAVDictionary**)new IntPtr(&nativeDictionary);
 
-            FFmpeg.AutoGen.ffmpeg.av_dict_set((NativeAVDictionary**)&ptr, "foo", "bar", 0);
-            var dict = AVDictionaryHelpers.ToReadOnlyDictionary(&nativeDictionary);
+            FFmpeg.AutoGen.ffmpeg.av_dict_set(ptr, "foo", "bar", 0);
+            var dict = AVDictionaryHelpers.ToReadOnlyDictionary(*ptr);
             var entry = Assert.Single(dict);
             Assert.Equal("foo", entry.Key);
             Assert.Equal("bar", entry.Value);
