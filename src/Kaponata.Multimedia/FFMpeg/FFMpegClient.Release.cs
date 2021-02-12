@@ -20,12 +20,12 @@ namespace Kaponata.Multimedia.FFMpeg
         /// <summary>
         /// Free an <see cref="NativeAVFormatContext"/> and all its streams.
         /// </summary>
-        /// <param name="s">
+        /// <param name="handle">
         /// context to free.
         /// </param>
-        public virtual void FreeAVFormatContext(NativeAVFormatContext* s)
+        public virtual void FreeAVFormatContext(IntPtr handle)
         {
-            ffmpeg.avformat_free_context(s);
+            ffmpeg.avformat_free_context((NativeAVFormatContext*)handle);
         }
 
         /// <summary>

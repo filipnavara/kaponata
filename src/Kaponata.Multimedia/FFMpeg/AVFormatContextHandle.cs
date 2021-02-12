@@ -27,11 +27,6 @@ namespace Kaponata.Multimedia.FFMpeg
         public unsafe AVFormatContextHandle(FFMpegClient ffmpeg, NativeAVFormatContext* context)
         : base((IntPtr)context, true)
         {
-            if (ffmpeg == null)
-            {
-                throw new ArgumentNullException(nameof(ffmpeg));
-            }
-
             this.ffmpeg = ffmpeg;
         }
 
@@ -44,7 +39,7 @@ namespace Kaponata.Multimedia.FFMpeg
         /// <inheritdoc/>
         protected override unsafe bool ReleaseHandle()
         {
-            this.ffmpeg.FreeAVFormatContext((NativeAVFormatContext*)this.handle);
+            this.ffmpeg.FreeAVFormatContext(this.handle);
             return true;
         }
     }

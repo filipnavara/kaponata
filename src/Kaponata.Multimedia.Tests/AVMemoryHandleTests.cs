@@ -38,6 +38,7 @@ namespace Kaponata.Multimedia.Tests
             using (var handle = new AVMemoryHandle(ffmpegMock.Object, &test, true))
             {
                 Assert.Equal((int)&test, (int)handle.DangerousGetHandle().ToPointer());
+                Assert.Equal((int)&test, (int)handle.NativeObject);
             }
 
             ffmpegMock.Verify();

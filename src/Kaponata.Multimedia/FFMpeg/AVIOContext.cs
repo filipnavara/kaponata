@@ -29,27 +29,8 @@ namespace Kaponata.Multimedia.FFMpeg
         /// </param>
         public AVIOContext(FFMpegClient ffmpeg, AVIOContextHandle handle)
         {
-            if (handle == null)
-            {
-                throw new ArgumentNullException(nameof(handle));
-            }
-
-            if (ffmpeg == null)
-            {
-                throw new ArgumentNullException(nameof(ffmpeg));
-            }
-
             this.ffmpeg = ffmpeg;
             this.handle = handle;
-        }
-
-        /// <summary>
-        /// Gets a <see cref="AVIOContextHandle"/> which points to the native <see cref="NativeAVIOContext"/>
-        /// object.
-        /// </summary>
-        public AVIOContextHandle Handle
-        {
-            get { return this.handle; }
         }
 
         /// <summary>

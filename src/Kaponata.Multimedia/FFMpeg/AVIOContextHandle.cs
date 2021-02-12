@@ -48,11 +48,6 @@ namespace Kaponata.Multimedia.FFMpeg
         public unsafe AVIOContextHandle(FFMpegClient ffmpeg, NativeAVIOContext* context, bool ownsHandle)
             : base((IntPtr)context, ownsHandle)
         {
-            if (ffmpeg == null)
-            {
-                throw new ArgumentNullException(nameof(ffmpeg));
-            }
-
             this.ffmpeg = ffmpeg;
         }
 

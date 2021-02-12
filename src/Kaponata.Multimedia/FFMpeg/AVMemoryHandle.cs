@@ -31,11 +31,6 @@ namespace Kaponata.Multimedia.FFMpeg
         public unsafe AVMemoryHandle(FFMpegClient ffmpeg, void* context, bool ownsHandle)
             : base((IntPtr)context, ownsHandle)
         {
-            if (ffmpeg == null)
-            {
-                throw new ArgumentNullException(nameof(ffmpeg));
-            }
-
             this.ffmpeg = ffmpeg;
         }
 

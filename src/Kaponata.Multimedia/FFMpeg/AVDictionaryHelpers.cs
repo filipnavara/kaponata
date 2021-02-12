@@ -25,11 +25,6 @@ namespace Kaponata.Multimedia.FFMpeg
         /// </returns>
         public static unsafe IReadOnlyDictionary<string, string> ToReadOnlyDictionary(AVDictionary* dictionary)
         {
-            if (dictionary == null)
-            {
-                throw new ArgumentNullException(nameof(dictionary));
-            }
-
             Dictionary<string, string> values = new Dictionary<string, string>();
 
             AVDictionaryEntry* tag = null;

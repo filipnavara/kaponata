@@ -24,6 +24,31 @@ namespace Kaponata.Multimedia.Tests
         }
 
         /// <summary>
+        /// The <see cref="AVIOContextHandle.AVIOContextHandle(FFMpegClient, NativeAVIOContext*, bool)"/> initializes the instance.
+        /// </summary>
+        [Fact]
+        public void ConstuctorOwnsHandle_InitializesInstance()
+        {
+            var ffmpegMock = new Mock<FFMpegClient>();
+
+            var nativeIOContext = new NativeAVIOContext
+            {
+                pos = 5,
+            };
+
+            ffmpegMock
+                .Setup(c => c.FreeAVHandle(It.IsAny<SafeHandle>()))
+                .Verifiable();
+
+            using (var handle = new AVIOContextHandle(ffmpegMock.Object, &nativeIOContext, true))
+            {
+                Assert.Equal((int)&nativeIOContext, (int)handle.DangerousGetHandle().ToPointer());
+            }
+
+            ffmpegMock.Verify();
+        }
+
+        /// <summary>
         /// The <see cref="AVIOContextHandle.AVIOContextHandle(FFMpegClient, FFmpeg.AutoGen.AVIOContext*)"/> initializes the instance.
         /// </summary>
         [Fact]
@@ -40,7 +65,7 @@ namespace Kaponata.Multimedia.Tests
                 .Setup(c => c.FreeAVHandle(It.IsAny<SafeHandle>()))
                 .Verifiable();
 
-            using (var handle = new AVIOContextHandle(ffmpegMock.Object, &nativeIOContext, true))
+            using (var handle = new AVIOContextHandle(ffmpegMock.Object, &nativeIOContext))
             {
                 Assert.Equal((int)&nativeIOContext, (int)handle.DangerousGetHandle().ToPointer());
             }

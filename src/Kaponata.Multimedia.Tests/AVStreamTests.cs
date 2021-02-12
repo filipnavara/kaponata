@@ -104,5 +104,21 @@ namespace Kaponata.Multimedia.Tests
 
             Assert.Empty(stream.Metadata);
         }
+
+        /// <summary>
+        /// The <see cref="AVStream.Metadata"/> property returns null in case a null dictionary is given.
+        /// </summary>
+        [Fact]
+        public void Metadata_ReturnsNull()
+        {
+            var nativeStream = new NativeAVStream
+            {
+                metadata = null,
+            };
+
+            var stream = new AVStream(&nativeStream);
+
+            Assert.Null(stream.Metadata);
+        }
     }
 }
