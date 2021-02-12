@@ -24,6 +24,7 @@ jobs:
           curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add -
 
           sudo apt-get update
+          sudo apt-get install ffmpeg
 
           ansible-galaxy install geerlingguy.docker
           ansible-galaxy install geerlingguy.nodejs
