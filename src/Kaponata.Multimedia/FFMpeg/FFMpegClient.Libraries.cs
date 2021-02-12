@@ -18,118 +18,53 @@ namespace Kaponata.Multimedia.FFMpeg
     public partial class FFMpegClient
     {
         /// <summary>
-        /// Contains the handles of the native FFmpeg libraries loaded into memory. The key is the name of the
-        /// library, without any prefix or suffix - e.g. <c>avutil</c>.
-        /// </summary>
-        private static Dictionary<string, IntPtr> libraryHandles = new Dictionary<string, IntPtr>();
-
-        /// <summary>
         /// Tracks whether the libraries have already been loaded.
         /// </summary>
-        private static bool librariesLoaded = false;
+        private static bool librariesInitialized = false;
+
+        /// <summary>
+        /// Gets the handles of the native FFmpeg libraries loaded into memory. The key is the name of the
+        /// library, without any prefix or suffix - e.g. <c>avutil</c>.
+        /// </summary>
+        public static Dictionary<string, IntPtr> LibraryHandles { get; } = new Dictionary<string, IntPtr>();
 
         /// <summary>
         /// Initializes static members of the <see cref="FFMpegClient"/> class.
         /// </summary>
         public static void Initialize()
         {
-            lock (libraryHandles)
+            if (librariesInitialized)
             {
-                ffmpeg.GetOrLoadLibrary = GetOrLoadLibrary;
+                return;
+            }
+
+            ffmpeg.GetOrLoadLibrary = GetOrLoadLibrary;
 
 #pragma warning disable CS0618 // Type or member is obsolete
-                ffmpeg.av_register_all();
+            ffmpeg.av_register_all();
 #pragma warning restore CS0618 // Type or member is obsolete
-            }
+
+            librariesInitialized = true;
         }
 
         /// <summary>
-        /// Loads the native FFmpeg libraries and populates the <see cref="libraryHandles"/> dictionary.
+        /// Returns the library path.
         /// </summary>
-        public static void LoadLibraries()
+        /// <param name="name">
+        /// The name of the library.
+        /// </param>
+        /// <param name="isWindows">
+        /// A value indicating whether the os platform is windows.
+        /// </param>
+        /// <returns>
+        /// The library path for the os platfrom.
+        /// </returns>
+        public static string GetNativePath(string name, bool isWindows) => (name, isWindows) switch
         {
-            if (librariesLoaded)
-            {
-                return;
-            }
-
-            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                // Try to load the libraries from a shared location. Requires libavformat-dev and friends
-                var libraryNames = new string[] { "avutil", "avcodec", "avformat", "swscale", "swresample" };
-
-                foreach (var libraryName in libraryNames)
-                {
-                    var libraryHandle = NativeLibrary.Load($"lib{libraryName}.so");
-                    libraryHandles.Add(libraryName, libraryHandle);
-                }
-
-                librariesLoaded = true;
-                return;
-            }
-
-            var path = FFmpegBinaries.FindFFmpegLibrary("avutil");
-
-            if (path == null)
-            {
-                librariesLoaded = true;
-                return;
-            }
-
-            // Normalize names
-            path = Path.GetFullPath(path);
-
-            var directory = Path.GetDirectoryName(path);
-
-            if (directory == null)
-            {
-                throw new ArgumentNullException(nameof(directory), "$Cannot find the ffmpeg directory. Using {path} to find the ffmpeg libraries.");
-            }
-
-            // Make sure we load libwinpthread-1.dll, too
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                var pthread = Path.Combine(directory, "libwinpthread-1.dll");
-                var pthreadHandle = LibraryLoader.LoadNativeLibrary(pthread);
-                libraryHandles.Add("winpthread", pthreadHandle);
-            }
-
-            // And libkvazaar
-            string? kvazaarName = null;
-
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                kvazaarName = "libkvazaar-3.dll";
-            }
-            else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-            {
-                kvazaarName = "libkvazaar.3.dylib";
-            }
-            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-            {
-                kvazaarName = "libkvazaar.so.3";
-            }
-            else
-            {
-                throw new InvalidOperationException($"Unknown os platfrom: {RuntimeInformation.OSDescription}");
-            }
-
-            var kvazaar = Path.Combine(directory, kvazaarName);
-            var kvazaarHandle = LibraryLoader.LoadNativeLibrary(kvazaar);
-            libraryHandles.Add("libkvazaar", kvazaarHandle);
-
-            var librariesToLoad = new string[] { "avutil", "avcodec", "avformat", "swscale", "swresample" };
-            foreach (var libraryToLoad in librariesToLoad)
-            {
-                var libraryPath = FFmpegBinaries.FindFFmpegLibrary(libraryToLoad);
-                libraryPath = Path.GetFullPath(libraryPath);
-
-                var libraryHandle = NativeLibrary.Load(libraryPath);
-                libraryHandles.Add(libraryToLoad, libraryHandle);
-            }
-
-            librariesLoaded = true;
-        }
+            ("libwinpthread", true) => Path.GetFullPath(FFmpegBinaries.FindFFmpegLibrary("libwinpthread", 1)),
+            (_, true) => Path.GetFullPath(FFmpegBinaries.FindFFmpegLibrary(name)),
+            (_, false) => $"lib{name}.so",
+        };
 
         /// <summary>
         /// Loads a native library into memory, and returns a handle to that library.
@@ -142,14 +77,37 @@ namespace Kaponata.Multimedia.FFMpeg
         /// </returns>
         public static IntPtr GetOrLoadLibrary(string libraryName)
         {
-            LoadLibraries();
+            return GetOrLoadLibrary(libraryName, (path) => GetNativePath(path, RuntimeInformation.IsOSPlatform(OSPlatform.Windows)), (path) => NativeLibrary.Load(path));
+        }
 
-            if (!libraryHandles.ContainsKey(libraryName))
+        /// <summary>
+        /// Loads a native library into memory, and returns a handle to that library.
+        /// </summary>
+        /// <param name="libraryName">
+        /// The name of the library to load.
+        /// </param>
+        /// <param name="getNativePath">
+        /// Function to get the native path.
+        /// </param>
+        /// <param name="loadLibrary">
+        /// The function to load the ffmpeg library.
+        /// </param>
+        /// <returns>
+        /// A handle to the native library, or a null pointer on error.
+        /// </returns>
+        public static IntPtr GetOrLoadLibrary(string libraryName, Func<string, string> getNativePath, Func<string, IntPtr> loadLibrary)
+        {
+            lock (LibraryHandles)
             {
-                return IntPtr.Zero;
-            }
+                if (LibraryHandles.ContainsKey(libraryName))
+                {
+                    return LibraryHandles[libraryName];
+                }
 
-            return libraryHandles[libraryName];
+                var libraryHandle = loadLibrary(getNativePath(libraryName));
+                LibraryHandles.Add(libraryName, libraryHandle);
+                return libraryHandle;
+            }
         }
     }
 }
