@@ -59,6 +59,7 @@ namespace Kaponata.Multimedia.Tests
             {
                 Assert.Equal(handle, formatContext.Handle);
                 Assert.Equal<uint>(1, formatContext.StreamCount);
+                Assert.False(formatContext.IsClosed);
                 Assert.False(handle.IsClosed);
                 Assert.Equal((int)AVFormatContextEventFlags.MetadataUpdated, (int)formatContext.EventFlags);
                 Assert.Equal((int)AVFormatContextFlags.NoHeader, (int)formatContext.Flags);
