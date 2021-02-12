@@ -5,7 +5,6 @@
 using Kaponata.Multimedia.FFMpeg;
 using Moq;
 using System;
-using System.Runtime.InteropServices;
 using Xunit;
 using NativeAVFormatContext = FFmpeg.AutoGen.AVFormatContext;
 
@@ -16,14 +15,6 @@ namespace Kaponata.Multimedia.Tests
     /// </summary>
     public unsafe class AVFormatContextHandleTests
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="AVFormatContextHandleTests"/> class.
-        /// </summary>
-        public AVFormatContextHandleTests()
-        {
-            FFMpegClient.Initialize();
-        }
-
         /// <summary>
         /// The <see cref="AVFormatContextHandle.AVFormatContextHandle(FFMpegClient, FFmpeg.AutoGen.AVFormatContext*)"/> initializes the instance.
         /// </summary>

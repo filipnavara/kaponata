@@ -80,11 +80,6 @@ namespace Kaponata.Multimedia.FFMpeg
 
             set
             {
-                if (value == null)
-                {
-                    throw new ArgumentNullException(nameof(value));
-                }
-
                 this.NativeObject->pb = value.NativeObject;
             }
         }
