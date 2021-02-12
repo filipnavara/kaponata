@@ -31,8 +31,6 @@ namespace Kaponata.Kubernetes
         private readonly IKubernetesProtocol protocol;
         private readonly ILogger<KubernetesClient> logger;
         private readonly ILoggerFactory loggerFactory;
-        private readonly NamespacedKubernetesClient<MobileDevice> mobileDeviceClient;
-        private readonly NamespacedKubernetesClient<WebDriverSession> webDriverSessionClient;
         private readonly IOptions<KubernetesOptions> options;
 
         /// <summary>
@@ -62,9 +60,6 @@ namespace Kaponata.Kubernetes
             this.knownTypes.Add(typeof(V1Pod), new KindMetadata("core", V1Pod.KubeApiVersion, "pods"));
             this.knownTypes.Add(typeof(V1Service), new KindMetadata("core", V1Service.KubeApiVersion, "services"));
             this.knownTypes.Add(typeof(V1Ingress), new KindMetadata(V1Ingress.KubeGroup, V1Ingress.KubeApiVersion, "ingresses"));
-
-            this.mobileDeviceClient = this.GetClient<MobileDevice>();
-            this.webDriverSessionClient = this.GetClient<WebDriverSession>();
         }
 
 #nullable disable

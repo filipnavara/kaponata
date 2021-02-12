@@ -8,6 +8,7 @@ using Kaponata.Kubernetes;
 using Kaponata.Kubernetes.Models;
 using Kaponata.Kubernetes.Polyfill;
 using Kaponata.Operator.Operators;
+using Kaponata.Tests.Shared;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using System;
@@ -40,15 +41,18 @@ namespace Kaponata.Operator.Tests.Operators
         public async Task EmptyCluster_NoOp_Async()
         {
             var kubernetes = new Mock<KubernetesClient>(MockBehavior.Strict);
+            var deviceClient = new Mock<NamespacedKubernetesClient<MobileDevice>>();
+            kubernetes.Setup(c => c.GetClient<MobileDevice>()).Returns(deviceClient.Object);
 
             kubernetes.WithPodList(
                 labelSelector: "kubernetes.io/os=android");
 
-            kubernetes.WithDeviceList(
-                "kubernetes.io/os=android,app.kubernetes.io/managed-by=RedroidOperator");
+            deviceClient.WithList(
+                fieldSelector: null,
+                labelSelector: "kubernetes.io/os=android,app.kubernetes.io/managed-by=RedroidOperator");
 
-            var createdDevices = kubernetes.TrackCreatedDevices();
-            var deletedDevices = kubernetes.TrackDeletedDevices();
+            (var createdDevices, _) = deviceClient.TrackCreatedItems();
+            var deletedDevices = deviceClient.TrackDeletedItems();
 
             using (var @operator = new RedroidOperator(
                 kubernetes.Object,
@@ -93,8 +97,10 @@ namespace Kaponata.Operator.Tests.Operators
                     },
                 });
 
-            kubernetes.WithDeviceList(
-                "kubernetes.io/os=android,app.kubernetes.io/managed-by=RedroidOperator",
+            var deviceClient = kubernetes.WithClient<MobileDevice>();
+            deviceClient.WithList(
+                fieldSelector: null,
+                labelSelector: "kubernetes.io/os=android,app.kubernetes.io/managed-by=RedroidOperator",
                 new MobileDevice()
                 {
                     Metadata = new V1ObjectMeta()
@@ -104,8 +110,8 @@ namespace Kaponata.Operator.Tests.Operators
                     },
                 });
 
-            var createdDevices = kubernetes.TrackCreatedDevices();
-            var deletedDevices = kubernetes.TrackDeletedDevices();
+            (var createdDevices, _) = deviceClient.TrackCreatedItems();
+            var deletedDevices = deviceClient.TrackDeletedItems();
 
             using (var @operator = new RedroidOperator(
                 kubernetes.Object,
@@ -143,10 +149,13 @@ namespace Kaponata.Operator.Tests.Operators
                     },
                 });
 
-            kubernetes.WithDeviceList("kubernetes.io/os=android,app.kubernetes.io/managed-by=RedroidOperator");
+            var deviceClient = kubernetes.WithClient<MobileDevice>();
+            deviceClient.WithList(
+                fieldSelector: null,
+                labelSelector: "kubernetes.io/os=android,app.kubernetes.io/managed-by=RedroidOperator");
 
-            var createdDevices = kubernetes.TrackCreatedDevices();
-            var deletedDevices = kubernetes.TrackDeletedDevices();
+            (var createdDevices, _) = deviceClient.TrackCreatedItems();
+            var deletedDevices = deviceClient.TrackDeletedItems();
 
             using (var @operator = new RedroidOperator(
                 kubernetes.Object,
@@ -192,10 +201,13 @@ namespace Kaponata.Operator.Tests.Operators
                     },
                 });
 
-            kubernetes.WithDeviceList("kubernetes.io/os=android,app.kubernetes.io/managed-by=RedroidOperator");
+            var deviceClient = kubernetes.WithClient<MobileDevice>();
+            deviceClient.WithList(
+                fieldSelector: null,
+                labelSelector: "kubernetes.io/os=android,app.kubernetes.io/managed-by=RedroidOperator");
 
-            var createdDevices = kubernetes.TrackCreatedDevices();
-            var deletedDevices = kubernetes.TrackDeletedDevices();
+            (var createdDevices, _) = deviceClient.TrackCreatedItems();
+            var deletedDevices = deviceClient.TrackDeletedItems();
 
             using (var @operator = new RedroidOperator(
                 kubernetes.Object,
@@ -234,10 +246,13 @@ namespace Kaponata.Operator.Tests.Operators
                     },
                 });
 
-            kubernetes.WithDeviceList("kubernetes.io/os=android,app.kubernetes.io/managed-by=RedroidOperator");
+            var deviceClient = kubernetes.WithClient<MobileDevice>();
+            deviceClient.WithList(
+                fieldSelector: null,
+                labelSelector: "kubernetes.io/os=android,app.kubernetes.io/managed-by=RedroidOperator");
 
-            var createdDevices = kubernetes.TrackCreatedDevices();
-            var deletedDevices = kubernetes.TrackDeletedDevices();
+            (var createdDevices, _) = deviceClient.TrackCreatedItems();
+            var deletedDevices = deviceClient.TrackDeletedItems();
 
             using (var @operator = new RedroidOperator(
                 kubernetes.Object,
@@ -276,12 +291,14 @@ namespace Kaponata.Operator.Tests.Operators
                 Metadata = new V1ObjectMeta(),
             };
 
-            kubernetes.WithDeviceList(
+            var deviceClient = kubernetes.WithClient<MobileDevice>();
+            deviceClient.WithList(
+                fieldSelector: null,
                 labelSelector: "kubernetes.io/os=android,app.kubernetes.io/managed-by=RedroidOperator",
                 device);
 
-            var createdDevices = kubernetes.TrackCreatedDevices();
-            var deletedDevices = kubernetes.TrackDeletedDevices();
+            (var createdDevices, _) = deviceClient.TrackCreatedItems();
+            var deletedDevices = deviceClient.TrackDeletedItems();
 
             using (var @operator = new RedroidOperator(
                 kubernetes.Object,
@@ -314,10 +331,13 @@ namespace Kaponata.Operator.Tests.Operators
             kubernetes.WithPodList(
                 labelSelector: "kubernetes.io/os=android");
 
-            var deviceWatchCts = kubernetes.WithDeviceWatcher(
+            var deviceClient = kubernetes.WithClient<MobileDevice>();
+            var deviceWatchCts = deviceClient.WithWatcher(
+                fieldSelector: null,
                 labelSelector: "kubernetes.io/os=android,app.kubernetes.io/managed-by=RedroidOperator");
-            kubernetes.WithDeviceList(
-                "kubernetes.io/os=android,app.kubernetes.io/managed-by=RedroidOperator");
+            deviceClient.WithList(
+                fieldSelector: null,
+                labelSelector: "kubernetes.io/os=android,app.kubernetes.io/managed-by=RedroidOperator");
 
             using (var @operator = new RedroidOperator(
                 kubernetes.Object,
@@ -346,10 +366,13 @@ namespace Kaponata.Operator.Tests.Operators
             var pods = kubernetes.WithPodList(
                 labelSelector: "kubernetes.io/os=android");
 
-            var deviceWatchCts = kubernetes.WithDeviceWatcher(
+            var deviceClient = kubernetes.WithClient<MobileDevice>();
+            var deviceWatchCts = deviceClient.WithWatcher(
+                fieldSelector: null,
                 labelSelector: "kubernetes.io/os=android,app.kubernetes.io/managed-by=RedroidOperator");
-            kubernetes.WithDeviceList(
-                "kubernetes.io/os=android,app.kubernetes.io/managed-by=RedroidOperator");
+            deviceClient.WithList(
+                fieldSelector: null,
+                labelSelector: "kubernetes.io/os=android,app.kubernetes.io/managed-by=RedroidOperator");
 
             using (var @operator = new RedroidOperator(
                 kubernetes.Object,
@@ -380,7 +403,7 @@ namespace Kaponata.Operator.Tests.Operators
                 };
 
                 pods.Add(newPod);
-                var newDeviceList = kubernetes.TrackCreatedDevices();
+                (var newDeviceList, _) = deviceClient.TrackCreatedItems();
                 await (await podWatchCts.ClientRegistered.Task.ConfigureAwait(false))(WatchEventType.Added, newPod).ConfigureAwait(false);
 
                 await @operator.StopAsync(default).ConfigureAwait(false);
@@ -403,10 +426,13 @@ namespace Kaponata.Operator.Tests.Operators
             var pods = kubernetes.WithPodList(
                 labelSelector: "kubernetes.io/os=android");
 
-            var deviceWatchCts = kubernetes.WithDeviceWatcher(
+            var deviceClient = kubernetes.WithClient<MobileDevice>();
+            var deviceWatchCts = deviceClient.WithWatcher(
+                fieldSelector: null,
                 labelSelector: "kubernetes.io/os=android,app.kubernetes.io/managed-by=RedroidOperator");
-            kubernetes.WithDeviceList(
-                "kubernetes.io/os=android,app.kubernetes.io/managed-by=RedroidOperator");
+            deviceClient.WithList(
+                fieldSelector: null,
+                labelSelector: "kubernetes.io/os=android,app.kubernetes.io/managed-by=RedroidOperator");
 
             using (var @operator = new RedroidOperator(
                 kubernetes.Object,
@@ -437,7 +463,7 @@ namespace Kaponata.Operator.Tests.Operators
                 };
 
                 pods.Add(newPod);
-                var newDeviceList = kubernetes.TrackCreatedDevices();
+                (var newDeviceList, _) = deviceClient.TrackCreatedItems();
                 await (await deviceWatchCts.ClientRegistered.Task.ConfigureAwait(false))(WatchEventType.Added, new MobileDevice()).ConfigureAwait(false);
 
                 await @operator.StopAsync(default).ConfigureAwait(false);
@@ -465,10 +491,13 @@ namespace Kaponata.Operator.Tests.Operators
             kubernetes.WithPodList(
                 labelSelector: "kubernetes.io/os=android");
 
-            var deviceWatchCts = kubernetes.WithDeviceWatcher(
+            var deviceClient = kubernetes.WithClient<MobileDevice>();
+            var deviceWatchCts = deviceClient.WithWatcher(
+                fieldSelector: null,
                 labelSelector: "kubernetes.io/os=android,app.kubernetes.io/managed-by=RedroidOperator");
-            kubernetes.WithDeviceList(
-                "kubernetes.io/os=android,app.kubernetes.io/managed-by=RedroidOperator");
+            deviceClient.WithList(
+                fieldSelector: null,
+                labelSelector: "kubernetes.io/os=android,app.kubernetes.io/managed-by=RedroidOperator");
 
             using (var @operator = new RedroidOperator(
                 kubernetes.Object,

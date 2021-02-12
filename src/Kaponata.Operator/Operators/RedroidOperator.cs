@@ -24,6 +24,7 @@ namespace Kaponata.Operator.Operators
     {
         private readonly ILogger<RedroidOperator> logger;
         private readonly KubernetesClient kubernetes;
+        private readonly NamespacedKubernetesClient<MobileDevice> mobileDeviceClient;
 
         /// <summary>
         /// A semaphore which prevents multiple iterations of the <see cref="ReconcileAsync(CancellationToken)"/>
@@ -45,6 +46,7 @@ namespace Kaponata.Operator.Operators
         public RedroidOperator(KubernetesClient kubernetes, ILogger<RedroidOperator> logger)
         {
             this.kubernetes = kubernetes ?? throw new ArgumentNullException(nameof(kubernetes));
+            this.mobileDeviceClient = kubernetes.GetClient<MobileDevice>();
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
@@ -117,7 +119,7 @@ namespace Kaponata.Operator.Operators
 
                 // Enumerate all Android emulator devices
                 this.logger.LogInformation("Listing all emulator devices");
-                var devices = await this.kubernetes.ListMobileDeviceAsync(labelSelector: this.DeviceLabelSelector, cancellationToken: cancellationToken).ConfigureAwait(false);
+                var devices = await this.mobileDeviceClient.ListAsync(labelSelector: this.DeviceLabelSelector, cancellationToken: cancellationToken).ConfigureAwait(false);
                 this.logger.LogInformation("Found {count} emulator devices", devices.Items.Count);
 
                 // Loop over all Android emulator pods. Process them one by one; remove the equivalent device from the device list
@@ -141,7 +143,7 @@ namespace Kaponata.Operator.Operators
                     if (device == null)
                     {
                         device =
-                            await this.kubernetes.CreateMobileDeviceAsync(
+                            await this.mobileDeviceClient.CreateAsync(
                                 new MobileDevice()
                                 {
                                     Metadata = new V1ObjectMeta()
@@ -170,7 +172,7 @@ namespace Kaponata.Operator.Operators
                 foreach (var device in devices.Items)
                 {
                     this.logger.LogInformation("Deleting obsolete device {device}", device.Metadata.Name);
-                    await this.kubernetes.DeleteMobileDeviceAsync(device, TimeSpan.FromMinutes(1), cancellationToken: cancellationToken).ConfigureAwait(false);
+                    await this.mobileDeviceClient.DeleteAsync(device, TimeSpan.FromMinutes(1), cancellationToken: cancellationToken).ConfigureAwait(false);
                     this.logger.LogInformation("Deleted obsolete device {device}", device.Metadata.Name);
                 }
             }
@@ -204,7 +206,7 @@ namespace Kaponata.Operator.Operators
 
                 var watchTasks = new Task<WatchExitReason>[]
                 {
-                    this.kubernetes.WatchMobileDeviceAsync(
+                    this.mobileDeviceClient.WatchAsync(
                         fieldSelector: null,
                         labelSelector: this.DeviceLabelSelector,
                         resourceVersion: null,

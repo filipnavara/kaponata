@@ -335,11 +335,13 @@ namespace Kaponata.Kubernetes.Tests
 
             using (var client = this.CreateKubernetesClient())
             {
+                var mobileDeviceClient = client.GetClient<MobileDevice>();
+
                 MobileDevice currentDevice = null;
 
-                if ((currentDevice = await client.TryReadMobileDeviceAsync(name, default).ConfigureAwait(false)) != null)
+                if ((currentDevice = await mobileDeviceClient.TryReadAsync(name, default).ConfigureAwait(false)) != null)
                 {
-                    await client.DeleteMobileDeviceAsync(currentDevice, TimeSpan.FromSeconds(100), default).ConfigureAwait(false);
+                    await mobileDeviceClient.DeleteAsync(currentDevice, TimeSpan.FromSeconds(100), default).ConfigureAwait(false);
                 }
 
                 var device = new MobileDevice()
@@ -351,15 +353,15 @@ namespace Kaponata.Kubernetes.Tests
                     },
                 };
 
-                var newDevice = await client.CreateMobileDeviceAsync(device, default).ConfigureAwait(false);
+                var newDevice = await mobileDeviceClient.CreateAsync(device, default).ConfigureAwait(false);
                 Assert.NotNull(newDevice);
 
-                var readDevice = await client.TryReadMobileDeviceAsync(name, default).ConfigureAwait(false);
+                var readDevice = await mobileDeviceClient.TryReadAsync(name, default).ConfigureAwait(false);
                 Assert.NotNull(readDevice);
 
-                await client.DeleteMobileDeviceAsync(newDevice, TimeSpan.FromMinutes(1), default).ConfigureAwait(false);
+                await mobileDeviceClient.DeleteAsync(newDevice, TimeSpan.FromMinutes(1), default).ConfigureAwait(false);
 
-                Assert.Null(await client.TryReadMobileDeviceAsync(name, default).ConfigureAwait(false));
+                Assert.Null(await mobileDeviceClient.TryReadAsync(name, default).ConfigureAwait(false));
             }
         }
 
@@ -375,15 +377,17 @@ namespace Kaponata.Kubernetes.Tests
 
             using (var client = this.CreateKubernetesClient())
             {
+                var mobileDeviceClient = client.GetClient<MobileDevice>();
+
                 Collection<(WatchEventType, MobileDevice)> watchEvents = new Collection<(WatchEventType, MobileDevice)>();
                 MobileDevice currentDevice = null;
 
-                if ((currentDevice = await client.TryReadMobileDeviceAsync(name, default).ConfigureAwait(false)) != null)
+                if ((currentDevice = await mobileDeviceClient.TryReadAsync(name, default).ConfigureAwait(false)) != null)
                 {
-                    await client.DeleteMobileDeviceAsync(currentDevice, TimeSpan.FromSeconds(100), default).ConfigureAwait(false);
+                    await mobileDeviceClient.DeleteAsync(currentDevice, TimeSpan.FromSeconds(100), default).ConfigureAwait(false);
                 }
 
-                var watch = client.WatchMobileDeviceAsync(
+                var watch = mobileDeviceClient.WatchAsync(
                     new MobileDevice() { Metadata = new V1ObjectMeta() { NamespaceProperty = "default", Name = name } },
                     (type, device) =>
                     {
@@ -402,8 +406,8 @@ namespace Kaponata.Kubernetes.Tests
                     },
                 };
 
-                await client.CreateMobileDeviceAsync(device, default).ConfigureAwait(false);
-                await client.DeleteMobileDeviceAsync(device, TimeSpan.FromMinutes(1), default).ConfigureAwait(false);
+                await mobileDeviceClient.CreateAsync(device, default).ConfigureAwait(false);
+                await mobileDeviceClient.DeleteAsync(device, TimeSpan.FromMinutes(1), default).ConfigureAwait(false);
                 await watch.ConfigureAwait(false);
 
                 Assert.Collection(
@@ -433,11 +437,13 @@ namespace Kaponata.Kubernetes.Tests
 
             using (var client = this.CreateKubernetesClient())
             {
+                var webDriverSessionClient = client.GetClient<WebDriverSession>();
+
                 WebDriverSession currentDevice = null;
 
-                if ((currentDevice = await client.TryReadWebDriverSessionAsync(name, default).ConfigureAwait(false)) != null)
+                if ((currentDevice = await webDriverSessionClient.TryReadAsync(name, default).ConfigureAwait(false)) != null)
                 {
-                    await client.DeleteWebDriverSessionAsync(currentDevice, TimeSpan.FromSeconds(100), default).ConfigureAwait(false);
+                    await webDriverSessionClient.DeleteAsync(currentDevice, TimeSpan.FromSeconds(100), default).ConfigureAwait(false);
                 }
 
                 var session = new WebDriverSession()
@@ -449,15 +455,15 @@ namespace Kaponata.Kubernetes.Tests
                     },
                 };
 
-                var newSession = await client.CreateWebDriverSessionAsync(session, default).ConfigureAwait(false);
+                var newSession = await webDriverSessionClient.CreateAsync(session, default).ConfigureAwait(false);
                 Assert.NotNull(newSession);
 
-                var readSession = await client.TryReadWebDriverSessionAsync(name, default).ConfigureAwait(false);
+                var readSession = await webDriverSessionClient.TryReadAsync(name, default).ConfigureAwait(false);
                 Assert.NotNull(readSession);
 
-                await client.DeleteWebDriverSessionAsync(newSession, TimeSpan.FromMinutes(1), default).ConfigureAwait(false);
+                await webDriverSessionClient.DeleteAsync(newSession, TimeSpan.FromMinutes(1), default).ConfigureAwait(false);
 
-                Assert.Null(await client.TryReadWebDriverSessionAsync(name, default).ConfigureAwait(false));
+                Assert.Null(await webDriverSessionClient.TryReadAsync(name, default).ConfigureAwait(false));
             }
         }
 
@@ -473,15 +479,17 @@ namespace Kaponata.Kubernetes.Tests
 
             using (var client = this.CreateKubernetesClient())
             {
+                var webDriverSessionClient = client.GetClient<WebDriverSession>();
+
                 var watchEvents = new Collection<(WatchEventType, WebDriverSession)>();
                 WebDriverSession currentSession = null;
 
-                if ((currentSession = await client.TryReadWebDriverSessionAsync(name, default).ConfigureAwait(false)) != null)
+                if ((currentSession = await webDriverSessionClient.TryReadAsync(name, default).ConfigureAwait(false)) != null)
                 {
-                    await client.DeleteWebDriverSessionAsync(currentSession, TimeSpan.FromSeconds(100), default).ConfigureAwait(false);
+                    await webDriverSessionClient.DeleteAsync(currentSession, TimeSpan.FromSeconds(100), default).ConfigureAwait(false);
                 }
 
-                var watch = client.WatchWebDriverSessionAsync(
+                var watch = webDriverSessionClient.WatchAsync(
                     new WebDriverSession() { Metadata = new V1ObjectMeta() { NamespaceProperty = "default", Name = name } },
                     (type, device) =>
                     {
@@ -500,8 +508,8 @@ namespace Kaponata.Kubernetes.Tests
                     },
                 };
 
-                await client.CreateWebDriverSessionAsync(session, default).ConfigureAwait(false);
-                await client.DeleteWebDriverSessionAsync(session, TimeSpan.FromMinutes(1), default).ConfigureAwait(false);
+                await webDriverSessionClient.CreateAsync(session, default).ConfigureAwait(false);
+                await webDriverSessionClient.DeleteAsync(session, TimeSpan.FromMinutes(1), default).ConfigureAwait(false);
                 await watch.ConfigureAwait(false);
 
                 Assert.Collection(

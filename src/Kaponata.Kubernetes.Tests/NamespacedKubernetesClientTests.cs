@@ -2,6 +2,7 @@
 // Copyright (c) Quamotion bv. All rights reserved.
 // </copyright>
 
+using k8s;
 using k8s.Models;
 using Kaponata.Kubernetes.Models;
 using Kaponata.Kubernetes.Polyfill;
@@ -11,11 +12,14 @@ using Microsoft.Rest;
 using Moq;
 using Newtonsoft.Json;
 using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
+
+#pragma warning disable VSTHRD003 // Avoid awaiting foreign Tasks
 
 namespace Kaponata.Kubernetes.Tests
 {
@@ -32,6 +36,617 @@ namespace Kaponata.Kubernetes.Tests
         {
             Assert.Throws<ArgumentNullException>("parent", () => new NamespacedKubernetesClient<V1Pod>(null, new KindMetadata(V1Pod.KubeGroup, V1Pod.KubeApiVersion, "core")));
             Assert.Throws<ArgumentNullException>("metadata", () => new NamespacedKubernetesClient<V1Pod>(Mock.Of<KubernetesClient>(), null));
+        }
+
+        /// <summary>
+        /// <see cref="NamespacedKubernetesClient{T}.CreateAsync(T, CancellationToken)"/> validates its arguments.
+        /// </summary>
+        /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
+        [Fact]
+        public async Task CreateAsync_ValidatesArguments_Async()
+        {
+            var protocol = new Mock<IKubernetesProtocol>(MockBehavior.Strict);
+            protocol.Setup(p => p.Dispose()).Verifiable();
+
+            using (var client = new KubernetesClient(protocol.Object, KubernetesOptions.Default, NullLogger<KubernetesClient>.Instance, NullLoggerFactory.Instance))
+            {
+                var mobileDeviceClient = client.GetClient<MobileDevice>();
+
+                await Assert.ThrowsAsync<ArgumentNullException>("value", () => mobileDeviceClient.CreateAsync(null, default)).ConfigureAwait(false);
+                await Assert.ThrowsAsync<ValidationException>(
+                    () => mobileDeviceClient.CreateAsync(
+                        new MobileDevice(),
+                        default)).ConfigureAwait(false);
+                await Assert.ThrowsAsync<ValidationException>(
+                    () => mobileDeviceClient.CreateAsync(
+                        new MobileDevice()
+                        {
+                            Metadata = new V1ObjectMeta(),
+                        },
+                        default)).ConfigureAwait(false);
+                await Assert.ThrowsAsync<ValidationException>(
+                    () => mobileDeviceClient.CreateAsync(
+                        new MobileDevice()
+                        {
+                            Metadata = new V1ObjectMeta()
+                            {
+                                Name = "test",
+                                NamespaceProperty = "my-namespace",
+                            },
+                        },
+                        default)).ConfigureAwait(false);
+                await Assert.ThrowsAsync<ValidationException>(
+                    () => mobileDeviceClient.CreateAsync(
+                        new MobileDevice()
+                        {
+                            Metadata = new V1ObjectMeta()
+                            {
+                                NamespaceProperty = "test",
+                            },
+                        },
+                        default)).ConfigureAwait(false);
+            }
+
+            protocol.Verify();
+        }
+
+        /// <summary>
+        /// <see cref="NamespacedKubernetesClient{T}.CreateAsync(T, CancellationToken)"/> returns a <see cref="MobileDevice"/> object
+        /// when the operation succeeds.
+        /// </summary>
+        /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
+        [Fact]
+        public async Task CreateAsync_Success_ReturnsObject_Async()
+        {
+            var protocol = new Mock<IKubernetesProtocol>(MockBehavior.Strict);
+            protocol.Setup(p => p.Dispose()).Verifiable();
+            protocol.Setup(p => p.DeserializationSettings).Returns(new JsonSerializerSettings());
+
+            var mobileDevice = new MobileDevice()
+            {
+                Metadata = new V1ObjectMeta()
+                {
+                    Name = "test",
+                    NamespaceProperty = "default",
+                },
+            };
+
+            protocol.Setup(p => p.CreateNamespacedCustomObjectWithHttpMessagesAsync(
+                mobileDevice,
+                "kaponata.io" /* group */,
+                "v1alpha1" /* version */,
+                "default" /* namespaceParameter */,
+                "mobiledevices" /* plural */,
+                null /* dryRun */,
+                null /* fieldManager */,
+                null /* pretty */,
+                null /* customHeaders */,
+                default /* cancellationToken */))
+                .Returns<object, string, string, string, string, string, string, string, Dictionary<string, List<string>>, CancellationToken>(
+                    (value, group, version, namespaceParameter, plural, dryDrun, fieldManager, pretty, customHeaders, cancellationToken) =>
+                    {
+                        return Task.FromResult(
+                            new HttpOperationResponse<object>()
+                            {
+                                Response = new HttpResponseMessage()
+                                {
+                                    Content = new StringContent(JsonConvert.SerializeObject(Assert.IsType<MobileDevice>(value))),
+                                    StatusCode = HttpStatusCode.OK,
+                                },
+                            });
+                    });
+
+            using (var client = new KubernetesClient(protocol.Object, KubernetesOptions.Default, NullLogger<KubernetesClient>.Instance, NullLoggerFactory.Instance))
+            {
+                var mobileDeviceClient = client.GetClient<MobileDevice>();
+                var result = await mobileDeviceClient.CreateAsync(mobileDevice, default).ConfigureAwait(false);
+                Assert.NotNull(result);
+            }
+
+            protocol.Verify();
+        }
+
+        /// <summary>
+        /// <see cref="NamespacedKubernetesClient{T}.CreateAsync(T, CancellationToken)"/> throws an exception
+        /// when the result JSON cannot be parsed.
+        /// </summary>
+        /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
+        [Fact]
+        public async Task CreateAsync_InvalidJson_ThrowsException_Async()
+        {
+            var protocol = new Mock<IKubernetesProtocol>(MockBehavior.Strict);
+            protocol.Setup(p => p.Dispose()).Verifiable();
+            protocol.Setup(p => p.DeserializationSettings).Returns(new JsonSerializerSettings());
+
+            var mobileDevice = new MobileDevice()
+            {
+                Metadata = new V1ObjectMeta()
+                {
+                    Name = "test",
+                    NamespaceProperty = "default",
+                },
+            };
+
+            protocol.Setup(p => p.CreateNamespacedCustomObjectWithHttpMessagesAsync(
+                mobileDevice,
+                "kaponata.io" /* group */,
+                "v1alpha1" /* version */,
+                "default" /* namespaceParameter */,
+                "mobiledevices" /* plural */,
+                null /* dryRun */,
+                null /* fieldManager */,
+                null /* pretty */,
+                null /* customHeaders */,
+                default /* cancellationToken */))
+                .Returns<object, string, string, string, string, string, string, string, Dictionary<string, List<string>>, CancellationToken>(
+                    (value, group, version, namespaceParameter, plural, dryDrun, fieldManager, pretty, customHeaders, cancellationToken) =>
+                    {
+                        return Task.FromResult(
+                            new HttpOperationResponse<object>()
+                            {
+                                Response = new HttpResponseMessage()
+                                {
+                                    Content = new StringContent("blah"),
+                                    StatusCode = HttpStatusCode.OK,
+                                },
+                            });
+                    });
+
+            using (var client = new KubernetesClient(protocol.Object, KubernetesOptions.Default, NullLogger<KubernetesClient>.Instance, NullLoggerFactory.Instance))
+            {
+                var mobileDeviceClient = client.GetClient<MobileDevice>();
+                await Assert.ThrowsAsync<SerializationException>(() => mobileDeviceClient.CreateAsync(mobileDevice, default)).ConfigureAwait(false);
+            }
+
+            protocol.Verify();
+        }
+
+        /// <summary>
+        /// <see cref="NamespacedKubernetesClient{T}.ListAsync(string?, string?, string?, int?, CancellationToken)"/> returns a typed object
+        /// when the operation completes successfully.
+        /// </summary>
+        /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
+        [Fact]
+        public async Task ListAsync_Success_ReturnsTypedResponse_Async()
+        {
+            var protocol = new Mock<IKubernetesProtocol>(MockBehavior.Strict);
+            protocol.Setup(p => p.Dispose()).Verifiable();
+            protocol.Setup(p => p.DeserializationSettings).Returns(new JsonSerializerSettings());
+
+            protocol.Setup(p => p.ListNamespacedCustomObjectWithHttpMessagesAsync(
+                "kaponata.io" /* group */,
+                "v1alpha1" /* version */,
+                "default" /* namespaceParameter */,
+                "mobiledevices" /* plural */,
+                null /* continueParameter */,
+                null /* fieldSelector */,
+                null /* labelSelector */,
+                null /* limit */,
+                null /* resourceVersion */,
+                null /* timeoutSeconds */,
+                null /* watch */,
+                null /* pretty */,
+                null /* customHeaders */,
+                default /* cancellationToken */))
+                .ReturnsAsync(
+                new HttpOperationResponse<object>()
+                {
+                    Response = new HttpResponseMessage()
+                    {
+                        Content =
+                            new StringContent(
+                                JsonConvert.SerializeObject(
+                                    new ItemList<MobileDevice>()
+                                    {
+                                        Items = new MobileDevice[]
+                                        {
+                                            new MobileDevice()
+                                            {
+                                                Metadata = new V1ObjectMeta()
+                                                {
+                                                    Name = "device1",
+                                                },
+                                            },
+                                            new MobileDevice()
+                                            {
+                                                Metadata = new V1ObjectMeta()
+                                                {
+                                                    Name = "device2",
+                                                },
+                                            },
+                                        },
+                                    })),
+                        StatusCode = HttpStatusCode.OK,
+                    },
+                });
+
+            using (var client = new KubernetesClient(protocol.Object, KubernetesOptions.Default, NullLogger<KubernetesClient>.Instance, NullLoggerFactory.Instance))
+            {
+                var mobileDeviceClient = client.GetClient<MobileDevice>();
+                var list = await mobileDeviceClient.ListAsync().ConfigureAwait(false);
+                Assert.Collection(
+                    list.Items,
+                    d => { Assert.Equal("device1", d.Metadata.Name); },
+                    d => { Assert.Equal("device2", d.Metadata.Name); });
+            }
+
+            protocol.Verify();
+        }
+
+        /// <summary>
+        /// <see cref="NamespacedKubernetesClient{T}.ListAsync(string?, string?, string?, int?, CancellationToken)"/> throws a <see cref="JsonException"/>
+        /// when invalid data is returned by the server.
+        /// </summary>
+        /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
+        [Fact]
+        public async Task ListAsync_InvalidJson_ThrowsException_Async()
+        {
+            var protocol = new Mock<IKubernetesProtocol>(MockBehavior.Strict);
+            protocol.Setup(p => p.Dispose()).Verifiable();
+            protocol.Setup(p => p.DeserializationSettings).Returns(new JsonSerializerSettings());
+
+            protocol.Setup(p => p.ListNamespacedCustomObjectWithHttpMessagesAsync(
+                "kaponata.io" /* group */,
+                "v1alpha1" /* version */,
+                "default" /* namespaceParameter */,
+                "mobiledevices" /* plural */,
+                null /* continueParameter */,
+                null /* fieldSelector */,
+                null /* labelSelector */,
+                null /* limit */,
+                null /* resourceVersion */,
+                null /* timeoutSeconds */,
+                null /* watch */,
+                null /* pretty */,
+                null /* customHeaders */,
+                default /* cancellationToken */))
+                .ReturnsAsync(
+                new HttpOperationResponse<object>()
+                {
+                    Response = new HttpResponseMessage()
+                    {
+                        Content = new StringContent("blah"),
+                        StatusCode = HttpStatusCode.OK,
+                    },
+                });
+
+            using (var client = new KubernetesClient(protocol.Object, KubernetesOptions.Default, NullLogger<KubernetesClient>.Instance, NullLoggerFactory.Instance))
+            {
+                var mobileDeviceClient = client.GetClient<MobileDevice>();
+                await Assert.ThrowsAsync<SerializationException>(() => mobileDeviceClient.ListAsync()).ConfigureAwait(false);
+            }
+
+            protocol.Verify();
+        }
+
+        /// <summary>
+        /// The <see cref="NamespacedKubernetesClient{T}.DeleteAsync(T, TimeSpan, CancellationToken)"/> methods validates its arguments.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="Task"/> which represents the asynchronous test.
+        /// </returns>
+        [Fact]
+        public async Task DeleteAsync_ValidatesArguments_Async()
+        {
+            var protocol = new Mock<IKubernetesProtocol>(MockBehavior.Strict);
+            protocol.Setup(p => p.Dispose()).Verifiable();
+
+            using (var client = new KubernetesClient(protocol.Object, KubernetesOptions.Default, NullLogger<KubernetesClient>.Instance, NullLoggerFactory.Instance))
+            {
+                var mobileDeviceClient = client.GetClient<MobileDevice>();
+                await Assert.ThrowsAsync<ArgumentNullException>(() => mobileDeviceClient.DeleteAsync(null, TimeSpan.FromMinutes(1), default)).ConfigureAwait(false);
+                await Assert.ThrowsAsync<ValidationException>(() => mobileDeviceClient.DeleteAsync(new MobileDevice() { }, TimeSpan.FromMinutes(1), default)).ConfigureAwait(false);
+                await Assert.ThrowsAsync<ValidationException>(
+                    () => mobileDeviceClient.DeleteAsync(
+                        new MobileDevice()
+                        {
+                            Metadata = new V1ObjectMeta() { },
+                        },
+                        TimeSpan.FromMinutes(1),
+                        default)).ConfigureAwait(false);
+                await Assert.ThrowsAsync<ValidationException>(
+                    () => mobileDeviceClient.DeleteAsync(
+                        new MobileDevice()
+                        {
+                            Metadata = new V1ObjectMeta()
+                            {
+                                Name = "test",
+                            },
+                        },
+                        TimeSpan.FromMinutes(1),
+                        default)).ConfigureAwait(false);
+                await Assert.ThrowsAsync<ValidationException>(
+                    () => mobileDeviceClient.DeleteAsync(
+                        new MobileDevice()
+                        {
+                            Metadata = new V1ObjectMeta()
+                            {
+                                NamespaceProperty = "test",
+                            },
+                        },
+                        TimeSpan.FromMinutes(1),
+                        default)).ConfigureAwait(false);
+            }
+
+            protocol.Verify();
+        }
+
+        /// <summary>
+        /// <see cref="NamespacedKubernetesClient{T}.DeleteAsync(T, TimeSpan, CancellationToken)"/> returns when the mobile device is deleted.
+        /// </summary>
+        /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
+        [Fact]
+        public async Task DeleteAsync_DeviceDeleted_Returns_Async()
+        {
+            var mobileDevice =
+                new MobileDevice()
+                {
+                    Metadata = new V1ObjectMeta()
+                    {
+                        Name = "my-device",
+                        NamespaceProperty = "default",
+                    },
+                };
+
+            WatchEventDelegate<MobileDevice> callback = null;
+            TaskCompletionSource<WatchExitReason> watchTask = new TaskCompletionSource<WatchExitReason>();
+
+            var protocol = new Mock<IKubernetesProtocol>(MockBehavior.Strict);
+            protocol.Setup(p => p.DeserializationSettings).Returns(new JsonSerializerSettings());
+            protocol.Setup(p => p.Dispose()).Verifiable();
+
+            protocol
+                .Setup(
+                    p => p.WatchNamespacedObjectAsync<MobileDevice, ItemList<MobileDevice>>(
+                        mobileDevice,
+                        It.IsAny<ListNamespacedObjectWithHttpMessagesAsync<MobileDevice, ItemList<MobileDevice>>>(),
+                        It.IsAny<WatchEventDelegate<MobileDevice>>(),
+                        It.IsAny<CancellationToken>()))
+                .Returns<MobileDevice, ListNamespacedObjectWithHttpMessagesAsync<MobileDevice, ItemList<MobileDevice>>, WatchEventDelegate<MobileDevice>, CancellationToken>(
+                (device, list, watcher, ct) =>
+                {
+                    callback = watcher;
+                    return watchTask.Task;
+                });
+
+            protocol
+                .Setup(
+                    p => p.DeleteNamespacedCustomObjectWithHttpMessagesAsync(
+                        "kaponata.io",
+                        "v1alpha1",
+                        "default",
+                        "mobiledevices",
+                        "my-device",
+                        null, /* body */
+                        null, /* gracePeriodSeconds */
+                        null, /* orphanDependents */
+                        null, /* propagationPolicy */
+                        null, /* dryRun */
+                        null, /* customHeaders */
+                        default))
+                .Returns(Task.FromResult(new HttpOperationResponse<object>() { Body = mobileDevice, Response = new HttpResponseMessage(HttpStatusCode.OK) })).Verifiable();
+
+            using (var client = new KubernetesClient(protocol.Object, KubernetesOptions.Default, NullLogger<KubernetesClient>.Instance, NullLoggerFactory.Instance))
+            {
+                var mobileDeviceClient = client.GetClient<MobileDevice>();
+                var task = mobileDeviceClient.DeleteAsync(mobileDevice, TimeSpan.FromMinutes(1), default);
+                Assert.NotNull(callback);
+
+                // The callback continues watching until the pod is deleted
+                Assert.Equal(WatchResult.Continue, await callback(WatchEventType.Modified, mobileDevice).ConfigureAwait(false));
+                Assert.Equal(WatchResult.Stop, await callback(WatchEventType.Deleted, mobileDevice).ConfigureAwait(false));
+                watchTask.SetResult(WatchExitReason.ClientDisconnected);
+
+                await task.ConfigureAwait(false);
+            }
+
+            protocol.Verify();
+        }
+
+        /// <summary>
+        /// <see cref="NamespacedKubernetesClient{T}.DeleteAsync(T, TimeSpan, CancellationToken)"/> throws an exception when an invalid
+        /// response is received.
+        /// </summary>
+        /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
+        [Fact]
+        public async Task DeleteMobileDeviceAsync_InvalidContent_Errors_Async()
+        {
+            var mobileDevice =
+                new MobileDevice()
+                {
+                    Metadata = new V1ObjectMeta()
+                    {
+                        Name = "my-device",
+                        NamespaceProperty = "default",
+                    },
+                };
+
+            WatchEventDelegate<MobileDevice> callback = null;
+            TaskCompletionSource<WatchExitReason> watchTask = new TaskCompletionSource<WatchExitReason>();
+
+            var protocol = new Mock<IKubernetesProtocol>(MockBehavior.Strict);
+            protocol.Setup(p => p.DeserializationSettings).Returns(new JsonSerializerSettings());
+            protocol.Setup(p => p.Dispose()).Verifiable();
+
+            protocol
+                .Setup(
+                    p => p.WatchNamespacedObjectAsync<MobileDevice, ItemList<MobileDevice>>(
+                        mobileDevice,
+                        It.IsAny<ListNamespacedObjectWithHttpMessagesAsync<MobileDevice, ItemList<MobileDevice>>>(),
+                        It.IsAny<WatchEventDelegate<MobileDevice>>(),
+                        It.IsAny<CancellationToken>()))
+                .Returns<MobileDevice, ListNamespacedObjectWithHttpMessagesAsync<MobileDevice, ItemList<MobileDevice>>, WatchEventDelegate<MobileDevice>, CancellationToken>(
+                (device, list, watcher, ct) =>
+                {
+                    callback = watcher;
+                    return watchTask.Task;
+                });
+
+            protocol
+                .Setup(
+                    p => p.DeleteNamespacedCustomObjectWithHttpMessagesAsync(
+                        "kaponata.io",
+                        "v1alpha1",
+                        "default",
+                        "mobiledevices",
+                        "my-device",
+                        null, /* body */
+                        null, /* gracePeriodSeconds */
+                        null, /* orphanDependents */
+                        null, /* propagationPolicy */
+                        null, /* dryRun */
+                        null, /* customHeaders */
+                        default))
+                .Returns(Task.FromResult(new HttpOperationResponse<object>() { Body = mobileDevice, Response = new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("--") } })).Verifiable();
+
+            using (var client = new KubernetesClient(protocol.Object, KubernetesOptions.Default, NullLogger<KubernetesClient>.Instance, NullLoggerFactory.Instance))
+            {
+                var mobileDeviceClient = client.GetClient<MobileDevice>();
+                await Assert.ThrowsAsync<SerializationException>(() => mobileDeviceClient.DeleteAsync(mobileDevice, TimeSpan.FromMinutes(1), default)).ConfigureAwait(false);
+            }
+
+            protocol.Verify();
+        }
+
+        /// <summary>
+        /// <see cref="NamespacedKubernetesClient{T}.DeleteAsync(T, TimeSpan, CancellationToken)"/> errors when the API server disconnects.
+        /// </summary>
+        /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
+        [Fact]
+        public async Task DeleteAsync_ApiDisconnects_Errors_Async()
+        {
+            var mobileDevice =
+                new MobileDevice()
+                {
+                    Metadata = new V1ObjectMeta()
+                    {
+                        Name = "my-device",
+                        NamespaceProperty = "default",
+                    },
+                };
+
+            WatchEventDelegate<MobileDevice> callback = null;
+            TaskCompletionSource<WatchExitReason> watchTask = new TaskCompletionSource<WatchExitReason>();
+
+            var protocol = new Mock<IKubernetesProtocol>(MockBehavior.Strict);
+            protocol.Setup(p => p.Dispose()).Verifiable();
+            protocol.Setup(p => p.DeserializationSettings).Returns(new JsonSerializerSettings());
+
+            protocol
+                .Setup(
+                    p => p.WatchNamespacedObjectAsync<MobileDevice, ItemList<MobileDevice>>(
+                        mobileDevice,
+                        It.IsAny<ListNamespacedObjectWithHttpMessagesAsync<MobileDevice, ItemList<MobileDevice>>>(),
+                        It.IsAny<WatchEventDelegate<MobileDevice>>(),
+                        It.IsAny<CancellationToken>()))
+                .Returns<MobileDevice, ListNamespacedObjectWithHttpMessagesAsync<MobileDevice, ItemList<MobileDevice>>, WatchEventDelegate<MobileDevice>, CancellationToken>(
+                (device, list, watcher, ct) =>
+                {
+                    callback = watcher;
+                    return watchTask.Task;
+                });
+
+            protocol
+                .Setup(
+                    p => p.DeleteNamespacedCustomObjectWithHttpMessagesAsync(
+                        "kaponata.io",
+                        "v1alpha1",
+                        "default",
+                        "mobiledevices",
+                        "my-device",
+                        null, /* body */
+                        null, /* gracePeriodSeconds */
+                        null, /* orphanDependents */
+                        null, /* propagationPolicy */
+                        null, /* dryRun */
+                        null, /* customHeaders */
+                        default))
+                .Returns(Task.FromResult(new HttpOperationResponse<object>() { Body = mobileDevice, Response = new HttpResponseMessage(HttpStatusCode.OK) })).Verifiable();
+
+            using (var client = new KubernetesClient(protocol.Object, KubernetesOptions.Default, NullLogger<KubernetesClient>.Instance, NullLoggerFactory.Instance))
+            {
+                var mobileDeviceClient = client.GetClient<MobileDevice>();
+                var task = mobileDeviceClient.DeleteAsync(mobileDevice, TimeSpan.FromMinutes(1), default);
+                Assert.NotNull(callback);
+
+                // Simulate the watch task stopping
+                watchTask.SetResult(WatchExitReason.ServerDisconnected);
+
+                // The watch completes with an exception.
+                var ex = await Assert.ThrowsAsync<KubernetesException>(() => task).ConfigureAwait(false);
+                Assert.Equal("The API server unexpectedly closed the connection while watching MobileDevice 'my-device'.", ex.Message);
+            }
+
+            protocol.Verify();
+        }
+
+        /// <summary>
+        /// <see cref="NamespacedKubernetesClient{T}.DeleteAsync(T, TimeSpan, CancellationToken)"/> respects the time out passed.
+        /// </summary>
+        /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
+        [Fact]
+        public async Task DeleteAsync_RespectsTimeout_Async()
+        {
+            var mobileDevice =
+                new MobileDevice()
+                {
+                    Metadata = new V1ObjectMeta()
+                    {
+                        Name = "my-device",
+                        NamespaceProperty = "default",
+                    },
+                };
+
+            WatchEventDelegate<MobileDevice> callback = null;
+            TaskCompletionSource<WatchExitReason> watchTask = new TaskCompletionSource<WatchExitReason>();
+
+            var protocol = new Mock<IKubernetesProtocol>(MockBehavior.Strict);
+            protocol.Setup(p => p.Dispose()).Verifiable();
+            protocol.Setup(p => p.DeserializationSettings).Returns(new JsonSerializerSettings());
+
+            protocol
+                .Setup(
+                    p => p.WatchNamespacedObjectAsync<MobileDevice, ItemList<MobileDevice>>(
+                        mobileDevice,
+                        It.IsAny<ListNamespacedObjectWithHttpMessagesAsync<MobileDevice, ItemList<MobileDevice>>>(),
+                        It.IsAny<WatchEventDelegate<MobileDevice>>(),
+                        It.IsAny<CancellationToken>()))
+                .Returns<MobileDevice, ListNamespacedObjectWithHttpMessagesAsync<MobileDevice, ItemList<MobileDevice>>, WatchEventDelegate<MobileDevice>, CancellationToken>(
+                (device, list, watcher, ct) =>
+                {
+                    callback = watcher;
+                    return watchTask.Task;
+                });
+
+            protocol
+                .Setup(
+                    p => p.DeleteNamespacedCustomObjectWithHttpMessagesAsync(
+                        "kaponata.io",
+                        "v1alpha1",
+                        "default",
+                        "mobiledevices",
+                        "my-device",
+                        null, /* body */
+                        null, /* gracePeriodSeconds */
+                        null, /* orphanDependents */
+                        null, /* propagationPolicy */
+                        null, /* dryRun */
+                        null, /* customHeaders */
+                        default))
+                .Returns(Task.FromResult(new HttpOperationResponse<object>() { Body = mobileDevice, Response = new HttpResponseMessage(HttpStatusCode.OK) })).Verifiable();
+
+            using (var client = new KubernetesClient(protocol.Object, KubernetesOptions.Default, NullLogger<KubernetesClient>.Instance, NullLoggerFactory.Instance))
+            {
+                var mobileDeviceClient = client.GetClient<MobileDevice>();
+                var task = mobileDeviceClient.DeleteAsync(mobileDevice, TimeSpan.Zero, default);
+                Assert.NotNull(callback);
+
+                // The watch completes with an exception.
+                var ex = await Assert.ThrowsAsync<KubernetesException>(() => task).ConfigureAwait(false);
+                Assert.Equal("The MobileDevice 'my-device' was not deleted within a timeout of 0 seconds.", ex.Message);
+            }
+
+            protocol.Verify();
         }
 
         /// <summary>

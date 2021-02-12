@@ -52,62 +52,6 @@ namespace Kaponata.Operator.Tests.Operators
         }
 
         /// <summary>
-        /// Mocks the value of the <see cref="KubernetesClient.ListMobileDeviceAsync(string, string, string, int?, CancellationToken)"/> method.
-        /// </summary>
-        /// <param name="client">
-        /// The mock to configure.
-        /// </param>
-        /// <param name="labelSelector">
-        /// The label selector which will be used to list the devices.
-        /// </param>
-        /// <param name="devices">
-        /// The devices which should be returned.
-        /// </param>
-        /// <returns>
-        /// A result which represents the mock configuration.
-        /// </returns>
-        public static List<MobileDevice> WithDeviceList(this Mock<KubernetesClient> client, string labelSelector, params MobileDevice[] devices)
-        {
-            var items = new List<MobileDevice>(devices);
-
-            client
-                .Setup(k => k.ListMobileDeviceAsync(null, null, labelSelector, null, It.IsAny<CancellationToken>()))
-                .Returns(Task.FromResult<ItemList<MobileDevice>>(
-                    new MobileDeviceList()
-                    {
-                        Items = items,
-                    }));
-
-            return items;
-        }
-
-        /// <summary>
-        /// Configures the <see cref="KubernetesClient.CreateMobileDeviceAsync(MobileDevice, CancellationToken)"/> method on the mock,
-        /// and tracks the newly created devices.
-        /// </summary>
-        /// <param name="client">
-        /// The mock to configure.
-        /// </param>
-        /// <returns>
-        /// A collection to which newly created devices will be added.
-        /// </returns>
-        public static Collection<MobileDevice> TrackCreatedDevices(this Mock<KubernetesClient> client)
-        {
-            var devices = new Collection<MobileDevice>();
-
-            client
-                .Setup(d => d.CreateMobileDeviceAsync(It.IsAny<MobileDevice>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync<MobileDevice, CancellationToken, KubernetesClient, MobileDevice>(
-                (device, cancellationToken) =>
-                {
-                    devices.Add(device);
-                    return device;
-                });
-
-            return devices;
-        }
-
-        /// <summary>
         /// Configures the <see cref="KubernetesClient.CreatePodAsync(V1Pod, CancellationToken)"/> method on the mock,
         /// and tracks the newly created pods.
         /// </summary>
@@ -131,32 +75,6 @@ namespace Kaponata.Operator.Tests.Operators
                 });
 
             return pods;
-        }
-
-        /// <summary>
-        /// Configures the <see cref="KubernetesClient.DeleteMobileDeviceAsync(MobileDevice, TimeSpan, CancellationToken)"/> method on the mock,
-        /// and tracks the deleted devices.
-        /// </summary>
-        /// <param name="client">
-        /// The mock to configure.
-        /// </param>
-        /// <returns>
-        /// A collection to which deleted devices will be added.
-        /// </returns>
-        public static Collection<MobileDevice> TrackDeletedDevices(this Mock<KubernetesClient> client)
-        {
-            var devices = new Collection<MobileDevice>();
-
-            client
-                .Setup(d => d.DeleteMobileDeviceAsync(It.IsAny<MobileDevice>(), It.IsAny<TimeSpan>(), It.IsAny<CancellationToken>()))
-                .Callback<MobileDevice, TimeSpan, CancellationToken>(
-                (device, timeout, cancellationToken) =>
-                {
-                    devices.Add(device);
-                })
-                .Returns(Task.CompletedTask);
-
-            return devices;
         }
 
         /// <summary>
@@ -210,41 +128,6 @@ namespace Kaponata.Operator.Tests.Operators
                     It.IsAny<WatchEventDelegate<V1Pod>>(),
                     It.IsAny<CancellationToken>()))
                 .Callback<string, string, string, WatchEventDelegate<V1Pod>, CancellationToken>(
-                (fieldSelector, labelSelector, resourceVersion, eventHandler, cancellationToken) =>
-                {
-                    cancellationToken.Register(watchClient.TaskCompletionSource.SetCanceled);
-                    watchClient.ClientRegistered.SetResult(eventHandler);
-                })
-                .Returns(watchClient.TaskCompletionSource.Task);
-
-            return watchClient;
-        }
-
-        /// <summary>
-        /// Configures the <see cref="KubernetesClient.WatchMobileDeviceAsync(string, string, string, WatchEventDelegate{MobileDevice}, CancellationToken)"/> method
-        /// on the mock.
-        /// </summary>
-        /// <param name="client">
-        /// The mock to configure.
-        /// </param>
-        /// <param name="labelSelector">
-        /// The label selector used to watch the devices.
-        /// </param>
-        /// <returns>
-        /// A <see cref="WatchClient{T}"/> which can be used to invoke the event handler (if set) and complete the watch operation.
-        /// </returns>
-        public static WatchClient<MobileDevice> WithDeviceWatcher(this Mock<KubernetesClient> client, string labelSelector)
-        {
-            var watchClient = new WatchClient<MobileDevice>();
-
-            client
-                .Setup(k => k.WatchMobileDeviceAsync(
-                    null /* fieldSelector */,
-                    labelSelector, /* labelSelector */
-                    null /* resourceVersion */,
-                    It.IsAny<WatchEventDelegate<MobileDevice>>(),
-                    It.IsAny<CancellationToken>()))
-                .Callback<string, string, string, WatchEventDelegate<MobileDevice>, CancellationToken>(
                 (fieldSelector, labelSelector, resourceVersion, eventHandler, cancellationToken) =>
                 {
                     cancellationToken.Register(watchClient.TaskCompletionSource.SetCanceled);
