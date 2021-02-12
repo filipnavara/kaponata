@@ -121,10 +121,24 @@ namespace Kaponata.Operator.Tests.Operators
 
             var rule = Assert.Single(ingress.Spec.Rules);
             var path = Assert.Single(rule.Http.Paths);
-            Assert.Equal("/wd/hub/session/1234/", path.Path);
+            Assert.Equal("/wd/hub/session/my-session/", path.Path);
             Assert.Equal("Prefix", path.PathType);
             Assert.Equal("my-session", path.Backend.Service.Name);
             Assert.Equal(4774, path.Backend.Service.Port.Number);
+
+            Assert.NotNull(ingress.Metadata?.Annotations);
+            Assert.Collection(
+                ingress.Metadata.Annotations,
+                a =>
+                {
+                    Assert.Equal(Annotations.RequestModifier, a.Key);
+                    Assert.Equal("ReplacePathRegex: /wd/hub/session/my-session/(.*) /wd/hub/session/1234/$1", a.Value);
+                },
+                a =>
+                {
+                    Assert.Equal(Annotations.IngressClass, a.Key);
+                    Assert.Equal("traefik", a.Value);
+                });
         }
 
         /// <summary>

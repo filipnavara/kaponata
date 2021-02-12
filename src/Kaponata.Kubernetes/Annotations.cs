@@ -71,6 +71,22 @@ namespace Kaponata.Kubernetes
         public const string SessionName = "kaponata.io/session-name";
 
         /// <summary>
+        /// A rule which is used to rewrite the target URL of an ingress rule.
+        /// </summary>
+        public const string RewriteTarget = "ingress.kubernetes.io/rewrite-target";
+
+        /// <summary>
+        /// Specifies which ingress class is to be used for the ingress. Used to force
+        /// Kubernetes to use a specific reverse proxy (e.g. Traefik).
+        /// </summary>
+        public const string IngressClass = "kubernetes.io/ingress.class";
+
+        /// <summary>
+        /// Adds additional request modifiers. Can be used to configure URL rewriting.
+        /// </summary>
+        public const string RequestModifier = "traefik.ingress.kubernetes.io/request-modifier";
+
+        /// <summary>
         /// Enumerates all automation names available.
         /// </summary>
         public class AutomationNames
