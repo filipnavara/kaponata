@@ -29,7 +29,13 @@ namespace Kaponata.Multimedia.Tests
         [Theory]
         [InlineData("libwinpthread", true, "libwinpthread-1.dll")]
         [InlineData("avcodec", true, "avcodec-58.dll")]
-        [InlineData("avcodec", false, "libavcodec.so")]
+        [InlineData("avcodec", false, "libavcodec.so.58")]
+        [InlineData("avdevice", false, "libavdevice.so.58")]
+        [InlineData("avfilter", false, "libavfilter.so.7")]
+        [InlineData("avformat", false, "libavformat.so.58")]
+        [InlineData("avutil", false, "libavutil.so.56")]
+        [InlineData("swresample", false, "libswresample.so.3")]
+        [InlineData("swscale", false, "libswscale.so.5")]
         public void GetLibraryPath_ReturnsPath(string name, bool isWindows, string expectedFileName)
         {
             var expectedPath = expectedFileName;
@@ -39,6 +45,16 @@ namespace Kaponata.Multimedia.Tests
             }
 
             Assert.Equal(expectedPath, FFMpegClient.GetNativePath(name, isWindows));
+        }
+
+        /// <summary>
+        /// The <see cref="FFMpegClient.GetNativeVersion(string)"/> throws an exception when the package is unknown.
+        /// </summary>
+        [Fact]
+        public void GetNativeVersion_ThrowsOnUnkownLibrary()
+        {
+            var exception =  Assert.Throws<ArgumentOutOfRangeException>("name", () => FFMpegClient.GetNativeVersion("test123"));
+            Assert.Contains("test123", exception.Message);
         }
 
         /// <summary>

@@ -59,11 +59,32 @@ namespace Kaponata.Multimedia.FFMpeg
         /// <returns>
         /// The library path for the os platfrom.
         /// </returns>
-        public static string GetNativePath(string name, bool isWindows) => (name, isWindows) switch
+        public static string GetNativePath(string name, bool isWindows) => isWindows switch
         {
-            ("libwinpthread", true) => Path.GetFullPath(FFmpegBinaries.FindFFmpegLibrary("libwinpthread", 1)),
-            (_, true) => Path.GetFullPath(FFmpegBinaries.FindFFmpegLibrary(name)),
-            (_, false) => $"lib{name}.so",
+            true => Path.GetFullPath(FFmpegBinaries.FindFFmpegLibrary(name, GetNativeVersion(name))),
+            false => $"lib{name}.so.{GetNativeVersion(name)}",
+        };
+
+        /// <summary>
+        /// Gets the version number for the ffmpeg library.
+        /// </summary>
+        /// <param name="name">
+        /// The library name.
+        /// </param>
+        /// <returns>
+        /// The version number.
+        /// </returns>
+        public static int GetNativeVersion(string name) => name switch
+        {
+            "avcodec" => 58,
+            "avdevice" => 58,
+            "avfilter" => 7,
+            "avformat" => 58,
+            "avutil" => 56,
+            "swresample" => 3,
+            "swscale" => 5,
+            "libwinpthread" => 1,
+            _ => throw new ArgumentOutOfRangeException(nameof(name), $"Cannot find the version number for {name}.")
         };
 
         /// <summary>
