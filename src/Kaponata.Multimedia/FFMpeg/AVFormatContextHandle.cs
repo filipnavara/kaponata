@@ -44,7 +44,7 @@ namespace Kaponata.Multimedia.FFMpeg
         /// <inheritdoc/>
         protected override unsafe bool ReleaseHandle()
         {
-            this.ffmpeg.avformat_free_context((NativeAVFormatContext*)this.handle);
+            this.ffmpeg.FreeAVFormatContext((NativeAVFormatContext*)this.handle);
             return true;
         }
     }

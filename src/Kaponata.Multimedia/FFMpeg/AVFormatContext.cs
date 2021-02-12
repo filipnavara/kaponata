@@ -64,7 +64,7 @@ namespace Kaponata.Multimedia.FFMpeg
                 // Mark the original handle as invalid - NativeObject is updated when native code has changed
                 // the handle.
                 this.handle.SetHandleAsInvalid();
-                this.handle = new AVFormatContextHandle(client, value);
+                this.handle = new AVFormatContextHandle(this.client, value);
             }
         }
 
@@ -75,7 +75,7 @@ namespace Kaponata.Multimedia.FFMpeg
         {
             get
             {
-                return new AVIOContext(this.client, new AVIOContextHandle(this.ffmpeg, this.NativeObject->pb, ownsHandle: false));
+                return new AVIOContext(this.client, new AVIOContextHandle(this.client, this.NativeObject->pb, ownsHandle: false));
             }
 
             set
@@ -123,7 +123,7 @@ namespace Kaponata.Multimedia.FFMpeg
         /// <returns>
         /// The media type for the requested stream.
         /// </returns>
-        public AVMediaType GetStreamCodecType(int index)
+        public FFmpeg.AutoGen.AVMediaType GetStreamCodecType(int index)
         {
             if (index < 0 || index >= this.StreamCount)
             {

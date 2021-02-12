@@ -61,7 +61,7 @@ namespace Kaponata.Multimedia.FFMpeg
         /// <summary>
         /// Gets the type of the codec.
         /// </summary>
-        public AVMediaType Type
+        public FFmpeg.AutoGen.AVMediaType Type
         {
             get { return this.native->type; }
         }

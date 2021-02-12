@@ -3,8 +3,7 @@
 // </copyright>
 using System;
 using System.Collections.Generic;
-using AVRational = FFmpeg.AutoGen.AVRational;
-using NativeAVCodecParameters = FFmpeg.AutoGen.AVCodecParameters;
+using NativeAVRational = FFmpeg.AutoGen.AVRational;
 using NativeAVStream = FFmpeg.AutoGen.AVStream;
 
 namespace Kaponata.Multimedia.FFMpeg
@@ -12,7 +11,8 @@ namespace Kaponata.Multimedia.FFMpeg
     /// <summary>
     /// Represents a stream of data.
     /// </summary>
-    public unsafe class AVStream : IDisposable
+    /// <seealso href="https://ffmpeg.org/doxygen/3.1/structAVStream.html"/>
+    public unsafe class AVStream
     {
         private NativeAVStream* native;
 
@@ -28,13 +28,13 @@ namespace Kaponata.Multimedia.FFMpeg
         }
 
         /// <summary>
-        /// Gets the codec context associated with this stream.
+        /// Gets the codec parameters associated with this stream.
         /// </summary>
-        public unsafe NativeAVCodecParameters CodecContext
+        public unsafe AVCodecParameters CodecParameters
         {
             get
             {
-                return *this.native->codecpar;
+                return new AVCodecParameters(this.native->codecpar);
             }
         }
 
@@ -53,7 +53,7 @@ namespace Kaponata.Multimedia.FFMpeg
         /// Gets the fundamental unit of time (in seconds) in terms of which frame timestamps
         /// are represented.
         /// </summary>
-        public AVRational TimeBase
+        public NativeAVRational TimeBase
         {
             get
             {
@@ -75,11 +75,6 @@ namespace Kaponata.Multimedia.FFMpeg
 
                 return AVDictionaryHelpers.ToReadOnlyDictionary(this.native->metadata);
             }
-        }
-
-        /// <inheritdoc/>
-        public void Dispose()
-        {
         }
     }
 }

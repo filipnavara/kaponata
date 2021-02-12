@@ -12,7 +12,7 @@ namespace Kaponata.Multimedia.FFMpeg
     /// <summary>
     /// Provides helper methods for working with <see cref="AVDictionary"/> objects.
     /// </summary>
-    internal static class AVDictionaryHelpers
+    public static class AVDictionaryHelpers
     {
         /// <summary>
         /// Converst a <see cref="AVDictionary"/> object to a <see cref="IReadOnlyDictionary{String, String}"/>.
