@@ -185,18 +185,13 @@ namespace Kaponata.Multimedia.Tests
             var codecs = ffmpeg.GetAvailableCodecs();
             var h264Decoders = codecs.Where(c => c.Id == AVCodecID.AV_CODEC_ID_H264 && c.IsDecoder).ToArray();
 
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-            {
-                Assert.Collection(
-                    h264Decoders,
-                    d => Assert.Equal("h264", d.Name));
-            }
-            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
                 Assert.Collection(
                     h264Decoders,
                     d => Assert.Equal("h264", d.Name),
-                    d => Assert.Equal("h264_v4l2m2m", d.Name));
+                    d => Assert.Equal("h264_v4l2m2m", d.Name),
+                    d => Assert.Equal("h264_cuvid", d.Name));
             }
             else
             {

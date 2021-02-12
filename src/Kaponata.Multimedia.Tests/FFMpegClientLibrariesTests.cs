@@ -20,31 +20,20 @@ namespace Kaponata.Multimedia.Tests
         /// <param name="name">
         /// The name of the ffmpeg library.
         /// </param>
-        /// <param name="isWindows">
-        /// A value indicating whether the os platform is windows.
-        /// </param>
         /// <param name="expectedFileName">
         /// The expected file name.
         /// </param>
         [Theory]
-        [InlineData("libwinpthread", true, "libwinpthread-1.dll")]
-        [InlineData("avcodec", true, "avcodec-58.dll")]
-        [InlineData("avcodec", false, "libavcodec.so.58")]
-        [InlineData("avdevice", false, "libavdevice.so.58")]
-        [InlineData("avfilter", false, "libavfilter.so.7")]
-        [InlineData("avformat", false, "libavformat.so.58")]
-        [InlineData("avutil", false, "libavutil.so.56")]
-        [InlineData("swresample", false, "libswresample.so.3")]
-        [InlineData("swscale", false, "libswscale.so.5")]
-        public void GetLibraryPath_ReturnsPath(string name, bool isWindows, string expectedFileName)
+        [InlineData("avcodec", "libavcodec.so.58")]
+        [InlineData("avdevice", "libavdevice.so.58")]
+        [InlineData("avfilter", "libavfilter.so.7")]
+        [InlineData("avformat", "libavformat.so.58")]
+        [InlineData("avutil", "libavutil.so.56")]
+        [InlineData("swresample", "libswresample.so.3")]
+        [InlineData("swscale", "libswscale.so.5")]
+        public void GetLibraryPath_ReturnsPath(string name, string expectedFileName)
         {
-            var expectedPath = expectedFileName;
-            if (isWindows)
-            {
-                expectedPath = Path.Combine(Path.GetFullPath("."), "runtimes", "win7-x64", "native", expectedPath);
-            }
-
-            Assert.Equal(expectedPath, FFMpegClient.GetNativePath(name, isWindows));
+            Assert.Equal(expectedFileName, FFMpegClient.GetNativePath(name, false));
         }
 
         /// <summary>
@@ -100,7 +89,7 @@ namespace Kaponata.Multimedia.Tests
             FFMpegClient.Initialize();
             FFMpegClient.Initialize();
 
-            Assert.Equal("4.3.1", FFmpeg.AutoGen.ffmpeg.av_version_info());
+            Assert.Equal(4, new Version(FFmpeg.AutoGen.ffmpeg.av_version_info()).Major);
             Assert.True(FFMpegClient.LibraryHandles.Count > 0);
         }
     }
