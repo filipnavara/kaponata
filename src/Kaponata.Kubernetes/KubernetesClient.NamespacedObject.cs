@@ -48,6 +48,11 @@ namespace Kaponata.Kubernetes
             CancellationToken cancellationToken)
             where T : IKubernetesObject<V1ObjectMeta>
         {
+            if (kind == null)
+            {
+                throw new ArgumentNullException(nameof(kind));
+            }
+
             if (value == null)
             {
                 throw new ArgumentNullException(nameof(value));
@@ -58,7 +63,8 @@ namespace Kaponata.Kubernetes
                 throw new ValidationException(ValidationRules.CannotBeNull, "value.Metadata");
             }
 
-            if (value.Metadata.Name == null)
+            if (value.Metadata.Name == null
+                && value.Metadata.GenerateName == null)
             {
                 throw new ValidationException(ValidationRules.CannotBeNull, "value.Metadata.Name");
             }
