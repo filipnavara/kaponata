@@ -39,6 +39,84 @@ namespace Kaponata.Operator.Tests.Operators
                    null),
             };
 
+            // The ingress is not ready
+            yield return new object[]
+            {
+               new ChildOperatorContext<WebDriverSession, V1Ingress>(
+                   new WebDriverSession()
+                   {
+                       Status = new WebDriverSessionStatus(),
+                   },
+                   new V1Ingress()),
+            };
+
+            yield return new object[]
+            {
+               new ChildOperatorContext<WebDriverSession, V1Ingress>(
+                   new WebDriverSession()
+                   {
+                       Status = new WebDriverSessionStatus(),
+                   },
+                   new V1Ingress()
+                   {
+                       Status = new V1IngressStatus(),
+                   }),
+            };
+
+            yield return new object[]
+            {
+               new ChildOperatorContext<WebDriverSession, V1Ingress>(
+                   new WebDriverSession()
+                   {
+                       Status = new WebDriverSessionStatus(),
+                   },
+                   new V1Ingress()
+                   {
+                       Status = new V1IngressStatus()
+                       {
+                            LoadBalancer = new V1LoadBalancerStatus(),
+                       },
+                   }),
+            };
+
+            yield return new object[]
+            {
+               new ChildOperatorContext<WebDriverSession, V1Ingress>(
+                   new WebDriverSession()
+                   {
+                       Status = new WebDriverSessionStatus(),
+                   },
+                   new V1Ingress()
+                   {
+                       Status = new V1IngressStatus()
+                       {
+                            LoadBalancer = new V1LoadBalancerStatus()
+                            {
+                                 Ingress = null,
+                            },
+                       },
+                   }),
+            };
+
+            yield return new object[]
+            {
+               new ChildOperatorContext<WebDriverSession, V1Ingress>(
+                   new WebDriverSession()
+                   {
+                       Status = new WebDriverSessionStatus(),
+                   },
+                   new V1Ingress()
+                   {
+                       Status = new V1IngressStatus()
+                       {
+                            LoadBalancer = new V1LoadBalancerStatus()
+                            {
+                                 Ingress = new V1LoadBalancerIngress[] { },
+                            },
+                       },
+                   }),
+            };
+
             // The session has an associated Ingress but the IngressReady flag is already set.
             yield return new object[]
             {
@@ -50,7 +128,16 @@ namespace Kaponata.Operator.Tests.Operators
                            IngressReady = true,
                        },
                    },
-                   new V1Ingress()),
+                   new V1Ingress()
+                   {
+                       Status = new V1IngressStatus()
+                       {
+                            LoadBalancer = new V1LoadBalancerStatus()
+                            {
+                                 Ingress = new V1LoadBalancerIngress[] { new V1LoadBalancerIngress() },
+                            },
+                       },
+                   }),
             };
         }
 
@@ -174,6 +261,13 @@ namespace Kaponata.Operator.Tests.Operators
                 },
                 new V1Ingress()
                 {
+                    Status = new V1IngressStatus()
+                    {
+                        LoadBalancer = new V1LoadBalancerStatus()
+                        {
+                            Ingress = new V1LoadBalancerIngress[] { new V1LoadBalancerIngress() },
+                        },
+                    },
                 });
 
             var result = await feedback(context, default).ConfigureAwait(false);

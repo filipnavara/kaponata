@@ -261,7 +261,12 @@ namespace Kaponata.Operator.Operators
                     var session = context.Parent;
                     var ingress = context.Child;
 
-                    if (ingress != null && !session.Status.IngressReady)
+                    if (ingress?.Status?.LoadBalancer?.Ingress == null
+                        || ingress.Status.LoadBalancer.Ingress.Count == 0)
+                    {
+                        logger.LogInformation("Not setting the ingress status to ready for session {session} because the ingress does not have any load balancer endpoints.", context.Parent?.Metadata?.Name);
+                    }
+                    else if (!session.Status.IngressReady)
                     {
                         patch = new JsonPatchDocument<WebDriverSession>();
                         patch.Add(s => s.Status.IngressReady, true);
