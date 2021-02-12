@@ -42,7 +42,7 @@ namespace Kaponata.Multimedia.Tests
         [Fact]
         public void GetNativeVersion_ThrowsOnUnkownLibrary()
         {
-            var exception =  Assert.Throws<ArgumentOutOfRangeException>("name", () => FFMpegClient.GetNativeVersion("test123"));
+            var exception = Assert.Throws<ArgumentOutOfRangeException>("name", () => FFMpegClient.GetNativeVersion("test123"));
             Assert.Contains("test123", exception.Message);
         }
 
