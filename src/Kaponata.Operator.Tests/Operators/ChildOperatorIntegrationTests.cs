@@ -23,6 +23,7 @@ namespace Kaponata.Operator.Tests.Operators
     /// <summary>
     /// Integration tests for the <see cref="ChildOperator{TParent, TChild}"/> class.
     /// </summary>
+    [Collection("OperatorTests")]
     public class ChildOperatorIntegrationTests
     {
         private readonly IHost host;
