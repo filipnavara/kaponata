@@ -6,6 +6,21 @@ metadata:
     kubernetes.io/arch: amd64
     kubernetes.io/os: android
 spec:
+  initContainers:
+  # Attempt to replicate the checks described in https://github.com/remote-android/redroid-modules#manual
+  # as initContainers
+  - name: check-ashmem-module
+    image: busybox
+    command: [ 'sh', '-c', 'lsmod | grep ashmem_linux']
+  - name: check-binder-module
+    image: busybox
+    command: [ 'sh', '-c', 'lsmod | grep binder_linux']
+  - name: check-ashmem-configured
+    image: busybox
+    command: [ 'sh', '-c', 'if [ $(cat /proc/misc | grep ashmem | wc -l) -ne 1 ]; then echo "ashmem is not configured correctly." >&2 && exit 1; fi']
+  - name: check-binder-configured
+    image: busybox
+    command: [ 'sh', '-c', 'if [ $(cat /proc/filesystems | grep binder | wc -l) -ne 1 ]; then echo "binder is not configured correctly." >&2 && exit 1; fi']
   containers:
     - name: android
       image: redroid/redroid:11.0.0-latest
