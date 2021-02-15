@@ -9,12 +9,16 @@ using Kaponata.Kubernetes.Models;
 using Kaponata.Kubernetes.Polyfill;
 using Kaponata.Operator.Operators;
 using Kaponata.Tests.Shared;
-using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Moq;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Threading.Tasks.Dataflow;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Kaponata.Operator.Tests.Operators
 {
@@ -23,42 +27,69 @@ namespace Kaponata.Operator.Tests.Operators
     /// </summary>
     public class RedroidOperatorTests
     {
+        private readonly Mock<KubernetesClient> kubernetes;
+        private readonly Mock<NamespacedKubernetesClient<V1Pod>> podClient;
+        private readonly Mock<NamespacedKubernetesClient<MobileDevice>> deviceClient;
+        private readonly IHost host;
+
         /// <summary>
-        /// The <see cref="RedroidOperator"/> constructor validates its arguments.
+        /// Initializes a new instance of the <see cref="RedroidOperatorTests"/> class.
         /// </summary>
-        [Fact]
-        public void Constructor_ValidatesArguments()
+        /// <param name="output">
+        /// An output helper to use when logging.
+        /// </param>
+        public RedroidOperatorTests(ITestOutputHelper output)
         {
-            Assert.Throws<ArgumentNullException>(() => new RedroidOperator(null, NullLogger<RedroidOperator>.Instance));
-            Assert.Throws<ArgumentNullException>(() => new RedroidOperator(Mock.Of<KubernetesClient>(), null));
+            this.kubernetes = new Mock<KubernetesClient>(MockBehavior.Strict);
+            this.podClient = this.kubernetes.WithClient<V1Pod>();
+            this.deviceClient = this.kubernetes.WithClient<MobileDevice>();
+
+            var builder = new HostBuilder();
+            builder.ConfigureServices(
+                (services) =>
+                {
+                    services.AddSingleton(this.kubernetes.Object);
+                    services.AddLogging(
+                        (loggingBuilder) =>
+                        {
+                            loggingBuilder.AddXunit(output);
+                        });
+                });
+
+            this.host = builder.Build();
         }
 
         /// <summary>
-        /// The <see cref="RedroidOperator.ReconcileAsync"/> loop does nothing if the cluster is empty.
+        /// <see cref="RedroidOperator.BuildRedroidOperator(IServiceProvider)"/> validates its arguments.
+        /// </summary>
+        [Fact]
+        public void BuildRedroidOperator_ValidatesArguments()
+        {
+            Assert.Throws<ArgumentNullException>(() => RedroidOperator.BuildRedroidOperator(null));
+        }
+
+        /// <summary>
+        /// The <see cref="RedroidOperator"/> loop does nothing if the cluster is empty.
         /// </summary>
         /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
         [Fact]
         public async Task EmptyCluster_NoOp_Async()
         {
-            var kubernetes = new Mock<KubernetesClient>(MockBehavior.Strict);
-            var deviceClient = new Mock<NamespacedKubernetesClient<MobileDevice>>();
-            kubernetes.Setup(c => c.GetClient<MobileDevice>()).Returns(deviceClient.Object);
-
-            kubernetes.WithPodList(
+            this.podClient.WithList(
+                fieldSelector: null,
                 labelSelector: "kubernetes.io/os=android");
 
-            deviceClient.WithList(
+            this.deviceClient.WithList(
                 fieldSelector: null,
-                labelSelector: "kubernetes.io/os=android,app.kubernetes.io/managed-by=RedroidOperator");
+                labelSelector: "app.kubernetes.io/managed-by=RedroidOperator");
 
-            (var createdDevices, _) = deviceClient.TrackCreatedItems();
-            var deletedDevices = deviceClient.TrackDeletedItems();
+            (var createdDevices, _) = this.deviceClient.TrackCreatedItems();
+            var deletedDevices = this.deviceClient.TrackDeletedItems();
 
-            using (var @operator = new RedroidOperator(
-                kubernetes.Object,
-                NullLogger<RedroidOperator>.Instance))
+            using (var @operator = RedroidOperator.BuildRedroidOperator(this.host.Services).Build())
             {
-                Assert.True(await @operator.ReconcileAsync(default).ConfigureAwait(false));
+                await @operator.InitializeAsync(default);
+                Assert.Equal(0, @operator.ReconcilationBuffer.Count);
             }
 
             Assert.Empty(createdDevices);
@@ -66,27 +97,27 @@ namespace Kaponata.Operator.Tests.Operators
         }
 
         /// <summary>
-        /// The <see cref="RedroidOperator.ReconcileAsync"/> loop does nothing if the cluster is empty.
+        /// The <see cref="RedroidOperator"/> loop does nothing if a matching pod and device object
+        /// exist.
         /// </summary>
         /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
         [Fact]
         public async Task PodAndDevice_NoOp_Async()
         {
-            var kubernetes = new Mock<KubernetesClient>(MockBehavior.Strict);
-
-            kubernetes.WithPodList(
-                labelSelector: "kubernetes.io/os=android",
-                new V1Pod()
+            var pod = new V1Pod()
+            {
+                Kind = V1Pod.KubeKind,
+                ApiVersion = V1Pod.KubeApiVersion,
+                Metadata = new V1ObjectMeta()
                 {
-                    Metadata = new V1ObjectMeta()
-                    {
-                        Name = "redroid",
-                        NamespaceProperty = "default",
-                    },
-                    Status = new V1PodStatus()
-                    {
-                        Phase = "Running",
-                        ContainerStatuses = new V1ContainerStatus[]
+                    Name = "redroid",
+                    NamespaceProperty = "default",
+                    Uid = "uid",
+                },
+                Status = new V1PodStatus()
+                {
+                    Phase = "Running",
+                    ContainerStatuses = new V1ContainerStatus[]
                         {
                             new V1ContainerStatus()
                             {
@@ -94,30 +125,40 @@ namespace Kaponata.Operator.Tests.Operators
                                 Ready = true,
                             },
                         },
-                    },
-                });
+                },
+            };
 
-            var deviceClient = kubernetes.WithClient<MobileDevice>();
-            deviceClient.WithList(
+            this.podClient.WithList(
+            fieldSelector: null,
+            labelSelector: "kubernetes.io/os=android",
+            pod);
+
+            this.deviceClient.WithList(
                 fieldSelector: null,
-                labelSelector: "kubernetes.io/os=android,app.kubernetes.io/managed-by=RedroidOperator",
+                labelSelector: "app.kubernetes.io/managed-by=RedroidOperator",
                 new MobileDevice()
                 {
                     Metadata = new V1ObjectMeta()
                     {
                         NamespaceProperty = "default",
                         Name = "redroid",
+                        OwnerReferences = new V1OwnerReference[] { pod.AsOwnerReference() },
                     },
                 });
 
-            (var createdDevices, _) = deviceClient.TrackCreatedItems();
-            var deletedDevices = deviceClient.TrackDeletedItems();
+            (var createdDevices, _) = this.deviceClient.TrackCreatedItems();
+            var deletedDevices = this.deviceClient.TrackDeletedItems();
 
-            using (var @operator = new RedroidOperator(
-                kubernetes.Object,
-                NullLogger<RedroidOperator>.Instance))
+            using (var @operator = RedroidOperator.BuildRedroidOperator(this.host.Services).Build())
             {
-                Assert.True(await @operator.ReconcileAsync(default).ConfigureAwait(false));
+                await @operator.InitializeAsync(default).ConfigureAwait(false);
+
+                // The parent-child pair will be scheduled for reconciliation, but the reconcilation itself
+                // will not do anything.
+                Assert.Equal(1, @operator.ReconcilationBuffer.Count);
+                @operator.ReconcilationBuffer.Post(null);
+                await @operator.ProcessBufferedReconciliationsAsync(default).ConfigureAwait(false);
+                Assert.Equal(0, @operator.ReconcilationBuffer.Count);
             }
 
             Assert.Empty(createdDevices);
@@ -125,16 +166,15 @@ namespace Kaponata.Operator.Tests.Operators
         }
 
         /// <summary>
-        /// The <see cref="RedroidOperator.ReconcileAsync"/> loop does not create a new device if a new Redroid pod
+        /// The <see cref="RedroidOperator"/> loop does not create a new device if a new Redroid pod
         /// is detected which is not running.
         /// </summary>
         /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
         [Fact]
         public async Task NewPod_Pending_DoesNotCreateDevice_Async()
         {
-            var kubernetes = new Mock<KubernetesClient>(MockBehavior.Strict);
-
-            kubernetes.WithPodList(
+            this.podClient.WithList(
+                fieldSelector: null,
                 labelSelector: "kubernetes.io/os=android",
                 new V1Pod()
                 {
@@ -149,19 +189,17 @@ namespace Kaponata.Operator.Tests.Operators
                     },
                 });
 
-            var deviceClient = kubernetes.WithClient<MobileDevice>();
-            deviceClient.WithList(
+            this.deviceClient.WithList(
                 fieldSelector: null,
-                labelSelector: "kubernetes.io/os=android,app.kubernetes.io/managed-by=RedroidOperator");
+                labelSelector: "app.kubernetes.io/managed-by=RedroidOperator");
 
-            (var createdDevices, _) = deviceClient.TrackCreatedItems();
-            var deletedDevices = deviceClient.TrackDeletedItems();
+            (var createdDevices, _) = this.deviceClient.TrackCreatedItems();
+            var deletedDevices = this.deviceClient.TrackDeletedItems();
 
-            using (var @operator = new RedroidOperator(
-                kubernetes.Object,
-                NullLogger<RedroidOperator>.Instance))
+            using (var @operator = RedroidOperator.BuildRedroidOperator(this.host.Services).Build())
             {
-                Assert.True(await @operator.ReconcileAsync(default).ConfigureAwait(false));
+                await @operator.InitializeAsync(default).ConfigureAwait(false);
+                Assert.Equal(0, @operator.ReconcilationBuffer.Count);
             }
 
             Assert.Empty(createdDevices);
@@ -169,16 +207,15 @@ namespace Kaponata.Operator.Tests.Operators
         }
 
         /// <summary>
-        /// The <see cref="RedroidOperator.ReconcileAsync"/> loop does not create a new device if a new Redroid pod
+        /// The <see cref="RedroidOperator"/> loop does not create a new device if a new Redroid pod
         /// is detected which is running but not ready.
         /// </summary>
         /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
         [Fact]
         public async Task NewPod_NotReady_DoesNotCreateDevice_Async()
         {
-            var kubernetes = new Mock<KubernetesClient>(MockBehavior.Strict);
-
-            kubernetes.WithPodList(
+            this.podClient.WithList(
+                fieldSelector: null,
                 labelSelector: "kubernetes.io/os=android",
                 new V1Pod()
                 {
@@ -201,19 +238,17 @@ namespace Kaponata.Operator.Tests.Operators
                     },
                 });
 
-            var deviceClient = kubernetes.WithClient<MobileDevice>();
-            deviceClient.WithList(
+            this.deviceClient.WithList(
                 fieldSelector: null,
-                labelSelector: "kubernetes.io/os=android,app.kubernetes.io/managed-by=RedroidOperator");
+                labelSelector: "app.kubernetes.io/managed-by=RedroidOperator");
 
-            (var createdDevices, _) = deviceClient.TrackCreatedItems();
-            var deletedDevices = deviceClient.TrackDeletedItems();
+            (var createdDevices, _) = this.deviceClient.TrackCreatedItems();
+            var deletedDevices = this.deviceClient.TrackDeletedItems();
 
-            using (var @operator = new RedroidOperator(
-                kubernetes.Object,
-                NullLogger<RedroidOperator>.Instance))
+            using (var @operator = RedroidOperator.BuildRedroidOperator(this.host.Services).Build())
             {
-                Assert.True(await @operator.ReconcileAsync(default).ConfigureAwait(false));
+                await @operator.InitializeAsync(default);
+                Assert.Equal(0, @operator.ReconcilationBuffer.Count);
             }
 
             Assert.Empty(createdDevices);
@@ -221,19 +256,20 @@ namespace Kaponata.Operator.Tests.Operators
         }
 
         /// <summary>
-        /// The <see cref="RedroidOperator.ReconcileAsync"/> loop creates a new device if a new Redroid pod
+        /// The <see cref="RedroidOperator"/> creates a new device if a new Redroid pod
         /// is detected which is running and for which all containers are ready.
         /// </summary>
         /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
         [Fact]
         public async Task NewPod_CreatesDevice_Async()
         {
-            var kubernetes = new Mock<KubernetesClient>(MockBehavior.Strict);
-
-            kubernetes.WithPodList(
+            this.podClient.WithList(
+                fieldSelector: null,
                 labelSelector: "kubernetes.io/os=android",
                 new V1Pod()
                 {
+                    ApiVersion = V1Pod.KubeApiVersion,
+                    Kind = V1Pod.KubeKind,
                     Metadata = new V1ObjectMeta()
                     {
                         Name = "my-device",
@@ -246,19 +282,23 @@ namespace Kaponata.Operator.Tests.Operators
                     },
                 });
 
-            var deviceClient = kubernetes.WithClient<MobileDevice>();
-            deviceClient.WithList(
+            this.deviceClient.WithList(
                 fieldSelector: null,
-                labelSelector: "kubernetes.io/os=android,app.kubernetes.io/managed-by=RedroidOperator");
+                labelSelector: "app.kubernetes.io/managed-by=RedroidOperator");
 
-            (var createdDevices, _) = deviceClient.TrackCreatedItems();
-            var deletedDevices = deviceClient.TrackDeletedItems();
+            this.deviceClient
+                .Setup(d => d.TryReadAsync("my-device", "app.kubernetes.io/managed-by=RedroidOperator", It.IsAny<CancellationToken>()))
+                .ReturnsAsync((MobileDevice)null);
 
-            using (var @operator = new RedroidOperator(
-                kubernetes.Object,
-                NullLogger<RedroidOperator>.Instance))
+            (var createdDevices, _) = this.deviceClient.TrackCreatedItems();
+            var deletedDevices = this.deviceClient.TrackDeletedItems();
+
+            using (var @operator = RedroidOperator.BuildRedroidOperator(this.host.Services).Build())
             {
-                Assert.True(await @operator.ReconcileAsync(default).ConfigureAwait(false));
+                await @operator.InitializeAsync(default).ConfigureAwait(false);
+                Assert.Equal(1, @operator.ReconcilationBuffer.Count);
+                @operator.ReconcilationBuffer.Post(null);
+                await @operator.ProcessBufferedReconciliationsAsync(default);
             }
 
             Assert.Collection(
@@ -274,115 +314,36 @@ namespace Kaponata.Operator.Tests.Operators
         }
 
         /// <summary>
-        /// The <see cref="RedroidOperator.ReconcileAsync"/> loop deletes devices for which no matching Redroid
-        /// pod is detected.
-        /// </summary>
-        /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
-        [Fact]
-        public async Task DeletedPod_DeletesDevice_Async()
-        {
-            var kubernetes = new Mock<KubernetesClient>(MockBehavior.Strict);
-
-            kubernetes.WithPodList(
-                labelSelector: "kubernetes.io/os=android");
-
-            var device = new MobileDevice()
-            {
-                Metadata = new V1ObjectMeta(),
-            };
-
-            var deviceClient = kubernetes.WithClient<MobileDevice>();
-            deviceClient.WithList(
-                fieldSelector: null,
-                labelSelector: "kubernetes.io/os=android,app.kubernetes.io/managed-by=RedroidOperator",
-                device);
-
-            (var createdDevices, _) = deviceClient.TrackCreatedItems();
-            var deletedDevices = deviceClient.TrackDeletedItems();
-
-            using (var @operator = new RedroidOperator(
-                kubernetes.Object,
-                NullLogger<RedroidOperator>.Instance))
-            {
-                await @operator.ReconcileAsync(default).ConfigureAwait(false);
-            }
-
-            Assert.Empty(createdDevices);
-            Assert.Collection(
-                deletedDevices,
-                d => Assert.Equal(device, d));
-        }
-
-        /// <summary>
-        /// The <see cref="RedroidOperator.ExecuteAsync(CancellationToken)"/> method listens for the cancellation requests and completes
-        /// timely.
-        /// </summary>
-        /// <returns>
-        /// A <see cref="Task"/> representing the asynchronous unit test.
-        /// </returns>
-        [Fact]
-        public async Task RedroidOperator_CompletedWhenWatchCompletes_Async()
-        {
-            var kubernetes = new Mock<KubernetesClient>(MockBehavior.Strict);
-
-            // Empty cluster, so the Reconcile loop does nothing.
-            var podWatchCts = kubernetes.WithPodWatcher(
-                labelSelector: "kubernetes.io/os=android");
-            kubernetes.WithPodList(
-                labelSelector: "kubernetes.io/os=android");
-
-            var deviceClient = kubernetes.WithClient<MobileDevice>();
-            var deviceWatchCts = deviceClient.WithWatcher(
-                fieldSelector: null,
-                labelSelector: "kubernetes.io/os=android,app.kubernetes.io/managed-by=RedroidOperator");
-            deviceClient.WithList(
-                fieldSelector: null,
-                labelSelector: "kubernetes.io/os=android,app.kubernetes.io/managed-by=RedroidOperator");
-
-            using (var @operator = new RedroidOperator(
-                kubernetes.Object,
-                NullLogger<RedroidOperator>.Instance))
-            {
-                await @operator.StartAsync(default).ConfigureAwait(false);
-                await Task.WhenAll(podWatchCts.ClientRegistered.Task, deviceWatchCts.ClientRegistered.Task).ConfigureAwait(false);
-                var task = @operator.StopAsync(default).ConfigureAwait(false);
-            }
-
-            kubernetes.Verify();
-        }
-
-        /// <summary>
         /// The <see cref="RedroidOperator"/> executes the reconciliation loop when a pod event is received.
         /// </summary>
         /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
         [Fact]
         public async Task RedroidOperator_ReconcilesOnPodEvent_Async()
         {
-            var kubernetes = new Mock<KubernetesClient>(MockBehavior.Strict);
-
             // Empty cluster, so the Reconcile loop at first nothing but start the watcher
-            var podWatchCts = kubernetes.WithPodWatcher(
+            var podWatchCts = this.podClient.WithWatcher(
+                fieldSelector: null,
                 labelSelector: "kubernetes.io/os=android");
-            var pods = kubernetes.WithPodList(
+            var pods = this.podClient.WithList(
+                fieldSelector: null,
                 labelSelector: "kubernetes.io/os=android");
 
-            var deviceClient = kubernetes.WithClient<MobileDevice>();
-            var deviceWatchCts = deviceClient.WithWatcher(
+            var deviceWatchCts = this.deviceClient.WithWatcher(
                 fieldSelector: null,
-                labelSelector: "kubernetes.io/os=android,app.kubernetes.io/managed-by=RedroidOperator");
-            deviceClient.WithList(
+                labelSelector: "app.kubernetes.io/managed-by=RedroidOperator");
+            this.deviceClient.WithList(
                 fieldSelector: null,
-                labelSelector: "kubernetes.io/os=android,app.kubernetes.io/managed-by=RedroidOperator");
+                labelSelector: "app.kubernetes.io/managed-by=RedroidOperator");
 
-            using (var @operator = new RedroidOperator(
-                kubernetes.Object,
-                NullLogger<RedroidOperator>.Instance))
+            using (var @operator = RedroidOperator.BuildRedroidOperator(this.host.Services).Build())
             {
                 await @operator.StartAsync(default).ConfigureAwait(false);
                 await Task.WhenAll(podWatchCts.ClientRegistered.Task, deviceWatchCts.ClientRegistered.Task).ConfigureAwait(false);
 
                 var newPod = new V1Pod()
                 {
+                    ApiVersion = V1Pod.KubeApiVersion,
+                    Kind = V1Pod.KubeKind,
                     Metadata = new V1ObjectMeta()
                     {
                         Name = "redroid",
@@ -403,68 +364,12 @@ namespace Kaponata.Operator.Tests.Operators
                 };
 
                 pods.Add(newPod);
-                (var newDeviceList, _) = deviceClient.TrackCreatedItems();
-                await (await podWatchCts.ClientRegistered.Task.ConfigureAwait(false))(WatchEventType.Added, newPod).ConfigureAwait(false);
+                this.podClient.Setup(d => d.TryReadAsync("redroid", "kubernetes.io/os=android", It.IsAny<CancellationToken>())).ReturnsAsync(newPod);
+                this.deviceClient.Setup(d => d.TryReadAsync("redroid", "app.kubernetes.io/managed-by=RedroidOperator", It.IsAny<CancellationToken>())).ReturnsAsync((MobileDevice)null);
 
-                await @operator.StopAsync(default).ConfigureAwait(false);
-                Assert.Single(newDeviceList);
-            }
-        }
-
-        /// <summary>
-        /// The <see cref="RedroidOperator"/> executes the reconciliation loop when a device event is received.
-        /// </summary>
-        /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
-        [Fact]
-        public async Task RedroidOperator_ReconcilesOnDeviceEvent_Async()
-        {
-            var kubernetes = new Mock<KubernetesClient>(MockBehavior.Strict);
-
-            // Empty cluster, so the Reconcile loop at first nothing but start the watcher
-            var podWatchCts = kubernetes.WithPodWatcher(
-                labelSelector: "kubernetes.io/os=android");
-            var pods = kubernetes.WithPodList(
-                labelSelector: "kubernetes.io/os=android");
-
-            var deviceClient = kubernetes.WithClient<MobileDevice>();
-            var deviceWatchCts = deviceClient.WithWatcher(
-                fieldSelector: null,
-                labelSelector: "kubernetes.io/os=android,app.kubernetes.io/managed-by=RedroidOperator");
-            deviceClient.WithList(
-                fieldSelector: null,
-                labelSelector: "kubernetes.io/os=android,app.kubernetes.io/managed-by=RedroidOperator");
-
-            using (var @operator = new RedroidOperator(
-                kubernetes.Object,
-                NullLogger<RedroidOperator>.Instance))
-            {
-                await @operator.StartAsync(default).ConfigureAwait(false);
-                await Task.WhenAll(podWatchCts.ClientRegistered.Task, deviceWatchCts.ClientRegistered.Task).ConfigureAwait(false);
-
-                var newPod = new V1Pod()
-                {
-                    Metadata = new V1ObjectMeta()
-                    {
-                        Name = "redroid",
-                        NamespaceProperty = "default",
-                    },
-                    Status = new V1PodStatus()
-                    {
-                        Phase = "Running",
-                        ContainerStatuses = new V1ContainerStatus[]
-                        {
-                            new V1ContainerStatus()
-                            {
-                                Name = "redroid",
-                                Ready = true,
-                            },
-                        },
-                    },
-                };
-
-                pods.Add(newPod);
-                (var newDeviceList, _) = deviceClient.TrackCreatedItems();
-                await (await deviceWatchCts.ClientRegistered.Task.ConfigureAwait(false))(WatchEventType.Added, new MobileDevice()).ConfigureAwait(false);
+                (var newDeviceList, _) = this.deviceClient.TrackCreatedItems();
+                var podWatcher = await podWatchCts.ClientRegistered.Task.ConfigureAwait(false);
+                await podWatcher(WatchEventType.Added, newPod).ConfigureAwait(false);
 
                 await @operator.StopAsync(default).ConfigureAwait(false);
                 Assert.Single(newDeviceList);
@@ -483,25 +388,22 @@ namespace Kaponata.Operator.Tests.Operators
         [Fact]
         public async Task RedroidOperator_Stops_WhenWatchersStop_Async()
         {
-            var kubernetes = new Mock<KubernetesClient>(MockBehavior.Strict);
-
             // Empty cluster, so the Reconcile loop at first nothing but start the watcher
-            var podWatchCts = kubernetes.WithPodWatcher(
+            var podWatchCts = this.podClient.WithWatcher(
+                fieldSelector: null,
                 labelSelector: "kubernetes.io/os=android");
-            kubernetes.WithPodList(
+            this.podClient.WithList(
+                fieldSelector: null,
                 labelSelector: "kubernetes.io/os=android");
 
-            var deviceClient = kubernetes.WithClient<MobileDevice>();
-            var deviceWatchCts = deviceClient.WithWatcher(
+            var deviceWatchCts = this.deviceClient.WithWatcher(
                 fieldSelector: null,
-                labelSelector: "kubernetes.io/os=android,app.kubernetes.io/managed-by=RedroidOperator");
-            deviceClient.WithList(
+                labelSelector: "app.kubernetes.io/managed-by=RedroidOperator");
+            this.deviceClient.WithList(
                 fieldSelector: null,
-                labelSelector: "kubernetes.io/os=android,app.kubernetes.io/managed-by=RedroidOperator");
+                labelSelector: "app.kubernetes.io/managed-by=RedroidOperator");
 
-            using (var @operator = new RedroidOperator(
-                kubernetes.Object,
-                NullLogger<RedroidOperator>.Instance))
+            using (var @operator = RedroidOperator.BuildRedroidOperator(this.host.Services).Build())
             {
                 await @operator.StartAsync(default).ConfigureAwait(false);
 

@@ -55,6 +55,18 @@ namespace Kaponata.Tests.Shared
                         Items = items,
                     }));
 
+            foreach (var value in values)
+            {
+                if (value?.Metadata == null)
+                {
+                    continue;
+                }
+
+                client
+                    .Setup(k => k.TryReadAsync(value.Metadata.Name, labelSelector, It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(value);
+            }
+
             return items;
         }
 
