@@ -32,7 +32,7 @@ namespace Kaponata.Kubernetes.Tests
 
             using (var client = mock.Object)
             {
-                var kind = new KindMetadata(V1Pod.KubeGroup, V1Pod.KubeApiVersion, "pods");
+                var kind = new KindMetadata(V1Pod.KubeGroup, V1Pod.KubeApiVersion, V1Pod.KubeKind, "pods");
 
                 await Assert.ThrowsAsync<ArgumentNullException>("kind", () => client.CreateNamespacedValueAsync(null, new V1Pod(), default)).ConfigureAwait(false);
                 await Assert.ThrowsAsync<ArgumentNullException>("value", () => client.CreateNamespacedValueAsync(kind, (V1Pod)null, default)).ConfigureAwait(false);

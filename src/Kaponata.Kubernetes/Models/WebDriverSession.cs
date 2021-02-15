@@ -46,7 +46,7 @@ namespace Kaponata.Kubernetes.Models
         /// <summary>
         /// Gets <see cref="KindMetadata"/> which describes the <see cref="WebDriverSession"/> object type.
         /// </summary>
-        public static KindMetadata KubeMetadata { get; } = new KindMetadata(KubeGroup, KubeVersion, KubePlural);
+        public static KindMetadata KubeMetadata { get; } = new KindMetadata(KubeGroup, KubeVersion, KubeKind, KubePlural);
 
         /// <summary>
         /// Gets or sets the API version, which defines the versioned schema of this representation of
