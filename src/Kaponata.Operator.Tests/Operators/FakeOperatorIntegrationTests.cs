@@ -22,6 +22,7 @@ namespace Kaponata.Operator.Tests.Operators
     /// <summary>
     /// Integration tests for the <see cref="FakeOperators"/> class.
     /// </summary>
+    [Collection("OperatorTests")]
     public class FakeOperatorIntegrationTests
     {
         private readonly IHost host;
