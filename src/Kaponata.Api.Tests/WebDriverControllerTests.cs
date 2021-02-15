@@ -4,6 +4,7 @@
 
 using Kaponata.Api.WebDriver;
 using Microsoft.Extensions.Logging.Abstractions;
+using Moq;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -22,26 +23,32 @@ namespace Kaponata.Api.Tests
         [Fact]
         public void Constructor_ValidatesArguments()
         {
-            Assert.Throws<ArgumentNullException>(() => new WebDriverController(null));
+            Assert.Throws<ArgumentNullException>(() => new WebDriverController(null, NullLogger<WebDriverController>.Instance));
+            Assert.Throws<ArgumentNullException>(() => new WebDriverController(Mock.Of<KubernetesWebDriver>(), null));
         }
 
         /// <summary>
-        /// <see cref="WebDriverController.NewSessionAsync(object, CancellationToken)"/> returns
-        /// an error.
+        /// <see cref="WebDriverController.NewSessionAsync(NewSessionRequest, CancellationToken)"/> invokes
+        /// the underlying driver.
         /// </summary>
         /// <returns>
         /// A <see cref="Task"/> representing the asynchronous unit test.
         /// </returns>
         [Fact]
-        public async Task NewSessionAsync_ReturnsError_Async()
+        public async Task NewSessionAsync_InvokesDriver_Async()
         {
-            var controller = new WebDriverController(NullLogger<WebDriverController>.Instance);
-            var result = await controller.NewSessionAsync(null, default).ConfigureAwait(false);
-            Assert.Equal(500, result.StatusCode);
+            var request = new NewSessionRequest();
+            var response = new WebDriverResponse();
 
-            var response = Assert.IsType<WebDriverResponse>(result.Value);
-            var error = Assert.IsType<WebDriverError>(response.Value);
-            Assert.Equal("session not created", error.Error);
+            var webDriver = new Mock<KubernetesWebDriver>(MockBehavior.Strict);
+            webDriver
+                .Setup(w => w.CreateSessionAsync(request, default))
+                .ReturnsAsync(response);
+
+            var controller = new WebDriverController(webDriver.Object, NullLogger<WebDriverController>.Instance);
+            var result = await controller.NewSessionAsync(request, default).ConfigureAwait(false);
+
+            Assert.Same(response, result.Value);
         }
 
         /// <summary>
@@ -54,13 +61,18 @@ namespace Kaponata.Api.Tests
         [Fact]
         public async Task DeleteAsync_ReturnsError_Async()
         {
-            var controller = new WebDriverController(NullLogger<WebDriverController>.Instance);
-            var result = await controller.DeleteAsync(null, default).ConfigureAwait(false);
-            Assert.Equal(404, result.StatusCode);
+            const string sessionId = "session-id";
+            var response = new WebDriverResponse();
 
-            var response = Assert.IsType<WebDriverResponse>(result.Value);
-            var error = Assert.IsType<WebDriverError>(response.Value);
-            Assert.Equal("invalid session id", error.Error);
+            var webDriver = new Mock<KubernetesWebDriver>(MockBehavior.Strict);
+            webDriver
+                .Setup(w => w.DeleteSessionAsync(sessionId, default))
+                .ReturnsAsync(response);
+
+            var controller = new WebDriverController(webDriver.Object, NullLogger<WebDriverController>.Instance);
+            var result = await controller.DeleteAsync(sessionId, default).ConfigureAwait(false);
+
+            Assert.Same(response, result.Value);
         }
 
         /// <summary>
@@ -73,7 +85,7 @@ namespace Kaponata.Api.Tests
         [Fact]
         public async Task StatusAsync_ReturnsValue_Async()
         {
-            var controller = new WebDriverController(NullLogger<WebDriverController>.Instance);
+            var controller = new WebDriverController(Mock.Of<KubernetesWebDriver>(), NullLogger<WebDriverController>.Instance);
             var result = await controller.StatusAsync(default).ConfigureAwait(false);
             Assert.Equal(200, result.StatusCode);
 

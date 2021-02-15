@@ -56,6 +56,18 @@ namespace Kaponata.Api
         }
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="KubernetesWebDriver"/> class.
+        /// </summary>
+        /// <remarks>
+        /// Intended for mocking/unit testing purposes only.
+        /// </remarks>
+#nullable disable
+        protected KubernetesWebDriver()
+#nullable enable
+        {
+        }
+
+        /// <summary>
         /// Gets or sets the amount of time to wait for a session to be fully provisioned,
         /// before the operation times out.
         /// </summary>
@@ -74,7 +86,7 @@ namespace Kaponata.Api
         /// A <see cref="Task"/> which represents the asynchronous operation, and returns a <see cref="WebDriverResponse"/>
         /// which represents the result of the operation.
         /// </returns>
-        public async Task<WebDriverResponse> CreateSessionAsync(NewSessionRequest request, CancellationToken cancellationToken)
+        public virtual async Task<WebDriverResponse> CreateSessionAsync(NewSessionRequest request, CancellationToken cancellationToken)
         {
             if (request?.Capabilities?.AlwaysMatch == null)
             {
@@ -197,7 +209,7 @@ namespace Kaponata.Api
         /// <returns>
         /// A <see cref="Task"/> which represents the asynchronous operation.
         /// </returns>
-        public async Task<WebDriverResponse> DeleteSessionAsync(string sessionId, CancellationToken cancellationToken)
+        public virtual async Task<WebDriverResponse> DeleteSessionAsync(string sessionId, CancellationToken cancellationToken)
         {
             // Find session by label
             var session = await this.sessionClient.TryReadAsync(
