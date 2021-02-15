@@ -7,6 +7,7 @@ using k8s.Models;
 using Kaponata.Kubernetes.Models;
 using Kaponata.Kubernetes.Polyfill;
 using Microsoft.AspNetCore.JsonPatch;
+using Microsoft.Extensions.Logging;
 using Microsoft.Rest;
 using System;
 using System.Collections.Generic;
@@ -26,6 +27,7 @@ namespace Kaponata.Kubernetes
         where T : class, IKubernetesObject<V1ObjectMeta>, new()
     {
         private readonly KubernetesClient parent;
+        private readonly ILogger<NamespacedKubernetesClient<T>> logger;
         private readonly KindMetadata metadata;
 
         /// <summary>
@@ -38,10 +40,14 @@ namespace Kaponata.Kubernetes
         /// Metadata on the current Kubernetes type, used to constructor the URLs used to access
         /// the object in the Kubernetes API.
         /// </param>
-        public NamespacedKubernetesClient(KubernetesClient parent, KindMetadata metadata)
+        /// <param name="logger">
+        /// The logger to use when logging.
+        /// </param>
+        public NamespacedKubernetesClient(KubernetesClient parent, KindMetadata metadata, ILogger<NamespacedKubernetesClient<T>> logger)
         {
             this.parent = parent ?? throw new ArgumentNullException(nameof(parent));
             this.metadata = metadata ?? throw new ArgumentNullException(nameof(metadata));
+            this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
 #nullable disable
@@ -333,20 +339,51 @@ namespace Kaponata.Kubernetes
         /// return value describes why the watcher stopped. The task errors if the watch
         /// loop errors.
         /// </returns>
-        public virtual Task<WatchExitReason> WatchAsync(
+        public virtual async Task<WatchExitReason> WatchAsync(
             string fieldSelector,
             string labelSelector,
             string resourceVersion,
             WatchEventDelegate<T> eventHandler,
             CancellationToken cancellationToken)
         {
-            return this.parent.WatchNamespacedObjectAsync<T, ItemList<T>>(
-                fieldSelector,
-                labelSelector,
-                resourceVersion,
-                this.ListAsync,
-                eventHandler,
-                cancellationToken);
+            try
+            {
+                var currentResourceVersion = resourceVersion;
+
+                WatchEventDelegate<T> innerHandler = (eventType, value) =>
+                {
+                    this.logger.LogInformation("Got a {eventType} event when watching objects of type {kind}. Increasing resourceVersion to {resourceVersion}", eventType, this.metadata.Plural, currentResourceVersion);
+                    currentResourceVersion = value.Metadata?.ResourceVersion ?? currentResourceVersion;
+
+                    if (eventType == WatchEventType.Bookmark)
+                    {
+                        return Task.FromResult(WatchResult.Continue);
+                    }
+                    else
+                    {
+                        return eventHandler(eventType, value);
+                    }
+                };
+
+                while (await this.parent.WatchNamespacedObjectAsync<T, ItemList<T>>(
+                    fieldSelector,
+                    labelSelector,
+                    currentResourceVersion,
+                    this.ListAsync,
+                    innerHandler,
+                    cancellationToken).ConfigureAwait(false) != WatchExitReason.ClientDisconnected)
+                {
+                    this.logger.LogInformation("The server disconnected while watching objects of type {kind}. Currently at resourceVersion {resourceVersion}, reconnecting.", this.metadata.Plural, currentResourceVersion);
+                }
+
+                this.logger.LogInformation("The client disconnected while watching objects of type {kind}. Currently at resourceVersion {resourceVersion}, reconnecting.", this.metadata.Plural, currentResourceVersion);
+                return WatchExitReason.ClientDisconnected;
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError(ex, "Got an exception when watching objects of type {kind}. {message}", this.metadata.Plural, ex.Message);
+                throw;
+            }
         }
 
         /// <summary>

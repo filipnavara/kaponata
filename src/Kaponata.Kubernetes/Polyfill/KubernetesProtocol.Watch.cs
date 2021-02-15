@@ -118,6 +118,7 @@ namespace Kaponata.Kubernetes.Polyfill
 
             using (var response = await listOperation(
                 namespaceParameter: @namespace,
+                allowWatchBookmarks: true,
                 fieldSelector: fieldSelector,
                 labelSelector: labelSelector,
                 resourceVersion: resourceVersion,
