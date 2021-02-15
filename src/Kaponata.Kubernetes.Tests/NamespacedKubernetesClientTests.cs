@@ -921,7 +921,7 @@ namespace Kaponata.Kubernetes.Tests
         public async Task TryReadAsync_ItemExists_Works_Async()
         {
             var kubernetes = new Mock<KubernetesClient>(MockBehavior.Strict);
-            var metadata = new KindMetadata(V1Pod.KubeGroup, V1Pod.KubeApiVersion, V1Pod.KubeKind, "pods");
+            var metadata = new KindMetadata("core", V1Pod.KubeApiVersion, V1Pod.KubeKind, "pods");
 
             V1Pod pod = new V1Pod();
             var pods = new ItemList<V1Pod>()
@@ -944,6 +944,12 @@ namespace Kaponata.Kubernetes.Tests
             var value = await client.TryReadAsync("name", null, default).ConfigureAwait(false);
 
             Assert.Same(pod, value);
+
+            // Additionally, calling TryReadAsync also populates the "ApiGroup" and "Kind" properties on the
+            // individual items. This acts as a workaround for https://github.com/kubernetes/kubernetes/issues/80609
+            // https://github.com/kubernetes/kubernetes/issues/3030 and https://github.com/kubernetes/kubernetes/pull/80618
+            Assert.Equal("core/v1", value.ApiVersion);
+            Assert.Equal(V1Pod.KubeKind, value.Kind);
         }
 
         /// <summary>

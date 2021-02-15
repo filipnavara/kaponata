@@ -193,7 +193,24 @@ namespace Kaponata.Kubernetes
             }
 
             var list = await this.parent.RunTaskAsync(this.ListAsync(fieldSelector: $"metadata.name={name}", labelSelector: labelSelector, cancellationToken: cancellationToken)).ConfigureAwait(false);
-            return list.Items?.SingleOrDefault();
+            var value = list.Items?.SingleOrDefault();
+
+            if (value == null)
+            {
+                return null;
+            }
+
+            if (value.Kind == null)
+            {
+                value.Kind = this.metadata.Kind;
+            }
+
+            if (value.ApiVersion == null)
+            {
+                value.ApiVersion = this.metadata.ApiVersion;
+            }
+
+            return value;
         }
 
         /// <summary>
