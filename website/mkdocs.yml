@@ -35,4 +35,6 @@ nav:
     - Class Library:
       - class/index.md
       - Kaponata.Android: class/Kaponata.Android/
+      - Kaponata.Kubernetes: class/Kaponata.Kubernetes/
+      - Kaponata.Multimedia: class/Kaponata.Multimedia/
       - Kaponata.iOS: class/Kaponata.iOS/

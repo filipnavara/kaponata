@@ -26,6 +26,8 @@ jobs:
         dotnet publish -c Release
 
         xmldocmd ./Kaponata.Android/bin/Release/net5.0/publish/Kaponata.Android.dll ../website/docs/class/
+        xmldocmd ./Kaponata.Kubernetes/bin/Release/net5.0/publish/Kaponata.Kubernetes.dll ../website/docs/class/
+        xmldocmd ./Kaponata.Multimedia/bin/Release/net5.0/publish/Kaponata.Multimedia.dll ../website/docs/class/
         xmldocmd ./Kaponata.iOS/bin/Release/net5.0/publish/Kaponata.iOS.dll ../website/docs/class/
       working-directory: src/
 
