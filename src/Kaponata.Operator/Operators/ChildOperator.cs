@@ -353,15 +353,7 @@ namespace Kaponata.Operator.Operators
                             NamespaceProperty = context.Parent.Metadata.NamespaceProperty,
                             OwnerReferences = new V1OwnerReference[]
                             {
-                                new V1OwnerReference()
-                                {
-                                    Kind = context.Parent.Kind,
-                                    ApiVersion = context.Parent.ApiVersion,
-                                    BlockOwnerDeletion = false,
-                                    Controller = false,
-                                    Name = context.Parent.Metadata.Name,
-                                    Uid = context.Parent.Metadata.Uid,
-                                },
+                                context.Parent.AsOwnerReference(blockOwnerDeletion: false, controller: false),
                             },
                         },
                     };
