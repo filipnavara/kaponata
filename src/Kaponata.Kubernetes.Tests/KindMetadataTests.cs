@@ -18,9 +18,10 @@ namespace Kaponata.Kubernetes.Tests
         /// </summary>
         public void Constructor_ValidatesArguments()
         {
-            Assert.Throws<ArgumentNullException>("group", () => new KindMetadata("group", "version", "plural"));
-            Assert.Throws<ArgumentNullException>("version", () => new KindMetadata("group", null, "plural"));
-            Assert.Throws<ArgumentNullException>("plural", () => new KindMetadata("group", "version", null));
+            Assert.Throws<ArgumentNullException>("group", () => new KindMetadata("group", "version", "kind", "plural"));
+            Assert.Throws<ArgumentNullException>("version", () => new KindMetadata("group", null, "kind", "plural"));
+            Assert.Throws<ArgumentNullException>("kind", () => new KindMetadata("group", "version", null, "plural"));
+            Assert.Throws<ArgumentNullException>("plural", () => new KindMetadata("group", "version", "kind", null));
         }
 
         /// <summary>
@@ -28,10 +29,13 @@ namespace Kaponata.Kubernetes.Tests
         /// </summary>
         public void Constructor_SetsProperties()
         {
-            var meta = new KindMetadata("group", "version", "plural");
+            var meta = new KindMetadata("group", "version", "kind", "plural");
             Assert.Equal("group", meta.Group);
             Assert.Equal("version", meta.Version);
+            Assert.Equal("kind", meta.Kind);
             Assert.Equal("plural", meta.Plural);
+
+            Assert.Equal("group/version", meta.ApiVersion);
         }
     }
 }
