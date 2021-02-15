@@ -130,15 +130,20 @@ jobs:
           yq e '.api.image.tag="${{ steps.nbgv.outputs.SemVer2 }}"' -i values.yaml
 
           helm lint .
-          helm package . -d ${{ github.workspace }}/bin
+          helm package . -d ${{ github.workspace }}/bin/charts
+        working-directory: src/chart
+
+      - name: Update Helm repository
+        run: |
+          helm repo index ${{ github.workspace }}/bin/charts/ --url https://ci.kaponata.io/
         working-directory: src/chart
 
       - name: Upload Helm chart
         uses: actions/upload-artifact@v2
         with:
-          name: chart
+          name: charts
           path: |
-            ${{ github.workspace }}/bin/
+            ${{ github.workspace }}/bin/charts/
 
       - name: Create k3d cluster
         run: |
@@ -171,7 +176,7 @@ jobs:
           --set api.imagePullPolicy=Never
           --wait
           kaponata
-          ${{ github.workspace }}/bin/kaponata-${{ steps.nbgv.outputs.SemVer2 }}.tgz || kubectl get pods
+          ${{ github.workspace }}/bin/charts/kaponata-${{ steps.nbgv.outputs.SemVer2 }}.tgz || kubectl get pods
       
       - name: Redroid - Install the Android kernel modules
         run: |
@@ -245,3 +250,12 @@ jobs:
         if: github.ref == 'refs/heads/main'
         run: make push
         working-directory: src/Kaponata.Api/
+
+      - name: Publish chart CI website
+        if: github.ref == 'refs/heads/main'
+        uses: bacongobbler/azure-blob-storage-upload@v1.1.1
+        with:
+          source_dir: ${{ github.workspace }}/bin/charts/
+          container_name: '$web'
+          connection_string: ${{ secrets.CiStorageConnectionString }}
+          sync: false
