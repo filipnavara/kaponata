@@ -144,6 +144,16 @@ namespace Kaponata.Operator.Operators
         public Task InitializationCompleted => this.initializationCompletedTcs.Task;
 
         /// <summary>
+        /// Gets a value indicating whether the operator is currently running.
+        /// </summary>
+        public bool IsRunning { get; private set; }
+
+        /// <summary>
+        /// Gets a <see cref="Task"/> which will complete when the operator has completed running.
+        /// </summary>
+        public Task WaitForCompletion { get; private set; }
+
+        /// <summary>
         /// Runs the initial reconcilation loop. Lists all parents and schedules the initial reconcilation for
         /// these objects.
         /// </summary>
@@ -201,6 +211,7 @@ namespace Kaponata.Operator.Operators
             {
                 this.logger.LogError(ex, "Caught error {errorMessage} while scheduling initializing operator {operator}", ex.Message, this.configuration.OperatorName);
                 this.initializationCompletedTcs.TrySetException(ex);
+                throw;
             }
         }
 
@@ -403,6 +414,11 @@ namespace Kaponata.Operator.Operators
         /// <inheritdoc/>
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
+            var tcs = new TaskCompletionSource();
+            this.WaitForCompletion = tcs.Task;
+
+            this.IsRunning = true;
+
             // Watch child objects
             var sourceWatch = this.parentClient.WatchAsync(
                 fieldSelector: null,
@@ -450,6 +466,20 @@ namespace Kaponata.Operator.Operators
                 sourceWatch,
                 targetWatch,
                 reconcilerTask).ConfigureAwait(false);
+
+            // If the watch tasks exited prematurely and we did not yet request cancellation of the
+            // reconciliation task, do so now, and allow for the task to gracefully complete.
+            if (!reconcilerTask.IsCompleted && !reconciliationCts.IsCancellationRequested)
+            {
+                this.reconciliationBuffer.Post(null);
+                this.reconciliationBuffer.Complete();
+                reconciliationCts.CancelAfter(TimeSpan.FromSeconds(5));
+
+                await reconcilerTask.ConfigureAwait(false);
+            }
+
+            this.IsRunning = false;
+            tcs.SetResult();
         }
     }
 }

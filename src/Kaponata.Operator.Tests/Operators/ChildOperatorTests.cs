@@ -511,7 +511,7 @@ namespace Kaponata.Operator.Tests.Operators
                 this.feedbackLoops,
                 this.logger))
             {
-                await @operator.InitializeAsync(default).ConfigureAwait(false);
+                await Assert.ThrowsAsync<NotSupportedException>(() => @operator.InitializeAsync(default)).ConfigureAwait(false);
 
                 await Assert.ThrowsAsync<NotSupportedException>(() => @operator.InitializationCompleted).ConfigureAwait(false);
             }
