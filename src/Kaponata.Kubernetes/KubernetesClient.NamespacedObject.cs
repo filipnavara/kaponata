@@ -12,6 +12,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Net;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -206,8 +207,11 @@ namespace Kaponata.Kubernetes
             where TList : IItems<TObject>
             where TObject : IKubernetesObject<V1ObjectMeta>
         {
-            Debug.Assert(allowWatchBookmarks == null, "Not supported by the generic Kubernetes API");
+#if DEBUG
+            var kubernetesClientVersion = typeof(k8s.Kubernetes).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>();
+            Debug.Assert((kubernetesClientVersion != null && kubernetesClientVersion.InformationalVersion == "4.0.10+6acdac256d") || allowWatchBookmarks == null, "Not supported by the generic Kubernetes API");
             Debug.Assert(resourceVersionMatch == null, "Not supported by the generic Kubernetes API");
+#endif
 
             var operationResponse = await this.RunTaskAsync(this.protocol.ListNamespacedCustomObjectWithHttpMessagesAsync(
                 kind.Group,
