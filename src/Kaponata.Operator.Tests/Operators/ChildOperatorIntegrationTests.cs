@@ -10,6 +10,7 @@ using Kaponata.Operator.Operators;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -168,6 +169,9 @@ namespace Kaponata.Operator.Tests.Operators
                 await Task.WhenAny(podCreated.Task, Task.Delay(TimeSpan.FromMinutes(1))).ConfigureAwait(false);
                 Assert.True(podCreated.Task.IsCompleted, "Failed to create the pod within a timespan of 1 minute");
                 var createdPod = await podCreated.Task.ConfigureAwait(false);
+                var ownerReference = Assert.Single(createdPod.Metadata.OwnerReferences);
+                logger.LogInformation($"Created pod: {JsonConvert.SerializeObject(createdPod)}");
+                logger.LogInformation($"Owner reference: {JsonConvert.SerializeObject(ownerReference)}");
                 Assert.Equal($"{name}-fake", createdPod.Metadata.Name);
 
                 // Deleting the sessions should result in the associated pod being deleted, too.

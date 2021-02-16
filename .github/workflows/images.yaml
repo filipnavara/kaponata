@@ -9,6 +9,7 @@ on:
     - src/usbmuxd/**
     - src/adb/**
     - src/fake-driver/**
+    - src/appium/**
 
 jobs:
   build:
@@ -20,6 +21,7 @@ jobs:
         - usbmuxd
         - adb
         - fake-driver
+        - appium
 
     steps:
       - uses: actions/checkout@v2
