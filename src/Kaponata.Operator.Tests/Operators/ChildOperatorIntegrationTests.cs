@@ -44,7 +44,7 @@ namespace Kaponata.Operator.Tests.Operators
                     services.AddLogging(
                         (loggingBuilder) =>
                         {
-                            loggingBuilder.AddXunit(output);
+                            loggingBuilder.AddXunit(output, LogConfig.Default);
                         });
                 });
 
