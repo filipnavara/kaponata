@@ -3,17 +3,17 @@
 // </copyright>
 
 using System;
-using AVMediaType = FFmpeg.AutoGen.AVMediaType;
 using NativeAVFormatContext = FFmpeg.AutoGen.AVFormatContext;
+using NativeAVMediaType = FFmpeg.AutoGen.AVMediaType;
 
-namespace Kaponata.Multimedia.FFMpeg
+namespace Kaponata.Multimedia.FFmpeg
 {
     /// <summary>
     /// A context which enables I/O for a given video or audio file format.
     /// </summary>
     public unsafe class AVFormatContext : IDisposable
     {
-        private readonly FFMpegClient client;
+        private readonly FFmpegClient client;
         private AVIOContext? context;
         private AVFormatContextHandle handle;
 
@@ -21,13 +21,13 @@ namespace Kaponata.Multimedia.FFMpeg
         /// Initializes a new instance of the <see cref="AVFormatContext"/> class.
         /// </summary>
         /// <param name="client">
-        /// An implementation of the <see cref="FFMpegClient"/> which provides access to the native FFmpeg
+        /// An implementation of the <see cref="FFmpegClient"/> which provides access to the native FFmpeg
         /// functions.
         /// </param>
         /// <param name="handle">
         /// A handle to the unmanaged AV format context.
         /// </param>
-        public AVFormatContext(FFMpegClient client, AVFormatContextHandle handle)
+        public AVFormatContext(FFmpegClient client, AVFormatContextHandle handle)
         {
             this.handle = handle;
             this.client = client;
@@ -89,7 +89,7 @@ namespace Kaponata.Multimedia.FFMpeg
         /// <returns>
         /// The media type for the requested stream.
         /// </returns>
-        public FFmpeg.AutoGen.AVMediaType GetStreamCodecType(int index)
+        public NativeAVMediaType GetStreamCodecType(int index)
         {
             if (index < 0 || index >= this.StreamCount)
             {

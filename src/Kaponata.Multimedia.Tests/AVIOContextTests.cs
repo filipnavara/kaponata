@@ -2,7 +2,7 @@
 // Copyright (c) Quamotion bv. All rights reserved.
 // </copyright>
 
-using Kaponata.Multimedia.FFMpeg;
+using Kaponata.Multimedia.FFmpeg;
 using Moq;
 using System;
 using System.Runtime.InteropServices;
@@ -21,16 +21,16 @@ namespace Kaponata.Multimedia.Tests
         /// </summary>
         public AVIOContextTests()
         {
-            FFMpegClient.Initialize();
+            FFmpegClient.Initialize();
         }
 
         /// <summary>
-        /// The <see cref="AVIOContext.AVIOContext(FFMpegClient, AVIOContextHandle)"/> initializes the instance.
+        /// The <see cref="AVIOContext.AVIOContext(FFmpegClient, AVIOContextHandle)"/> initializes the instance.
         /// </summary>
         [Fact]
         public void Constructor_InitializesInstance()
         {
-            var ffmpegMock = new Mock<FFMpegClient>();
+            var ffmpegMock = new Mock<FFmpegClient>();
 
             var bytes = new byte[] { (byte)'t', (byte)'e', (byte)'s', (byte)'t' };
 

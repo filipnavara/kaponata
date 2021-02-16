@@ -2,10 +2,11 @@
 // Copyright (c) Quamotion bv. All rights reserved.
 // </copyright>
 
-using Kaponata.Multimedia.FFMpeg;
+using Kaponata.Multimedia.FFmpeg;
 using System;
 using Xunit;
 using NativeAVDictionary = FFmpeg.AutoGen.AVDictionary;
+using NativeFFmpeg = FFmpeg.AutoGen.ffmpeg;
 
 namespace Kaponata.Multimedia.Tests
 {
@@ -19,7 +20,7 @@ namespace Kaponata.Multimedia.Tests
         /// </summary>
         public AVDictionaryHelpersTests()
         {
-            FFMpegClient.Initialize();
+            FFmpegClient.Initialize();
         }
 
         /// <summary>
@@ -33,7 +34,7 @@ namespace Kaponata.Multimedia.Tests
             };
             var ptr = (NativeAVDictionary**)new IntPtr(&nativeDictionary);
 
-            FFmpeg.AutoGen.ffmpeg.av_dict_set(ptr, "foo", "bar", 0);
+            NativeFFmpeg.av_dict_set(ptr, "foo", "bar", 0);
             var dict = AVDictionaryHelpers.ToReadOnlyDictionary(*ptr);
             var entry = Assert.Single(dict);
             Assert.Equal("foo", entry.Key);

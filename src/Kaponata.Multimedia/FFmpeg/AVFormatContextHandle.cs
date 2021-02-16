@@ -6,14 +6,14 @@ using System;
 using System.Runtime.InteropServices;
 using NativeAVFormatContext = FFmpeg.AutoGen.AVFormatContext;
 
-namespace Kaponata.Multimedia.FFMpeg
+namespace Kaponata.Multimedia.FFmpeg
 {
     /// <summary>
     /// A wrapper around a handle (pointer) to an <see cref="NativeAVFormatContext"/>.
     /// </summary>
     public class AVFormatContextHandle : SafeHandle
     {
-        private readonly FFMpegClient ffmpeg;
+        private readonly FFmpegClient ffmpeg;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AVFormatContextHandle"/> class.
@@ -24,7 +24,7 @@ namespace Kaponata.Multimedia.FFMpeg
         /// <param name="context">
         /// The handle to be wrapped.
         /// </param>
-        public unsafe AVFormatContextHandle(FFMpegClient ffmpeg, NativeAVFormatContext* context)
+        public unsafe AVFormatContextHandle(FFmpegClient ffmpeg, NativeAVFormatContext* context)
         : base((IntPtr)context, true)
         {
             this.ffmpeg = ffmpeg;

@@ -6,7 +6,7 @@ using FFmpeg.AutoGen;
 using NativeAVCodecDescriptor = FFmpeg.AutoGen.AVCodecDescriptor;
 using NativeAVMediaType = FFmpeg.AutoGen.AVMediaType;
 
-namespace Kaponata.Multimedia.FFMpeg
+namespace Kaponata.Multimedia.FFmpeg
 {
     /// <summary>
     /// Describes an instance of an audio or video codec.

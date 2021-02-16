@@ -7,7 +7,7 @@ using System;
 using AVCodecID = FFmpeg.AutoGen.AVCodecID;
 using NativeAVCodec = FFmpeg.AutoGen.AVCodec;
 
-namespace Kaponata.Multimedia.FFMpeg
+namespace Kaponata.Multimedia.FFmpeg
 {
     /// <summary>
     /// Represents a coder or decoder which can encode or decode audio and video files.

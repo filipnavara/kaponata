@@ -6,7 +6,7 @@ using System;
 using System.Runtime.InteropServices;
 using NativeAVIOContext = FFmpeg.AutoGen.AVIOContext;
 
-namespace Kaponata.Multimedia.FFMpeg
+namespace Kaponata.Multimedia.FFmpeg
 {
     /// <summary>
     /// A wrapper around a handle (pointer) to an <see cref="NativeAVIOContext"/>.
@@ -14,19 +14,19 @@ namespace Kaponata.Multimedia.FFMpeg
     /// <seealso href="https://ffmpeg.org/doxygen/2.3/structAVIOContext.html"/>
     public class AVIOContextHandle : SafeHandle
     {
-        private readonly FFMpegClient ffmpeg;
+        private readonly FFmpegClient ffmpeg;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AVIOContextHandle"/> class.
         /// </summary>
         /// <param name="ffmpeg">
-        /// An implementation of the <see cref="FFMpegClient"/> interface, which allows releasing
+        /// An implementation of the <see cref="FFmpegClient"/> interface, which allows releasing
         /// the handle.
         /// </param>
         /// <param name="context">
         /// The handle to be wrapped.
         /// </param>
-        public unsafe AVIOContextHandle(FFMpegClient ffmpeg, NativeAVIOContext* context)
+        public unsafe AVIOContextHandle(FFmpegClient ffmpeg, NativeAVIOContext* context)
             : this(ffmpeg, context, true)
         {
         }
@@ -35,7 +35,7 @@ namespace Kaponata.Multimedia.FFMpeg
         /// Initializes a new instance of the <see cref="AVIOContextHandle"/> class.
         /// </summary>
         /// <param name="ffmpeg">
-        /// An implementation of the <see cref="FFMpegClient"/> interface, which allows releasing
+        /// An implementation of the <see cref="FFmpegClient"/> interface, which allows releasing
         /// the handle.
         /// </param>
         /// <param name="context">
@@ -45,7 +45,7 @@ namespace Kaponata.Multimedia.FFMpeg
         /// <see langword="true"/> to reliably let <see cref="AVIOContextHandle"/> release the handle
         /// during the finalization phase; otherwise, <see langword="false "/> (not recommended).
         /// </param>
-        public unsafe AVIOContextHandle(FFMpegClient ffmpeg, NativeAVIOContext* context, bool ownsHandle)
+        public unsafe AVIOContextHandle(FFmpegClient ffmpeg, NativeAVIOContext* context, bool ownsHandle)
             : base((IntPtr)context, ownsHandle)
         {
             this.ffmpeg = ffmpeg;

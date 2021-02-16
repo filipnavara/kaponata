@@ -2,7 +2,7 @@
 // Copyright (c) Quamotion bv. All rights reserved.
 // </copyright>
 
-using Kaponata.Multimedia.FFMpeg;
+using Kaponata.Multimedia.FFmpeg;
 using Xunit;
 using NativeAVRational = FFmpeg.AutoGen.AVRational;
 
@@ -18,7 +18,7 @@ namespace Kaponata.Multimedia.Tests
         /// </summary>
         public AVRationalTests()
         {
-            FFMpegClient.Initialize();
+            FFmpegClient.Initialize();
         }
 
         /// <summary>

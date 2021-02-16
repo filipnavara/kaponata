@@ -5,20 +5,20 @@
 using System;
 using System.Runtime.InteropServices;
 
-namespace Kaponata.Multimedia.FFMpeg
+namespace Kaponata.Multimedia.FFmpeg
 {
     /// <summary>
     /// A wrapper around a handle (pointer) to a general-purpose memory allocated by FFmpeg.
     /// </summary>
     public class AVMemoryHandle : SafeHandle
     {
-        private readonly FFMpegClient ffmpeg;
+        private readonly FFmpegClient ffmpeg;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AVMemoryHandle"/> class.
         /// </summary>
         /// <param name="ffmpeg">
-        /// An implementation of the <see cref="FFMpegClient"/> interface, which allows releasing
+        /// An implementation of the <see cref="FFmpegClient"/> interface, which allows releasing
         /// the handle.
         /// </param>
         /// <param name="context">
@@ -28,7 +28,7 @@ namespace Kaponata.Multimedia.FFMpeg
         /// <see langword="true"/> to reliably let <see cref="AVMemoryHandle"/> release the handle
         /// during the finalization phase; otherwise, <see langword="false "/> (not recommended).
         /// </param>
-        public unsafe AVMemoryHandle(FFMpegClient ffmpeg, void* context, bool ownsHandle)
+        public unsafe AVMemoryHandle(FFmpegClient ffmpeg, void* context, bool ownsHandle)
             : base((IntPtr)context, ownsHandle)
         {
             this.ffmpeg = ffmpeg;

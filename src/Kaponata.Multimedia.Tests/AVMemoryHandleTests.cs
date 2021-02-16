@@ -2,7 +2,7 @@
 // Copyright (c) Quamotion bv. All rights reserved.
 // </copyright>
 
-using Kaponata.Multimedia.FFMpeg;
+using Kaponata.Multimedia.FFmpeg;
 using Moq;
 using System.Runtime.InteropServices;
 using Xunit;
@@ -19,16 +19,16 @@ namespace Kaponata.Multimedia.Tests
         /// </summary>
         public AVMemoryHandleTests()
         {
-            FFMpegClient.Initialize();
+            FFmpegClient.Initialize();
         }
 
         /// <summary>
-        /// The <see cref="AVMemoryHandle.AVMemoryHandle(FFMpegClient, void*, bool)"/> initializes the instance.
+        /// The <see cref="AVMemoryHandle.AVMemoryHandle(FFmpegClient, void*, bool)"/> initializes the instance.
         /// </summary>
         [Fact]
         public void Constuctor_InitializesInstance()
         {
-            var ffmpegMock = new Mock<FFMpegClient>();
+            var ffmpegMock = new Mock<FFmpegClient>();
 
             var test = 0;
             ffmpegMock

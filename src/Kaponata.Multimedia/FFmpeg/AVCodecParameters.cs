@@ -5,7 +5,7 @@
 using NativeAVCodecParameters = FFmpeg.AutoGen.AVCodecParameters;
 using NativeAVMediaType = FFmpeg.AutoGen.AVMediaType;
 
-namespace Kaponata.Multimedia.FFMpeg
+namespace Kaponata.Multimedia.FFmpeg
 {
     /// <summary>
     /// This struct describes the properties of an encoded stream.

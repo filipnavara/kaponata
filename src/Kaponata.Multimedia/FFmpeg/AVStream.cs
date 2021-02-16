@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using NativeAVRational = FFmpeg.AutoGen.AVRational;
 using NativeAVStream = FFmpeg.AutoGen.AVStream;
 
-namespace Kaponata.Multimedia.FFMpeg
+namespace Kaponata.Multimedia.FFmpeg
 {
     /// <summary>
     /// Represents a stream of data.

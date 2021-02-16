@@ -2,7 +2,7 @@
 // Copyright (c) Quamotion bv. All rights reserved.
 // </copyright>
 
-using Kaponata.Multimedia.FFMpeg;
+using Kaponata.Multimedia.FFmpeg;
 using System.Linq;
 using Xunit;
 using AVCodecID = FFmpeg.AutoGen.AVCodecID;
@@ -21,7 +21,7 @@ namespace Kaponata.Multimedia.Tests
         /// </summary>
         public AVCodecDescriptorTests()
         {
-            FFMpegClient.Initialize();
+            FFmpegClient.Initialize();
         }
 
         /// <summary>
@@ -30,7 +30,7 @@ namespace Kaponata.Multimedia.Tests
         [Fact]
         public void TestCodecProperties()
         {
-            var ffmpeg = new FFMpegClient();
+            var ffmpeg = new FFmpegClient();
 
             var codecs = ffmpeg.GetAvailableCodecDescriptors();
             var descriptor = codecs.Single(c => c.Id == AVCodecID.AV_CODEC_ID_012V);

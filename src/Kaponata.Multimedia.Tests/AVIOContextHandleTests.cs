@@ -2,7 +2,7 @@
 // Copyright (c) Quamotion bv. All rights reserved.
 // </copyright>
 
-using Kaponata.Multimedia.FFMpeg;
+using Kaponata.Multimedia.FFmpeg;
 using Moq;
 using System.Runtime.InteropServices;
 using Xunit;
@@ -20,16 +20,16 @@ namespace Kaponata.Multimedia.Tests
         /// </summary>
         public AVIOContextHandleTests()
         {
-            FFMpegClient.Initialize();
+            FFmpegClient.Initialize();
         }
 
         /// <summary>
-        /// The <see cref="AVIOContextHandle.AVIOContextHandle(FFMpegClient, NativeAVIOContext*, bool)"/> initializes the instance.
+        /// The <see cref="AVIOContextHandle.AVIOContextHandle(FFmpegClient, NativeAVIOContext*, bool)"/> initializes the instance.
         /// </summary>
         [Fact]
         public void ConstuctorOwnsHandle_InitializesInstance()
         {
-            var ffmpegMock = new Mock<FFMpegClient>();
+            var ffmpegMock = new Mock<FFmpegClient>();
 
             var nativeIOContext = new NativeAVIOContext
             {
@@ -49,12 +49,12 @@ namespace Kaponata.Multimedia.Tests
         }
 
         /// <summary>
-        /// The <see cref="AVIOContextHandle.AVIOContextHandle(FFMpegClient, FFmpeg.AutoGen.AVIOContext*)"/> initializes the instance.
+        /// The <see cref="AVIOContextHandle.AVIOContextHandle(FFmpegClient, NativeAVIOContext*)"/> initializes the instance.
         /// </summary>
         [Fact]
         public void Constuctor_InitializesInstance()
         {
-            var ffmpegMock = new Mock<FFMpegClient>();
+            var ffmpegMock = new Mock<FFmpegClient>();
 
             var nativeIOContext = new NativeAVIOContext
             {

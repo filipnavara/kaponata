@@ -5,7 +5,7 @@
 using System;
 using NativeAVIOContext = FFmpeg.AutoGen.AVIOContext;
 
-namespace Kaponata.Multimedia.FFMpeg
+namespace Kaponata.Multimedia.FFmpeg
 {
     /// <summary>
     /// Enables FFmpeg to consume custom I/O.
@@ -14,21 +14,21 @@ namespace Kaponata.Multimedia.FFMpeg
     public unsafe class AVIOContext : IDisposable
     {
         private readonly AVIOContextHandle handle;
-        private readonly FFMpegClient ffmpeg;
+        private readonly FFmpegClient ffmpeg;
         private AVMemoryHandle? buffer;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AVIOContext"/> class.
         /// </summary>
         /// <param name="ffmpeg">
-        /// An implementation of the <see cref="FFMpegClient"/> interface which provides access to the
+        /// An implementation of the <see cref="FFmpegClient"/> interface which provides access to the
         /// native FFmpeg functions.
         /// </param>
         /// <param name="handle">
         /// A <see cref="AVIOContextHandle"/> which points to the native <see cref="NativeAVIOContext"/>
         /// object.
         /// </param>
-        public AVIOContext(FFMpegClient ffmpeg, AVIOContextHandle handle)
+        public AVIOContext(FFmpegClient ffmpeg, AVIOContextHandle handle)
         {
             this.ffmpeg = ffmpeg;
             this.handle = handle;

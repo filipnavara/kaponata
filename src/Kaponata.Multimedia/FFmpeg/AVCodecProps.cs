@@ -4,7 +4,7 @@
 
 using FFmpeg.AutoGen;
 
-namespace Kaponata.Multimedia.FFMpeg
+namespace Kaponata.Multimedia.FFmpeg
 {
     /// <summary>
     /// Defines additional properties of a codec.

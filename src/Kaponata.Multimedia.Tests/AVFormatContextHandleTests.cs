@@ -2,7 +2,7 @@
 // Copyright (c) Quamotion bv. All rights reserved.
 // </copyright>
 
-using Kaponata.Multimedia.FFMpeg;
+using Kaponata.Multimedia.FFmpeg;
 using Moq;
 using System;
 using Xunit;
@@ -16,12 +16,12 @@ namespace Kaponata.Multimedia.Tests
     public unsafe class AVFormatContextHandleTests
     {
         /// <summary>
-        /// The <see cref="AVFormatContextHandle.AVFormatContextHandle(FFMpegClient, FFmpeg.AutoGen.AVFormatContext*)"/> initializes the instance.
+        /// The <see cref="AVFormatContextHandle.AVFormatContextHandle(FFmpegClient, NativeAVFormatContext*)"/> initializes the instance.
         /// </summary>
         [Fact]
         public void Constuctor_InitializesInstance()
         {
-            var ffmpegMock = new Mock<FFMpegClient>();
+            var ffmpegMock = new Mock<FFmpegClient>();
 
             var nativeAVFormatContext = new NativeAVFormatContext
             {
