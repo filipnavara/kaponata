@@ -393,7 +393,7 @@ namespace Kaponata.Kubernetes
                     this.logger.LogInformation("The server disconnected while watching objects of type {kind}. Currently at resourceVersion {resourceVersion}, reconnecting.", this.metadata.Plural, currentResourceVersion);
                 }
 
-                this.logger.LogInformation("The client disconnected while watching objects of type {kind}. Currently at resourceVersion {resourceVersion}, reconnecting.", this.metadata.Plural, currentResourceVersion);
+                this.logger.LogInformation("The client disconnected while watching objects of type {kind}.", this.metadata.Plural, currentResourceVersion);
                 return WatchExitReason.ClientDisconnected;
             }
             catch (Exception ex)

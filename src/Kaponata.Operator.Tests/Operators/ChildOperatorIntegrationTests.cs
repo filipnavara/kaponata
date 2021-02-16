@@ -44,7 +44,7 @@ namespace Kaponata.Operator.Tests.Operators
                     services.AddLogging(
                         (loggingBuilder) =>
                         {
-                            loggingBuilder.AddXunit(output);
+                            loggingBuilder.AddXunit(output, LogConfig.Default);
                         });
                 });
 
@@ -75,6 +75,17 @@ namespace Kaponata.Operator.Tests.Operators
 
             var kubernetes = this.host.Services.GetRequiredService<KubernetesClient>();
             var podClient = kubernetes.GetClient<V1Pod>();
+
+            var sessionClient = kubernetes.GetClient<WebDriverSession>();
+            var logger = this.host.Services.GetRequiredService<ILoggerFactory>().CreateLogger(name);
+
+            // Delete all objects which may have been previously created by this test.
+            await Task.WhenAll(
+                sessionClient.TryDeleteAsync($"{name}-empty", TimeSpan.FromMinutes(1), default),
+                sessionClient.TryDeleteAsync($"{name}-fake", TimeSpan.FromMinutes(1), default),
+                podClient.TryDeleteAsync($"{name}-empty", TimeSpan.FromMinutes(1), default),
+                podClient.TryDeleteAsync($"{name}-fake", TimeSpan.FromMinutes(1), default)).ConfigureAwait(false);
+
             var podWatcher =
                 podClient.WatchAsync(
                     fieldSelector: null,
@@ -82,6 +93,7 @@ namespace Kaponata.Operator.Tests.Operators
                     null,
                     (eventType, pod) =>
                     {
+                        logger.LogInformation($"Got an added {eventType}  event for pod {pod}", eventType, pod.Metadata.Name);
                         switch (eventType)
                         {
                             case k8s.WatchEventType.Added:
@@ -96,15 +108,6 @@ namespace Kaponata.Operator.Tests.Operators
                         return Task.FromResult(WatchResult.Continue);
                     },
                     default);
-
-            var sessionClient = kubernetes.GetClient<WebDriverSession>();
-
-            // Delete all objects which may have been created by this test.
-            await Task.WhenAll(
-                sessionClient.TryDeleteAsync($"{name}-empty", TimeSpan.FromMinutes(1), default),
-                sessionClient.TryDeleteAsync($"{name}-fake", TimeSpan.FromMinutes(1), default),
-                podClient.TryDeleteAsync($"{name}-empty", TimeSpan.FromMinutes(1), default),
-                podClient.TryDeleteAsync($"{name}-fake", TimeSpan.FromMinutes(1), default)).ConfigureAwait(false);
 
             using (var @operator = new ChildOperator<WebDriverSession, V1Pod>(
                 kubernetes,
@@ -170,7 +173,7 @@ namespace Kaponata.Operator.Tests.Operators
                 // Deleting the sessions should result in the associated pod being deleted, too.
                 await sessionClient.DeleteAsync(emptySession, new V1DeleteOptions(propagationPolicy: "Foreground"), TimeSpan.FromMinutes(1), default).ConfigureAwait(false);
                 await sessionClient.DeleteAsync(fakeSession, new V1DeleteOptions(propagationPolicy: "Foreground"), TimeSpan.FromMinutes(1), default).ConfigureAwait(false);
-                await Task.WhenAny(podDeleted.Task, Task.Delay(TimeSpan.FromMinutes(1))).ConfigureAwait(false);
+                await Task.WhenAny(podWatcher, podDeleted.Task, Task.Delay(TimeSpan.FromMinutes(1))).ConfigureAwait(false);
                 Assert.True(podDeleted.Task.IsCompleted, "Failed to delete the pod within a timespan of 1 minute");
                 var deletedPod = await podDeleted.Task.ConfigureAwait(false);
                 Assert.Equal($"{name}-fake", deletedPod.Metadata.Name);
