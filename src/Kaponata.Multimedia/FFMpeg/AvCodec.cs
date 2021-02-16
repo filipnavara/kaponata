@@ -33,34 +33,22 @@ namespace Kaponata.Multimedia.FFMpeg
         /// and among decoders (but an encoder and a decoder can share the same name). This
         /// is the primary way to find a codec from the user perspective.
         /// </summary>
-        public string Name
-        {
-            get { return new string((sbyte*)this.native->name); }
-        }
+        public string Name => new string((sbyte*)this.native->name);
 
         /// <summary>
         /// Gets the escriptive name for the codec, meant to be more human readable than name.
         /// </summary>
-        public string LongName
-        {
-            get { return new string((sbyte*)this.native->long_name); }
-        }
+        public string LongName => new string((sbyte*)this.native->long_name);
 
         /// <summary>
         /// Gets the ID of this codec.
         /// </summary>
-        public AVCodecID Id
-        {
-            get { return this.native->id; }
-        }
+        public AVCodecID Id => this.native->id;
 
         /// <summary>
         /// Gets the capabilities of this codec.
         /// </summary>
-        public AVCodecCapabilities Capabilities
-        {
-            get { return (AVCodecCapabilities)this.native->capabilities; }
-        }
+        public AVCodecCapabilities Capabilities => (AVCodecCapabilities)this.native->capabilities;
 
         /// <summary>
         /// Gets a value indicating whether the codec is an encoder.
@@ -73,10 +61,7 @@ namespace Kaponata.Multimedia.FFMpeg
         /// <summary>
         /// Gets a value indicating whether the codec is a decoder.
         /// </summary>
-        public bool IsDecoder
-        {
-            get { return ffmpeg.av_codec_is_decoder(this.native) == 1; }
-        }
+        public bool IsDecoder => ffmpeg.av_codec_is_decoder(this.native) == 1;
 
         /// <inheritdoc/>
         public override string ToString()
