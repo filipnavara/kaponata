@@ -4,6 +4,7 @@
 
 using FFmpeg.AutoGen;
 using NativeAVCodecDescriptor = FFmpeg.AutoGen.AVCodecDescriptor;
+using NativeAVMediaType = FFmpeg.AutoGen.AVMediaType;
 
 namespace Kaponata.Multimedia.FFMpeg
 {
@@ -29,42 +30,27 @@ namespace Kaponata.Multimedia.FFMpeg
         /// <summary>
         /// Gets the <see cref="AVCodecID"/> of the codec.
         /// </summary>
-        public AVCodecID Id
-        {
-            get { return native->id; }
-        }
+        public AVCodecID Id => native->id;
 
         /// <summary>
         /// Gets the long name of the codec.
         /// </summary>
-        public string LongName
-        {
-            get { return new string((sbyte*)this.native->long_name); }
-        }
+        public string LongName => new string((sbyte*)this.native->long_name);
 
         /// <summary>
         /// Gets the name of the codec.
         /// </summary>
-        public string Name
-        {
-            get { return new string((sbyte*)this.native->name); }
-        }
+        public string Name => new string((sbyte*)this.native->name);
 
         /// <summary>
         /// Gets additional properties which describe the codec.
         /// </summary>
-        public AVCodecProps Props
-        {
-            get { return (AVCodecProps)this.native->props; }
-        }
+        public AVCodecProps Props => (AVCodecProps)this.native->props;
 
         /// <summary>
         /// Gets the type of the codec.
         /// </summary>
-        public FFmpeg.AutoGen.AVMediaType Type
-        {
-            get { return this.native->type; }
-        }
+        public NativeAVMediaType Type => this.native->type;
 
         /// <inheritdoc/>
         public override string ToString()

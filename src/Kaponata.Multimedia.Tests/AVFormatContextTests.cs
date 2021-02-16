@@ -69,46 +69,6 @@ namespace Kaponata.Multimedia.Tests
         }
 
         /// <summary>
-        /// The <see cref="AVFormatContext.NativeObject"/> sets the new handle.
-        /// </summary>
-        [Fact]
-        public void NativeObject_SetsNewHandle()
-        {
-            var ffmpegMock = new Mock<FFMpegClient>();
-
-            var nativeAVFormatContext1 = new NativeAVFormatContext
-            {
-                nb_streams = 1,
-            };
-
-            var nativeAVFormatContext2 = new NativeAVFormatContext
-            {
-                nb_streams = 2,
-            };
-
-            ffmpegMock
-                .Setup(c => c.FreeAVFormatContext(It.IsAny<IntPtr>()))
-                .Verifiable();
-            var ffmpeg = ffmpegMock.Object;
-
-            using (var handle1 = new AVFormatContextHandle(ffmpeg, &nativeAVFormatContext1))
-            using (var formatContext = new AVFormatContext(ffmpeg, handle1))
-            {
-                Assert.Equal(handle1, formatContext.Handle);
-                Assert.Equal<uint>(1, formatContext.StreamCount);
-                Assert.Equal((int)&nativeAVFormatContext1, (int)formatContext.NativeObject);
-                formatContext.NativeObject = &nativeAVFormatContext2;
-                Assert.Equal<uint>(2, formatContext.StreamCount);
-                Assert.Equal((int)&nativeAVFormatContext2, (int)formatContext.NativeObject);
-
-                Assert.True(handle1.IsClosed);
-                Assert.False(formatContext.Handle.IsClosed);
-            }
-
-            ffmpegMock.Verify();
-        }
-
-        /// <summary>
         /// The <see cref="AVFormatContext.IOContext"/> returns a <see cref="AVIOContext"/>.
         /// </summary>
         [Fact]
@@ -140,51 +100,6 @@ namespace Kaponata.Multimedia.Tests
             using (var handle = new AVFormatContextHandle(ffmpeg, &nativeAVFormatContext))
             using (var formatContext = new AVFormatContext(ffmpeg, handle))
             {
-                var ioContext = formatContext.IOContext;
-                var result = new byte[4];
-                Marshal.Copy((IntPtr)ioContext.Buffer.NativeObject, result, 0, bytes.Length);
-                Assert.Equal(bytes, result);
-            }
-
-            ffmpegMock.Verify();
-
-            Marshal.FreeHGlobal(bytesHandle);
-        }
-
-        /// <summary>
-        /// The <see cref="AVFormatContext.IOContext"/> sets the <see cref="AVIOContext"/>.
-        /// </summary>
-        [Fact]
-        public void IOContext_Set()
-        {
-            var ffmpegMock = new Mock<FFMpegClient>();
-
-            ffmpegMock
-                .Setup(c => c.FreeAVFormatContext(It.IsAny<IntPtr>()))
-                .Verifiable();
-            var ffmpeg = ffmpegMock.Object;
-
-            var bytes = new byte[] { (byte)'t', (byte)'e', (byte)'s', (byte)'t' };
-
-            var bytesHandle = Marshal.AllocHGlobal(bytes.Length);
-            Marshal.Copy(bytes, 0, bytesHandle, bytes.Length);
-
-            var nativeIOContext = new NativeAVIOContext
-            {
-                buffer = (byte*)bytesHandle,
-                pos = 5,
-            };
-
-            var nativeAVFormatContext = new NativeAVFormatContext
-            {
-            };
-
-            using (var handle = new AVFormatContextHandle(ffmpeg, &nativeAVFormatContext))
-            using (var formatContext = new AVFormatContext(ffmpeg, handle))
-            using (var avioContext = new AVIOContext(ffmpeg, new AVIOContextHandle(ffmpeg, &nativeIOContext)))
-            {
-                formatContext.IOContext = avioContext;
-
                 var ioContext = formatContext.IOContext;
                 var result = new byte[4];
                 Marshal.Copy((IntPtr)ioContext.Buffer.NativeObject, result, 0, bytes.Length);

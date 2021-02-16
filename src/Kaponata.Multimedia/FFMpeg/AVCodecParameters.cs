@@ -29,12 +29,6 @@ namespace Kaponata.Multimedia.FFMpeg
         /// <summary>
         /// Gets eneral type of the encoded data.
         /// </summary>
-        public NativeAVMediaType MediaType
-        {
-            get
-            {
-                return this.native->codec_type;
-            }
-        }
+        public NativeAVMediaType MediaType => this.native->codec_type;
     }
 }

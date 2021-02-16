@@ -11,10 +11,11 @@ namespace Kaponata.Multimedia.FFMpeg
     /// Enables FFmpeg to consume custom I/O.
     /// </summary>
     /// <seealso href="https://ffmpeg.org/doxygen/2.3/structAVIOContext.html"/>
-    public class AVIOContext : IDisposable
+    public unsafe class AVIOContext : IDisposable
     {
         private readonly AVIOContextHandle handle;
         private readonly FFMpegClient ffmpeg;
+        private AVMemoryHandle? buffer;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AVIOContext"/> class.
@@ -36,10 +37,7 @@ namespace Kaponata.Multimedia.FFMpeg
         /// <summary>
         /// Gets a pointer to the native <see cref="NativeAVIOContext"/> object.
         /// </summary>
-        public unsafe NativeAVIOContext* NativeObject
-        {
-            get { return (NativeAVIOContext*)this.handle.DangerousGetHandle(); }
-        }
+        public unsafe NativeAVIOContext* NativeObject => (NativeAVIOContext*)this.handle.DangerousGetHandle();
 
         /// <summary>
         /// Gets a handle to the I/O buffer.
@@ -48,7 +46,12 @@ namespace Kaponata.Multimedia.FFMpeg
         {
             get
             {
-                return new AVMemoryHandle(this.ffmpeg, this.NativeObject->buffer, ownsHandle: false);
+                if (this.buffer == null)
+                {
+                   this.buffer = new AVMemoryHandle(this.ffmpeg, this.NativeObject->buffer, ownsHandle: false);
+                }
+
+                return this.buffer;
             }
         }
 

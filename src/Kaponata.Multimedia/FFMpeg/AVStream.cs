@@ -30,36 +30,18 @@ namespace Kaponata.Multimedia.FFMpeg
         /// <summary>
         /// Gets the codec parameters associated with this stream.
         /// </summary>
-        public unsafe AVCodecParameters CodecParameters
-        {
-            get
-            {
-                return new AVCodecParameters(this.native->codecpar);
-            }
-        }
+        public unsafe AVCodecParameters CodecParameters => new AVCodecParameters(this.native->codecpar);
 
         /// <summary>
         /// Gets the index of this stream.
         /// </summary>
-        public int Index
-        {
-            get
-            {
-                return this.native->index;
-            }
-        }
+        public int Index => this.native->index;
 
         /// <summary>
         /// Gets the fundamental unit of time (in seconds) in terms of which frame timestamps
         /// are represented.
         /// </summary>
-        public NativeAVRational TimeBase
-        {
-            get
-            {
-                return this.native->time_base;
-            }
-        }
+        public NativeAVRational TimeBase => this.native->time_base;
 
         /// <summary>
         /// Gets metadata for this stream.

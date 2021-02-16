@@ -27,23 +27,11 @@ namespace Kaponata.Multimedia.FFMpeg
         /// <summary>
         /// Gets the numerator.
         /// </summary>
-        public int Numerator
-        {
-            get
-            {
-                return this.native->num;
-            }
-        }
+        public int Numerator => this.native->num;
 
         /// <summary>
         /// Gets the denominator.
         /// </summary>
-        public int Denominator
-        {
-            get
-            {
-                return this.native->den;
-            }
-        }
+        public int Denominator => this.native->den;
     }
 }

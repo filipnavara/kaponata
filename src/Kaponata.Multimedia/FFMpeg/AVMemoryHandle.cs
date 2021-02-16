@@ -35,18 +35,12 @@ namespace Kaponata.Multimedia.FFMpeg
         }
 
         /// <inheritdoc/>
-        public override bool IsInvalid
-        {
-            get { return this.handle == IntPtr.Zero; }
-        }
+        public override bool IsInvalid => this.handle == IntPtr.Zero;
 
         /// <summary>
         /// Gets a direct pointer to the unmanaged memory.
         /// </summary>
-        public unsafe byte* NativeObject
-        {
-            get { return (byte*)this.handle; }
-        }
+        public unsafe byte* NativeObject => (byte*)this.handle;
 
         /// <inheritdoc/>
         protected override unsafe bool ReleaseHandle()

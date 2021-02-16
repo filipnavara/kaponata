@@ -31,10 +31,7 @@ namespace Kaponata.Multimedia.FFMpeg
         }
 
         /// <inheritdoc/>
-        public override bool IsInvalid
-        {
-            get { return this.handle == IntPtr.Zero; }
-        }
+        public override bool IsInvalid => this.handle == IntPtr.Zero;
 
         /// <inheritdoc/>
         protected override unsafe bool ReleaseHandle()
