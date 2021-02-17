@@ -1,4 +1,4 @@
-﻿// <copyright file="FFMpegClient.Release.cs" company="Quamotion bv">
+﻿// <copyright file="FFmpegClient.Release.cs" company="Quamotion bv">
 // Copyright (c) Quamotion bv. All rights reserved.
 // </copyright>
 
@@ -7,7 +7,7 @@ using System;
 using System.Runtime.InteropServices;
 using NativeAVFormatContext = FFmpeg.AutoGen.AVFormatContext;
 
-namespace Kaponata.Multimedia.FFMpeg
+namespace Kaponata.Multimedia.FFmpeg
 {
     /// <summary>
     /// Contains methods to free native ffmpeg objects. This interface
@@ -15,7 +15,7 @@ namespace Kaponata.Multimedia.FFMpeg
     /// </summary>
     /// <seealso href="https://ffmpeg.org/doxygen/trunk/group__lavf__core.html"/>
     /// <see href="https://ffmpeg.org/doxygen/2.4/group__lavu__mem.html"/>
-    public unsafe partial class FFMpegClient
+    public unsafe partial class FFmpegClient
     {
         /// <summary>
         /// Free an <see cref="NativeAVFormatContext"/> and all its streams.

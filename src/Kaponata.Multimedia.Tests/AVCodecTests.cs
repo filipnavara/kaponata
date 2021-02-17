@@ -2,7 +2,7 @@
 // Copyright (c) Quamotion bv. All rights reserved.
 // </copyright>
 
-using Kaponata.Multimedia.FFMpeg;
+using Kaponata.Multimedia.FFmpeg;
 using System.Linq;
 using System.Runtime.InteropServices;
 using Xunit;
@@ -21,7 +21,7 @@ namespace Kaponata.Multimedia.Tests
         /// </summary>
         public AVCodecTests()
         {
-            FFMpegClient.Initialize();
+            FFmpegClient.Initialize();
         }
 
         /// <summary>
@@ -163,7 +163,7 @@ namespace Kaponata.Multimedia.Tests
         [Fact]
         public void GetCodecPropertiesTest()
         {
-            var ffmpeg = new FFMpegClient();
+            var ffmpeg = new FFmpegClient();
 
             var codec = ffmpeg.avcodec_find_decoder(AVCodecID.AV_CODEC_ID_H264);
             Assert.Equal("H.264 / AVC / MPEG-4 AVC / MPEG-4 part 10", codec.LongName);
@@ -180,7 +180,7 @@ namespace Kaponata.Multimedia.Tests
         [Fact]
         public void HasRequiredCodecsTest()
         {
-            var ffmpeg = new FFMpegClient();
+            var ffmpeg = new FFmpegClient();
 
             var codecs = ffmpeg.GetAvailableCodecs();
             var h264Decoders = codecs.Where(c => c.Id == AVCodecID.AV_CODEC_ID_H264 && c.IsDecoder).ToArray();

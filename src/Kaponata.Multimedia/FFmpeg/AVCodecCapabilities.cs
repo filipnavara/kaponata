@@ -5,7 +5,7 @@
 using FFmpeg.AutoGen;
 using System;
 
-namespace Kaponata.Multimedia.FFMpeg
+namespace Kaponata.Multimedia.FFmpeg
 {
     /// <summary>
     /// Represents the capabilities of an codec.

@@ -2,7 +2,7 @@
 // Copyright (c) Quamotion bv. All rights reserved.
 // </copyright>
 
-using Kaponata.Multimedia.FFMpeg;
+using Kaponata.Multimedia.FFmpeg;
 using Moq;
 using System;
 using System.Runtime.InteropServices;
@@ -21,12 +21,12 @@ namespace Kaponata.Multimedia.Tests
     public unsafe class AVFormatContextTests
     {
         /// <summary>
-        /// The <see cref="AVFormatContext.AVFormatContext(FFMpegClient, AVFormatContextHandle)"/> initializes the new instance.
+        /// The <see cref="AVFormatContext.AVFormatContext(FFmpegClient, AVFormatContextHandle)"/> initializes the new instance.
         /// </summary>
         [Fact]
         public void Constructor_InitializesInstance()
         {
-            var ffmpegMock = new Mock<FFMpegClient>();
+            var ffmpegMock = new Mock<FFmpegClient>();
 
             var codecParameters = new NativeAVCodecParameters
             {
@@ -74,7 +74,7 @@ namespace Kaponata.Multimedia.Tests
         [Fact]
         public void IOContext_Get()
         {
-            var ffmpegMock = new Mock<FFMpegClient>();
+            var ffmpegMock = new Mock<FFmpegClient>();
 
             ffmpegMock
                 .Setup(c => c.FreeAVFormatContext(It.IsAny<IntPtr>()))
@@ -117,7 +117,7 @@ namespace Kaponata.Multimedia.Tests
         [Fact]
         public void GetStreamCodecType_ReturnsStream()
         {
-            var ffmpegMock = new Mock<FFMpegClient>();
+            var ffmpegMock = new Mock<FFmpegClient>();
 
             ffmpegMock
                 .Setup(c => c.FreeAVFormatContext(It.IsAny<IntPtr>()))
@@ -157,7 +157,7 @@ namespace Kaponata.Multimedia.Tests
         [Fact]
         public void GetStreamCodecType_ThrowsOnIllegalIndex()
         {
-            var ffmpegMock = new Mock<FFMpegClient>();
+            var ffmpegMock = new Mock<FFmpegClient>();
 
             ffmpegMock
                 .Setup(c => c.FreeAVFormatContext(It.IsAny<IntPtr>()))
@@ -185,7 +185,7 @@ namespace Kaponata.Multimedia.Tests
         [Fact]
         public void GetStream_ReturnsStream()
         {
-            var ffmpegMock = new Mock<FFMpegClient>();
+            var ffmpegMock = new Mock<FFmpegClient>();
 
             ffmpegMock
                 .Setup(c => c.FreeAVFormatContext(It.IsAny<IntPtr>()))
@@ -225,7 +225,7 @@ namespace Kaponata.Multimedia.Tests
         [Fact]
         public void GetStream_ThrowsOnIllegalIndex()
         {
-            var ffmpegMock = new Mock<FFMpegClient>();
+            var ffmpegMock = new Mock<FFmpegClient>();
 
             ffmpegMock
                 .Setup(c => c.FreeAVFormatContext(It.IsAny<IntPtr>()))

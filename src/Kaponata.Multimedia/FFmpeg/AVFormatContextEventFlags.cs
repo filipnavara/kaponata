@@ -4,7 +4,7 @@
 
 using FFmpeg.AutoGen;
 
-namespace Kaponata.Multimedia.FFMpeg
+namespace Kaponata.Multimedia.FFmpeg
 {
     /// <summary>
     /// Event flags for the <see cref="AVFormatContext"/> class.

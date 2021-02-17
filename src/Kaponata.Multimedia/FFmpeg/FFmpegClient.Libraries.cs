@@ -1,4 +1,4 @@
-﻿// <copyright file="FFMpegClient.Libraries.cs" company="Quamotion bv">
+﻿// <copyright file="FFmpegClient.Libraries.cs" company="Quamotion bv">
 // Copyright (c) Quamotion bv. All rights reserved.
 // </copyright>
 
@@ -10,12 +10,12 @@ using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
 
-namespace Kaponata.Multimedia.FFMpeg
+namespace Kaponata.Multimedia.FFmpeg
 {
     /// <summary>
     /// Contains the methods used to load the ffmpeg libraries.
     /// </summary>
-    public partial class FFMpegClient
+    public partial class FFmpegClient
     {
         /// <summary>
         /// Tracks whether the libraries have already been loaded.
@@ -29,7 +29,7 @@ namespace Kaponata.Multimedia.FFMpeg
         public static Dictionary<string, IntPtr> LibraryHandles { get; } = new Dictionary<string, IntPtr>();
 
         /// <summary>
-        /// Initializes static members of the <see cref="FFMpegClient"/> class.
+        /// Initializes static members of the <see cref="FFmpegClient"/> class.
         /// </summary>
         public static void Initialize()
         {

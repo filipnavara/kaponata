@@ -4,7 +4,7 @@
 
 using NativeAVRational = FFmpeg.AutoGen.AVRational;
 
-namespace Kaponata.Multimedia.FFMpeg
+namespace Kaponata.Multimedia.FFmpeg
 {
     /// <summary>
     /// Rational number (pair of numerator and denominator).

@@ -1,4 +1,4 @@
-﻿// <copyright file="FFMpegClient.cs" company="Quamotion bv">
+﻿// <copyright file="FFmpegClient.cs" company="Quamotion bv">
 // Copyright (c) Quamotion bv. All rights reserved.
 // </copyright>
 
@@ -8,13 +8,13 @@ using System.Diagnostics.CodeAnalysis;
 using NativeAVCodec = FFmpeg.AutoGen.AVCodec;
 using NativeAVCodecDescriptor = FFmpeg.AutoGen.AVCodecDescriptor;
 
-namespace Kaponata.Multimedia.FFMpeg
+namespace Kaponata.Multimedia.FFmpeg
 {
     /// <summary>
     /// Implements FFmpeg methods.
     /// </summary>
     [SuppressMessage("StyleCop.CSharp.NamingRules", "SA1300:Element must begin with upper-case letter", Justification = "Native function names.")]
-    public partial class FFMpegClient
+    public partial class FFmpegClient
     {
         /// <summary>
         /// Lists the available codecs IDs. There can be multiple codecs (e.g. for decoding or encoding, or with and without hardware acceleration)

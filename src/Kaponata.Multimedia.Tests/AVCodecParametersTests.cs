@@ -2,7 +2,7 @@
 // Copyright (c) Quamotion bv. All rights reserved.
 // </copyright>
 
-using Kaponata.Multimedia.FFMpeg;
+using Kaponata.Multimedia.FFmpeg;
 using Xunit;
 using NativeAVCodecParameters = FFmpeg.AutoGen.AVCodecParameters;
 using NativeAVMediaType = FFmpeg.AutoGen.AVMediaType;
@@ -19,7 +19,7 @@ namespace Kaponata.Multimedia.Tests
         /// </summary>
         public AVCodecParametersTests()
         {
-            FFMpegClient.Initialize();
+            FFmpegClient.Initialize();
         }
 
         /// <summary>
