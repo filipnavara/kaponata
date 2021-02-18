@@ -10,6 +10,7 @@ on:
     - src/adb/**
     - src/fake-driver/**
     - src/appium/**
+    - src/appium-android/**
 
 jobs:
   build:
@@ -22,6 +23,7 @@ jobs:
         - adb
         - fake-driver
         - appium
+        - appium-android
 
     steps:
       - uses: actions/checkout@v2
