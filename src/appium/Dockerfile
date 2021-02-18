@@ -44,4 +44,4 @@ COPY --from=build /src/node_modules/ /app/
 COPY --from=build /bin/tini /bin/
 
 ENTRYPOINT [ "/bin/tini", "--", "/nodejs/bin/node" ]
-CMD [ "/app/appium/build/lib/main.js", "--host", "0.0.0.0" ]
+CMD [ "/app/appium/build/lib/main.js" ]
