@@ -33,4 +33,4 @@ LABEL org.opencontainers.image.ref.name=$GIT_REF
 
 COPY --from=build /build/adb /usr/bin/
 
-CMD [ "/usr/bin/adb",  "-a", "-P", "5037", "server", "nodaemon" ]
+CMD [ "/usr/bin/adb", "-a", "-P", "5037", "server", "nodaemon" ]
