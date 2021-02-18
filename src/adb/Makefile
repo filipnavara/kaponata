@@ -10,7 +10,7 @@ push: all
 	docker manifest push $(registry)/$(image):$(shell cat .version)
 
 .version: .amd64.docker-id
-	docker run --rm -it $(shell cat .amd64.docker-id) /usr/bin/adb --version | head -n 1 | awk '{ print $$5 }' | tee .version
+	docker run --rm -i $(shell cat .amd64.docker-id) /usr/bin/adb --version | head -n 1 | awk '{ print $$5 }' | tee .version
 
 .amd64.docker-id: Dockerfile
 	docker buildx build \

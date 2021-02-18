@@ -15,7 +15,7 @@ deploy: all
 	docker exec -it k3d-k3s-default-server-0 crictl images | grep $(registry)/$(image)
 
 .version: .amd64.docker-id
-	docker run --rm -it $(shell cat .amd64.docker-id) /app/appium/build/lib/main.js --version | tee .version
+	docker run --rm -i $(shell cat .amd64.docker-id) /app/appium/build/lib/main.js --version | tee .version
 
 .amd64.docker-id: Dockerfile
 	docker buildx build \

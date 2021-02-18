@@ -11,7 +11,7 @@ push: all
 	docker manifest push $(registry)/$(image):$(shell cat .version)
 
 .version: .amd64.docker-id
-	docker run --rm -it $(shell cat .amd64.docker-id) /app/appium-fake-driver/build/index.js --version | tee .version
+	docker run --rm -i $(shell cat .amd64.docker-id) /app/appium-fake-driver/build/index.js --version | tee .version
 
 .amd64.docker-id: Dockerfile
 	docker buildx build \
