@@ -10,6 +10,7 @@ on:
     - src/adb/**
     - src/fake-driver/**
     - src/appium/**
+    - src/appium-android/**
 
 jobs:
   build:
@@ -22,6 +23,7 @@ jobs:
         - adb
         - fake-driver
         - appium
+        - appium-android
 
     steps:
       - uses: actions/checkout@v2
@@ -41,6 +43,14 @@ jobs:
           gomplate --version
 
       - name: Build Docker image
-        run: |
-          make
+        run: make
+        working-directory: src/${{ matrix.image }}
+
+      - name: Login to quay.io
+        if: github.ref == 'refs/heads/main'
+        run: docker login -u="${{ secrets.QUAY_ACCOUNT_NAME }}" -p="${{ secrets.QUAY_ACCOUNT_TOKEN }}" quay.io
+
+      - name: Publish Operator container image
+        if: github.ref == 'refs/heads/main'
+        run: make push
         working-directory: src/${{ matrix.image }}
