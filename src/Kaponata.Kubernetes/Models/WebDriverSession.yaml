@@ -9,7 +9,7 @@ metadata:
     # operator to determine whether the CRD should be reinstalled or not.
     # Use the following command to determine that version:
     # nbgv get-version $(git rev-list -1 HEAD) -v NuGetPackageVersion
-    app.kubernetes.io/version: "0.2.46"
+    app.kubernetes.io/version: "0.3.25"
 spec:
   # group name to use for REST API: /apis/<group>/<version>
   group: kaponata.io
@@ -33,7 +33,13 @@ spec:
               type: object
               properties:
                 capabilities:
-                  description: The capabilities requested by the client.
+                  description: |
+                    The capabilities requested by the client. This is the value of the "capabilities"
+                    element in the new session request, serialized as a string. This object should
+                    at least include an "alwaysMatch" property.
+                  type: string
+                deviceHost:
+                  description: The name or IP address at which the device can be reached.
                   type: string
             status:
               type: object
@@ -77,6 +83,10 @@ spec:
                 sessionReady:
                   description: A value indicating whether the session is ready on the back-end pod.
                   type: boolean
+                sessionPort:
+                  description: The TCP port number at which the Appium server is listening.
+                  type: integer
+
                 ingressReady:
                   description: A value indicating whether the ingress rules are ready.
                   type: boolean

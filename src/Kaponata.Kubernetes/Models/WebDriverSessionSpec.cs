@@ -18,5 +18,11 @@ namespace Kaponata.Kubernetes.Models
         /// </summary>
         [JsonProperty(PropertyName = "capabilities")]
         public string Capabilities { get; set; }
+
+        /// <summary>
+        /// Gets or sets the name or IP address at which the device can be reached.
+        /// </summary>
+        [JsonProperty(PropertyName = "deviceHost")]
+        public string DeviceHost { get; set; }
     }
 }
