@@ -5,6 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Kaponata.Android\Kaponata.Android.csproj" />
     <ProjectReference Include="..\Kaponata.iOS\Kaponata.iOS.csproj" />
     <ProjectReference Include="..\Kaponata.Kubernetes\Kaponata.Kubernetes.csproj" />
     <PackageReference Include="System.CommandLine" Version="2.0.0-beta1.20574.7" />
