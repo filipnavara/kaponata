@@ -207,22 +207,18 @@ namespace Kaponata.Kubernetes
             where TList : IItems<TObject>
             where TObject : IKubernetesObject<V1ObjectMeta>
         {
-#if DEBUG
-            var kubernetesClientVersion = typeof(k8s.Kubernetes).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>();
-            Debug.Assert((kubernetesClientVersion != null && kubernetesClientVersion.InformationalVersion == "4.0.10+6acdac256d") || allowWatchBookmarks == null, "Not supported by the generic Kubernetes API");
-            Debug.Assert(resourceVersionMatch == null, "Not supported by the generic Kubernetes API");
-#endif
-
             var operationResponse = await this.RunTaskAsync(this.protocol.ListNamespacedCustomObjectWithHttpMessagesAsync(
                 kind.Group,
                 kind.Version,
                 this.options.Value.Namespace,
                 kind.Plural,
+                allowWatchBookmarks: allowWatchBookmarks,
                 continueParameter: continueParameter,
                 fieldSelector: fieldSelector,
                 labelSelector: labelSelector,
                 limit: limit,
                 resourceVersion: resourceVersion,
+                resourceVersionMatch: resourceVersionMatch,
                 timeoutSeconds: timeoutSeconds,
                 watch: watch,
                 pretty: pretty,
