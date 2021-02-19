@@ -178,6 +178,24 @@ namespace Kaponata.Operator.Tests.Operators
                 await sessionClient.DeleteAsync(emptySession, new V1DeleteOptions(propagationPolicy: "Foreground"), TimeSpan.FromMinutes(1), default).ConfigureAwait(false);
                 await sessionClient.DeleteAsync(fakeSession, new V1DeleteOptions(propagationPolicy: "Foreground"), TimeSpan.FromMinutes(1), default).ConfigureAwait(false);
                 await Task.WhenAny(podWatcher, podDeleted.Task, Task.Delay(TimeSpan.FromMinutes(1))).ConfigureAwait(false);
+
+                if (!podDeleted.Task.IsCompleted)
+                {
+                    // Get some additional information - does the pod still exist (and is the timeout too low), or has the
+                    // pod been deleted and were we not notified?
+                    logger.LogWarning($"Failed to create the pod within a timespan of 1 minute");
+                    var updatedPod = await podClient.TryReadAsync(createdPod.Metadata.Name, default).ConfigureAwait(false);
+
+                    if (updatedPod == null)
+                    {
+                        logger.LogInformation("The pod has been deleted");
+                    }
+                    else
+                    {
+                        logger.LogInformation($"Refreshed pod details: {JsonConvert.SerializeObject(updatedPod)}");
+                    }
+                }
+
                 Assert.True(podDeleted.Task.IsCompleted, "Failed to delete the pod within a timespan of 1 minute");
                 var deletedPod = await podDeleted.Task.ConfigureAwait(false);
                 Assert.Equal($"{name}-fake", deletedPod.Metadata.Name);
