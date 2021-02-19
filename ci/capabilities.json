@@ -1,0 +1,10 @@
+{
+    "capabilities":
+    {
+        "alwaysMatch":
+        {
+            "platformName": "android",
+            "appium:automationName": "uiautomator2"
+        }
+    }
+}
