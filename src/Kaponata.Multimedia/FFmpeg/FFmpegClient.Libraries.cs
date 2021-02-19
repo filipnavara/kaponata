@@ -3,7 +3,6 @@
 // </copyright>
 
 using FFmpeg.AutoGen;
-using FFmpeg.AutoGen.Native;
 using FFmpeg.Native;
 using System;
 using System.Collections.Generic;

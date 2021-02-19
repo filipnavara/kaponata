@@ -37,6 +37,61 @@ namespace Kaponata.Multimedia.Tests
         }
 
         /// <summary>
+        /// The <see cref="FFmpegClient.GetNativeVersion(string)"/> returns the version number.
+        /// </summary>
+        /// <param name="name">
+        /// The name of the ffmpeg library.
+        /// </param>
+        /// <param name="version">
+        /// The expected version number.
+        /// </param>
+        [Theory]
+        [InlineData("avcodec", 58)]
+        [InlineData("avdevice", 58)]
+        [InlineData("avfilter", 7)]
+        [InlineData("avformat", 58)]
+        [InlineData("avutil", 56)]
+        [InlineData("swresample", 3)]
+        [InlineData("swscale", 5)]
+        [InlineData("libwinpthread", 1)]
+        public void GetNativeVersion_ReturnsVersion(string name, int version)
+        {
+            Assert.Equal(version, FFmpegClient.GetNativeVersion(name));
+        }
+
+        /// <summary>
+        /// The <see cref="FFmpegClient.ThrowOnAVError(int, bool)"/> retruns on success.
+        /// </summary>
+        /// <param name="ret">
+        /// The return value based on which to determine whether a <see cref="InvalidOperationException"/> should be thrown.
+        /// </param>
+        /// <param name="postiveIndicatesSuccess">
+        /// <see langword="true"/> if positive numbers indicate success; <see langword="false"/> if only strictly zero values
+        /// indicate success. Negative values always indicate a failure.
+        /// </param>
+        [Theory]
+        [InlineData(0, true)]
+        [InlineData(0, false)]
+        [InlineData(1000, true)]
+        public void ThrowOnAVError_ReturnsOnSuccess(int ret, bool postiveIndicatesSuccess)
+        {
+            var client = new FFmpegClient();
+            client.ThrowOnAVError(ret, postiveIndicatesSuccess);
+        }
+
+        /// <summary>
+        /// The <see cref="FFmpegClient.ThrowOnAVError(int, bool)"/> throws on error.
+        /// </summary>
+        [Fact]
+        public void ThrowOnAVError_ThrowsOnError()
+        {
+            var client = new FFmpegClient();
+            Assert.Throws<Exception>(() => client.ThrowOnAVError(-100, true));
+            Assert.Throws<InvalidOperationException>(() => client.ThrowOnAVError(100, false));
+            Assert.Throws<Exception>(() => client.ThrowOnAVError(-100, false));
+        }
+
+        /// <summary>
         /// The <see cref="FFmpegClient.GetNativeVersion(string)"/> throws an exception when the package is unknown.
         /// </summary>
         [Fact]

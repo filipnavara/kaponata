@@ -3,9 +3,9 @@
 // </copyright>
 
 using FFmpeg.AutoGen;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using NativeAVCodec = FFmpeg.AutoGen.AVCodec;
 using NativeAVCodecDescriptor = FFmpeg.AutoGen.AVCodecDescriptor;
 
 namespace Kaponata.Multimedia.FFmpeg
@@ -18,7 +18,7 @@ namespace Kaponata.Multimedia.FFmpeg
     {
         /// <summary>
         /// Lists the available codecs IDs. There can be multiple codecs (e.g. for decoding or encoding, or with and without hardware acceleration)
-        /// for a given codec ID (e.g. H264). Use <see cref="GetAvailableCodecs"/> to get an extensive list.
+        /// for a given codec ID (e.g. H264).
         /// </summary>
         /// <returns>
         /// A list of available codecs IDs.
@@ -34,41 +34,6 @@ namespace Kaponata.Multimedia.FFmpeg
             }
 
             return codecs;
-        }
-
-        /// <summary>
-        /// Lists all available codecs. This list can include multiple codecs for the same codec ID.
-        /// </summary>
-        /// <returns>
-        /// A list of all available codecs.
-        /// </returns>
-        public unsafe List<AVCodec> GetAvailableCodecs()
-        {
-            var codecs = new List<AVCodec>();
-
-            void* iter = null;
-            NativeAVCodec* codec;
-
-            while ((codec = ffmpeg.av_codec_iterate(&iter)) != null)
-            {
-                codecs.Add(new AVCodec(codec));
-            }
-
-            return codecs;
-        }
-
-        /// <summary>
-        /// Find a registered decoder with a matching codec ID.
-        /// </summary>
-        /// <param name="id">
-        /// AVCodecID of the requested decoder.
-        /// </param>
-        /// <returns>
-        /// The <see cref="AVCodec"/> mathcing the <see cref="AVCodecID"/>.
-        /// </returns>
-        public unsafe AVCodec avcodec_find_decoder(AVCodecID id)
-        {
-            return new AVCodec(ffmpeg.avcodec_find_decoder(id));
         }
     }
 }
