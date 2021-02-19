@@ -366,6 +366,12 @@ namespace Kaponata.Operator.Tests.Operators
                 o =>
                 {
                     Assert.Equal(OperationType.Add, o.OperationType);
+                    Assert.Equal("/status/sessionPort", o.path);
+                    Assert.Equal(4774, o.value);
+                },
+                o =>
+                {
+                    Assert.Equal(OperationType.Add, o.OperationType);
                     Assert.Equal("/status/capabilities", o.path);
                     Assert.Equal("{}", o.value);
                 });

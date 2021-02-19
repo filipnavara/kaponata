@@ -185,8 +185,13 @@ namespace Kaponata.Operator.Tests.Operators
         /// <summary>
         /// <see cref="FakeOperators.BuildIngressOperator(IServiceProvider)"/> correctly configures the child pod.
         /// </summary>
-        [Fact]
-        public void BuildIngressOperator_ConfiguresIngress_Test()
+        /// <param name="sessionPort">
+        /// The port at which the Appium server is listening.
+        /// </param>
+        [Theory]
+        [InlineData(4774)]
+        [InlineData(4723)]
+        public void BuildIngressOperator_ConfiguresIngress_Test(int sessionPort)
         {
             var builder = FakeOperators.BuildIngressOperator(this.host.Services);
 
@@ -199,6 +204,7 @@ namespace Kaponata.Operator.Tests.Operators
                 Status = new WebDriverSessionStatus()
                 {
                     SessionId = "1234",
+                    SessionPort = sessionPort,
                 },
             };
 
@@ -211,7 +217,7 @@ namespace Kaponata.Operator.Tests.Operators
             Assert.Equal("/wd/hub/session/my-session/", path.Path);
             Assert.Equal("Prefix", path.PathType);
             Assert.Equal("my-session", path.Backend.Service.Name);
-            Assert.Equal(4774, path.Backend.Service.Port.Number);
+            Assert.Equal(sessionPort, path.Backend.Service.Port.Number);
 
             Assert.NotNull(ingress.Metadata?.Annotations);
             Assert.Collection(
