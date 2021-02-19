@@ -7,7 +7,8 @@ using Kaponata.Kubernetes;
 using Kaponata.Kubernetes.Models;
 using Kaponata.Operator.Operators;
 using Microsoft.AspNetCore.JsonPatch.Operations;
-using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging.Abstractions;
+using Moq;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -36,7 +37,9 @@ namespace Kaponata.Operator.Tests.Operators
                    {
                        Status = new WebDriverSessionStatus(),
                    },
-                   null),
+                   null,
+                   Mock.Of<KubernetesClient>(),
+                   NullLogger.Instance),
             };
 
             // The session has an associated service but the serviceReady flag is already set.
@@ -50,7 +53,9 @@ namespace Kaponata.Operator.Tests.Operators
                            ServiceReady = true,
                        },
                    },
-                   new V1Service()),
+                   new V1Service(),
+                   Mock.Of<KubernetesClient>(),
+                   NullLogger.Instance),
             };
         }
 
@@ -170,7 +175,9 @@ namespace Kaponata.Operator.Tests.Operators
                 },
                 new V1Service()
                 {
-                });
+                },
+                Mock.Of<KubernetesClient>(),
+                NullLogger.Instance);
 
             var result = await feedback(context, default).ConfigureAwait(false);
             Assert.Collection(

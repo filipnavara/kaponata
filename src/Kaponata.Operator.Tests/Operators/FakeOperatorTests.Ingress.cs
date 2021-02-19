@@ -7,7 +7,8 @@ using Kaponata.Kubernetes;
 using Kaponata.Kubernetes.Models;
 using Kaponata.Operator.Operators;
 using Microsoft.AspNetCore.JsonPatch.Operations;
-using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging.Abstractions;
+using Moq;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -36,7 +37,9 @@ namespace Kaponata.Operator.Tests.Operators
                    {
                        Status = new WebDriverSessionStatus(),
                    },
-                   null),
+                   null,
+                   Mock.Of<KubernetesClient>(),
+                   NullLogger.Instance),
             };
 
             // The ingress is not ready
@@ -47,7 +50,9 @@ namespace Kaponata.Operator.Tests.Operators
                    {
                        Status = new WebDriverSessionStatus(),
                    },
-                   new V1Ingress()),
+                   new V1Ingress(),
+                   Mock.Of<KubernetesClient>(),
+                   NullLogger.Instance),
             };
 
             yield return new object[]
@@ -60,7 +65,9 @@ namespace Kaponata.Operator.Tests.Operators
                    new V1Ingress()
                    {
                        Status = new V1IngressStatus(),
-                   }),
+                   },
+                   Mock.Of<KubernetesClient>(),
+                   NullLogger.Instance),
             };
 
             yield return new object[]
@@ -76,7 +83,9 @@ namespace Kaponata.Operator.Tests.Operators
                        {
                             LoadBalancer = new V1LoadBalancerStatus(),
                        },
-                   }),
+                   },
+                   Mock.Of<KubernetesClient>(),
+                   NullLogger.Instance),
             };
 
             yield return new object[]
@@ -95,7 +104,9 @@ namespace Kaponata.Operator.Tests.Operators
                                  Ingress = null,
                             },
                        },
-                   }),
+                   },
+                   Mock.Of<KubernetesClient>(),
+                   NullLogger.Instance),
             };
 
             yield return new object[]
@@ -114,7 +125,9 @@ namespace Kaponata.Operator.Tests.Operators
                                  Ingress = new V1LoadBalancerIngress[] { },
                             },
                        },
-                   }),
+                   },
+                   Mock.Of<KubernetesClient>(),
+                   NullLogger.Instance),
             };
 
             // The session has an associated Ingress but the IngressReady flag is already set.
@@ -137,7 +150,9 @@ namespace Kaponata.Operator.Tests.Operators
                                  Ingress = new V1LoadBalancerIngress[] { new V1LoadBalancerIngress() },
                             },
                        },
-                   }),
+                   },
+                   Mock.Of<KubernetesClient>(),
+                   NullLogger.Instance),
             };
         }
 
@@ -274,7 +289,9 @@ namespace Kaponata.Operator.Tests.Operators
                             Ingress = new V1LoadBalancerIngress[] { new V1LoadBalancerIngress() },
                         },
                     },
-                });
+                },
+                Mock.Of<KubernetesClient>(),
+                NullLogger.Instance);
 
             var result = await feedback(context, default).ConfigureAwait(false);
             Assert.Collection(

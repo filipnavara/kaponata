@@ -111,7 +111,7 @@ namespace Kaponata.Operator.Tests.Operators
                 };
 
                 await @operator.ReconcileAsync(
-                    new (parent, child),
+                    new (parent, child, kubernetes.Object, this.logger),
                     default).ConfigureAwait(false);
             }
         }
@@ -146,7 +146,7 @@ namespace Kaponata.Operator.Tests.Operators
                 };
 
                 await @operator.ReconcileAsync(
-                    new (parent, null),
+                    new (parent, null, kubernetes.Object, this.logger),
                     default).ConfigureAwait(false);
             }
 
@@ -199,7 +199,7 @@ namespace Kaponata.Operator.Tests.Operators
                 };
 
                 await @operator.ReconcileAsync(
-                    new (parent, null),
+                    new (parent, null, kubernetes.Object, this.logger),
                     default).ConfigureAwait(false);
             }
 
@@ -271,7 +271,7 @@ namespace Kaponata.Operator.Tests.Operators
                 this.logger))
             {
                 await @operator.ReconcileAsync(
-                    new (parent, child),
+                    new (parent, child, kubernetes.Object, this.logger),
                     default).ConfigureAwait(false);
             }
 
@@ -312,7 +312,7 @@ namespace Kaponata.Operator.Tests.Operators
                 this.logger))
             {
                 await @operator.ReconcileAsync(
-                    new (parent, child),
+                    new (parent, child, kubernetes.Object, this.logger),
                     default).ConfigureAwait(false);
             }
 
@@ -851,7 +851,9 @@ namespace Kaponata.Operator.Tests.Operators
 
             var context = new ChildOperatorContext<WebDriverSession, V1Pod>(
                 parent,
-                null);
+                null,
+                kubernetes.Object,
+                this.logger);
 
             using (var @operator = new ChildOperator<WebDriverSession, V1Pod>(
                 kubernetes.Object,

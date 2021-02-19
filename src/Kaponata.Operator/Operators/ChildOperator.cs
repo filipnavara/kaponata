@@ -297,7 +297,7 @@ namespace Kaponata.Operator.Operators
                     if (parent != null && this.parentFilter(parent))
                     {
                         await this.ReconcileAsync(
-                            new ChildOperatorContext<TParent, TChild>(parent, child),
+                            new ChildOperatorContext<TParent, TChild>(parent, child, this.kubernetes, this.logger),
                             operationCts.Token).ConfigureAwait(false);
                     }
                     else
