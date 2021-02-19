@@ -98,8 +98,13 @@ namespace Kaponata.Operator.Tests.Operators
         /// <summary>
         /// <see cref="FakeOperators.BuildServiceOperator(IServiceProvider)"/> correctly configures the child pod.
         /// </summary>
-        [Fact]
-        public void BuildServiceOperator_ConfiguresService_Test()
+        /// <param name="sessionPort">
+        /// The port at which the Appium server is listening.
+        /// </param>
+        [Theory]
+        [InlineData(4774)]
+        [InlineData(4723)]
+        public void BuildServiceOperator_ConfiguresService_Test(int sessionPort)
         {
             var builder = FakeOperators.BuildServiceOperator(this.host.Services);
 
@@ -108,6 +113,10 @@ namespace Kaponata.Operator.Tests.Operators
                 Metadata = new V1ObjectMeta()
                 {
                     Name = "my-session",
+                },
+                Status = new WebDriverSessionStatus()
+                {
+                    SessionPort = sessionPort,
                 },
             };
 
@@ -124,6 +133,8 @@ namespace Kaponata.Operator.Tests.Operators
                 });
 
             var port = Assert.Single(service.Spec.Ports);
+            Assert.Equal(sessionPort, port.TargetPort);
+            Assert.Equal(sessionPort, port.Port);
         }
 
         /// <summary>

@@ -32,6 +32,12 @@ namespace Kaponata.Kubernetes.Models
         public bool SessionReady { get; set; }
 
         /// <summary>
+        /// Gets or sets the TCP port number at which the Appium server is listening.
+        /// </summary>
+        [JsonProperty("sessionPort")]
+        public int SessionPort { get; set; }
+
+        /// <summary>
         /// Gets or sets a string indicating the error code. The session failed to start if this
         /// value is set.
         /// </summary>

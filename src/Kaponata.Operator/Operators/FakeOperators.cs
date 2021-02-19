@@ -7,7 +7,6 @@ using Kaponata.Kubernetes;
 using Kaponata.Kubernetes.Models;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -124,7 +123,7 @@ namespace Kaponata.Operator.Operators
 
                             var content = new StringContent(request, Encoding.UTF8, "application/json");
 
-                            using (var httpClient = kubernetes.CreatePodHttpClient(context.Child, 4774))
+                            using (var httpClient = kubernetes.CreatePodHttpClient(context.Child, Port))
                             using (var remoteResult = await httpClient.PostAsync("wd/hub/session/", content, cancellationToken).ConfigureAwait(false))
                             {
                                 var sessionJson = await remoteResult.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
@@ -143,6 +142,7 @@ namespace Kaponata.Operator.Operators
                                 {
                                     patch.Add(s => s.Status.SessionId, sessionId.Value<string>());
                                     patch.Add(s => s.Status.SessionReady, true);
+                                    patch.Add(s => s.Status.SessionPort, Port);
                                 }
 
                                 if (sessionValue.TryGetValue("capabilities", out var capabilities))
@@ -243,7 +243,7 @@ namespace Kaponata.Operator.Operators
                                                     Name = session.Metadata.Name,
                                                     Port = new V1ServiceBackendPort()
                                                     {
-                                                        Number = 4774,
+                                                        Number = session.Status.SessionPort,
                                                     },
                                                 },
                                             },
@@ -315,8 +315,8 @@ namespace Kaponata.Operator.Operators
                             new V1ServicePort()
                             {
                                  Protocol = "TCP",
-                                 Port = 4774,
-                                 TargetPort = 4774,
+                                 Port = session.Status.SessionPort,
+                                 TargetPort = session.Status.SessionPort,
                             },
                         },
                     };
