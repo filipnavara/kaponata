@@ -18,7 +18,7 @@ RUN curl -o java.tar.gz https://download.java.net/java/GA/jdk${JDK_VERSION}/${JD
 # The latest build tools and platform tools version number can
 # be found in https://dl.google.com/android/repository/repository2-1.xml
 ARG BUILD_TOOLS_VERSION="30.0.3"
-ARG PLATFORM_TOOLS_VERSION="30.0.5"
+ARG PLATFORM_TOOLS_VERSION="31.0.0"
 
 ENV ANDROID_HOME=/android
 
@@ -60,7 +60,9 @@ COPY --from=build /java /java
 # We can significantly reduce the size of the resulting container by only copying
 # the Android tools which are actually used by Appium:
 COPY --from=build --chmod=a+x /android/platform-tools/adb /android/platform-tools/
+COPY --from=build --chmod=a+x /android/platform-tools/NOTICE.txt /android/platform-tools/
 COPY --from=build /android/build-tools/android-11/lib/apksigner.jar /android/build-tools/android-11/lib/
+COPY --from=build /android/build-tools/android-11/NOTICE.txt /android/build-tools/android-11/
 
 # Alternatively, to just copy the entire Android SDK:
 # COPY --from=build /android /android

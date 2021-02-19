@@ -1,6 +1,8 @@
 FROM --platform=$BUILDPLATFORM ubuntu:focal AS build
 
-ARG platform_tools_version=30.0.4
+# The latest platform tools version number can
+# be found at https://dl.google.com/android/repository/repository2-1.xml
+ARG platform_tools_version=31.0.0
 ARG tini_version=0.19.0
 
 RUN apt-get update \
