@@ -72,6 +72,14 @@ namespace Kaponata.Kubernetes.Tests
                                 {
                                     Name = "nginx",
                                     Image = "nginx:1.19.6",
+                                    ReadinessProbe = new V1Probe()
+                                    {
+                                        HttpGet = new V1HTTPGetAction()
+                                        {
+                                            Path = "/",
+                                            Port = $"80",
+                                        },
+                                    },
                                 },
                             },
                         },
