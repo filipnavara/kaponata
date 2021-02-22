@@ -3,9 +3,8 @@
 // </copyright>
 
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using System;
-using System.Net;
-using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -52,6 +51,17 @@ namespace Kaponata.Android.Adb
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
             this.loggerFactory = loggerFactory ?? throw new ArgumentNullException(nameof(loggerFactory));
             this.socketLocator = socketLocator ?? throw new ArgumentNullException(nameof(socketLocator));
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AdbClient"/> class.
+        /// </summary>
+        /// <remarks>
+        /// Intended for unit testing purposes only.
+        /// </remarks>
+        protected AdbClient()
+            : this(NullLogger<AdbClient>.Instance, NullLoggerFactory.Instance)
+        {
         }
 
         /// <summary>
