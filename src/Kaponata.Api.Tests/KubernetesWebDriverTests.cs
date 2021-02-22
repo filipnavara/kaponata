@@ -104,7 +104,23 @@ namespace Kaponata.Api.Tests
                         },
                     },
                 },
-                "The platform 'test' is not supported",
+                "The platform 'test' in combination with appium:automationName '' is not supported",
+            };
+
+            yield return new object[]
+            {
+                new NewSessionRequest()
+                {
+                    Capabilities = new CapabilitiesRequest()
+                    {
+                        AlwaysMatch = new Dictionary<string, object>()
+                        {
+                            { "platformName", "test" },
+                            { "appium:automationName", 1 },
+                        },
+                    },
+                },
+                "The appium:automationName capability must be a string.",
             };
         }
 
@@ -146,9 +162,19 @@ namespace Kaponata.Api.Tests
         /// <summary>
         /// <see cref="KubernetesWebDriver.CreateSessionAsync(NewSessionRequest, CancellationToken)"/> can create a new session.
         /// </summary>
+        /// <param name="platformName">
+        /// The name of the requested platform.
+        /// </param>
+        /// <param name="automationName">
+        /// The name of the requested automation provider.
+        /// </param>
+        /// <param name="providerName">
+        /// The name of the provider being used.
+        /// </param>
         /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
-        [Fact]
-        public async Task CreateSession_CreatesSession_Async()
+        [Theory]
+        [InlineData("fake", null, "fake")]
+        public async Task CreateSession_CreatesSession_Async(string platformName, string automationName, string providerName)
         {
             var sessionClient = new Mock<NamespacedKubernetesClient<WebDriverSession>>(MockBehavior.Strict);
             var kubernetes = new Mock<KubernetesClient>(MockBehavior.Strict);
@@ -161,9 +187,10 @@ namespace Kaponata.Api.Tests
                 Capabilities = new CapabilitiesRequest()
                 {
                     AlwaysMatch = new Dictionary<string, object>()
-                     {
-                         { "platformName", "fake" },
-                     },
+                    {
+                         { "platformName", platformName },
+                         { "appium:automationName", automationName },
+                    },
                 },
             };
 
@@ -179,16 +206,23 @@ namespace Kaponata.Api.Tests
                 .Setup(s => s.CreateAsync(It.IsAny<WebDriverSession>(), default))
                 .Returns<WebDriverSession, CancellationToken>((request, ct) =>
                 {
-                    Assert.Equal("fake-", request.Metadata.GenerateName);
+                    Assert.Equal($"{providerName}-", request.Metadata.GenerateName);
                     Assert.Collection(
                         request.Metadata.Labels,
                         l =>
                         {
                             Assert.Equal(Annotations.AutomationName, l.Key);
-                            Assert.Equal("fake", l.Value);
+                            Assert.Equal(providerName, l.Value);
                         });
 
-                    Assert.Equal("{\"alwaysMatch\":{\"platformName\":\"fake\"}}", request.Spec.Capabilities);
+                    if (automationName != null)
+                    {
+                        Assert.Equal($"{{\"alwaysMatch\":{{\"platformName\":\"{platformName}\",\"appium:automationName\":\"{automationName}\"}}}}", request.Spec.Capabilities);
+                    }
+                    else
+                    {
+                        Assert.Equal($"{{\"alwaysMatch\":{{\"platformName\":\"{platformName}\",\"appium:automationName\":null}}}}", request.Spec.Capabilities);
+                    }
 
                     return Task.FromResult(session);
                 });
@@ -443,6 +477,29 @@ namespace Kaponata.Api.Tests
             Assert.Null(result.Value);
 
             sessionClient.Verify();
+        }
+
+        /// <summary>
+        /// <see cref="KubernetesWebDriver.GetProviderName(string, string?)"/> returns the expected platform.
+        /// </summary>
+        /// <param name="platformName">
+        /// The value of the platform capability.
+        /// </param>
+        /// <param name="automationName">
+        /// The value of the appium:automationName capability.
+        /// </param>
+        /// <param name="providerName">
+        /// The expected provider name.
+        /// </param>
+        [Theory]
+        [InlineData(null, null, null)]
+        [InlineData("", "", null)]
+        [InlineData("fake", "", "fake")]
+        [InlineData("android", "uiautomator2", "uiautomator2")]
+        [InlineData("android", "uiautomator3", null)]
+        public void GetProviderName_Works(string platformName, string automationName, string providerName)
+        {
+            Assert.Equal(providerName, KubernetesWebDriver.GetProviderName(platformName, automationName));
         }
     }
 }
