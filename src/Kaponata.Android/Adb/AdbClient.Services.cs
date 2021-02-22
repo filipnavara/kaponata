@@ -2,14 +2,12 @@
 // Copyright (c) Quamotion bv. All rights reserved.
 // </copyright>
 
-using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -54,7 +52,7 @@ namespace Kaponata.Android.Adb
         /// <returns>
         /// A <see cref="Task"/> representing the asynchronous operation.
         /// </returns>
-        public async Task ConnectDeviceAsync(DnsEndPoint endpoint, CancellationToken cancellationToken)
+        public virtual async Task ConnectDeviceAsync(DnsEndPoint endpoint, CancellationToken cancellationToken)
         {
             if (endpoint == null)
             {
@@ -81,7 +79,7 @@ namespace Kaponata.Android.Adb
         /// <returns>
         /// The list of connected devices.
         /// </returns>
-        public async Task<IList<DeviceData>> GetDevicesAsync(CancellationToken cancellationToken)
+        public virtual async Task<IList<DeviceData>> GetDevicesAsync(CancellationToken cancellationToken)
         {
             await using var protocol = await this.TryConnectToAdbAsync(cancellationToken).ConfigureAwait(false);
 

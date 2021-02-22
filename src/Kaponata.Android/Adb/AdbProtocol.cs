@@ -8,7 +8,6 @@ using Nerdbank.Streams;
 using System;
 using System.Buffers;
 using System.Buffers.Binary;
-using System.Globalization;
 using System.IO;
 using System.Text;
 using System.Threading;
@@ -65,6 +64,11 @@ namespace Kaponata.Android.Adb
         /// Gets the encoding used when communicating with adb.
         /// </summary>
         public static Encoding AdbEncoding { get; } = Encoding.GetEncoding(DefaultEncoding);
+
+        /// <summary>
+        /// Gets the underling <see cref="Stream"/> used by this <see cref="AdbProtocol"/>.
+        /// </summary>
+        public Stream Stream => this.stream;
 
         /// <summary>
         /// Gets a shell output stream.
