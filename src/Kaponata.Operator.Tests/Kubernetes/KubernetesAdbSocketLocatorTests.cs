@@ -24,8 +24,8 @@ namespace Kaponata.Operator.Tests.Kubernetes
         [Fact]
         public void Constructor_ValidatesArguments()
         {
-            Assert.Throws<ArgumentNullException>("kubernetes", () => new KubernetesAdbSocketLocator(null, new V1Pod()));
-            Assert.Throws<ArgumentNullException>("pod", () => new KubernetesAdbSocketLocator(Mock.Of<KubernetesClient>(), null));
+            Assert.Throws<ArgumentNullException>("kubernetes", () => new KubernetesAdbSocketLocator(null, new KubernetesAdbContext()));
+            Assert.Throws<ArgumentNullException>("context", () => new KubernetesAdbSocketLocator(Mock.Of<KubernetesClient>(), null));
         }
 
         /// <summary>
@@ -52,7 +52,7 @@ namespace Kaponata.Operator.Tests.Kubernetes
                 .Setup(k => k.ConnectToPodPortAsync(pod, 5037, default))
                 .ReturnsAsync(stream.Object);
 
-            var locator = new KubernetesAdbSocketLocator(kubernetes.Object, pod);
+            var locator = new KubernetesAdbSocketLocator(kubernetes.Object, new KubernetesAdbContext() { Pod = pod });
             using (var value = await locator.ConnectToAdbAsync(default))
             {
                 Assert.Same(stream.Object, value);
@@ -67,7 +67,7 @@ namespace Kaponata.Operator.Tests.Kubernetes
         [Fact]
         public void GetAdbSocket_Throws()
         {
-            var locator = new KubernetesAdbSocketLocator(Mock.Of<KubernetesClient>(), new V1Pod());
+            var locator = new KubernetesAdbSocketLocator(Mock.Of<KubernetesClient>(), new KubernetesAdbContext() { Pod = new V1Pod() });
             Assert.Throws<NotSupportedException>(() => locator.GetAdbSocket());
         }
     }
