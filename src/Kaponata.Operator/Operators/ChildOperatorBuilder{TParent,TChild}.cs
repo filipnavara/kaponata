@@ -115,7 +115,8 @@ namespace Kaponata.Operator.Operators
                 this.parentFilter,
                 this.childFactory,
                 this.feedbackLoops,
-                loggerFactory.CreateLogger<ChildOperator<TParent, TChild>>());
+                loggerFactory.CreateLogger<ChildOperator<TParent, TChild>>(),
+                this.services);
         }
     }
 }

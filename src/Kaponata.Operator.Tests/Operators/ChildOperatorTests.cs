@@ -10,6 +10,7 @@ using Kaponata.Operator.Operators;
 using Kaponata.Tests.Shared;
 using MELT;
 using Microsoft.AspNetCore.JsonPatch;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
@@ -33,6 +34,7 @@ namespace Kaponata.Operator.Tests.Operators
         private readonly Action<WebDriverSession, V1Pod> factory = (session, pod) => { };
         private readonly ILogger<ChildOperator<WebDriverSession, V1Pod>> logger = NullLogger<ChildOperator<WebDriverSession, V1Pod>>.Instance;
         private readonly Collection<FeedbackLoop<WebDriverSession, V1Pod>> feedbackLoops = new Collection<FeedbackLoop<WebDriverSession, V1Pod>>();
+        private readonly IServiceProvider services;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ChildOperatorTests"/> class.
@@ -43,6 +45,13 @@ namespace Kaponata.Operator.Tests.Operators
             {
                 ParentLabelSelector = "parent-label-selector",
             };
+
+            this.services =
+                new ServiceCollection()
+                .AddLogging(l => l.AddTest())
+                .AddSingleton(this.kubernetes)
+                .AddScoped((p) => Mock.Of<NamespacedKubernetesClient<V1Job>>())
+                .BuildServiceProvider();
         }
 
         /// <summary>
@@ -52,12 +61,13 @@ namespace Kaponata.Operator.Tests.Operators
         [Fact]
         public void Constructor_ArgumentNull_Throws()
         {
-            Assert.Throws<ArgumentNullException>("kubernetes", () => new ChildOperator<WebDriverSession, V1Pod>(null, this.configuration, this.filter, this.factory, this.feedbackLoops, this.logger));
-            Assert.Throws<ArgumentNullException>("configuration", () => new ChildOperator<WebDriverSession, V1Pod>(this.kubernetes, null, this.filter, this.factory, this.feedbackLoops, this.logger));
-            Assert.Throws<ArgumentNullException>("parentFilter", () => new ChildOperator<WebDriverSession, V1Pod>(this.kubernetes, this.configuration, null, this.factory, this.feedbackLoops, this.logger));
-            Assert.Throws<ArgumentNullException>("childFactory", () => new ChildOperator<WebDriverSession, V1Pod>(this.kubernetes, this.configuration, this.filter, null, this.feedbackLoops, this.logger));
-            Assert.Throws<ArgumentNullException>("feedbackLoops", () => new ChildOperator<WebDriverSession, V1Pod>(this.kubernetes, this.configuration, this.filter, this.factory, null, this.logger));
-            Assert.Throws<ArgumentNullException>("logger", () => new ChildOperator<WebDriverSession, V1Pod>(this.kubernetes, this.configuration, this.filter, this.factory, this.feedbackLoops, null));
+            Assert.Throws<ArgumentNullException>("kubernetes", () => new ChildOperator<WebDriverSession, V1Pod>(null, this.configuration, this.filter, this.factory, this.feedbackLoops, this.logger, this.services));
+            Assert.Throws<ArgumentNullException>("configuration", () => new ChildOperator<WebDriverSession, V1Pod>(this.kubernetes, null, this.filter, this.factory, this.feedbackLoops, this.logger, this.services));
+            Assert.Throws<ArgumentNullException>("parentFilter", () => new ChildOperator<WebDriverSession, V1Pod>(this.kubernetes, this.configuration, null, this.factory, this.feedbackLoops, this.logger, this.services));
+            Assert.Throws<ArgumentNullException>("childFactory", () => new ChildOperator<WebDriverSession, V1Pod>(this.kubernetes, this.configuration, this.filter, null, this.feedbackLoops, this.logger, this.services));
+            Assert.Throws<ArgumentNullException>("feedbackLoops", () => new ChildOperator<WebDriverSession, V1Pod>(this.kubernetes, this.configuration, this.filter, this.factory, null, this.logger, this.services));
+            Assert.Throws<ArgumentNullException>("logger", () => new ChildOperator<WebDriverSession, V1Pod>(this.kubernetes, this.configuration, this.filter, this.factory, this.feedbackLoops, null, this.services));
+            Assert.Throws<ArgumentNullException>("services", () => new ChildOperator<WebDriverSession, V1Pod>(this.kubernetes, this.configuration, this.filter, this.factory, this.feedbackLoops, this.logger, null));
         }
 
         /// <summary>
@@ -89,7 +99,8 @@ namespace Kaponata.Operator.Tests.Operators
                         });
                 },
                 this.feedbackLoops,
-                this.logger))
+                this.logger,
+                this.services))
             {
                 var parent = new WebDriverSession()
                 {
@@ -111,8 +122,7 @@ namespace Kaponata.Operator.Tests.Operators
                 };
 
                 await @operator.ReconcileAsync(
-                    new (parent, child, kubernetes.Object, this.logger),
-                    default).ConfigureAwait(false);
+                    parent, child, default).ConfigureAwait(false);
             }
         }
 
@@ -124,13 +134,13 @@ namespace Kaponata.Operator.Tests.Operators
         [Fact]
         public async Task ReconcileAsync_Exception_LogsError_Async()
         {
-            var loggerFactory = TestLoggerFactory.Create();
-            var logger = loggerFactory.CreateLogger<ChildOperator<WebDriverSession, V1Pod>>();
-
             var kubernetes = new Mock<KubernetesClient>();
             var sessions = kubernetes.WithClient<WebDriverSession>();
             var pods = kubernetes.WithClient<V1Pod>();
             pods.Setup(p => p.CreateAsync(It.IsAny<V1Pod>(), default)).ThrowsAsync(new NotSupportedException());
+
+            var loggerFactory = this.services.GetRequiredService<ILoggerFactory>();
+            var sink = this.services.GetRequiredService<ITestLoggerSink>();
 
             using (var @operator = new ChildOperator<WebDriverSession, V1Pod>(
                 kubernetes.Object,
@@ -138,20 +148,19 @@ namespace Kaponata.Operator.Tests.Operators
                 this.filter,
                 (session, pod) => { },
                 this.feedbackLoops,
-                logger))
+                loggerFactory.CreateLogger<ChildOperator<WebDriverSession, V1Pod>>(),
+                this.services))
             {
                 var parent = new WebDriverSession()
                 {
                     Metadata = new V1ObjectMeta(),
                 };
 
-                await @operator.ReconcileAsync(
-                    new (parent, null, kubernetes.Object, this.logger),
-                    default).ConfigureAwait(false);
+                await @operator.ReconcileAsync(parent, null, default).ConfigureAwait(false);
             }
 
             Assert.Collection(
-                loggerFactory.Sink.LogEntries,
+                sink.LogEntries,
                 e => Assert.Equal("Scheduling reconciliation for parent (null) and child (null) for operator ChildOperatorTests", e.Message),
                 e => Assert.Equal("Caught error Specified method is not supported. while executing reconciliation for operator ChildOperatorTests", e.Message));
         }
@@ -186,7 +195,8 @@ namespace Kaponata.Operator.Tests.Operators
                         });
                 },
                 this.feedbackLoops,
-                this.logger))
+                this.logger,
+                this.services))
             {
                 var parent = new WebDriverSession()
                 {
@@ -198,9 +208,7 @@ namespace Kaponata.Operator.Tests.Operators
                     },
                 };
 
-                await @operator.ReconcileAsync(
-                    new (parent, null, kubernetes.Object, this.logger),
-                    default).ConfigureAwait(false);
+                await @operator.ReconcileAsync(parent, null, default).ConfigureAwait(false);
             }
 
             Assert.Collection(
@@ -268,11 +276,10 @@ namespace Kaponata.Operator.Tests.Operators
                 this.filter,
                 (session, pod) => { },
                 feedbackLoops,
-                this.logger))
+                this.logger,
+                this.services))
             {
-                await @operator.ReconcileAsync(
-                    new (parent, child, kubernetes.Object, this.logger),
-                    default).ConfigureAwait(false);
+                await @operator.ReconcileAsync(parent, child, default).ConfigureAwait(false);
             }
 
             sessions.Verify();
@@ -309,11 +316,56 @@ namespace Kaponata.Operator.Tests.Operators
                 this.filter,
                 (session, pod) => { },
                 feedbackLoops,
-                this.logger))
+                this.logger,
+                this.services))
             {
-                await @operator.ReconcileAsync(
-                    new (parent, child, kubernetes.Object, this.logger),
-                    default).ConfigureAwait(false);
+                await @operator.ReconcileAsync(parent, child, default).ConfigureAwait(false);
+            }
+
+            sessions.Verify();
+        }
+
+        /// <summary>
+        /// The <see cref="ChildOperator{TParent, TChild}.ReconcileAsync"/> method executes the feedback
+        /// loop when parent and child are present, and does nothing when the feedback loop returns <see langword="null"/>.
+        /// </summary>
+        /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
+        [Fact]
+        public async Task ReconcileAsync_FeedbackLoop_IsPassedScopedServices_Async()
+        {
+            var kubernetes = new Mock<KubernetesClient>();
+            var sessions = kubernetes.WithClient<WebDriverSession>();
+            var pods = kubernetes.WithClient<V1Pod>();
+
+            var feedbackLoops = new Collection<FeedbackLoop<WebDriverSession, V1Pod>>()
+            {
+                new FeedbackLoop<WebDriverSession, V1Pod>((context, cancellationToken) =>
+                {
+                    Assert.NotNull(context.Services);
+
+                    // Get a scope service, and assert that the scoped service passed to the feedback
+                    // loop is different than the scoped service at the root.
+                    var value = context.Services.GetRequiredService<NamespacedKubernetesClient<V1Job>>();
+                    var rootValue = this.services.GetRequiredService<NamespacedKubernetesClient<V1Job>>();
+                    Assert.NotSame(rootValue, value);
+
+                    return Task.FromResult((JsonPatchDocument<WebDriverSession>)null);
+                }),
+            };
+
+            var parent = new WebDriverSession();
+            var child = new V1Pod();
+
+            using (var @operator = new ChildOperator<WebDriverSession, V1Pod>(
+                kubernetes.Object,
+                this.configuration,
+                this.filter,
+                (session, pod) => { },
+                feedbackLoops,
+                this.logger,
+                this.services))
+            {
+                await @operator.ReconcileAsync(parent, child, default).ConfigureAwait(false);
             }
 
             sessions.Verify();
@@ -358,7 +410,8 @@ namespace Kaponata.Operator.Tests.Operators
                 this.filter,
                 (session, pod) => { },
                 this.feedbackLoops,
-                this.logger))
+                this.logger,
+                this.services))
             {
                 await @operator.InitializeAsync(default).ConfigureAwait(false);
 
@@ -409,7 +462,8 @@ namespace Kaponata.Operator.Tests.Operators
                 (session) => false, /* filter out _all_ parents */
                 (session, pod) => { },
                 this.feedbackLoops,
-                this.logger))
+                this.logger,
+                this.services))
             {
                 await @operator.InitializeAsync(default).ConfigureAwait(false);
 
@@ -477,7 +531,8 @@ namespace Kaponata.Operator.Tests.Operators
                 this.filter,
                 (session, pod) => { },
                 this.feedbackLoops,
-                this.logger))
+                this.logger,
+                this.services))
             {
                 await @operator.InitializeAsync(default).ConfigureAwait(false);
 
@@ -509,7 +564,8 @@ namespace Kaponata.Operator.Tests.Operators
                 this.filter,
                 (session, pod) => { },
                 this.feedbackLoops,
-                this.logger))
+                this.logger,
+                this.services))
             {
                 await Assert.ThrowsAsync<NotSupportedException>(() => @operator.InitializeAsync(default)).ConfigureAwait(false);
 
@@ -530,7 +586,8 @@ namespace Kaponata.Operator.Tests.Operators
                 this.filter,
                 (session, pod) => { },
                 this.feedbackLoops,
-                this.logger))
+                this.logger,
+                this.services))
             {
                 Assert.Throws<ArgumentNullException>("parent", () => @operator.ScheduleReconciliation((WebDriverSession)null));
             }
@@ -577,7 +634,8 @@ namespace Kaponata.Operator.Tests.Operators
                 this.filter,
                 (session, pod) => { },
                 this.feedbackLoops,
-                this.logger))
+                this.logger,
+                this.services))
             {
                 @operator.ScheduleReconciliation(parent);
 
@@ -602,7 +660,8 @@ namespace Kaponata.Operator.Tests.Operators
                 this.filter,
                 (session, pod) => { },
                 this.feedbackLoops,
-                this.logger))
+                this.logger,
+                this.services))
             {
                 Assert.Throws<ArgumentNullException>("child", () => @operator.ScheduleReconciliation((V1Pod)null));
             }
@@ -634,7 +693,8 @@ namespace Kaponata.Operator.Tests.Operators
                 this.filter,
                 (session, pod) => { },
                 this.feedbackLoops,
-                this.logger))
+                this.logger,
+                this.services))
             {
                 @operator.ScheduleReconciliation(child);
 
@@ -675,7 +735,8 @@ namespace Kaponata.Operator.Tests.Operators
                 this.filter,
                 (session, pod) => { },
                 new Collection<FeedbackLoop<WebDriverSession, V1Pod>>(),
-                this.logger))
+                this.logger,
+                this.services))
             {
                 // Wait for the operator to start and complete initialization
                 await Task.WhenAll(
@@ -717,7 +778,8 @@ namespace Kaponata.Operator.Tests.Operators
                 this.filter,
                 (session, pod) => { },
                 this.feedbackLoops,
-                this.logger))
+                this.logger,
+                this.services))
             {
                 // Wait for the operator to start and complete initialization
                 await @operator.StartAsync(default).ConfigureAwait(false);
@@ -792,7 +854,8 @@ namespace Kaponata.Operator.Tests.Operators
                 this.filter,
                 (session, pod) => { },
                 this.feedbackLoops,
-                this.logger))
+                this.logger,
+                this.services))
             {
                 // Wait for the operator to start and complete initialization
                 await @operator.StartAsync(default).ConfigureAwait(false);
@@ -823,7 +886,7 @@ namespace Kaponata.Operator.Tests.Operators
         }
 
         /// <summary>
-        /// <see cref="ChildOperator{TParent, TChild}.ReconcileAsync(ChildOperatorContext{TParent, TChild}, CancellationToken)"/> cannot run
+        /// <see cref="ChildOperator{TParent, TChild}.ReconcileAsync(TParent, TChild, CancellationToken)"/> cannot run
         /// in parallel.
         /// </summary>
         /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
@@ -849,24 +912,19 @@ namespace Kaponata.Operator.Tests.Operators
                 },
             };
 
-            var context = new ChildOperatorContext<WebDriverSession, V1Pod>(
-                parent,
-                null,
-                kubernetes.Object,
-                this.logger);
-
             using (var @operator = new ChildOperator<WebDriverSession, V1Pod>(
                 kubernetes.Object,
                 this.configuration,
                 this.filter,
                 (session, pod) => { },
                 this.feedbackLoops,
-                this.logger))
+                this.logger,
+                this.services))
             {
-                var firstTask = @operator.ReconcileAsync(context, default);
+                var firstTask = @operator.ReconcileAsync(parent, null, default);
 
                 await createPodCalledTcs.Task.ConfigureAwait(false);
-                await Assert.ThrowsAsync<InvalidOperationException>(() => @operator.ReconcileAsync(context, default)).ConfigureAwait(false);
+                await Assert.ThrowsAsync<InvalidOperationException>(() => @operator.ReconcileAsync(parent, null, default)).ConfigureAwait(false);
 
                 createPodTcs.SetResult(new V1Pod());
             }
@@ -894,7 +952,8 @@ namespace Kaponata.Operator.Tests.Operators
                 this.filter,
                 (session, pod) => { },
                 this.feedbackLoops,
-                this.logger))
+                this.logger,
+                this.services))
             {
                 @operator.ReconcilationBuffer.Post("my-name");
                 @operator.ReconcilationBuffer.Post(null);
@@ -931,7 +990,8 @@ namespace Kaponata.Operator.Tests.Operators
                 (session) => false, /* skip everything */
                 (session, pod) => { },
                 this.feedbackLoops,
-                this.logger))
+                this.logger,
+                this.services))
             {
                 @operator.ReconcilationBuffer.Post("my-name");
                 @operator.ReconcilationBuffer.Post(null);
@@ -969,7 +1029,8 @@ namespace Kaponata.Operator.Tests.Operators
                 (session) => false, /* skip everything */
                 (session, pod) => { },
                 this.feedbackLoops,
-                this.logger))
+                this.logger,
+                this.services))
             {
                 @operator.ReconcilationBuffer.Post("my-name");
                 @operator.ReconcilationBuffer.Post(null);
@@ -1005,7 +1066,8 @@ namespace Kaponata.Operator.Tests.Operators
                 (session) => false, /* skip everything */
                 (session, pod) => { },
                 this.feedbackLoops,
-                this.logger))
+                this.logger,
+                this.services))
             {
                 @operator.ReconcilationBuffer.Post("my-name");
 

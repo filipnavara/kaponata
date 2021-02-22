@@ -15,6 +15,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
@@ -72,6 +73,7 @@ namespace Kaponata.Operator.Tests.Operators
             };
 
             var podCreated = new TaskCompletionSource<V1Pod>();
+            var podRunning = new TaskCompletionSource<V1Pod>();
             var podDeleted = new TaskCompletionSource<V1Pod>();
 
             var kubernetes = this.host.Services.GetRequiredService<KubernetesClient>();
@@ -99,6 +101,10 @@ namespace Kaponata.Operator.Tests.Operators
                         {
                             case k8s.WatchEventType.Added:
                                 podCreated.TrySetResult(pod);
+                                break;
+
+                            case k8s.WatchEventType.Modified when pod.Status.Phase == "Running" && pod.Status.ContainerStatuses.All(c => c.Ready):
+                                podRunning.TrySetResult(pod);
                                 break;
 
                             case k8s.WatchEventType.Deleted:
@@ -129,7 +135,8 @@ namespace Kaponata.Operator.Tests.Operators
                     };
                 },
                 new Collection<FeedbackLoop<WebDriverSession, V1Pod>>(),
-                this.host.Services.GetRequiredService<ILogger<ChildOperator<WebDriverSession, V1Pod>>>()))
+                this.host.Services.GetRequiredService<ILogger<ChildOperator<WebDriverSession, V1Pod>>>(),
+                this.host.Services))
             {
                 // Start the operator
                 await @operator.StartAsync(default).ConfigureAwait(false);
@@ -173,6 +180,11 @@ namespace Kaponata.Operator.Tests.Operators
                 logger.LogInformation($"Created pod: {JsonConvert.SerializeObject(createdPod)}");
                 logger.LogInformation($"Owner reference: {JsonConvert.SerializeObject(ownerReference)}");
                 Assert.Equal($"{name}-fake", createdPod.Metadata.Name);
+
+                await Task.WhenAny(podRunning.Task, Task.Delay(TimeSpan.FromMinutes(2))).ConfigureAwait(false);
+                Assert.True(podRunning.Task.IsCompleted, "Failed to create start the pod within a timespan of 2 minutes");
+                var runningPod = await podCreated.Task.ConfigureAwait(false);
+                logger.LogInformation($"Pod is running: {JsonConvert.SerializeObject(runningPod)}");
 
                 // Deleting the sessions should result in the associated pod being deleted, too.
                 await sessionClient.DeleteAsync(emptySession, new V1DeleteOptions(propagationPolicy: "Foreground"), TimeSpan.FromMinutes(1), default).ConfigureAwait(false);

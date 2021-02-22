@@ -5,6 +5,7 @@
 using k8s;
 using k8s.Models;
 using Kaponata.Kubernetes;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
 
@@ -33,16 +34,14 @@ namespace Kaponata.Operator.Operators
         /// <param name="child">
         /// The child object being reconciled.
         /// </param>
-        /// <param name="kubernetes">
-        /// A <see cref="KubernetesClient"/> which provides access to the Kubernetes API.
+        /// <param name="services">
+        /// A service provider from which required services can be sourced.
         /// </param>
-        /// <param name="logger">
-        /// A <see cref="ILogger"/> which can be used when logging diagnostic messages.
-        /// </param>
-        public ChildOperatorContext(TParent parent, TChild child, KubernetesClient kubernetes, ILogger logger)
+        public ChildOperatorContext(TParent parent, TChild child, IServiceProvider services)
         {
-            this.Logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            this.Kubernetes = kubernetes ?? throw new ArgumentNullException(nameof(kubernetes));
+            this.Services = services ?? throw new ArgumentNullException(nameof(services));
+            this.Logger = services.GetRequiredService<ILogger<ChildOperatorContext<TParent, TChild>>>();
+            this.Kubernetes = services.GetRequiredService<KubernetesClient>();
             this.Parent = parent ?? throw new ArgumentNullException(nameof(parent));
             this.Child = child;
         }
@@ -67,5 +66,10 @@ namespace Kaponata.Operator.Operators
         /// if no child exists.
         /// </summary>
         public TChild Child { get; }
+
+        /// <summary>
+        /// Gets a service context from which additional services may be sourced.
+        /// </summary>
+        public IServiceProvider Services { get; }
     }
 }
