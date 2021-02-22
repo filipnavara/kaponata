@@ -2,7 +2,6 @@
 // Copyright (c) Quamotion bv. All rights reserved.
 // </copyright>
 
-using k8s.Models;
 using Kaponata.Android.Adb;
 using Kaponata.Kubernetes;
 using System;
@@ -21,7 +20,7 @@ namespace Kaponata.Operator.Kubernetes
     public class KubernetesAdbSocketLocator : AdbSocketLocator
     {
         private readonly KubernetesClient kubernetes;
-        private readonly V1Pod pod;
+        private readonly KubernetesAdbContext context;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="KubernetesAdbSocketLocator"/> class.
@@ -29,21 +28,21 @@ namespace Kaponata.Operator.Kubernetes
         /// <param name="kubernetes">
         /// A connection to the Kubernetes cluster.
         /// </param>
-        /// <param name="pod">
+        /// <param name="context">
         /// The pod in which adb is running.
         /// </param>
         public KubernetesAdbSocketLocator(
             KubernetesClient kubernetes,
-            V1Pod pod)
+            KubernetesAdbContext context)
         {
             this.kubernetes = kubernetes ?? throw new ArgumentNullException(nameof(kubernetes));
-            this.pod = pod ?? throw new ArgumentNullException(nameof(pod));
+            this.context = context ?? throw new ArgumentNullException(nameof(context));
         }
 
         /// <inheritdoc/>
         public override Task<Stream> ConnectToAdbAsync(CancellationToken cancellationToken)
         {
-            return this.kubernetes.ConnectToPodPortAsync(this.pod, DefaultAdbPort, cancellationToken).AsTask();
+            return this.kubernetes.ConnectToPodPortAsync(this.context.Pod, DefaultAdbPort, cancellationToken).AsTask();
         }
 
         /// <inheritdoc/>
