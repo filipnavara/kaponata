@@ -3,6 +3,7 @@
 // </copyright>
 
 using Kaponata.Android.Adb;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using System;
@@ -82,6 +83,35 @@ namespace Kaponata.Android.Tests.Adb
             Assert.Throws<ArgumentOutOfRangeException>("device", () => client.EnsureDevice(new DeviceData() { Serial = string.Empty }));
 
             client.EnsureDevice(new DeviceData() { Serial = "123" });
+        }
+
+        /// <summary>
+        /// A <see cref="AdbClient"/> object can be sourced from a dependency injection container, and uses a <see cref="AdbSocketLocator"/>
+        /// configured in that DI container if one is available.
+        /// </summary>
+        /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
+        [Fact]
+        public async Task AdbClient_WorksWithDependencyInjection_Async()
+        {
+            var locator = new Mock<AdbSocketLocator>();
+            var stream = Mock.Of<Stream>();
+
+            locator
+                .Setup(l => l.ConnectToAdbAsync(default))
+                .ReturnsAsync(stream);
+
+            var services =
+                new ServiceCollection()
+                .AddScoped<AdbClient>()
+                .AddScoped((p) => locator.Object)
+                .AddLogging()
+                .BuildServiceProvider();
+
+            var client = services.GetRequiredService<AdbClient>();
+            await using (var protocol = await client.TryConnectToAdbAsync(default))
+            {
+                Assert.Same(stream, protocol.Stream);
+            }
         }
     }
 }
