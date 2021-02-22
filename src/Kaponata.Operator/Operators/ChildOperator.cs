@@ -7,6 +7,7 @@ using k8s.Models;
 using Kaponata.Kubernetes;
 using Kaponata.Kubernetes.Polyfill;
 using Microsoft.AspNetCore.JsonPatch;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System;
@@ -76,6 +77,7 @@ namespace Kaponata.Operator.Operators
         private readonly Func<TParent, bool> parentFilter;
         private readonly Action<TParent, TChild> childFactory;
         private readonly Collection<FeedbackLoop<TParent, TChild>> feedbackLoops;
+        private readonly IServiceProvider services;
 
         // Kubernetes clients which are used to watch and upated parent and child objects.
         private readonly NamespacedKubernetesClient<TParent> parentClient;
@@ -114,13 +116,17 @@ namespace Kaponata.Operator.Operators
         /// <param name="logger">
         /// The logger to use when logging.
         /// </param>
+        /// <param name="services">
+        /// A <see cref="IServiceProvider"/> which is passed to the feedback loops.
+        /// </param>
         public ChildOperator(
             KubernetesClient kubernetes,
             ChildOperatorConfiguration configuration,
             Func<TParent, bool> parentFilter,
             Action<TParent, TChild> childFactory,
             Collection<FeedbackLoop<TParent, TChild>> feedbackLoops,
-            ILogger<ChildOperator<TParent, TChild>> logger)
+            ILogger<ChildOperator<TParent, TChild>> logger,
+            IServiceProvider services)
         {
             this.kubernetes = kubernetes ?? throw new ArgumentNullException(nameof(kubernetes));
             this.configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
@@ -128,6 +134,7 @@ namespace Kaponata.Operator.Operators
             this.childFactory = childFactory ?? throw new ArgumentNullException(nameof(childFactory));
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
             this.feedbackLoops = feedbackLoops ?? throw new ArgumentNullException(nameof(feedbackLoops));
+            this.services = services ?? throw new ArgumentNullException(nameof(services));
 
             this.parentClient = this.kubernetes.GetClient<TParent>();
             this.childClient = this.kubernetes.GetClient<TChild>();
@@ -296,9 +303,7 @@ namespace Kaponata.Operator.Operators
 
                     if (parent != null && this.parentFilter(parent))
                     {
-                        await this.ReconcileAsync(
-                            new ChildOperatorContext<TParent, TChild>(parent, child, this.kubernetes, this.logger),
-                            operationCts.Token).ConfigureAwait(false);
+                        await this.ReconcileAsync(parent, child, operationCts.Token).ConfigureAwait(false);
                     }
                     else
                     {
@@ -320,16 +325,19 @@ namespace Kaponata.Operator.Operators
         /// <summary>
         /// Attempts to reconcile a child and parent object.
         /// </summary>
-        /// <param name="context">
-        /// A <see cref="ChildOperatorContext{TParent, TChild}"/> object which represents the parent and child object
-        /// being reconciled.</param>
+        /// <param name="parent">
+        /// The parent object being reconciled.
+        /// </param>
+        /// <param name="child">
+        /// The child object being reconciled, or <see langword="null"/> if a child object does not yet exist.
+        /// </param>
         /// <param name="cancellationToken">
         /// A <see cref="CancellationToken"/> which can be used to cancel the asynchronous operation.
         /// </param>
         /// <returns>
         /// A <see cref="Task"/> representing the asynchronous operation.
         /// </returns>
-        public async Task ReconcileAsync(ChildOperatorContext<TParent, TChild> context, CancellationToken cancellationToken)
+        public async Task ReconcileAsync(TParent parent, TChild child, CancellationToken cancellationToken)
         {
             // Let's assume Kubernetes takes care of garbage collection, so the source
             // object is always present.
@@ -337,7 +345,7 @@ namespace Kaponata.Operator.Operators
             // Although children with no parents are possible because of cascading background deletions:
             // https://kubernetes.io/docs/concepts/workloads/controllers/garbage-collection/#background-cascading-deletion,
             // they should never enter the reconcile loop.
-            Debug.Assert(context.Parent != null, "Cannot have a child object without a parent object");
+            Debug.Assert(parent != null, "Cannot have a child object without a parent object");
 
             if (!await this.reconciliationSemaphore.WaitAsync(0).ConfigureAwait(false))
             {
@@ -348,30 +356,30 @@ namespace Kaponata.Operator.Operators
             {
                 this.logger.LogInformation(
                     "Scheduling reconciliation for parent {parent} and child {child} for operator {operatorName}",
-                    context.Parent?.Metadata?.Name,
-                    context.Child?.Metadata?.Name,
+                    parent?.Metadata?.Name,
+                    child?.Metadata?.Name,
                     this.configuration.OperatorName);
 
-                if (context.Child == null)
+                if (child == null)
                 {
                     // Create a new object
-                    var child = new TChild()
+                    child = new TChild()
                     {
                         Metadata = new V1ObjectMeta()
                         {
                             Labels = new Dictionary<string, string>(this.configuration.ChildLabels),
-                            Name = context.Parent.Metadata.Name,
-                            NamespaceProperty = context.Parent.Metadata.NamespaceProperty,
+                            Name = parent.Metadata.Name,
+                            NamespaceProperty = parent.Metadata.NamespaceProperty,
                             OwnerReferences = new V1OwnerReference[]
                             {
-                                context.Parent.AsOwnerReference(blockOwnerDeletion: false, controller: false),
+                                parent.AsOwnerReference(blockOwnerDeletion: false, controller: false),
                             },
                         },
                     };
 
                     child.SetLabel(Annotations.ManagedBy, this.configuration.OperatorName);
 
-                    this.childFactory(context.Parent, child);
+                    this.childFactory(parent, child);
 
                     await this.childClient.CreateAsync(child, cancellationToken).ConfigureAwait(false);
                 }
@@ -380,23 +388,31 @@ namespace Kaponata.Operator.Operators
                     this.logger.LogInformation(
                         "Running {feedbackCount} feedback loops for parent {parent} and child {child} for operator {operatorName} because child is null.",
                         this.feedbackLoops.Count,
-                        context.Parent?.Metadata?.Name,
-                        context.Child?.Metadata?.Name,
+                        parent?.Metadata?.Name,
+                        child?.Metadata?.Name,
                         this.configuration.OperatorName);
 
                     JsonPatchDocument<TParent> feedback = null;
 
-                    foreach (var feedbackLoop in this.feedbackLoops)
+                    using (var scope = this.services.CreateScope())
                     {
-                        if ((feedback = await feedbackLoop(context, cancellationToken).ConfigureAwait(false)) != null)
-                        {
-                            this.logger.LogInformation(
-                                "Applying patch {feedback} to parent {parent} for operator {operatorName}.",
-                                feedback,
-                                context.Parent?.Metadata?.Name,
-                                this.configuration.OperatorName);
+                        var context = new ChildOperatorContext<TParent, TChild>(
+                            parent,
+                            child,
+                            scope.ServiceProvider);
 
-                            await this.parentClient.PatchAsync(context.Parent, feedback, cancellationToken).ConfigureAwait(false);
+                        foreach (var feedbackLoop in this.feedbackLoops)
+                        {
+                            if ((feedback = await feedbackLoop(context, cancellationToken).ConfigureAwait(false)) != null)
+                            {
+                                this.logger.LogInformation(
+                                    "Applying patch {feedback} to parent {parent} for operator {operatorName}.",
+                                    feedback,
+                                    context.Parent?.Metadata?.Name,
+                                    this.configuration.OperatorName);
+
+                                await this.parentClient.PatchAsync(context.Parent, feedback, cancellationToken).ConfigureAwait(false);
+                            }
                         }
                     }
                 }

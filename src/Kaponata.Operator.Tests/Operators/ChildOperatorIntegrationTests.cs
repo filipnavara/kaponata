@@ -129,7 +129,8 @@ namespace Kaponata.Operator.Tests.Operators
                     };
                 },
                 new Collection<FeedbackLoop<WebDriverSession, V1Pod>>(),
-                this.host.Services.GetRequiredService<ILogger<ChildOperator<WebDriverSession, V1Pod>>>()))
+                this.host.Services.GetRequiredService<ILogger<ChildOperator<WebDriverSession, V1Pod>>>(),
+                this.host.Services))
             {
                 // Start the operator
                 await @operator.StartAsync(default).ConfigureAwait(false);

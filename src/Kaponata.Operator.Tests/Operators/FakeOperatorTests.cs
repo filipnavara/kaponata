@@ -65,14 +65,19 @@ namespace Kaponata.Operator.Tests.Operators
         /// </returns>
         public static IEnumerable<object[]> BuildPodOperator_NoFeedback_Data()
         {
+            var services =
+                new ServiceCollection()
+                    .AddSingleton(Mock.Of<KubernetesClient>())
+                    .AddLogging()
+                    .BuildServiceProvider();
+
             // The session has no requested capabilities.
             yield return new object[]
             {
                new ChildOperatorContext<WebDriverSession, V1Pod>(
                    new WebDriverSession(),
                    null,
-                   Mock.Of<KubernetesClient>(),
-                   NullLogger.Instance),
+                   services),
             };
 
             // The session has no requested capabilities.
@@ -84,8 +89,7 @@ namespace Kaponata.Operator.Tests.Operators
                        Spec = new WebDriverSessionSpec(),
                    },
                    null,
-                   Mock.Of<KubernetesClient>(),
-                   NullLogger.Instance),
+                   services),
             };
 
             // The session already has a session id
@@ -104,8 +108,7 @@ namespace Kaponata.Operator.Tests.Operators
                        },
                    },
                    null,
-                   Mock.Of<KubernetesClient>(),
-                   NullLogger.Instance),
+                   services),
             };
 
             // The pod does not exist.
@@ -121,8 +124,7 @@ namespace Kaponata.Operator.Tests.Operators
                        Status = new WebDriverSessionStatus(),
                    },
                    null,
-                   Mock.Of<KubernetesClient>(),
-                   NullLogger.Instance),
+                   services),
             };
 
             // The pod is not ready.
@@ -138,8 +140,7 @@ namespace Kaponata.Operator.Tests.Operators
                        Status = new WebDriverSessionStatus(),
                    },
                    new V1Pod(),
-                   Mock.Of<KubernetesClient>(),
-                   NullLogger.Instance),
+                   services),
             };
 
             // The pod is not ready.
@@ -158,8 +159,7 @@ namespace Kaponata.Operator.Tests.Operators
                    {
                        Status = new V1PodStatus(),
                    },
-                   Mock.Of<KubernetesClient>(),
-                   NullLogger.Instance),
+                   services),
             };
 
             // The pod is not ready.
@@ -181,8 +181,7 @@ namespace Kaponata.Operator.Tests.Operators
                            Phase = "Pending",
                        },
                    },
-                   Mock.Of<KubernetesClient>(),
-                   NullLogger.Instance),
+                   services),
             };
 
             // The pod is not ready.
@@ -211,8 +210,7 @@ namespace Kaponata.Operator.Tests.Operators
                            },
                        },
                    },
-                   Mock.Of<KubernetesClient>(),
-                   NullLogger.Instance),
+                   services),
             };
         }
 
@@ -336,8 +334,7 @@ namespace Kaponata.Operator.Tests.Operators
                         ContainerStatuses = new V1ContainerStatus[] { },
                     },
                 },
-                this.kubernetes.Object,
-                NullLogger.Instance);
+                this.host.Services);
 
             var response = new HttpResponseMessage
             {
@@ -425,8 +422,7 @@ namespace Kaponata.Operator.Tests.Operators
                         ContainerStatuses = new V1ContainerStatus[] { },
                     },
                 },
-                this.kubernetes.Object,
-                NullLogger.Instance);
+                this.host.Services);
 
             var response = new HttpResponseMessage
             {
