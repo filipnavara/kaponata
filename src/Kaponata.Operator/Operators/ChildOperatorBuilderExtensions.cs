@@ -29,12 +29,17 @@ namespace Kaponata.Operator.Operators
         /// <param name="appiumPort">
         /// The port at which the Appium server is listening.
         /// </param>
+        /// <param name="initializer">
+        /// Optionally, a delegate which can be used to initialize the pod before the session
+        /// is created.
+        /// </param>
         /// <returns>
         /// An operator builder which can be used to further configure the operator.
         /// </returns>
         public static ChildOperatorBuilder<WebDriverSession, V1Pod> CreatesSession(
             this ChildOperatorBuilder<WebDriverSession, V1Pod> builder,
-            int appiumPort)
+            int appiumPort,
+            SessionPodInitializer initializer = null)
         {
             return builder.PostsFeedback(
                 async (context, cancellationToken) =>
@@ -66,6 +71,11 @@ namespace Kaponata.Operator.Operators
                     }
                     else
                     {
+                        if (initializer != null)
+                        {
+                            await initializer(context, cancellationToken).ConfigureAwait(false);
+                        }
+
                         var requestedCapabilities = JsonConvert.DeserializeObject(context.Parent.Spec.Capabilities);
                         var request = JsonConvert.SerializeObject(
                             new

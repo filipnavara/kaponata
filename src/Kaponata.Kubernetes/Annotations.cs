@@ -95,6 +95,11 @@ namespace Kaponata.Kubernetes
             /// The fake automation provider, implemented by the appium-fake-driver driver.
             /// </summary>
             public const string Fake = "fake";
+
+            /// <summary>
+            /// The UI Automator 2 provider enables test automation of Android devices.
+            /// </summary>
+            public const string UIAutomator2 = "uiautomator2";
         }
 
         /// <summary>
