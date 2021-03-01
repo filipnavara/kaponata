@@ -74,6 +74,36 @@ namespace Kaponata.Api
         public TimeSpan CreationTimeout { get; set; } = TimeSpan.FromMinutes(1);
 
         /// <summary>
+        /// Gets the name of the automation provider for a given platform and automation name combination.
+        /// </summary>
+        /// <param name="platformName">
+        /// The platform (e.g. Android, iOS,...) for which to provide automation.
+        /// </param>
+        /// <param name="automationName">
+        /// The automation technology (e.g. uiautomator2, xcuitrunner) to use.
+        /// </param>
+        /// <returns>
+        /// A <see cref="string"/> which contains the name of the automation provider, or
+        /// <see langword="null"/> if none could be found.
+        /// </returns>
+        public static string? GetProviderName(string platformName, string? automationName)
+        {
+            if (string.Equals("fake", platformName, StringComparison.OrdinalIgnoreCase))
+            {
+                return Annotations.AutomationNames.Fake;
+            }
+            else if (string.Equals("android", platformName, StringComparison.OrdinalIgnoreCase))
+            {
+                if (string.Equals("uiautomator2", automationName, StringComparison.OrdinalIgnoreCase))
+                {
+                    return Annotations.AutomationNames.UIAutomator2;
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
         /// Asynchronously creates a new session.
         /// </summary>
         /// <param name="request">
@@ -105,12 +135,24 @@ namespace Kaponata.Api
                         "The platformName capability is required and must be a string."));
             }
 
-            if (!string.Equals((string)platformName, "fake", StringComparison.OrdinalIgnoreCase))
+            request.Capabilities.AlwaysMatch.TryGetValue("appium:automationName", out object? automationName);
+
+            if (automationName != null & !(automationName is string))
             {
                 return new WebDriverResponse(
                     new WebDriverError(
                         WebDriverErrorCode.SessionNotCreated,
-                        $"The platform '{platformName}' is not supported"));
+                        "The appium:automationName capability must be a string."));
+            }
+
+            var providerName = GetProviderName((string)platformName, automationName as string);
+
+            if (providerName == null)
+            {
+                return new WebDriverResponse(
+                    new WebDriverError(
+                        WebDriverErrorCode.SessionNotCreated,
+                        $"The platform '{platformName}' in combination with appium:automationName '{automationName}' is not supported"));
             }
 
             var session = await this.sessionClient.CreateAsync(
@@ -119,10 +161,10 @@ namespace Kaponata.Api
                     Metadata = new V1ObjectMeta()
                     {
                         NamespaceProperty = "default",
-                        GenerateName = "fake-",
+                        GenerateName = $"{providerName}-",
                         Labels = new Dictionary<string, string>()
                         {
-                            { Annotations.AutomationName, Annotations.AutomationNames.Fake },
+                            { Annotations.AutomationName, providerName },
                         },
                     },
                     Spec = new WebDriverSessionSpec()
