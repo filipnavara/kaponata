@@ -1,0 +1,19 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "guacamole.guacamole.ingress.fullname" . }}
+  labels:
+    helm.sh/chart: {{ include "guacamole.chart" . }}
+    app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /guacamole
+        pathType: Prefix
+        backend:
+          service:
+            name: {{ include "guacamole.guacamole.service.fullname" . }}
+            port:
+              number: 80
