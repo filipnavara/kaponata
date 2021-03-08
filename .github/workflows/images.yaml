@@ -11,6 +11,7 @@ on:
     - src/fake-driver/**
     - src/appium/**
     - src/appium-android/**
+    - src/guacamole/**
 
 jobs:
   build:
@@ -24,6 +25,7 @@ jobs:
         - fake-driver
         - appium
         - appium-android
+        - guacamole
 
     steps:
       - uses: actions/checkout@v2
