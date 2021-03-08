@@ -53,7 +53,15 @@ namespace Kaponata.Multimedia.Tests
         {
             var data = new byte[] { (byte)'t', (byte)'e', (byte)'s', (byte)'t' };
 
+            var nativePacket = new NativeAVPacket()
+            {
+            };
+
             var ffmpegMock = new Mock<FFmpegClient>();
+
+            ffmpegMock
+                .Setup(c => c.AllocPacket())
+                .Returns((IntPtr)(&nativePacket));
 
             ffmpegMock
                 .Setup(c => c.InitPacket(It.IsAny<IntPtr>()))

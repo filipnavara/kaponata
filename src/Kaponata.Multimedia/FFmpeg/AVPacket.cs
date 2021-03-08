@@ -27,8 +27,8 @@ namespace Kaponata.Multimedia.FFmpeg
         /// </param>
         public AVPacket(FFmpegClient client)
         {
-            this.handle = Marshal.AllocHGlobal(Marshal.SizeOf<NativeAVPacket>());
             this.client = client;
+            this.handle = client.AllocPacket();
             client.InitPacket(this.handle);
         }
 
@@ -114,7 +114,7 @@ namespace Kaponata.Multimedia.FFmpeg
         public void Dispose()
         {
             this.client.UnrefPacket(this);
-            Marshal.FreeHGlobal(this.handle);
+            this.client.FreePacket(this.handle);
         }
     }
 }

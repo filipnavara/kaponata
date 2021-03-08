@@ -206,6 +206,28 @@ namespace Kaponata.Multimedia.FFmpeg
         }
 
         /// <summary>
+        /// Allocate an AVPacket and set its fields to default values. The resulting struct must be freed using av_packet_free().
+        /// </summary>
+        /// <returns>
+        /// An AVPacket filled with default values or NULL on failure.
+        /// </returns>
+        public virtual IntPtr AllocPacket()
+        {
+            return (IntPtr)ffmpeg.av_packet_alloc();
+        }
+
+        /// <summary>
+        /// Free the packet, if the packet is reference counted, it will be unreferenced first.
+        /// </summary>
+        /// <param name="packet">
+        /// packet to be freed. The pointer will be set to NULL.
+        /// </param>
+        public virtual void FreePacket(IntPtr packet)
+        {
+            ffmpeg.av_packet_free((NativeAVPacket**)&packet);
+        }
+
+        /// <summary>
         /// Supply raw packet data as input to a decoder.
         /// </summary>
         /// <param name="codecContext">
