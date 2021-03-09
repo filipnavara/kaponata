@@ -1,0 +1,10 @@
+guacamole:
+  image:
+    repository: quay.io/kaponata/guacamole
+    tag: 1.3.0
+  authenticationServiceUrl: http://kaponata-api-service/api/guacamole
+
+guacd:
+  image:
+    repository: guacamole/guacd
+    tag: 1.3.0

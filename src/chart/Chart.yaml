@@ -10,6 +10,8 @@ appVersion: "1.16.0"
 dependencies:
   - name: "usbmuxd"
     version: "1.0.0"
+  - name: "guacamole"
+    version: "1.0.0"
 
 maintainers:
   - name: Frederik Carlier

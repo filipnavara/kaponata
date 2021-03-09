@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ template "guacamole.guacd.fullname" . }}
+  labels:
+    {{- include "guacamole.guacd.labels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      {{- include "guacamole.guacd.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "guacamole.guacd.selectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+        - name: "guacd"
+          image: "{{ .Values.guacd.image.repository }}:{{ tpl .Values.guacd.image.tag . }}"
+          ports:
+            - name: guacd
+              containerPort: 4822
+              protocol: TCP

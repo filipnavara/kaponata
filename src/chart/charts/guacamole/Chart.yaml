@@ -1,0 +1,12 @@
+apiVersion: v2
+name: guacamole
+description: Apache Guacamole is a clientless remote desktop gateway. It supports standard protocols like VNC, RDP, and SSH.
+home: https://guacamole.apache.org/
+
+type: application
+version: 1.0.0
+appVersion: "1.3.0"
+
+maintainers:
+  - name: Frederik Carlier
+    email: frederik.carlier@quamotion.mobi
