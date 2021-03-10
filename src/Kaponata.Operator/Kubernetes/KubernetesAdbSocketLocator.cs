@@ -44,11 +44,5 @@ namespace Kaponata.Operator.Kubernetes
         {
             return this.kubernetes.ConnectToPodPortAsync(this.context.Pod, DefaultAdbPort, cancellationToken).AsTask();
         }
-
-        /// <inheritdoc/>
-        public override (Socket, EndPoint) GetAdbSocket()
-        {
-            throw new NotSupportedException();
-        }
     }
 }

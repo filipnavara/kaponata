@@ -43,7 +43,6 @@ namespace Kaponata.Android.ScrCpy
         /// A value indicating whether the current packet is the first packet.
         /// </summary>
         private bool firstPacket = true;
-        private int packetNr = 0;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ScrCpyVideoStream"/> class.

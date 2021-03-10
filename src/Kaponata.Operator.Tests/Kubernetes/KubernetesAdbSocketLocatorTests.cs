@@ -60,15 +60,5 @@ namespace Kaponata.Operator.Tests.Kubernetes
 
             kubernetes.Verify();
         }
-
-        /// <summary>
-        /// <see cref="KubernetesAdbSocketLocator.GetAdbSocket"/> is not implemented.
-        /// </summary>
-        [Fact]
-        public void GetAdbSocket_Throws()
-        {
-            var locator = new KubernetesAdbSocketLocator(Mock.Of<KubernetesClient>(), new KubernetesAdbContext() { Pod = new V1Pod() });
-            Assert.Throws<NotSupportedException>(() => locator.GetAdbSocket());
-        }
     }
 }

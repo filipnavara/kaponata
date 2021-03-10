@@ -60,14 +60,14 @@ namespace Kaponata.Android.Tests.Adb
         /// <param name="allowRebind">
         /// A value indicating whether the forward should allow rebind.
         /// </param>
-        /// <param name="expectedCommand">
-        /// The expected write command.
-        /// </param>
         /// <param name="local">
         /// The local forward specification.
         /// </param>
         /// <param name="remote">
         /// The remote forward specification.
+        /// </param>
+        /// <param name="expectedCommand">
+        /// The expected write command.
         /// </param>
         /// <param name="adbPortResponse">
         /// The response containting the port in string format.
