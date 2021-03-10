@@ -326,12 +326,20 @@ namespace Kaponata.Android.Adb
         }
 
         /// <summary>
-        /// 
+        /// Creates a reverse port forward.
         /// </summary>
-        /// <param name="device"></param>
-        /// <param name="deviceSocket"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
+        /// <param name="device">
+        /// The device for which the reverse forward needs to be created.
+        /// </param>
+        /// <param name="deviceSocket">
+        /// The device socket.
+        /// </param>
+        /// <param name="cancellationToken">
+        /// A <see cref="CancellationToken"/> which can be used to cancel the asynchronous operation.
+        /// </param>
+        /// <returns>
+        /// A <see cref="Task"/> representing the asynchronous operation.
+        /// </returns>
         public async Task<IPEndPoint> CreateReverseForwardAsync(DeviceData device, string deviceSocket, CancellationToken cancellationToken)
         {
             // If the port is already being forwarded, recycle that port. This prevent us from opening a new

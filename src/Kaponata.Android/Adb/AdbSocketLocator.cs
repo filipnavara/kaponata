@@ -58,7 +58,7 @@ namespace Kaponata.Android.Adb
             {
                 var separator = socketAddress.IndexOf(':');
                 var host = IPAddress.Parse(socketAddress.Substring(0, separator));
-                var port = int.Parse(socketAddress[(separator + 1)..]);
+                var port = int.Parse(socketAddress[(separator + 1) ..]);
 
                 socket = new Socket(SocketType.Stream, ProtocolType.Tcp);
                 endPoint = new IPEndPoint(host, port);

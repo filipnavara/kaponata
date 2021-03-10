@@ -44,6 +44,7 @@ namespace Kaponata.Android.ScrCpy
         /// </summary>
         private bool firstPacket = true;
         private int packetNr = 0;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ScrCpyVideoStream"/> class.
         /// </summary>
@@ -149,11 +150,6 @@ namespace Kaponata.Android.ScrCpy
                 if (this.packetHeader == null)
                 {
                     this.logger.LogWarning("Failed to read packet header. Exiting.");
-                    return 0;
-                }
-                packetNr++;
-                if(packetNr == 100)
-                {
                     return 0;
                 }
 

@@ -11,8 +11,7 @@ namespace Kaponata.Android.ScrCpy
     /// </summary>
     /// <seealso href="https://github.com/Genymobile/scrcpy/blob/master/server/src/main/java/com/genymobile/scrcpy/Server.java"/>
     /// <seealso href="https://github.com/Genymobile/scrcpy/blob/master/app/src/server.c#L267"/>
-    /// for default options <seealso href="https://github.com/Genymobile/scrcpy/blob/c5c5fc18aec537a5c4134a5bcd45e9f8bbadb66d/app/src/scrcpy.h"/> and <see href="https://github.com/Genymobile/scrcpy/blob/c5c5fc18aec537a5c4134a5bcd45e9f8bbadb66d/app/meson.build"/>
-    /// 
+    /// for default options <seealso href="https://github.com/Genymobile/scrcpy/blob/c5c5fc18aec537a5c4134a5bcd45e9f8bbadb66d/app/src/scrcpy.h"/> and <see href="https://github.com/Genymobile/scrcpy/blob/c5c5fc18aec537a5c4134a5bcd45e9f8bbadb66d/app/meson.build"/>.
     public partial class ScrCpyOptions
     {
         /// <summary>

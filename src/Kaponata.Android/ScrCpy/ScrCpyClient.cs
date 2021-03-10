@@ -150,11 +150,32 @@ namespace Kaponata.Android.ScrCpy
             return socket;
         }
 
+        /// <summary>
+        /// Connect to the scrcpy server.
+        /// </summary>
+        /// <param name="cancellationToken">
+        /// A <see cref="CancellationToken"/> which can be used to cancel the asynchronous task.
+        /// </param>
+        /// <returns>
+        /// The scrcpy video stream.
+        /// </returns>
         public virtual Task<ScrCpyVideoStream> ConnectToScrCpyAsync(CancellationToken cancellationToken)
         {
             return this.ConnectToScrCpyAsync(ScrCpyOptions.DefaultOptions, cancellationToken);
         }
 
+        /// <summary>
+        /// Connect to the scrcpy server.
+        /// </summary>
+        /// <param name="options">
+        /// The scrcpy options.
+        /// </param>
+        /// <param name="cancellationToken">
+        /// A <see cref="CancellationToken"/> which can be used to cancel the asynchronous task.
+        /// </param>
+        /// <returns>
+        /// The scrcpy video stream.
+        /// </returns>
         public virtual async Task<ScrCpyVideoStream> ConnectToScrCpyAsync(ScrCpyOptions options, CancellationToken cancellationToken)
         {
             await this.InstallScrCpyAsync(options, cancellationToken).ConfigureAwait(false);
@@ -210,7 +231,7 @@ namespace Kaponata.Android.ScrCpy
             }
 
             // Create a directory for our resources
-            this.adbClient.ExecuteRemoteShellCommandAsync(this.device, $"cp {scrCpyFilePath} {ScrCpyRunDirectory}/{ScrCpyFileName}", CancellationToken.None).Wait();
+            await this.adbClient.ExecuteRemoteShellCommandAsync(this.device, $"cp {scrCpyFilePath} {ScrCpyRunDirectory}/{ScrCpyFileName}", CancellationToken.None).ConfigureAwait(false);
 
             this.logger.LogInformation($"Successfully installed scrcpy on device '{this.device.Serial}'.");
         }
