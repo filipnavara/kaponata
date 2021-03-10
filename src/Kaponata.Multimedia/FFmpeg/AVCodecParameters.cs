@@ -2,6 +2,7 @@
 // Copyright (c) Quamotion bv. All rights reserved.
 // </copyright>
 
+using NativeAVCodecID = FFmpeg.AutoGen.AVCodecID;
 using NativeAVCodecParameters = FFmpeg.AutoGen.AVCodecParameters;
 using NativeAVMediaType = FFmpeg.AutoGen.AVMediaType;
 
@@ -27,8 +28,20 @@ namespace Kaponata.Multimedia.FFmpeg
         }
 
         /// <summary>
-        /// Gets eneral type of the encoded data.
+        /// Gets general type of the encoded data.
         /// </summary>
-        public NativeAVMediaType MediaType => this.native->codec_type;
+        public NativeAVMediaType Type => this.native->codec_type;
+
+        /// <summary>
+        /// Gets specific type of the encoded data (the codec used).
+        /// </summary>
+        public NativeAVCodecID Id => this.native->codec_id;
+
+        /// <summary>
+        /// Gets the pixel format,
+        ///   the value for video corresponds to enum AVPixelFormat.
+        ///   the value for audio corresponds to enum AVSampleFormat.
+        /// </summary>
+        public int Format => this.native->format;
     }
 }

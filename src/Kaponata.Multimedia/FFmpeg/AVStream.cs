@@ -1,8 +1,8 @@
 ﻿// <copyright file="AVStream.cs" company="Quamotion bv">
 // Copyright (c) Quamotion bv. All rights reserved.
 // </copyright>
-using System;
 using System.Collections.Generic;
+using NativeAVCodecContext = FFmpeg.AutoGen.AVCodecContext;
 using NativeAVRational = FFmpeg.AutoGen.AVRational;
 using NativeAVStream = FFmpeg.AutoGen.AVStream;
 
@@ -30,7 +30,14 @@ namespace Kaponata.Multimedia.FFmpeg
         /// <summary>
         /// Gets the codec parameters associated with this stream.
         /// </summary>
-        public unsafe AVCodecParameters CodecParameters => new AVCodecParameters(this.native->codecpar);
+        public AVCodecParameters CodecParameters => new AVCodecParameters(this.native->codecpar);
+
+        /// <summary>
+        /// Gets the codec context.
+        /// </summary>
+#pragma warning disable CS0618 // Type or member is obsolete
+        public NativeAVCodecContext* CodecContext => this.native->codec;
+#pragma warning restore CS0618 // Type or member is obsolete
 
         /// <summary>
         /// Gets the index of this stream.

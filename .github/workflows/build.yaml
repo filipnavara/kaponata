@@ -25,6 +25,7 @@ jobs:
 
           sudo apt-get update
           sudo apt-get install ffmpeg -y
+          sudo apt-get install libturbojpeg -y
 
           ansible-galaxy install geerlingguy.docker
           ansible-galaxy install geerlingguy.nodejs

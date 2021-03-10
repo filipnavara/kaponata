@@ -16,4 +16,10 @@
     <PackageReference Include="FFmpeg.AutoGen" Version="4.3.1" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="video.h264">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

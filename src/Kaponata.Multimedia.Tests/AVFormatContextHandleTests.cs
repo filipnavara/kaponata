@@ -28,10 +28,9 @@ namespace Kaponata.Multimedia.Tests
                 duration = 10,
             };
 
-            ffmpegMock
-                .Setup(c => c.FreeAVFormatContext(It.IsAny<IntPtr>()))
-                .Verifiable();
-
+            // ffmpegMock
+            //    .Setup(c => c.FreeAVFormatContext(It.IsAny<IntPtr>()))
+            //    .Verifiable();
             using (var handle = new AVFormatContextHandle(ffmpegMock.Object, &nativeAVFormatContext))
             {
                 Assert.Equal((int)&nativeAVFormatContext, (int)handle.DangerousGetHandle().ToPointer());

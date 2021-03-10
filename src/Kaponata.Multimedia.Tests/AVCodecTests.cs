@@ -3,11 +3,15 @@
 // </copyright>
 
 using Kaponata.Multimedia.FFmpeg;
-using System.Linq;
-using System.Runtime.InteropServices;
+using Moq;
+using System;
 using Xunit;
 using AVCodecID = FFmpeg.AutoGen.AVCodecID;
 using NativeAVCodec = FFmpeg.AutoGen.AVCodec;
+using NativeAVCodecContext = FFmpeg.AutoGen.AVCodecContext;
+using NativeAVCodecParameters = FFmpeg.AutoGen.AVCodecParameters;
+using NativeAVMediaType = FFmpeg.AutoGen.AVMediaType;
+using NativeAVStream = FFmpeg.AutoGen.AVStream;
 
 namespace Kaponata.Multimedia.Tests
 {
@@ -25,6 +29,50 @@ namespace Kaponata.Multimedia.Tests
         }
 
         /// <summary>
+        /// The <see cref="AVCodec.AVCodec(FFmpegClient, AVStream)"/> initializes the new instance.
+        /// </summary>
+        [Fact]
+        public void AVCodec_InitializesInstance()
+        {
+            var nativeCodec = new NativeAVCodec()
+            {
+                capabilities = (int)AVCodecCapabilities.Truncated,
+            };
+
+            var ffmpegMock = new Mock<FFmpegClient>();
+            ffmpegMock
+                .Setup(c => c.FindDecoder(AVCodecID.AV_CODEC_ID_H264))
+                .Returns((IntPtr)(&nativeCodec))
+                .Verifiable();
+
+            var codecParameters = new NativeAVCodecParameters
+            {
+                codec_type = NativeAVMediaType.AVMEDIA_TYPE_VIDEO,
+                codec_id = AVCodecID.AV_CODEC_ID_H264,
+            };
+
+            var nativeCodecContext = new NativeAVCodecContext()
+            {
+                codec_id = AVCodecID.AV_CODEC_ID_H264,
+            };
+
+#pragma warning disable CS0618 // Type or member is obsolete
+            var nativeStream = new NativeAVStream
+            {
+                codecpar = &codecParameters,
+                codec = &nativeCodecContext,
+            };
+
+            var stream = new AVStream(&nativeStream);
+
+            var ffmpeg = ffmpegMock.Object;
+            var codec = new AVCodec(ffmpeg, stream);
+
+            Assert.Equal((int)AVCodecCapabilities.Truncated, stream.CodecContext->flags);
+#pragma warning restore CS0618 // Type or member is obsolete
+        }
+
+        /// <summary>
         /// The <see cref="AVCodec.Name"/> property returns the name of the native avcodec.
         /// </summary>
         [Fact]
@@ -38,7 +86,13 @@ namespace Kaponata.Multimedia.Tests
                     name = p,
                 };
 
-                var codec = new AVCodec(&nativeCodec);
+                var ffmpegMock = new Mock<FFmpegClient>();
+                var ffmpegClient = ffmpegMock.Object;
+
+                var codecContext = new NativeAVCodecContext
+                { };
+
+                var codec = new AVCodec(ffmpegClient, &codecContext, &nativeCodec);
 
                 Assert.Equal("test", codec.Name);
             }
@@ -58,7 +112,13 @@ namespace Kaponata.Multimedia.Tests
                     long_name = p,
                 };
 
-                var codec = new AVCodec(&nativeCodec);
+                var ffmpegMock = new Mock<FFmpegClient>();
+                var ffmpegClient = ffmpegMock.Object;
+
+                var codecContext = new NativeAVCodecContext
+                { };
+
+                var codec = new AVCodec(ffmpegClient, &codecContext, &nativeCodec);
 
                 Assert.Equal("test", codec.LongName);
             }
@@ -77,7 +137,13 @@ namespace Kaponata.Multimedia.Tests
                 {
                 };
 
-                var codec = new AVCodec(&nativeCodec);
+                var ffmpegMock = new Mock<FFmpegClient>();
+                var ffmpegClient = ffmpegMock.Object;
+
+                var codecContext = new NativeAVCodecContext
+                { };
+
+                var codec = new AVCodec(ffmpegClient, &codecContext, &nativeCodec);
 
                 Assert.False(codec.IsEncoder);
             }
@@ -96,7 +162,13 @@ namespace Kaponata.Multimedia.Tests
                 {
                 };
 
-                var codec = new AVCodec(&nativeCodec);
+                var ffmpegMock = new Mock<FFmpegClient>();
+                var ffmpegClient = ffmpegMock.Object;
+
+                var codecContext = new NativeAVCodecContext
+                { };
+
+                var codec = new AVCodec(ffmpegClient, &codecContext, &nativeCodec);
 
                 Assert.False(codec.IsDecoder);
             }
@@ -115,7 +187,13 @@ namespace Kaponata.Multimedia.Tests
                 capabilities = (int)capabilities,
             };
 
-            var codec = new AVCodec(&nativeCodec);
+            var ffmpegMock = new Mock<FFmpegClient>();
+            var ffmpegClient = ffmpegMock.Object;
+
+            var codecContext = new NativeAVCodecContext
+            { };
+
+            var codec = new AVCodec(ffmpegClient, &codecContext, &nativeCodec);
 
             Assert.Equal(capabilities, codec.Capabilities);
         }
@@ -131,7 +209,13 @@ namespace Kaponata.Multimedia.Tests
                 id = AVCodecID.AV_CODEC_ID_4XM,
             };
 
-            var codec = new AVCodec(&nativeCodec);
+            var ffmpegMock = new Mock<FFmpegClient>();
+            var ffmpegClient = ffmpegMock.Object;
+
+            var codecContext = new NativeAVCodecContext
+            { };
+
+            var codec = new AVCodec(ffmpegClient, &codecContext, &nativeCodec);
 
             Assert.Equal(AVCodecID.AV_CODEC_ID_4XM, codec.Id);
         }
@@ -151,21 +235,32 @@ namespace Kaponata.Multimedia.Tests
                     long_name = p,
                 };
 
-                var codec = new AVCodec(&nativeCodec);
+                var ffmpegMock = new Mock<FFmpegClient>();
+                var ffmpegClient = ffmpegMock.Object;
+
+                var codecContext = new NativeAVCodecContext
+                { };
+
+                var codec = new AVCodec(ffmpegClient, &codecContext, &nativeCodec);
 
                 Assert.Equal("test (test)", codec.ToString());
             }
         }
 
         /// <summary>
-        /// Tests fetching a codec and accessing its properties.
+        /// The <see cref="AVCodec"/> properties return the native values.
         /// </summary>
         [Fact]
-        public void GetCodecPropertiesTest()
+        public void Properties_ReturnNativeValues()
         {
             var ffmpeg = new FFmpegClient();
 
-            var codec = ffmpeg.avcodec_find_decoder(AVCodecID.AV_CODEC_ID_H264);
+            var nativeCodec = ffmpeg.FindDecoder(AVCodecID.AV_CODEC_ID_H264);
+            var nativeCodecContext = new NativeAVCodecContext
+            { };
+
+            var codec = new AVCodec(ffmpeg, &nativeCodecContext, (NativeAVCodec*)nativeCodec);
+
             Assert.Equal("H.264 / AVC / MPEG-4 AVC / MPEG-4 part 10", codec.LongName);
             Assert.Equal("H.264 / AVC / MPEG-4 AVC / MPEG-4 part 10 (h264)", codec.ToString());
             Assert.Equal("h264", codec.Name);
@@ -175,32 +270,136 @@ namespace Kaponata.Multimedia.Tests
         }
 
         /// <summary>
-        /// Makes sure the required H.264 codecs are available.
+        /// The <see cref="AVCodec.SendPacket(AVPacket)"/> sends the packet.
         /// </summary>
         [Fact]
-        public void HasRequiredCodecsTest()
+        public void SendPacket_SendsPacket()
         {
-            var ffmpeg = new FFmpegClient();
+            var ffmpegMock = new Mock<FFmpegClient>();
+            ffmpegMock
+                .Setup(c => c.IsCodecOpen(It.IsAny<IntPtr>()))
+                .Returns(true)
+                .Verifiable();
 
-            var codecs = ffmpeg.GetAvailableCodecs();
-            var h264Decoders = codecs.Where(c => c.Id == AVCodecID.AV_CODEC_ID_H264 && c.IsDecoder).ToArray();
+            ffmpegMock
+                .Setup(c => c.IsDecoder(It.IsAny<IntPtr>()))
+                .Returns(true)
+                .Verifiable();
 
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-            {
-                Assert.Collection(
-                    h264Decoders,
-                    d => Assert.Equal("h264", d.Name),
-                    d => Assert.Equal("h264_v4l2m2m", d.Name),
-                    d => Assert.Equal("h264_cuvid", d.Name));
-            }
-            else
-            {
-                Assert.Collection(
-                    h264Decoders,
-                    d => Assert.Equal("h264", d.Name),
-                    d => Assert.Equal("h264_qsv", d.Name),
-                    d => Assert.Equal("h264_cuvid", d.Name));
-            }
+            ffmpegMock
+                .Setup(c => c.SendPacket(It.IsAny<IntPtr>(), It.IsAny<IntPtr>()))
+                .Returns(0)
+                .Verifiable();
+
+            var ffmpeg = ffmpegMock.Object;
+
+            var nativeCodec = ffmpeg.FindDecoder(AVCodecID.AV_CODEC_ID_H264);
+            var nativeCodecContext = new NativeAVCodecContext
+            { };
+
+            var codec = new AVCodec(ffmpeg, &nativeCodecContext, (NativeAVCodec*)nativeCodec);
+            codec.SendPacket(new AVPacket(ffmpeg));
+
+            ffmpegMock.Verify();
+        }
+
+        /// <summary>
+        /// The <see cref="AVCodec.SendPacket(AVPacket)"/> throws an exception when the codec is not open.
+        /// </summary>
+        [Fact]
+        public void SendPacket_ThrowsOnCodecClosed()
+        {
+            var ffmpegMock = new Mock<FFmpegClient>();
+            ffmpegMock
+                .Setup(c => c.IsCodecOpen(It.IsAny<IntPtr>()))
+                .Returns(false)
+                .Verifiable();
+
+            ffmpegMock
+                .Setup(c => c.IsDecoder(It.IsAny<IntPtr>()))
+                .Returns(true)
+                .Verifiable();
+
+            ffmpegMock
+                .Setup(c => c.SendPacket(It.IsAny<IntPtr>(), It.IsAny<IntPtr>()))
+                .Returns(0)
+                .Verifiable();
+
+            var ffmpeg = ffmpegMock.Object;
+
+            var nativeCodec = ffmpeg.FindDecoder(AVCodecID.AV_CODEC_ID_H264);
+            var nativeCodecContext = new NativeAVCodecContext
+            { };
+
+            var codec = new AVCodec(ffmpeg, &nativeCodecContext, (NativeAVCodec*)nativeCodec);
+            Assert.Throws<InvalidOperationException>(() => codec.SendPacket(new AVPacket(ffmpeg)));
+        }
+
+        /// <summary>
+        /// The <see cref="AVCodec.SendPacket(AVPacket)"/> throws an exception when the codec is no decoder.
+        /// </summary>
+        [Fact]
+        public void SendPacket_ThrowsOnNoDecoder()
+        {
+            var ffmpegMock = new Mock<FFmpegClient>();
+            ffmpegMock
+                .Setup(c => c.IsCodecOpen(It.IsAny<IntPtr>()))
+                .Returns(true)
+                .Verifiable();
+
+            ffmpegMock
+                .Setup(c => c.IsDecoder(It.IsAny<IntPtr>()))
+                .Returns(false)
+                .Verifiable();
+
+            ffmpegMock
+                .Setup(c => c.SendPacket(It.IsAny<IntPtr>(), It.IsAny<IntPtr>()))
+                .Returns(0)
+                .Verifiable();
+
+            var ffmpeg = ffmpegMock.Object;
+
+            var nativeCodec = ffmpeg.FindDecoder(AVCodecID.AV_CODEC_ID_H264);
+            var nativeCodecContext = new NativeAVCodecContext
+            { };
+
+            var codec = new AVCodec(ffmpeg, &nativeCodecContext, (NativeAVCodec*)nativeCodec);
+            Assert.Throws<InvalidOperationException>(() => codec.SendPacket(new AVPacket(ffmpeg)));
+        }
+
+        /// <summary>
+        /// The <see cref="AVCodec.SendPacket(AVPacket)"/> throws an exception when sending the packet fails.
+        /// </summary>
+        [Fact]
+        public void SendPacket_ThrowsOnSendPacketFail()
+        {
+            var ffmpegMock = new Mock<FFmpegClient>();
+            ffmpegMock
+                .Setup(c => c.IsCodecOpen(It.IsAny<IntPtr>()))
+                .Returns(true)
+                .Verifiable();
+
+            ffmpegMock
+                .Setup(c => c.IsDecoder(It.IsAny<IntPtr>()))
+                .Returns(true)
+                .Verifiable();
+
+            ffmpegMock
+                .Setup(c => c.SendPacket(It.IsAny<IntPtr>(), It.IsAny<IntPtr>()))
+                .Returns(-100)
+                .Verifiable();
+            ffmpegMock
+                .Setup(c => c.ThrowOnAVError(-100, true))
+                .Verifiable();
+
+            var ffmpeg = ffmpegMock.Object;
+
+            var nativeCodec = ffmpeg.FindDecoder(AVCodecID.AV_CODEC_ID_H264);
+            var nativeCodecContext = new NativeAVCodecContext
+            { };
+
+            var codec = new AVCodec(ffmpeg, &nativeCodecContext, (NativeAVCodec*)nativeCodec);
+            codec.SendPacket(new AVPacket(ffmpeg));
         }
     }
 }

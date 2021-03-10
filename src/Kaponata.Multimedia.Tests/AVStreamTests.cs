@@ -43,7 +43,7 @@ namespace Kaponata.Multimedia.Tests
 
             var stream = new AVStream(&nativeStream);
 
-            Assert.Equal(NativeAVMediaType.AVMEDIA_TYPE_VIDEO, stream.CodecParameters.MediaType);
+            Assert.Equal(NativeAVMediaType.AVMEDIA_TYPE_VIDEO, stream.CodecParameters.Type);
         }
 
         /// <summary>
