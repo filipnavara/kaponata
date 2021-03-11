@@ -183,13 +183,14 @@ namespace Kaponata.Operator.Tests.Operators
 
             var result = await feedback(context, default).ConfigureAwait(false);
             Assert.Collection(
-                result.Operations,
+                result.ParentFeedback.Operations,
                 o =>
                 {
                     Assert.Equal(OperationType.Add, o.OperationType);
                     Assert.Equal("/status/serviceReady", o.path);
                     Assert.Equal(true, o.value);
                 });
+            Assert.Null(result.ChildFeedback);
         }
     }
 }

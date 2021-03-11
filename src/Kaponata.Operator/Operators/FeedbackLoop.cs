@@ -28,11 +28,11 @@ namespace Kaponata.Operator.Operators
     /// The type of object to create (such as <see cref="V1Service"/>).
     /// </typeparam>
     /// <returns>
-    /// A <see cref="Task"/> which represents the asynchronous operation, and returns a <see cref="JsonPatchDocument{TModel}"/>
-    /// which describes the feedback if the child provides feedback to the parent (and the parent state should be alterated);
-    /// otherwise, <see langword="null"/>.
+    /// A <see cref="Task"/> which represents the asynchronous operation, and returns a <see cref="Feedback{TParent, TChild}"/>
+    /// which describes the feedback if the child provides feedback to the parent (and the parent state should be alterated)
+    /// and vice versa; otherwise, <see langword="null"/>.
     /// </returns>
-    public delegate Task<JsonPatchDocument<TParent>> FeedbackLoop<TParent, TChild>(
+    public delegate Task<Feedback<TParent, TChild>> FeedbackLoop<TParent, TChild>(
         ChildOperatorContext<TParent, TChild> context,
         CancellationToken cancellationToken)
         where TParent : class, IKubernetesObject<V1ObjectMeta>, new()
