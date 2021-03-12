@@ -5,10 +5,12 @@
 using k8s.Models;
 using Kaponata.Kubernetes;
 using Kaponata.Kubernetes.Models;
+using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Kaponata.Operator.Operators
 {
@@ -53,7 +55,30 @@ namespace Kaponata.Operator.Operators
                         {
                             Owner = pod.Metadata.Name,
                         };
-                    });
+                    })
+               .PostsFeedback((context, cancellationToken) =>
+               {
+                   var pod = context.Parent;
+                   var device = context.Child;
+
+                   Feedback<V1Pod, MobileDevice> feedback = new Feedback<V1Pod, MobileDevice>();
+
+                   if (device.Status?.VncHost != pod.Status?.PodIP)
+                   {
+                       feedback.ChildFeedback = new JsonPatchDocument<MobileDevice>();
+
+                       if (device.Status == null)
+                       {
+                           feedback.ChildFeedback.Add(d => d.Status, new MobileDeviceStatus() { VncHost = pod.Status?.PodIP });
+                       }
+                       else
+                       {
+                           feedback.ChildFeedback.Add(d => d.Status.VncHost, pod.Status?.PodIP);
+                       }
+                   }
+
+                   return Task.FromResult(feedback);
+               });
         }
     }
 }
