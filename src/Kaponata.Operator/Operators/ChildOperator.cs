@@ -386,13 +386,13 @@ namespace Kaponata.Operator.Operators
                 else
                 {
                     this.logger.LogInformation(
-                        "Running {feedbackCount} feedback loops for parent {parent} and child {child} for operator {operatorName} because child is null.",
+                        "Running {feedbackCount} feedback loops for parent {parent} and child {child} for operator {operatorName} because child is not null.",
                         this.feedbackLoops.Count,
                         parent?.Metadata?.Name,
                         child?.Metadata?.Name,
                         this.configuration.OperatorName);
 
-                    JsonPatchDocument<TParent> feedback = null;
+                    Feedback<TParent, TChild> feedback = null;
 
                     using (var scope = this.services.CreateScope())
                     {
@@ -405,13 +405,27 @@ namespace Kaponata.Operator.Operators
                         {
                             if ((feedback = await feedbackLoop(context, cancellationToken).ConfigureAwait(false)) != null)
                             {
-                                this.logger.LogInformation(
-                                    "Applying patch {feedback} to parent {parent} for operator {operatorName}.",
-                                    feedback,
-                                    context.Parent?.Metadata?.Name,
-                                    this.configuration.OperatorName);
+                                if (feedback.ParentFeedback != null)
+                                {
+                                    this.logger.LogInformation(
+                                        "Applying patch {feedback} to parent {parent} for operator {operatorName}.",
+                                        feedback,
+                                        context.Parent?.Metadata?.Name,
+                                        this.configuration.OperatorName);
 
-                                await this.parentClient.PatchAsync(context.Parent, feedback, cancellationToken).ConfigureAwait(false);
+                                    await this.parentClient.PatchAsync(context.Parent, feedback.ParentFeedback, cancellationToken).ConfigureAwait(false);
+                                }
+
+                                if (feedback.ChildFeedback != null)
+                                {
+                                    this.logger.LogInformation(
+                                        "Applying patch {feedback} to child {child} for operator {operatorName}.",
+                                        feedback,
+                                        context.Child?.Metadata?.Name,
+                                        this.configuration.OperatorName);
+
+                                    await this.childClient.PatchAsync(context.Child, feedback.ChildFeedback, cancellationToken).ConfigureAwait(false);
+                                }
                             }
                         }
                     }

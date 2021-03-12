@@ -242,7 +242,7 @@ namespace Kaponata.Operator.Tests.Operators
             this.adbClient.Verify();
 
             Assert.Collection(
-                patch.Operations,
+                patch.ParentFeedback.Operations,
                 o =>
                 {
                     Assert.Equal(OperationType.Add, o.OperationType);
@@ -272,6 +272,7 @@ namespace Kaponata.Operator.Tests.Operators
                     Assert.Equal("/status/capabilities", o.path);
                     Assert.Equal("{}", o.value);
                 });
+            Assert.Null(patch.ChildFeedback);
         }
     }
 }

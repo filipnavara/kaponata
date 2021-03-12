@@ -49,25 +49,22 @@ namespace Kaponata.Operator.Operators
                     var session = context.Parent;
                     var pod = context.Child;
 
-                    JsonPatchDocument<WebDriverSession> patch;
+                    Feedback<WebDriverSession, V1Pod> feedback = null;
 
                     if (session?.Spec?.Capabilities == null)
                     {
                         // This is an invalid session; we need at least desired capabilities.
                         logger.LogWarning("Session {session} is missing desired capabilities.", session?.Metadata?.Name);
-                        patch = null;
                     }
                     else if (session.Status?.SessionId != null)
                     {
                         // Do nothing if the session already exists.
                         logger.LogDebug("Session {session} already has a session ID.", session?.Metadata?.Name);
-                        patch = null;
                     }
                     else if (pod?.Status?.Phase != "Running" || !pod.Status.ContainerStatuses.All(c => c.Ready))
                     {
                         // Do nothing if the pod is not yet ready
                         logger.LogInformation("Not creating a session for session {session} because pod {pod} is not ready yet.", session?.Metadata?.Name, pod?.Metadata?.Name);
-                        patch = null;
                     }
                     else
                     {
@@ -92,51 +89,52 @@ namespace Kaponata.Operator.Operators
                             var sessionObject = JObject.Parse(sessionJson);
                             var sessionValue = (JObject)sessionObject.GetValue("value");
 
-                            patch = new JsonPatchDocument<WebDriverSession>();
+                            feedback = new Feedback<WebDriverSession, V1Pod>()
+                            {
+                                ParentFeedback = new JsonPatchDocument<WebDriverSession>(),
+                            };
 
                             if (context.Parent.Status == null)
                             {
-                                patch.Add(s => s.Status, new WebDriverSessionStatus());
+                                feedback.ParentFeedback.Add(s => s.Status, new WebDriverSessionStatus());
                             }
 
                             // Check whether we should store this as a Kubernetes object.
                             if (sessionValue.TryGetValue("sessionId", out var sessionId))
                             {
-                                patch.Add(s => s.Status.SessionId, sessionId.Value<string>());
-                                patch.Add(s => s.Status.SessionReady, true);
-                                patch.Add(s => s.Status.SessionPort, appiumPort);
+                                feedback.ParentFeedback.Add(s => s.Status.SessionId, sessionId.Value<string>());
+                                feedback.ParentFeedback.Add(s => s.Status.SessionReady, true);
+                                feedback.ParentFeedback.Add(s => s.Status.SessionPort, appiumPort);
                             }
 
                             if (sessionValue.TryGetValue("capabilities", out var capabilities))
                             {
-                                patch.Add(s => s.Status.Capabilities, capabilities.ToString(Formatting.None));
+                                feedback.ParentFeedback.Add(s => s.Status.Capabilities, capabilities.ToString(Formatting.None));
                             }
 
                             if (sessionValue.TryGetValue("error", out var error))
                             {
-                                patch.Add(s => s.Status.Error, error.Value<string>());
+                                feedback.ParentFeedback.Add(s => s.Status.Error, error.Value<string>());
                             }
 
                             if (sessionValue.TryGetValue("message", out var message))
                             {
-                                patch.Add(s => s.Status.Message, message.Value<string>());
+                                feedback.ParentFeedback.Add(s => s.Status.Message, message.Value<string>());
                             }
 
                             if (sessionValue.TryGetValue("stacktrace", out var stackTrace))
                             {
-                                patch.Add(s => s.Status.StackTrace, stackTrace.Value<string>());
+                                feedback.ParentFeedback.Add(s => s.Status.StackTrace, stackTrace.Value<string>());
                             }
 
                             if (sessionValue.TryGetValue("data", out var data))
                             {
-                                patch.Add(s => s.Status.Data, data.ToString(Formatting.None));
+                                feedback.ParentFeedback.Add(s => s.Status.Data, data.ToString(Formatting.None));
                             }
-
-                            return patch;
                         }
                     }
 
-                    return null;
+                    return feedback;
                 });
         }
     }

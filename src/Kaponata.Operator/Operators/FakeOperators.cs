@@ -167,7 +167,7 @@ namespace Kaponata.Operator.Operators
                 })
                 .PostsFeedback((context, cancellationToken) =>
                 {
-                    JsonPatchDocument<WebDriverSession> patch = null;
+                    Feedback<WebDriverSession, V1Ingress> feedback = null;
 
                     var session = context.Parent;
                     var ingress = context.Child;
@@ -179,11 +179,12 @@ namespace Kaponata.Operator.Operators
                     }
                     else if (!session.Status.IngressReady)
                     {
-                        patch = new JsonPatchDocument<WebDriverSession>();
-                        patch.Add(s => s.Status.IngressReady, true);
+                        feedback = new Feedback<WebDriverSession, V1Ingress>();
+                        feedback.ParentFeedback = new JsonPatchDocument<WebDriverSession>();
+                        feedback.ParentFeedback.Add(s => s.Status.IngressReady, true);
                     }
 
-                    return Task.FromResult(patch);
+                    return Task.FromResult(feedback);
                 });
         }
 
@@ -234,18 +235,22 @@ namespace Kaponata.Operator.Operators
                 })
                 .PostsFeedback((context, cancellationToken) =>
                 {
-                    JsonPatchDocument<WebDriverSession> patch = null;
+                    Feedback<WebDriverSession, V1Service> feedback = null;
 
                     var session = context.Parent;
                     var service = context.Child;
 
                     if (service != null && !session.Status.ServiceReady)
                     {
-                        patch = new JsonPatchDocument<WebDriverSession>();
-                        patch.Add(s => s.Status.ServiceReady, true);
+                        feedback = new Feedback<WebDriverSession, V1Service>()
+                        {
+                            ParentFeedback = new JsonPatchDocument<WebDriverSession>(),
+                        };
+
+                        feedback.ParentFeedback.Add(s => s.Status.ServiceReady, true);
                     }
 
-                    return Task.FromResult(patch);
+                    return Task.FromResult(feedback);
                 });
         }
     }

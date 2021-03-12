@@ -361,7 +361,7 @@ namespace Kaponata.Operator.Tests.Operators
 
             var result = await feedback(context, default).ConfigureAwait(false);
             Assert.Collection(
-                result.Operations,
+                result.ParentFeedback.Operations,
                 o =>
                 {
                     Assert.Equal(OperationType.Add, o.OperationType);
@@ -391,6 +391,7 @@ namespace Kaponata.Operator.Tests.Operators
                     Assert.Equal("/status/capabilities", o.path);
                     Assert.Equal("{}", o.value);
                 });
+            Assert.Null(result.ChildFeedback);
 
             handler.Verify();
         }
@@ -449,7 +450,7 @@ namespace Kaponata.Operator.Tests.Operators
 
             var result = await feedback(context, default).ConfigureAwait(false);
             Assert.Collection(
-                result.Operations,
+                result.ParentFeedback.Operations,
                 o =>
                 {
                     Assert.Equal(OperationType.Add, o.OperationType);
@@ -476,6 +477,7 @@ namespace Kaponata.Operator.Tests.Operators
                     // Data can be an arbitrary object, so a string is serialized with quotes.
                     Assert.Equal("\"data\"", o.value);
                 });
+            Assert.Null(result.ChildFeedback);
 
             handler.Verify();
         }

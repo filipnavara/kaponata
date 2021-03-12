@@ -139,23 +139,24 @@ namespace Kaponata.Operator.Tests.Operators
                     var session = context.Parent;
                     var pod = context.Child;
 
-                    JsonPatchDocument<WebDriverSession> patch;
+                    Feedback<WebDriverSession, V1Pod> feedback;
 
                     if (session.Status?.SessionId != null)
                     {
-                        patch = null;
+                        feedback = null;
                     }
                     else if (pod.Status.Phase != "Running" || !pod.Status.ContainerStatuses.All(c => c.Ready))
                     {
-                        patch = null;
+                        feedback = null;
                     }
                     else
                     {
-                        patch = new JsonPatchDocument<WebDriverSession>();
-                        patch.Add(s => s.Status, new WebDriverSessionStatus() { SessionId = Guid.NewGuid().ToString() });
+                        feedback = new Feedback<WebDriverSession, V1Pod>();
+                        feedback.ParentFeedback = new JsonPatchDocument<WebDriverSession>();
+                        feedback.ParentFeedback.Add(s => s.Status, new WebDriverSessionStatus() { SessionId = Guid.NewGuid().ToString() });
                     }
 
-                    return Task.FromResult(patch);
+                    return Task.FromResult(feedback);
                 }).Build();
         }
     }

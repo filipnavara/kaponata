@@ -242,23 +242,24 @@ namespace Kaponata.Operator.Tests.Operators
 
         /// <summary>
         /// The <see cref="ChildOperator{TParent, TChild}.ReconcileAsync"/> method executes the feedback
-        /// loop when parent and child are present, and performs the patch returned by the feedback loop.
+        /// loop when parent and child are present, and performs parent the patch returned by the feedback loop.
         /// </summary>
         /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
         [Fact]
-        public async Task ReconcileAsync_FeedbackLoopHasPatch_ExecutesPatch_Async()
+        public async Task ReconcileAsync_FeedbackLoopHasParentPatch_ExecutesPatch_Async()
         {
             var kubernetes = new Mock<KubernetesClient>();
             var sessions = kubernetes.WithClient<WebDriverSession>();
             var pods = kubernetes.WithClient<V1Pod>();
 
-            var patch = new JsonPatchDocument<WebDriverSession>();
-            patch.Add(s => s.Status, new WebDriverSessionStatus());
+            var feedback = new Feedback<WebDriverSession, V1Pod>();
+            feedback.ParentFeedback = new JsonPatchDocument<WebDriverSession>();
+            feedback.ParentFeedback.Add(s => s.Status, new WebDriverSessionStatus());
 
             var parent = new WebDriverSession();
             var child = new V1Pod();
 
-            sessions.Setup(s => s.PatchAsync(parent, patch, default))
+            sessions.Setup(s => s.PatchAsync(parent, feedback.ParentFeedback, default))
                 .ReturnsAsync(parent)
                 .Verifiable();
 
@@ -266,7 +267,53 @@ namespace Kaponata.Operator.Tests.Operators
             {
                 new FeedbackLoop<WebDriverSession, V1Pod>((context, cancellationToken) =>
                 {
-                    return Task.FromResult(patch);
+                    return Task.FromResult(feedback);
+                }),
+            };
+
+            using (var @operator = new ChildOperator<WebDriverSession, V1Pod>(
+                kubernetes.Object,
+                this.configuration,
+                this.filter,
+                (session, pod) => { },
+                feedbackLoops,
+                this.logger,
+                this.services))
+            {
+                await @operator.ReconcileAsync(parent, child, default).ConfigureAwait(false);
+            }
+
+            sessions.Verify();
+        }
+
+        /// <summary>
+        /// The <see cref="ChildOperator{TParent, TChild}.ReconcileAsync"/> method executes the feedback
+        /// loop when parent and child are present, and performs the child patch returned by the feedback loop.
+        /// </summary>
+        /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
+        [Fact]
+        public async Task ReconcileAsync_FeedbackLoopHasChildPatch_ExecutesPatch_Async()
+        {
+            var kubernetes = new Mock<KubernetesClient>();
+            var sessions = kubernetes.WithClient<WebDriverSession>();
+            var pods = kubernetes.WithClient<V1Pod>();
+
+            var feedback = new Feedback<WebDriverSession, V1Pod>();
+            feedback.ChildFeedback = new JsonPatchDocument<V1Pod>();
+            feedback.ChildFeedback.Add(s => s.Status, new V1PodStatus());
+
+            var parent = new WebDriverSession();
+            var child = new V1Pod();
+
+            pods.Setup(p => p.PatchAsync(child, feedback.ChildFeedback, default))
+                .ReturnsAsync(child)
+                .Verifiable();
+
+            var feedbackLoops = new Collection<FeedbackLoop<WebDriverSession, V1Pod>>()
+            {
+                new FeedbackLoop<WebDriverSession, V1Pod>((context, cancellationToken) =>
+                {
+                    return Task.FromResult(feedback);
                 }),
             };
 
@@ -297,7 +344,7 @@ namespace Kaponata.Operator.Tests.Operators
             var sessions = kubernetes.WithClient<WebDriverSession>();
             var pods = kubernetes.WithClient<V1Pod>();
 
-            JsonPatchDocument<WebDriverSession> patch = null;
+            Feedback<WebDriverSession, V1Pod> feedback = null;
 
             var parent = new WebDriverSession();
             var child = new V1Pod();
@@ -306,7 +353,7 @@ namespace Kaponata.Operator.Tests.Operators
             {
                 new FeedbackLoop<WebDriverSession, V1Pod>((context, cancellationToken) =>
                 {
-                    return Task.FromResult(patch);
+                    return Task.FromResult(feedback);
                 }),
             };
 
@@ -349,7 +396,7 @@ namespace Kaponata.Operator.Tests.Operators
                     var rootValue = this.services.GetRequiredService<NamespacedKubernetesClient<V1Job>>();
                     Assert.NotSame(rootValue, value);
 
-                    return Task.FromResult((JsonPatchDocument<WebDriverSession>)null);
+                    return Task.FromResult((Feedback<WebDriverSession, V1Pod>)null);
                 }),
             };
 
