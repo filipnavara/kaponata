@@ -9,7 +9,7 @@ metadata:
     # operator to determine whether the CRD should be reinstalled or not.
     # Use the following command to determine that version:
     # nbgv get-version $(git rev-list -1 HEAD) -v NuGetPackageVersion
-    app.kubernetes.io/version: "0.1.105"
+    app.kubernetes.io/version: "0.3.52"
 spec:
   # group name to use for REST API: /apis/<group>/<version>
   group: kaponata.io
@@ -46,8 +46,12 @@ spec:
                 vncHost:
                   type: string
                   description: |
-                    When available, the name of a service which hosts a VNC server which allows users to
-                    remotely control this device.
+                    When available, the name of a service or IP address of a pod which hosts a VNC server
+                    which allows users to remotely control this device.
+                vncPassword:
+                  type: string
+                  description: |
+                    When available, a password which can be used to connect to the VNC server at vncHost.
       # Shown in kubectl get
       additionalPrinterColumns:
       - name: Labels
