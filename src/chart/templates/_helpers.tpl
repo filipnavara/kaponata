@@ -45,6 +45,20 @@ API: Service Account Full Name
 {{- end }}
 
 {{/*
+API: Role Full Name
+*/}}
+{{- define "api.role.fullname" -}}
+{{- printf "%s-api-role" (include "kaponata.fullname" .) | trunc 63 | trimSuffix "-" }}
+{{- end }}
+
+{{/*
+API: Role Binding Full Name
+*/}}
+{{- define "api.roleBinding.fullname" -}}
+{{- printf "%s-api-rolebinding" (include "kaponata.fullname" .) | trunc 63 | trimSuffix "-" }}
+{{- end }}
+
+{{/*
 API: Common labels
 */}}
 {{- define "api.labels" -}}
