@@ -2,6 +2,7 @@
 // Copyright (c) Quamotion bv. All rights reserved.
 // </copyright>
 
+using Kaponata.Kubernetes;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -26,6 +27,7 @@ namespace Kaponata.Api
         {
             services.AddHealthChecks();
             services.AddControllers();
+            services.AddKubernetes();
         }
 
         /// <summary>
