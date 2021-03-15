@@ -15,13 +15,7 @@ namespace Kaponata.Android.ScrCpy
         /// <summary>
         /// Gets the binary size of a packet header.
         /// </summary>
-        public static int BinarySize
-        {
-            get
-            {
-                return 12;
-            }
-        }
+        public const int BinarySize = 12;
 
         /// <summary>
         /// Reads a <see cref="PacketHeader"/> value from a buffer.

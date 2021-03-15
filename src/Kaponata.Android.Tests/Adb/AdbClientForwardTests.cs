@@ -29,10 +29,10 @@ namespace Kaponata.Android.Tests.Adb
             clientMock.Setup(c => c.EnsureDevice(It.IsAny<DeviceData>())).Throws(new Exception("device not valid."));
 
             var client = clientMock.Object;
-            var exception = await Assert.ThrowsAsync<Exception>(() => client.CreateForwardAsync(new DeviceData(), "local", "remote", true, default)).ConfigureAwait(false);
+            var exception = await Assert.ThrowsAsync<Exception>(() => client.CreateForwardAsync(new DeviceData(), true, "local", "remote", default)).ConfigureAwait(false);
             Assert.Equal("device not valid.", exception.Message);
 
-            exception = await Assert.ThrowsAsync<Exception>(() => client.CreateReverseForwardAsync(new DeviceData(), "remote", "local", true, default)).ConfigureAwait(false);
+            exception = await Assert.ThrowsAsync<Exception>(() => client.CreateReverseForwardAsync(new DeviceData(), true, "remote", "local", default)).ConfigureAwait(false);
             Assert.Equal("device not valid.", exception.Message);
 
             exception = await Assert.ThrowsAsync<Exception>(() => client.ListForwardAsync(new DeviceData(), default)).ConfigureAwait(false);
@@ -55,7 +55,7 @@ namespace Kaponata.Android.Tests.Adb
         }
 
         /// <summary>
-        /// The <see cref="AdbClient.CreateReverseForwardAsync(DeviceData, string, string, bool, System.Threading.CancellationToken)"/> method creates the reverse forward.
+        /// The <see cref="AdbClient.CreateReverseForwardAsync(DeviceData, bool, string, string, System.Threading.CancellationToken)"/> method creates the reverse forward.
         /// </summary>
         /// <param name="allowRebind">
         /// A value indicating whether the forward should allow rebind.
@@ -69,9 +69,6 @@ namespace Kaponata.Android.Tests.Adb
         /// <param name="expectedCommand">
         /// The expected write command.
         /// </param>
-        /// <param name="adbPortResponse">
-        /// The response containting the port in string format.
-        /// </param>
         /// <param name="expectedPort">
         /// The expected port.
         /// </param>
@@ -79,11 +76,9 @@ namespace Kaponata.Android.Tests.Adb
         /// A <see cref="Task"/> which represents the asynchrounous test.
         /// </returns>
         [Theory]
-        [InlineData(true, "tcp:1", "tcp:2", "reverse:forward:tcp:1;tcp:2", "100", 100)]
-        [InlineData(false, "tcp:1", "tcp:2", "reverse:forward:norebind:tcp:1;tcp:2", "100", 100)]
-        [InlineData(false, "tcp:1", "tcp:2", "reverse:forward:norebind:tcp:1;tcp:2", null, 0)]
-        [InlineData(false, "tcp:1", "tcp:2", "reverse:forward:norebind:tcp:1;tcp:2", "abd", 0)]
-        public async Task CreateReverseForward_CreatesReverseForward_Async(bool allowRebind, string local, string remote, string expectedCommand, string adbPortResponse, int expectedPort)
+        [InlineData(true, "tcp:1", "tcp:2", "reverse:forward:tcp:1;tcp:2", 0)]
+        [InlineData(false, "tcp:1", "tcp:2", "reverse:forward:norebind:tcp:1;tcp:2", 0)]
+        public async Task CreateReverseForward_CreatesReverseForward_Async(bool allowRebind, string local, string remote, string expectedCommand, int expectedPort)
         {
             var protocolMock = new Mock<AdbProtocol>()
             {
@@ -95,13 +90,6 @@ namespace Kaponata.Android.Tests.Adb
                 .Setup(p => p.WriteAsync(expectedCommand, default))
                 .Returns(Task.CompletedTask)
                 .Verifiable();
-            protocolMock.Setup(p => p.ReadUInt16Async(default))
-                 .ReturnsAsync((ushort)3)
-                 .Verifiable();
-            protocolMock
-                .Setup(p => p.ReadStringAsync(3, default))
-                .ReturnsAsync(adbPortResponse)
-                .Verifiable();
             protocolMock
                 .Setup(p => p.SetDeviceAsync(It.Is<DeviceData>(d => d.Serial == "1234"), default))
                 .Returns(Task.CompletedTask)
@@ -112,14 +100,57 @@ namespace Kaponata.Android.Tests.Adb
             clientMock.Setup(c => c.TryConnectToAdbAsync(default)).ReturnsAsync(protocolMock.Object);
 
             var client = clientMock.Object;
-            var port = await client.CreateReverseForwardAsync(new DeviceData() { Serial = "1234" }, remote, local, allowRebind, default).ConfigureAwait(false);
+            var port = await client.CreateReverseForwardAsync(new DeviceData() { Serial = "1234" }, allowRebind, local, remote, default).ConfigureAwait(false);
             Assert.Equal(expectedPort, port);
 
             protocolMock.Verify();
         }
 
         /// <summary>
-        /// The <see cref="AdbClient.CreateForwardAsync(DeviceData, string, string, bool, System.Threading.CancellationToken)"/> method creates the forward.
+        /// The <see cref="AdbClient.CreateReverseForwardAsync(DeviceData, bool, string, string, System.Threading.CancellationToken)"/> method creates the reverse forward
+        /// in case where the remote equals "tcp:0".
+        /// </summary>
+        /// <returns>
+        /// A <see cref="Task"/> which represents the asynchrounous test.
+        /// </returns>
+        [Fact]
+        public async Task CreateReverseForward_CreatesReverseForwardPort_Async()
+        {
+            var protocolMock = new Mock<AdbProtocol>()
+            {
+                CallBase = true,
+            };
+
+            protocolMock.Setup(p => p.ReadAdbResponseAsync(default)).ReturnsAsync(AdbResponse.Success);
+            protocolMock
+                .Setup(p => p.WriteAsync("reverse:forward:tcp:1;tcp:0", default))
+                .Returns(Task.CompletedTask)
+                .Verifiable();
+            protocolMock
+                .Setup(p => p.SetDeviceAsync(It.Is<DeviceData>(d => d.Serial == "1234"), default))
+                .Returns(Task.CompletedTask)
+                .Verifiable();
+            protocolMock.Setup(p => p.ReadUInt16Async(default))
+                 .ReturnsAsync((ushort)3)
+                 .Verifiable();
+            protocolMock
+                .Setup(p => p.ReadStringAsync(3, default))
+                .ReturnsAsync("100")
+                .Verifiable();
+
+            var clientMock = new Mock<AdbClient>(NullLogger<AdbClient>.Instance, NullLoggerFactory.Instance);
+            clientMock.Setup(c => c.EnsureDevice(It.IsAny<DeviceData>()));
+            clientMock.Setup(c => c.TryConnectToAdbAsync(default)).ReturnsAsync(protocolMock.Object);
+
+            var client = clientMock.Object;
+            var port = await client.CreateReverseForwardAsync(new DeviceData() { Serial = "1234" }, true, "tcp:1", "tcp:0", default).ConfigureAwait(false);
+            Assert.Equal(100, port);
+
+            protocolMock.Verify();
+        }
+
+        /// <summary>
+        /// The <see cref="AdbClient.CreateForwardAsync(DeviceData, bool, string, string, System.Threading.CancellationToken)"/> method creates the forward.
         /// </summary>
         /// <param name="allowRebind">
         /// A value indicating whether the forward should allow rebind.
@@ -168,7 +199,7 @@ namespace Kaponata.Android.Tests.Adb
             clientMock.Setup(c => c.TryConnectToAdbAsync(default)).ReturnsAsync(protocolMock.Object);
 
             var client = clientMock.Object;
-            var port = await client.CreateForwardAsync(new DeviceData() { Serial = "1234" }, "tcp:1", "tcp:2", allowRebind, default).ConfigureAwait(false);
+            var port = await client.CreateForwardAsync(new DeviceData() { Serial = "1234" }, allowRebind, "tcp:1", "tcp:2", default).ConfigureAwait(false);
             Assert.Equal(expectedPort, port);
 
             protocolMock.Verify();

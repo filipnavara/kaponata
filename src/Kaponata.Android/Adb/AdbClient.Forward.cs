@@ -30,6 +30,22 @@ namespace Kaponata.Android.Adb
         /// <param name="device">
         /// The device to which to reverse forward the connections.
         /// </param>
+        /// <param name="allowRebind">
+        /// If set to <see langword="true"/>, the request will fail if if the specified socket is already bound through a previous reverse command.
+        /// </param>
+        /// <param name="local">
+        /// <para>
+        /// The local address to reverse forward. This value can be in one of:
+        /// </para>
+        /// <list type="ordered">
+        ///   <item>
+        ///     <c>tcp:&lt;port&gt;</c>: TCP connection on localhost:&lt;port&gt;
+        ///   </item>
+        ///   <item>
+        ///     <c>local:&lt;path&gt;</c>: Unix local domain socket on &lt;path&gt;
+        ///   </item>
+        /// </list>
+        /// </param>
         /// <param name="remote">
         /// <para>
         /// The remote address to reverse forward. This value can be in one of:
@@ -46,22 +62,6 @@ namespace Kaponata.Android.Adb
         ///   </item>
         /// </list>
         /// </param>
-        /// <param name="local">
-        /// <para>
-        /// The local address to reverse forward. This value can be in one of:
-        /// </para>
-        /// <list type="ordered">
-        ///   <item>
-        ///     <c>tcp:&lt;port&gt;</c>: TCP connection on localhost:&lt;port&gt;
-        ///   </item>
-        ///   <item>
-        ///     <c>local:&lt;path&gt;</c>: Unix local domain socket on &lt;path&gt;
-        ///   </item>
-        /// </list>
-        /// </param>
-        /// <param name="allowRebind">
-        /// If set to <see langword="true"/>, the request will fail if if the specified socket is already bound through a previous reverse command.
-        /// </param>
         /// <param name="cancellationToken">
         /// A <see cref="CancellationToken"/> which can be used to cancel the asynchronous operation.
         /// </param>
@@ -69,7 +69,8 @@ namespace Kaponata.Android.Adb
         /// If your requested to start reverse to remote port TCP:0, the port number of the TCP port
         /// which has been opened. In all other cases, <c>0</c>.
         /// </returns>
-        public async Task<int> CreateReverseForwardAsync(DeviceData device, string remote, string local, bool allowRebind, CancellationToken cancellationToken)
+        /// <seealso href="https://android.googlesource.com/platform/system/adb/+/d3b1f06b5694c84a32ab0349a2aa1f37e3806d95/SERVICES.TXT#244"/>
+        public async Task<int> CreateReverseForwardAsync(DeviceData device, bool allowRebind, string local, string remote, CancellationToken cancellationToken)
         {
             this.EnsureDevice(device);
 
@@ -77,7 +78,7 @@ namespace Kaponata.Android.Adb
             await protocol.SetDeviceAsync(device, cancellationToken).ConfigureAwait(false);
             string rebind = allowRebind ? string.Empty : "norebind:";
 
-            await protocol.WriteAsync($"reverse:forward:{rebind}{remote};{local}", cancellationToken).ConfigureAwait(false);
+            await protocol.WriteAsync($"reverse:forward:{rebind}{local};{remote}", cancellationToken).ConfigureAwait(false);
 
             // two adb reponses are being send:  1st OKAY is connect, 2nd OKAY is status.
             // https://android.googlesource.com/platform/system/adb/+/refs/heads/master/adb.cpp
@@ -104,6 +105,10 @@ namespace Kaponata.Android.Adb
         /// </summary>
         /// <param name="device">
         /// The device to which to forward the connections.
+        /// </param>
+        /// <param name="allowRebind">
+        /// If set to <see langword="true"/>, the request will fail if there is already a forward
+        /// connection from <paramref name="local"/>.
         /// </param>
         /// <param name="local">
         /// <para>
@@ -134,18 +139,14 @@ namespace Kaponata.Android.Adb
         ///   </item>
         /// </list>
         /// </param>
-        /// <param name="allowRebind">
-        /// If set to <see langword="true"/>, the request will fail if there is already a forward
-        /// connection from <paramref name="local"/>.
-        /// </param>
         /// <param name="cancellationToken">
         /// A <see cref="CancellationToken"/> which can be used to cancel the asynchronous operation.
         /// </param>
         /// <returns>
         /// If your requested to start forwarding to local port TCP:0, the port number of the TCP port
         /// which has been opened. In all other cases, <c>0</c>.
-        /// </returns>>
-        public async Task<int> CreateForwardAsync(DeviceData device, string local, string remote, bool allowRebind, CancellationToken cancellationToken)
+        /// </returns>
+        public async Task<int> CreateForwardAsync(DeviceData device, bool allowRebind, string local, string remote, CancellationToken cancellationToken)
         {
             this.EnsureDevice(device);
 
@@ -323,63 +324,6 @@ namespace Kaponata.Android.Adb
             var parts = data.Split(new char[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
 
             return parts.Select(p => ForwardData.FromString(p)).ToList();
-        }
-
-        /// <summary>
-        /// Creates a reverse port forward.
-        /// </summary>
-        /// <param name="device">
-        /// The device for which the reverse forward needs to be created.
-        /// </param>
-        /// <param name="deviceSocket">
-        /// The device socket.
-        /// </param>
-        /// <param name="cancellationToken">
-        /// A <see cref="CancellationToken"/> which can be used to cancel the asynchronous operation.
-        /// </param>
-        /// <returns>
-        /// A <see cref="Task"/> representing the asynchronous operation.
-        /// </returns>
-        public async Task<IPEndPoint> CreateReverseForwardAsync(DeviceData device, string deviceSocket, CancellationToken cancellationToken)
-        {
-            // If the port is already being forwarded, recycle that port. This prevent us from opening a new
-            // socket every time.
-            // This could create a problem in the following scenario:
-            // - Another service have created that port.
-            // - We detect that port & recycle the port.
-            // - The other service closes the port while we're still using it.
-            // Then again, which other service would be interested in the ports we are using on the remote device?
-            // For now, we're taking the risk, but it is easy to revert back by simply deleting this block of code :-).
-            var allForwards = await this.ListReverseForwardAsync(device, cancellationToken).ConfigureAwait(false);
-            var existingForwards = allForwards.Where(f => deviceSocket.Equals(f.RemoteSpec.ToString(), StringComparison.OrdinalIgnoreCase));
-
-            if (existingForwards.Count() > 1)
-            {
-                this.logger.LogInformation($"Multiple reverse port forwards exists for socket {deviceSocket} on device {device}");
-            }
-
-            // Taking the last if there are multiple sockets open.
-            // The choise is rather arbitrary but reusing the first and only is as dangerous.
-            ForwardData existingForward = existingForwards.LastOrDefault();
-
-            var host = this.socketLocator.GetAdbSocket().Item2.Address;
-
-            if (existingForward != null)
-            {
-                int recycledPort = existingForward.LocalSpec.Port;
-                this.logger.LogInformation($"Recycled port forwarding for socket {deviceSocket} on device {device.Serial}; the local endpoint is {recycledPort}.");
-                return new IPEndPoint(host, recycledPort);
-            }
-
-            // Find an available port
-            using var portReservation = TcpPort.GetAvailablePort();
-            var port = portReservation.PortNumber;
-
-            await this.CreateReverseForwardAsync(device, deviceSocket, $"tcp:{port}", true, cancellationToken).ConfigureAwait(false);
-
-            this.logger.LogInformation($"Created reverse port forwarding for socket {deviceSocket} on device {device.Serial}; the local port is {port}.");
-
-            return new IPEndPoint(host, port);
         }
     }
 }

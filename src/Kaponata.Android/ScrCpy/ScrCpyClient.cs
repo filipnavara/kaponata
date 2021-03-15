@@ -4,7 +4,6 @@
 
 using Kaponata.Android.Adb;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 using System;
 using System.IO;
 using System.Linq;
@@ -61,19 +60,6 @@ namespace Kaponata.Android.ScrCpy
         /// </param>
         public ScrCpyClient(ILogger<ScrCpyClient> logger, ILoggerFactory loggerFactory, AdbClient adbClient, DeviceData device)
         {
-            this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            this.loggerFactory = loggerFactory ?? throw new ArgumentNullException(nameof(loggerFactory));
-
-            if (device == null)
-            {
-                throw new ArgumentNullException(nameof(device));
-            }
-
-            if (adbClient == null)
-            {
-                throw new ArgumentNullException(nameof(adbClient));
-            }
-
             this.adbClient = adbClient;
             this.device = device;
         }
@@ -91,9 +77,14 @@ namespace Kaponata.Android.ScrCpy
         }
 
         /// <summary>
-        /// Gets or sets the task representing the device scrcpy process.
+        /// Gets or sets the <see cref="ShellStream"/> of the scrcpy process.
         /// </summary>
         private ShellStream ScrCpyServerShellStream { get; set; }
+
+        /// <summary>
+        /// Gets or sets the <see cref="Task"/> representing the logging of the scrcpy shell output.
+        /// </summary>
+        private Task LogScrCpyShellOutputTask { get; set; }
 
         /// <summary>
         /// Launches the scrcpy server on the device using the default options.
@@ -124,27 +115,30 @@ namespace Kaponata.Android.ScrCpy
         public virtual async Task<Socket> LaunchScrCpyAsync(ScrCpyOptions options, CancellationToken cancellationToken)
         {
             var command = options.GetCommand($"{ScrCpyRunDirectory}/{ScrCpyFileName}");
-
             this.logger.LogInformation($"Launching scrcpy on device '{this.device.Serial}' using command '{command}'.");
-
-            var endPoint = await this.adbClient.CreateReverseForwardAsync(this.device, "localabstract:scrcpy", cancellationToken).ConfigureAwait(false);
 
             Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
 
-            socket.Bind(new IPEndPoint(IPAddress.Any, endPoint.Port));
+            // I _think_ it should be sufficient to just listen on the loopback adapter instead of all network interfaces, right?
+            socket.Bind(new IPEndPoint(IPAddress.Any, 0));
             socket.Listen();
 
-            this.ScrCpyServerShellStream = await this.adbClient.ExecuteRemoteShellCommandAsync(this.device, command, this.tokenSource.Token).ConfigureAwait(false);
+            var endPoint = socket.LocalEndPoint as IPEndPoint;
+            var port = endPoint?.Port;
+            await this.adbClient.CreateReverseForwardAsync(this.device, true, "localabstract:scrcpy", $"{port}", cancellationToken).ConfigureAwait(false);
 
-            var task = Task.Run(async () =>
-            {
-                using var reader = new StreamReader(this.ScrCpyServerShellStream);
-                while (true)
+            this.ScrCpyServerShellStream = await this.adbClient.ExecuteRemoteShellCommandAsync(this.device, command, this.tokenSource.Token).ConfigureAwait(false);
+            this.LogScrCpyShellOutputTask = Task.Run(
+                async () =>
                 {
-                    var line = await reader.ReadLineAsync().ConfigureAwait(false);
-                    this.logger.LogInformation(line);
-                }
-            });
+                    using var reader = new StreamReader(this.ScrCpyServerShellStream);
+                    while (true)
+                    {
+                        var line = await reader.ReadLineAsync().ConfigureAwait(false);
+                        this.logger.LogInformation(line);
+                    }
+                },
+                this.tokenSource.Token);
 
             this.logger.LogInformation($"Launched scrcpy on device '{this.device.Serial}'.");
             return socket;
@@ -182,11 +176,10 @@ namespace Kaponata.Android.ScrCpy
             using var socket = await this.LaunchScrCpyAsync(options, cancellationToken).ConfigureAwait(false);
             var videoHandler = await socket.AcceptAsync().ConfigureAwait(false);
 
-            var controlHandler = await socket.AcceptAsync().ConfigureAwait(false);
+            using var controlHandler = await socket.AcceptAsync().ConfigureAwait(false);
 
             this.logger.LogInformation($"Successfully connected to scrcpy on device '{this.device.Serial}'.");
 
-            // this.ScrCpyController = new ScrCpyController(this.ScrCpyStream.DeviceInfo.Value, new NetworkStream(controlHandler, true), NullLogger<ScrCpyController>.Instance);
             return new ScrCpyVideoStream(new NetworkStream(videoHandler, true), this.loggerFactory.CreateLogger<ScrCpyVideoStream>());
         }
 
@@ -218,7 +211,7 @@ namespace Kaponata.Android.ScrCpy
         /// </returns>
         public virtual async Task InstallScrCpyAsync(ScrCpyOptions options, CancellationToken cancellationToken)
         {
-            this.logger.LogInformation($"Instaling scrcpy on device '{this.device.Serial}'.");
+            this.logger.LogInformation($"Installing scrcpy on device '{this.device.Serial}'.");
 
             var scrCpyFilePath = $"{ScrCpyReleasesDirectory}/{options.Version}/{ScrCpyFileName}";
             if (!await this.adbClient.ExistsAsync(this.device, scrCpyFilePath, cancellationToken).ConfigureAwait(false))
