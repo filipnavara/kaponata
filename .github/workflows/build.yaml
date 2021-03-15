@@ -218,8 +218,13 @@ jobs:
           --logger "junit;LogFileName=${{ github.workspace }}/bin/chart-{assembly}.TestResults.xml"
           --filter "TestCategory=IntegrationTest"
         working-directory: src/
+        
+      - name: Kubernetes - dump API server logs
+        run: kubectl logs -l app.kubernetes.io/component=api,app.kubernetes.io/name=kaponata --tail=-1
+        if: always()
 
       - name: Delete k3d cluster
+        if: always()
         run: |
           k3d cluster delete
 
