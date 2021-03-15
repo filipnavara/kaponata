@@ -71,7 +71,7 @@ namespace Kaponata.Api
                         device.Metadata.Name,
                         new Configuration()
                         {
-                            Protocol = "VNC",
+                            Protocol = "vnc",
                             Parameters = new Dictionary<string, object>()
                             {
                                 { "hostname", device.Status.VncHost },

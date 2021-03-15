@@ -124,7 +124,7 @@ namespace Kaponata.Api.Tests
             var configuration = Assert.Single(authorizationResult.Configurations);
             Assert.Equal("device", configuration.Key);
 
-            Assert.Equal("VNC", configuration.Value.Protocol);
+            Assert.Equal("vnc", configuration.Value.Protocol);
             Assert.Collection(
                 configuration.Value.Parameters,
                 c =>
