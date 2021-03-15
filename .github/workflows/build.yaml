@@ -20,10 +20,10 @@ jobs:
 
       - name: Provision CI environment
         run: |
-          # Workaround for https://github.com/yarnpkg/yarn/issues/7866
-          curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add -
-
+          # The Ansible playbooks will run apt-get update, too, but they won't show the actual
+          # error mesasge. Run apt-get update now, so that we can catch any error beforehand.
           sudo apt-get update
+
           sudo apt-get install ffmpeg -y
           sudo apt-get install libturbojpeg -y
 
