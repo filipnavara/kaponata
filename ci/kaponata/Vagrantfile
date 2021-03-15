@@ -1,0 +1,36 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure("2") do |config|
+  config.vm.box = "ubuntu/focal64"
+  config.vm.network "forwarded_port", guest: 5000, host: 5000, id: "registry"
+  config.vm.network "forwarded_port", guest: 2375, host: 2375, id: "docker"
+  config.vm.network "forwarded_port", guest: 6433, host: 6433, id: "k8s_api"
+  config.vm.network "forwarded_port", guest: 80, host: 80, id: "k8s_loadbalancer"
+
+  config.vm.provider "virtualbox" do |vb|
+    # Customize the amount of memory and CPU:
+    vb.memory = 8192
+    vb.cpus = 8
+
+    vb.customize ["modifyvm", :id, "--usbxhci", "off"]
+  end
+
+  # By default, Vagrant will install Ansible using the Ansible's Ubuntu PPA,
+  # but that does not provide packages for Ubuntu 20.40.
+  # As an alternative, manually install Ansible.
+  config.vm.provision :shell, :inline  => '
+    apt update
+    apt install -qy ansible python3-pip
+    pip3 install docker
+    
+    export ANSIBLE_ROLES_PATH=/usr/share/ansible/roles
+    ansible-galaxy install geerlingguy.docker
+    ansible-galaxy install andrewrothstein.k3d
+    ansible-galaxy install andrewrothstein.kubectl'
+  config.vm.provision :shell, inline: ""
+
+  config.vm.provision "ansible_local" do |ansible|
+    ansible.playbook = "playbook.yml"
+  end
+end
