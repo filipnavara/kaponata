@@ -1,4 +1,4 @@
-﻿// <copyright file="DeviceInfoTests.cs" company="Quamotion bv">
+﻿// <copyright file="ScrCpyDeviceInfoTests.cs" company="Quamotion bv">
 // Copyright (c) Quamotion bv. All rights reserved.
 // </copyright>
 
@@ -11,7 +11,7 @@ namespace Kaponata.Android.Tests.ScrCpy
     /// <summary>
     /// Tests the <see cref="ScrCpyDeviceInfo"/> class.
     /// </summary>
-    public class DeviceInfoTests
+    public class ScrCpyDeviceInfoTests
     {
         /// <summary>
         /// The <see cref="ScrCpyDeviceInfo.Read(System.Span{byte})"/> method creates a <see cref="ScrCpyDeviceInfo"/> struct from the data.
