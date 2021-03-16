@@ -23,7 +23,7 @@ push: all
 	docker manifest create --amend $(registry)/$(image):$(version) $(registry)/$(image):$(version)-amd64 $(registry)/$(image):$(version)-arm64
 	docker manifest push $(registry)/$(image):$(version)
 
-bin/Release/net5.0/publish/Kaponata.Api.dll: $(shell find . -path ./bin -prune -false -o -path ./obj -prune -false -o -name "*.cs" -type f)
+bin/Release/net5.0/publish/Kaponata.Api.dll: $(shell find . -path ./bin -prune -false -o -path ./obj -prune -false -o -regex '.*\.cs' -type f)
 	dotnet publish -c Release
 
 .amd64.docker-id: Dockerfile bin/Release/net5.0/publish/Kaponata.Api.dll
