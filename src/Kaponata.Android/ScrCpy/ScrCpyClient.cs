@@ -62,6 +62,8 @@ namespace Kaponata.Android.ScrCpy
         {
             this.adbClient = adbClient;
             this.device = device;
+            this.logger = logger;
+            this.loggerFactory = loggerFactory;
         }
 
         /// <summary>
