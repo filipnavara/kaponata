@@ -1,0 +1,28 @@
+- hosts: all
+  become: yes
+
+  roles:
+    # Install rootless Docker
+    - role: geerlingguy.docker
+      vars:
+        docker_install_compose: false
+        docker_users:
+          - "vagrant"
+
+    # Install the k3d binary
+    - role: andrewrothstein.k3d
+
+    # Install kubectl
+    - role: andrewrothstein.kubectl
+
+  tasks:
+  - name: Expose Docker on port 2375
+    docker_container:
+      name: docker_socat
+      image: alpine/socat
+      restart_policy: always
+      entrypoint: [ "socat", "TCP-LISTEN:2375,reuseaddr,fork", "UNIX-CLIENT:/var/run/docker.sock" ]
+      volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+      ports:
+      - "2375:2375/tcp"
