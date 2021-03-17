@@ -121,13 +121,12 @@ namespace Kaponata.Android.ScrCpy
 
             Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
 
-            // I _think_ it should be sufficient to just listen on the loopback adapter instead of all network interfaces, right?
             socket.Bind(new IPEndPoint(IPAddress.Any, 0));
             socket.Listen();
 
             var endPoint = socket.LocalEndPoint as IPEndPoint;
             var port = endPoint?.Port;
-            await this.adbClient.CreateReverseForwardAsync(this.device, true, "localabstract:scrcpy", $"{port}", cancellationToken).ConfigureAwait(false);
+            await this.adbClient.CreateReverseForwardAsync(this.device, true, "localabstract:scrcpy", $"tcp:{port}", cancellationToken).ConfigureAwait(false);
 
             this.ScrCpyServerShellStream = await this.adbClient.ExecuteRemoteShellCommandAsync(this.device, command, this.tokenSource.Token).ConfigureAwait(false);
             this.LogScrCpyShellOutputTask = Task.Run(
@@ -137,7 +136,10 @@ namespace Kaponata.Android.ScrCpy
                     while (true)
                     {
                         var line = await reader.ReadLineAsync().ConfigureAwait(false);
-                        this.logger.LogInformation(line);
+                        if (!string.IsNullOrEmpty(line))
+                        {
+                            this.logger.LogInformation(line);
+                        }
                     }
                 },
                 this.tokenSource.Token);
@@ -177,8 +179,7 @@ namespace Kaponata.Android.ScrCpy
             await this.InstallScrCpyAsync(options, cancellationToken).ConfigureAwait(false);
             using var socket = await this.LaunchScrCpyAsync(options, cancellationToken).ConfigureAwait(false);
             var videoHandler = await socket.AcceptAsync().ConfigureAwait(false);
-
-            using var controlHandler = await socket.AcceptAsync().ConfigureAwait(false);
+            var controlHandler = await socket.AcceptAsync().ConfigureAwait(false);
 
             this.logger.LogInformation($"Successfully connected to scrcpy on device '{this.device.Serial}'.");
 
