@@ -159,6 +159,70 @@ namespace Kaponata.Android.Adb
         }
 
         /// <summary>
+        /// Indicates if the path exists on the given device.
+        /// </summary>
+        /// <param name="device">
+        /// The device for which check if the path exists.
+        /// </param>
+        /// <param name="path">
+        /// The path to be verified.
+        /// </param>
+        /// <param name="cancellationToken">
+        /// A <see cref="CancellationToken"/> which can be used to cancel the asynchronous operation.
+        /// </param>
+        /// <returns>
+        /// A value indicating whether the path exists on the given device.
+        /// </returns>
+        public async Task<bool> ExistsAsync(DeviceData device, string path, CancellationToken cancellationToken)
+        {
+            if (device == null)
+            {
+                throw new ArgumentNullException(nameof(device));
+            }
+
+            if (string.IsNullOrEmpty(path))
+            {
+                throw new ArgumentNullException(nameof(path));
+            }
+
+            var fileStat = await this.GetFileStatisticsAsync(device, path, cancellationToken).ConfigureAwait(false);
+
+            return fileStat.FileMode != 0;
+        }
+
+        /// <summary>
+        /// Indicates if the path is a directory on the given device.
+        /// </summary>
+        /// <param name="device">
+        /// The device for which check the path.
+        /// </param>
+        /// <param name="path">
+        /// The path to be verified.
+        /// </param>
+        /// <param name="cancellationToken">
+        /// A <see cref="CancellationToken"/> which can be used to cancel the asynchronous operation.
+        /// </param>
+        /// <returns>
+        /// A value indicting whether the path is an directory on the given device.
+        /// </returns>
+        public async Task<bool> IsDirectoryAsync(DeviceData device, string path, CancellationToken cancellationToken)
+        {
+            if (device == null)
+            {
+                throw new ArgumentNullException(nameof(device));
+            }
+
+            if (string.IsNullOrEmpty(path))
+            {
+                throw new ArgumentNullException(nameof(path));
+            }
+
+            var fileStat = await this.GetFileStatisticsAsync(device, path, cancellationToken).ConfigureAwait(false);
+
+            return (fileStat.FileMode & 0x4000) == 0x4000;
+        }
+
+        /// <summary>
         /// Gets the <see cref="FileStatistics"/> of a remote file.
         /// </summary>
         /// <param name="device">
