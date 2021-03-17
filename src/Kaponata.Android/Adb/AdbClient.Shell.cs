@@ -2,8 +2,6 @@
 // Copyright (c) Quamotion bv. All rights reserved.
 // </copyright>
 
-using System;
-using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -38,119 +36,6 @@ namespace Kaponata.Android.Adb
             protocol.EnsureValidAdbResponse(await protocol.ReadAdbResponseAsync(cancellationToken).ConfigureAwait(false));
 
             return protocol.GetShellStream();
-        }
-
-        /// <summary>
-        /// Creates a directory for a given path.
-        /// </summary>
-        /// <param name="device">
-        /// The device.
-        /// </param>
-        /// <param name="path">
-        /// The path to be created.
-        /// </param>
-        /// <param name="cancellationToken">
-        /// A <see cref="CancellationToken"/> which can be used to cancel the asynchronous operation.
-        /// </param>
-        /// <returns>
-        /// A <see cref="Task"/> which represents the asynchronous operation.
-        /// </returns>
-        internal async Task CreateDirectoryAsync(DeviceData device, string path, CancellationToken cancellationToken)
-        {
-            if (device == null)
-            {
-                throw new ArgumentNullException(nameof(device));
-            }
-
-            if (string.IsNullOrEmpty(path))
-            {
-                throw new ArgumentNullException(nameof(path));
-            }
-
-            string command = $"mkdir -p {path}";
-            using var stream = await this.ExecuteRemoteShellCommandAsync(device, command, cancellationToken).ConfigureAwait(false);
-            using var streamReader = new StreamReader(stream);
-            var output = await streamReader.ReadToEndAsync().ConfigureAwait(false);
-        }
-
-        /// <summary>
-        /// Creates a directory for a given path.
-        /// </summary>
-        /// <param name="device">
-        /// The device.
-        /// </param>
-        /// <param name="path">
-        /// The path to be created.
-        /// </param>
-        /// <param name="permissions">
-        /// The permissions to give to the path.
-        /// </param>
-        /// <param name="cancellationToken">
-        /// A <see cref="CancellationToken"/> which can be used to cancel the asynchronous operation.
-        /// </param>
-        /// <returns>
-        /// A <see cref="Task"/> which represents the asynchronous operation.
-        /// </returns>
-        internal async Task ChModAsync(DeviceData device, string path, string permissions, CancellationToken cancellationToken)
-        {
-            if (device == null)
-            {
-                throw new ArgumentNullException(nameof(device));
-            }
-
-            if (string.IsNullOrEmpty(path))
-            {
-                throw new ArgumentNullException(nameof(path));
-            }
-
-            if (await this.ExistsAsync(device, path, cancellationToken).ConfigureAwait(false))
-            {
-                string command = string.Format(@"chmod {1} {0}", path, permissions);
-                using var stream = await this.ExecuteRemoteShellCommandAsync(device, command, cancellationToken).ConfigureAwait(false);
-                using var streamReader = new StreamReader(stream);
-                var output = await streamReader.ReadToEndAsync().ConfigureAwait(false);
-            }
-        }
-
-        /// <summary>
-        /// Deletes a file if the path exists on the device.
-        /// </summary>
-        /// <param name="device">
-        /// The device.
-        /// </param>
-        /// <param name="path">
-        /// The path to be deleted.
-        /// </param>
-        /// <param name="cancellationToken">
-        /// A <see cref="CancellationToken"/> which can be used to cancel the asynchronous operation.
-        /// </param>
-        /// <returns>
-        /// A <see cref="Task"/> which represents the asynchronous operation.
-        /// </returns>
-        internal async Task DeleteFileIfExistsAsync(DeviceData device, string path, CancellationToken cancellationToken)
-        {
-            if (device == null)
-            {
-                throw new ArgumentNullException(nameof(device));
-            }
-
-            if (string.IsNullOrEmpty(path))
-            {
-                throw new ArgumentNullException(nameof(path));
-            }
-
-            if (await this.ExistsAsync(device, path, cancellationToken).ConfigureAwait(false))
-            {
-                var command = string.Format(@"rm -f {0}", path);
-                if (await this.IsDirectoryAsync(device, path, cancellationToken).ConfigureAwait(false))
-                {
-                    command = string.Format(@"rm -r -f {0}", path);
-                }
-
-                using var stream = await this.ExecuteRemoteShellCommandAsync(device, command, cancellationToken).ConfigureAwait(false);
-                using var streamReader = new StreamReader(stream);
-                var output = await streamReader.ReadToEndAsync().ConfigureAwait(false);
-            }
         }
     }
 }

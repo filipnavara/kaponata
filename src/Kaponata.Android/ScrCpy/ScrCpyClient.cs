@@ -219,9 +219,6 @@ namespace Kaponata.Android.ScrCpy
             var scrCpyFilePath = $"{ScrCpyReleasesDirectory}/{options.Version}/{ScrCpyFileName}";
             if (!await this.adbClient.ExistsAsync(this.device, scrCpyFilePath, cancellationToken).ConfigureAwait(false))
             {
-                // Create a directory for our resources
-                await this.adbClient.CreateDirectoryAsync(this.device, $"{ScrCpyReleasesDirectory}/{options.Version}", cancellationToken).ConfigureAwait(false);
-                await this.adbClient.ChModAsync(this.device, $"{ScrCpyReleasesDirectory}/{options.Version}", "0777", cancellationToken).ConfigureAwait(false);
                 using var scrCpyServerStream = this.ScrCpyServer;
                 await this.adbClient.PushAsync(this.device, scrCpyServerStream, scrCpyFilePath, 511 /* 777 in octal */, DateTime.Now, cancellationToken).ConfigureAwait(false);
             }
