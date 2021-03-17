@@ -6,6 +6,7 @@ using k8s;
 using k8s.Models;
 using Kaponata.Kubernetes.Models;
 using System;
+using System.Collections.Generic;
 using Xunit;
 
 namespace Kaponata.Kubernetes.Tests
@@ -16,7 +17,7 @@ namespace Kaponata.Kubernetes.Tests
     public class LabelSelectorTests
     {
         /// <summary>
-        /// <see cref="LabelSelector.Create"/> returns <see langword="null"/> when <see langword="null"/> is passed.
+        /// <see cref="LabelSelector.Create{T}"/> returns <see langword="null"/> when <see langword="null"/> is passed.
         /// </summary>
         [Fact]
         public void Create_Null_ReturnsNull()
@@ -25,7 +26,7 @@ namespace Kaponata.Kubernetes.Tests
         }
 
         /// <summary>
-        /// <see cref="LabelSelector.Create"/> returns <see langword="null"/> when an expression is passed when
+        /// <see cref="LabelSelector.Create{T}"/> returns <see langword="null"/> when an expression is passed when
         /// always returns <see langword="true"/>.
         /// </summary>
         [Fact]
@@ -35,7 +36,7 @@ namespace Kaponata.Kubernetes.Tests
         }
 
         /// <summary>
-        /// <see cref="LabelSelector.Create"/> returns <see langword="null"/> when an expression is passed when
+        /// <see cref="LabelSelector.Create{T}"/> returns <see langword="null"/> when an expression is passed when
         /// always returns <see langword="true"/>.
         /// </summary>
         [Fact]
@@ -45,7 +46,7 @@ namespace Kaponata.Kubernetes.Tests
         }
 
         /// <summary>
-        /// <see cref="LabelSelector.Create"/> returns <see langword="null"/> when an expression is passed when
+        /// <see cref="LabelSelector.Create{T}"/> returns <see langword="null"/> when an expression is passed when
         /// always returns <see langword="true"/>.
         /// </summary>
         [Fact]
@@ -55,7 +56,7 @@ namespace Kaponata.Kubernetes.Tests
         }
 
         /// <summary>
-        /// <see cref="LabelSelector.Create"/> returns <see langword="null"/> when no label is embedded in the expression.
+        /// <see cref="LabelSelector.Create{T}"/> returns <see langword="null"/> when no label is embedded in the expression.
         /// </summary>
         [Fact]
         public void Create_NoLabel_ReturnsNull()
@@ -64,7 +65,7 @@ namespace Kaponata.Kubernetes.Tests
         }
 
         /// <summary>
-        /// <see cref="LabelSelector.Create"/> returns a correct label selector when a single label is present.
+        /// <see cref="LabelSelector.Create{T}"/> returns a correct label selector when a single label is present.
         /// </summary>
         [Fact]
         public void Create_SingleLabel_Works()
@@ -73,7 +74,7 @@ namespace Kaponata.Kubernetes.Tests
         }
 
         /// <summary>
-        /// <see cref="LabelSelector.Create"/> returns a correct label selector when a two labels are present.
+        /// <see cref="LabelSelector.Create{T}"/> returns a correct label selector when a two labels are present.
         /// </summary>
         [Fact]
         public void Create_TwoLabels_Works()
@@ -84,7 +85,7 @@ namespace Kaponata.Kubernetes.Tests
         }
 
         /// <summary>
-        /// <see cref="LabelSelector.Create"/> returns a correct label selector when a three labels are present.
+        /// <see cref="LabelSelector.Create{T}"/> returns a correct label selector when a three labels are present.
         /// </summary>
         [Fact]
         public void Create_ThreeLabels_Works()
@@ -96,7 +97,7 @@ namespace Kaponata.Kubernetes.Tests
         }
 
         /// <summary>
-        /// <see cref="LabelSelector.Create"/> throws an exception when the label value is not a constant.
+        /// <see cref="LabelSelector.Create{T}"/> throws an exception when the label value is not a constant.
         /// </summary>
         [Fact]
         public void Create_ValueNotConstant_Throws()
@@ -107,7 +108,7 @@ namespace Kaponata.Kubernetes.Tests
         }
 
         /// <summary>
-        /// <see cref="LabelSelector.Create"/> returns <see langword="null"/> when an incorrect method is being called
+        /// <see cref="LabelSelector.Create{T}"/> returns <see langword="null"/> when an incorrect method is being called
         /// on the Labels property.
         /// </summary>
         [Fact]
@@ -117,7 +118,7 @@ namespace Kaponata.Kubernetes.Tests
         }
 
         /// <summary>
-        /// <see cref="LabelSelector.Create"/> returns <see langword="null"/> when an dictionary indexer is being called
+        /// <see cref="LabelSelector.Create{T}"/> returns <see langword="null"/> when an dictionary indexer is being called
         /// on the Labels property.
         /// </summary>
         [Fact]
@@ -127,7 +128,7 @@ namespace Kaponata.Kubernetes.Tests
         }
 
         /// <summary>
-        /// Calling <see cref="LabelSelector.Create"/> on a pod object which is not the parameter returns
+        /// Calling <see cref="LabelSelector.Create{T}"/> on a pod object which is not the parameter returns
         /// <see langword="null"/>.
         /// </summary>
         [Fact]
@@ -137,7 +138,7 @@ namespace Kaponata.Kubernetes.Tests
         }
 
         /// <summary>
-        /// Calling <see cref="LabelSelector.Create"/> which reads a wrong property returns
+        /// Calling <see cref="LabelSelector.Create{T}"/> which reads a wrong property returns
         /// <see langword="null"/>.
         /// </summary>
         [Fact]
@@ -147,7 +148,7 @@ namespace Kaponata.Kubernetes.Tests
         }
 
         /// <summary>
-        /// Calling <see cref="LabelSelector.Create"/> which reads a label using a non-constant
+        /// Calling <see cref="LabelSelector.Create{T}"/> which reads a label using a non-constant
         /// expression returns <see langword="null"/>.
         /// </summary>
         [Fact]
@@ -157,7 +158,7 @@ namespace Kaponata.Kubernetes.Tests
         }
 
         /// <summary>
-        /// Calling <see cref="LabelSelector.Create"/> works with custom object types.
+        /// Calling <see cref="LabelSelector.Create{T}"/> works with custom object types.
         /// </summary>
         [Fact]
         public void Create_CustomType_Works()
@@ -166,12 +167,64 @@ namespace Kaponata.Kubernetes.Tests
         }
 
         /// <summary>
-        /// Calling <see cref="LabelSelector.Create"/> throws an error if not operating on (IKubernetesObject).Metadata.Labels.
+        /// Calling <see cref="LabelSelector.Create{T}"/> throws an error if not operating on (IKubernetesObject).Metadata.Labels.
         /// </summary>
         [Fact]
         public void NotAKubeType_ReturnsNull()
         {
             Assert.Null(LabelSelector.Create<CustomObject>(s => s.Child.Metadata.Labels[Annotations.ManagedBy] == "test"));
+        }
+
+        /// <summary>
+        /// <see cref="LabelSelector.Create(Dictionary{string, string})"/> validates its arguments.
+        /// </summary>
+        [Fact]
+        public void FromDictionary_ValidatesArgument()
+        {
+            Assert.Throws<ArgumentNullException>("values", () => LabelSelector.Create((Dictionary<string, string>)null));
+        }
+
+        /// <summary>
+        /// <see cref="LabelSelector.Create(Dictionary{string, string})"/> returns an empty selector when passed
+        /// an empty dictionary.
+        /// </summary>
+        [Fact]
+        public void FromDictionary_EmptyDictionary_ReturnsEmptySelector()
+        {
+            Assert.Equal(string.Empty, LabelSelector.Create(new Dictionary<string, string>()));
+        }
+
+        /// <summary>
+        /// <see cref="LabelSelector.Create(Dictionary{string, string})"/> returns a valid selector when passed
+        /// a single key/value pair.
+        /// </summary>
+        [Fact]
+        public void FromDictionary_SingleValue_ReturnsSelector()
+        {
+            Assert.Equal(
+                "app.kubernetes.io/managed-by=test",
+                LabelSelector.Create(
+                    new Dictionary<string, string>()
+                    {
+                        { Annotations.ManagedBy,  "test" },
+                    }));
+        }
+
+        /// <summary>
+        /// <see cref="LabelSelector.Create(Dictionary{string, string})"/> returns a valid selector when passed
+        /// two key/value pairs.
+        /// </summary>
+        [Fact]
+        public void FromDictionary_TwoValues_ReturnsSelector()
+        {
+            Assert.Equal(
+                "app.kubernetes.io/managed-by=test,kubernetes.io/arch=arm64",
+                LabelSelector.Create(
+                    new Dictionary<string, string>()
+                    {
+                        { Annotations.ManagedBy,  "test" },
+                        { Annotations.Arch, "arm64" },
+                    }));
         }
 
         private class CustomObject : IKubernetesObject<V1ObjectMeta>

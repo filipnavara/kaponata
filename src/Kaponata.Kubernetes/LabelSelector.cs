@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq.Expressions;
+using System.Text;
 
 #nullable disable
 
@@ -40,6 +41,37 @@ namespace Kaponata.Kubernetes
             }
 
             return ToLabelSelector(predicate.Body);
+        }
+
+        /// <summary>
+        /// Converts a dictionary to a label selector.
+        /// </summary>
+        /// <param name="values">
+        /// The label selector, as a dictionary.
+        /// </param>
+        /// <returns>
+        /// A <see cref="string"/> which represents the label selector.
+        /// </returns>
+        public static string Create(Dictionary<string, string> values)
+        {
+            if (values == null)
+            {
+                throw new ArgumentNullException(nameof(values));
+            }
+
+            StringBuilder builder = new StringBuilder();
+
+            foreach (var pair in values)
+            {
+                if (builder.Length > 0)
+                {
+                    builder.Append(",");
+                }
+
+                builder.AppendFormat("{0}={1}", pair.Key, pair.Value);
+            }
+
+            return builder.ToString();
         }
 
         // Operates on the root expression. We support either a binary Equal expression
