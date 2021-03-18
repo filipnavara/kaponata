@@ -114,6 +114,12 @@ jobs:
           make
         working-directory: src/Kaponata.Api/
 
+      - name: Package sidecars
+        run: |
+          dotnet publish -c Release
+          make
+        working-directory: src/Kaponata.Sidecars/
+
       - name: Package UI
         run: |
           export PATH="$PATH:/usr/local/lib/npm/bin/"
@@ -256,6 +262,11 @@ jobs:
         if: github.ref == 'refs/heads/main'
         run: make push
         working-directory: src/Kaponata.Api/
+
+      - name: Publish Sidecar container image
+        if: github.ref == 'refs/heads/main'
+        run: make push
+        working-directory: src/Kaponata.Sidecar/
 
       - name: Publish chart CI website
         if: github.ref == 'refs/heads/main'
