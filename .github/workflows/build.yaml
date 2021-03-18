@@ -233,6 +233,13 @@ jobs:
         run: kubectl logs -l app.kubernetes.io/component=api,app.kubernetes.io/name=kaponata --tail=-1
         if: always()
 
+      - name: Kubernetes - dump usbmuxd logs
+        run: |
+          kubectl describe pod -l app.kubernetes.io/component=usbmuxd,app.kubernetes.io/name=usbmuxd
+          kubectl logs -l app.kubernetes.io/component=usbmuxd,app.kubernetes.io/name=usbmuxd --tail=-1 -c usbmuxd
+          kubectl logs -l app.kubernetes.io/component=usbmuxd,app.kubernetes.io/name=usbmuxd --tail=-1 -c sidecar
+        if: always()
+
       - name: Delete k3d cluster
         if: always()
         run: |
