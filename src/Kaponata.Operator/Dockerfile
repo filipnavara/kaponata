@@ -8,7 +8,7 @@ ARG VERSION
 ARG EXPIRES
 
 LABEL org.opencontainers.image.title="Kaponata Operator"
-LABEL org.opencontainers.image.description=""
+LABEL org.opencontainers.image.description="The Kaponata Operator is responsible for provisioning Appium sessions in a Kubernetes cluster."
 LABEL org.opencontainers.image.licenses="MIT"
 
 LABEL org.opencontainers.image.created=$GIT_COMMIT_DATE
