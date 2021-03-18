@@ -135,6 +135,7 @@ jobs:
           yq e '.appVersion="${{ steps.nbgv.outputs.SemVer2 }}"' -i Chart.yaml
           yq e '.operator.image.tag="${{ steps.nbgv.outputs.SemVer2 }}"' -i values.yaml
           yq e '.api.image.tag="${{ steps.nbgv.outputs.SemVer2 }}"' -i values.yaml
+          yq e '.sidecar.image.tag="${{ steps.nbgv.outputs.SemVer2 }}"' -i charts/usbmuxd/values.yaml
 
           helm lint .
           helm package . -d ${{ github.workspace }}/bin/charts
@@ -166,6 +167,9 @@ jobs:
 
           docker tag quay.io/kaponata/api:${{ steps.nbgv.outputs.SemVer2 }}-amd64 quay.io/kaponata/api:${{ steps.nbgv.outputs.SemVer2 }}
           k3d image import quay.io/kaponata/api:${{ steps.nbgv.outputs.SemVer2 }}
+
+          docker tag quay.io/kaponata/sidecar:${{ steps.nbgv.outputs.SemVer2 }}-amd64 quay.io/kaponata/sidecar:${{ steps.nbgv.outputs.SemVer2 }}
+          k3d image import quay.io/kaponata/sidecar:${{ steps.nbgv.outputs.SemVer2 }}
 
       # Override the usbmuxd image tag in the usbmuxd subchart to
       # latest-udev-amd64. This fixes an issue where usbmuxd will fail
@@ -229,6 +233,13 @@ jobs:
         run: kubectl logs -l app.kubernetes.io/component=api,app.kubernetes.io/name=kaponata --tail=-1
         if: always()
 
+      - name: Kubernetes - dump usbmuxd logs
+        run: |
+          kubectl describe pod -l app.kubernetes.io/component=usbmuxd,app.kubernetes.io/name=usbmuxd
+          kubectl logs -l app.kubernetes.io/component=usbmuxd,app.kubernetes.io/name=usbmuxd --tail=-1 -c usbmuxd
+          kubectl logs -l app.kubernetes.io/component=usbmuxd,app.kubernetes.io/name=usbmuxd --tail=-1 -c sidecar
+        if: always()
+
       - name: Delete k3d cluster
         if: always()
         run: |
@@ -266,7 +277,7 @@ jobs:
       - name: Publish Sidecar container image
         if: github.ref == 'refs/heads/main'
         run: make push
-        working-directory: src/Kaponata.Sidecar/
+        working-directory: src/Kaponata.Sidecars/
 
       - name: Publish chart CI website
         if: github.ref == 'refs/heads/main'

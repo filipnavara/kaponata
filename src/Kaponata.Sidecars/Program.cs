@@ -8,6 +8,7 @@ using Microsoft.Extensions.Hosting;
 using System.CommandLine;
 using System.CommandLine.Builder;
 using System.CommandLine.Hosting;
+using System.CommandLine.Invocation;
 using System.CommandLine.Parsing;
 using System.Threading.Tasks;
 
@@ -44,7 +45,14 @@ namespace Kaponata.Sidecars
 
         private static CommandLineBuilder BuildCommandLine()
         {
-            return new CommandLineBuilder(null);
+            var root = new RootCommand();
+            root.Handler = CommandHandler.Create<IHost>(RunAsync);
+            return new CommandLineBuilder(root);
+        }
+
+        private static async Task RunAsync(IHost host)
+        {
+            await host.WaitForShutdownAsync().ConfigureAwait(false);
         }
     }
 }

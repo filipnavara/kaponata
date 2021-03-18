@@ -50,3 +50,24 @@ app.kubernetes.io/name: {{ include "usbmuxd.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 app.kubernetes.io/component: "usbmuxd"
 {{- end }}
+
+{{/*
+API: Service Account Full Name
+*/}}
+{{- define "usbmuxd.serviceAccount.fullname" -}}
+{{- printf "%s-usbmuxd-account" (include "usbmuxd.fullname" .) | trunc 63 | trimSuffix "-" }}
+{{- end }}
+
+{{/*
+API: Role Full Name
+*/}}
+{{- define "usbmuxd.role.fullname" -}}
+{{- printf "%s-usbmuxd-role" (include "usbmuxd.fullname" .) | trunc 63 | trimSuffix "-" }}
+{{- end }}
+
+{{/*
+API: Role Binding Full Name
+*/}}
+{{- define "usbmuxd.roleBinding.fullname" -}}
+{{- printf "%s-usbmuxd-rolebinding" (include "usbmuxd.fullname" .) | trunc 63 | trimSuffix "-" }}
+{{- end }}

@@ -1,0 +1,14 @@
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: {{ include "usbmuxd.roleBinding.fullname" . }}
+  labels:
+    {{- include "usbmuxd.labels" . | nindent 4 }}
+roleRef:
+  kind: Role
+  name: {{ include "usbmuxd.role.fullname" . }}
+  apiGroup: rbac.authorization.k8s.io
+subjects:
+- kind: ServiceAccount
+  name: {{ template "usbmuxd.serviceAccount.fullname" . }}
+  namespace: {{ .Release.Namespace }}

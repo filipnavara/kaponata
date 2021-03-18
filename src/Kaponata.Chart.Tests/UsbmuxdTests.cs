@@ -69,7 +69,7 @@ namespace Kaponata.Chart.Tests
                 var pod = pods.Items[0];
 
                 // The pod is in the running state
-                pod = await client.WaitForPodRunningAsync(pod, TimeSpan.FromMinutes(5), default).ConfigureAwait(false);
+                pod = await client.WaitForPodRunningAsync(pod, TimeSpan.FromMinutes(2), default).ConfigureAwait(false);
                 Assert.Equal("Running", pod.Status.Phase);
 
                 // We can connect to port 27015 and retrieve an empty device list
