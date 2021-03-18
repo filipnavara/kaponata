@@ -15,6 +15,7 @@ spec:
     spec:
       nodeSelector:
         kubernetes.io/os: linux
+      serviceAccountName: {{ template "usbmuxd.serviceAccount.fullname" . }}
       containers:
       - name: usbmuxd
         image: {{ .Values.usbmuxd.image.repository }}:{{ .Values.usbmuxd.image.tag }}
@@ -34,6 +35,18 @@ spec:
         # Listen on 0.0.0.0:27015
         - "-S"
         - "0.0.0.0:27015"
+
+      - name: sidecar
+        image: {{ .Values.sidecar.image.repository }}:{{ .Values.sidecar.image.tag }}
+        command: [ "dotnet", "/app/Kaponata.Sidecars.dll" ]
+        args:
+        - "--pod-name"
+        - "$(POD_NAME)"
+        env:
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
 
       # Required volumes
       volumes:

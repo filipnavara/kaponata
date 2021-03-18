@@ -2,3 +2,8 @@ usbmuxd:
   image:
     repository: quay.io/kaponata/usbmuxd
     tag: 1.1.2
+
+sidecar:
+  image:
+    repository: quay.io/kaponata/sidecar
+    tag: latest-amd64
