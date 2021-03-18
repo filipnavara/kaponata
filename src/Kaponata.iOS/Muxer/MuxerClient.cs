@@ -52,6 +52,13 @@ namespace Kaponata.iOS.Muxer
         }
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="MuxerClient"/> class. Intended for mocking purposes only.
+        /// </summary>
+        protected MuxerClient()
+        {
+        }
+
+        /// <summary>
         /// Creates a new connection to <c>usbmuxd</c>.
         /// </summary>
         /// <param name="cancellationToken">
