@@ -2,14 +2,17 @@
 // Copyright (c) Quamotion bv. All rights reserved.
 // </copyright>
 
+using Kaponata.iOS.Muxer;
 using Kaponata.Kubernetes;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using System;
 using System.CommandLine;
 using System.CommandLine.Builder;
 using System.CommandLine.Hosting;
 using System.CommandLine.Invocation;
 using System.CommandLine.Parsing;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Kaponata.Sidecars
@@ -29,30 +32,73 @@ namespace Kaponata.Sidecars
         /// A <see cref="Task"/> representing the asynchronous operation.
         /// </returns>
         public static async Task Main(string[] args) => await BuildCommandLine()
-            .UseHost(
-                _ => Host.CreateDefaultBuilder(),
-                host =>
-                {
-                    host.ConfigureServices(services =>
-                    {
-                        services.AddLogging();
-                        services.AddKubernetes();
-                    });
-                })
-            .UseDefaults()
-            .Build()
             .InvokeAsync(args);
 
-        private static CommandLineBuilder BuildCommandLine()
+        /// <summary>
+        /// Builds the command-line interface.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="CommandLineBuilder"/> which represents the command-line application.
+        /// </returns>
+        public static Parser BuildCommandLine()
         {
             var root = new RootCommand();
-            root.Handler = CommandHandler.Create<IHost>(RunAsync);
-            return new CommandLineBuilder(root);
+            root.AddOption(new Option<string>("--pod-name", "The name of the pod in which the sidecar container is running."));
+            root.Handler = CommandHandler.Create<IHost, string>(RunAsync);
+            return new CommandLineBuilder(root)
+                .UseHost(
+                    _ => Host.CreateDefaultBuilder(),
+                    ConfigureHost)
+                .UseDefaults()
+                .Build();
         }
 
-        private static async Task RunAsync(IHost host)
+        /// <summary>
+        /// Configures the host command-line host.
+        /// </summary>
+        /// <param name="hostBuilder">
+        /// The host builder to configure.
+        /// </param>
+        public static void ConfigureHost(IHostBuilder hostBuilder)
         {
+            hostBuilder.ConfigureServices(services =>
+            {
+                services.AddLogging();
+                services.AddKubernetes();
+                services.AddSingleton<UsbmuxdSidecar>();
+                services.AddSingleton<UsbmuxdSidecarConfiguration>();
+                services.AddSingleton<MuxerClient>();
+            });
+        }
+
+        /// <summary>
+        /// Runs the command-line application.
+        /// </summary>
+        /// <param name="host">
+        /// The application host.
+        /// </param>
+        /// <param name="podName">
+        /// The name of the pod in which the program is running.
+        /// </param>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+        public static async Task RunAsync(IHost host, string podName)
+        {
+            var serviceProvider = host.Services;
+
+            var configuration = serviceProvider.GetRequiredService<UsbmuxdSidecarConfiguration>();
+            configuration.PodName = podName;
+
+            if (configuration.PodName == null)
+            {
+                configuration.PodName = Environment.MachineName;
+            }
+
+            var sidecar = serviceProvider.GetRequiredService<UsbmuxdSidecar>();
+            await sidecar.StartAsync(CancellationToken.None).ConfigureAwait(false);
+
             await host.WaitForShutdownAsync().ConfigureAwait(false);
+
+            await sidecar.StopAsync(CancellationToken.None).ConfigureAwait(false);
         }
     }
 }

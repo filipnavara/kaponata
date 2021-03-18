@@ -34,7 +34,7 @@ namespace Kaponata.iOS.Muxer
         /// A <see cref="Task"/> which represents the asynchronous operation. Returns <see langword="true"/> when
         /// the client aborted the listen operation, <see langword="false"/> when the server disconnected.
         /// </returns>
-        public async Task<bool> ListenAsync(
+        public virtual async Task<bool> ListenAsync(
             Func<DeviceAttachedMessage, Task<MuxerListenAction>> onAttached,
             Func<DeviceDetachedMessage, Task<MuxerListenAction>> onDetached,
             Func<DevicePairedMessage, Task<MuxerListenAction>> onPaired,
