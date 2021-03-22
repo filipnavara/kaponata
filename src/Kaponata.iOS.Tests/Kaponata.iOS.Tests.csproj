@@ -13,5 +13,7 @@
   <ItemGroup>
     <None Update="**/*.bin" CopyToOutputDirectory="PreserveNewest" />
     <None Update="**/*.xml" CopyToOutputDirectory="PreserveNewest" />
+    <None Update="**/*.cer" CopyToOutputDirectory="PreserveNewest" />
+    <None Update="**/*.mobileprovision" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>
