@@ -2,6 +2,7 @@
 // Copyright (c) Quamotion bv. All rights reserved.
 // </copyright>
 
+using k8s.Models;
 using Kaponata.Kubernetes.Models;
 
 namespace Kaponata.Kubernetes
@@ -11,6 +12,25 @@ namespace Kaponata.Kubernetes
     /// </summary>
     public class Annotations
     {
+        /// <summary>
+        /// Applied to <see cref="V1Secret"/> objects, to indicate which aspect of a developer
+        /// profile the secret represents. Possible values are <see cref="DeveloperIdentity"/>
+        /// or <see cref="ProvisioningProfile"/>.
+        /// </summary>
+        public const string DeveloperProfileComponent = "kaponata.io/developerProfile";
+
+        /// <summary>
+        /// The secret contains a developer identity (an X.509 certificate).
+        /// </summary>
+        /// <seealso cref="DeveloperProfileComponent"/>.
+        public const string DeveloperIdentity = "identity";
+
+        /// <summary>
+        /// The secret contains a provisioning profile.
+        /// </summary>
+        /// <seealso cref="DeveloperProfileComponent"/>.
+        public const string ProvisioningProfile = "profile";
+
         /// <summary>
         /// The name of the application.
         /// </summary>
