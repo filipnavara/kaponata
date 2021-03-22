@@ -12,6 +12,8 @@
 
   <ItemGroup>
     <None Update="Polyfill\kubeconfig.yml" CopyToOutputDirectory="PreserveNewest" />
+    <None Update="**/*.key" CopyToOutputDirectory="PreserveNewest" />
+    <None Update="**/*.crt" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>
