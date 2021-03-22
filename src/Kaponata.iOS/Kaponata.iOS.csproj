@@ -6,5 +6,6 @@
 
   <ItemGroup>
     <PackageReference Include="plist-cil" Version="2.1.0" />
+    <PackageReference Include="System.Security.Cryptography.Pkcs" Version="5.0.1" />
   </ItemGroup>
 </Project>
