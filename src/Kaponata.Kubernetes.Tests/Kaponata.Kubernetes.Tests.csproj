@@ -11,9 +11,13 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="DeveloperProfiles\test.mobileprovision">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="Polyfill\kubeconfig.yml" CopyToOutputDirectory="PreserveNewest" />
     <None Update="**/*.key" CopyToOutputDirectory="PreserveNewest" />
     <None Update="**/*.crt" CopyToOutputDirectory="PreserveNewest" />
+    <None Update="**/*.mobileprovision" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>
