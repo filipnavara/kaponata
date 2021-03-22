@@ -111,9 +111,10 @@ namespace Kaponata.iOS
         /// <returns>
         /// The value associated with the specified key.
         /// </returns>
-        public static DateTime GetDateTime(this NSDictionary dict, string key)
+        public static DateTimeOffset GetDateTime(this NSDictionary dict, string key)
         {
-            return ((NSDate)dict[key]).Date;
+            var date = ((NSDate)dict[key]).Date;
+            return new DateTimeOffset(date.ToUniversalTime());
         }
 
         /// <summary>

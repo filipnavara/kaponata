@@ -41,7 +41,7 @@ namespace Kaponata.iOS.DeveloperProfiles
         /// <summary>
         /// Gets the date the provisioning profile was created.
         /// </summary>
-        public DateTime CreationDate { get; private set; }
+        public DateTimeOffset CreationDate { get; private set; }
 
         /// <summary>
         /// Gets a list of developer certificates to which this provisioning profile applies.
@@ -56,7 +56,7 @@ namespace Kaponata.iOS.DeveloperProfiles
         /// <summary>
         /// Gets the date this provisioning profile expires.
         /// </summary>
-        public DateTime ExpirationDate { get; private set; }
+        public DateTimeOffset ExpirationDate { get; private set; }
 
         /// <summary>
         /// Gets the name of this provisioning profile.

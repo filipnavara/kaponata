@@ -57,7 +57,7 @@ namespace Kaponata.iOS.Tests.DeveloperProfiles
                 Assert.Equal("fastlane test app", profile.AppIdName);
                 Assert.Equal("439BBM9367", Assert.Single(profile.ApplicationIdentifierPrefix));
                 Assert.Equal("iOS", Assert.Single(profile.Platform));
-                Assert.Equal(new DateTime(2015, 11, 8, 22, 9, 3), profile.CreationDate);
+                Assert.Equal(new DateTimeOffset(2015, 11, 8, 21, 9, 3, TimeSpan.Zero), profile.CreationDate);
                 Assert.Single(profile.DeveloperCertificates);
 
                 Assert.Null(profile.Entitlements.AddressBook);
@@ -107,7 +107,7 @@ namespace Kaponata.iOS.Tests.DeveloperProfiles
                 Assert.Null(profile.Entitlements.UserSelectedFilesReadWrite);
                 Assert.Null(profile.Entitlements.VpnApi);
 
-                Assert.Equal(new DateTime(2016, 11, 7, 21, 58, 52), profile.ExpirationDate);
+                Assert.Equal(new DateTimeOffset(2016, 11, 7, 20, 58, 52, TimeSpan.Zero), profile.ExpirationDate);
                 Assert.Equal("tools.fastlane.app AppStore", profile.Name);
                 Assert.Null(profile.ProvisionsAllDevices);
                 Assert.Null(profile.ProvisionedDevices);
