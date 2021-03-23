@@ -14,7 +14,6 @@ clean:
 
 deploy: all
 	docker tag $(registry)/$(image):$(version)-amd64 $(registry)/$(image):latest-amd64
-	k3d image import $(registry)/$(image):latest-amd64
 	kubectl delete pod -l app.kubernetes.io/component=$(image),app.kubernetes.io/name=kaponata
   
 push: all

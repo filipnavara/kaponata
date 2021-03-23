@@ -3,6 +3,10 @@ image=usbmuxd
 
 all: .arm64.docker-id .amd64.docker-id .amd64.udev.docker-id .version
 
+deploy: all
+	docker tag $(registry)/$(image):latest-amd64 $(registry)/$(image):$(shell cat .version)
+	kubectl delete pod -l app.kubernetes.io/component=$(image),app.kubernetes.io/instance=kaponata
+
 push: all
 	docker push $(registry)/$(image):latest-amd64
 	docker push $(registry)/$(image):latest-arm64
