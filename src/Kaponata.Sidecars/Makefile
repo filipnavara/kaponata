@@ -14,7 +14,6 @@ clean:
 
 deploy: all
 	docker tag $(registry)/$(image):$(version)-amd64 $(registry)/$(image):latest-amd64
-	k3d image import $(registry)/$(image):latest-amd64
 # As an exception to the general rule, delete all usbmuxd pods since they rely on the sidecar image.
 	kubectl delete pod -l app.kubernetes.io/component=usbmuxd,app.kubernetes.io/name=usbmuxd
   

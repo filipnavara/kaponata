@@ -9,12 +9,6 @@
         docker_users:
           - "vagrant"
 
-    # Install the k3d binary
-    - role: andrewrothstein.k3d
-
-    # Install kubectl
-    - role: andrewrothstein.kubectl
-
   tasks:
   - name: Expose Docker on port 2375
     docker_container:
