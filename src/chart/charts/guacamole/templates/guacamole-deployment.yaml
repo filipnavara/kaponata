@@ -25,3 +25,11 @@ spec:
             - name: http
               containerPort: 8080
               protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /guacamole/
+              port: http
+          readinessProbe:
+            httpGet:
+              path: /guacamole/
+              port: http
