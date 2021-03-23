@@ -233,6 +233,12 @@ jobs:
         run: kubectl logs -l app.kubernetes.io/component=api,app.kubernetes.io/name=kaponata --tail=-1
         if: always()
 
+      - name: Kubernetes - dump Guacamole logs
+        run: |
+          kubectl describe pod -l app.kubernetes.io/name=guacamole,app.kubernetes.io/component=guacamole
+          kubectl logs -l app.kubernetes.io/name=guacamole,app.kubernetes.io/component=guacamole --tail=-1
+        if: always()
+
       - name: Kubernetes - dump usbmuxd logs
         run: |
           kubectl describe pod -l app.kubernetes.io/component=usbmuxd,app.kubernetes.io/name=usbmuxd
