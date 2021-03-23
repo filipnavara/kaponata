@@ -169,7 +169,7 @@ namespace Kaponata.Kubernetes.Tests.DeveloperProfiles
 
             var developerProfile = new KubernetesDeveloperProfile(kubernetes.Object, NullLogger<KubernetesDeveloperProfile>.Instance);
 
-            await Assert.ThrowsAsync<InvalidOperationException>(() => developerProfile.DeleteProvisioningProfileAsync(guid, default)).ConfigureAwait(false);
+            Assert.False(await developerProfile.DeleteProvisioningProfileAsync(guid, default).ConfigureAwait(false));
 
             secretClient.Verify();
         }
@@ -202,7 +202,7 @@ namespace Kaponata.Kubernetes.Tests.DeveloperProfiles
 
             var developerProfile = new KubernetesDeveloperProfile(kubernetes.Object, NullLogger<KubernetesDeveloperProfile>.Instance);
 
-            await developerProfile.DeleteProvisioningProfileAsync(guid, default).ConfigureAwait(false);
+            Assert.True(await developerProfile.DeleteProvisioningProfileAsync(guid, default).ConfigureAwait(false));
 
             secretClient.Verify();
         }

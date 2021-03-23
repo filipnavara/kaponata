@@ -3,6 +3,7 @@
 // </copyright>
 
 using k8s;
+using Kaponata.Kubernetes.DeveloperProfiles;
 using Kaponata.Kubernetes.Polyfill;
 using Microsoft.Extensions.DependencyInjection;
 using System;
@@ -41,6 +42,8 @@ namespace Kaponata.Kubernetes
             services.AddSingleton<KubernetesClientConfiguration>(KubernetesClientConfiguration.BuildDefaultConfig());
             services.AddSingleton<IKubernetesProtocol, KubernetesProtocol>();
             services.AddSingleton<KubernetesClient>();
+
+            services.AddScoped<KubernetesDeveloperProfile>();
 
             services.AddOptions<KubernetesOptions>().Configure(c => c.Namespace = @namespace);
             return services;

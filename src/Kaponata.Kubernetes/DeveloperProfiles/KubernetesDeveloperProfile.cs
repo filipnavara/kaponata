@@ -33,5 +33,15 @@ namespace Kaponata.Kubernetes.DeveloperProfiles
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
             this.secretClient = kubernetes.GetClient<V1Secret>();
         }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="KubernetesDeveloperProfile"/> class.
+        /// Intended for unit testing/mocking purposes only.
+        /// </summary>
+#nullable disable
+        protected KubernetesDeveloperProfile()
+        {
+        }
+#nullable restore
     }
 }

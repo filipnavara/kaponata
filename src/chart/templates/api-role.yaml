@@ -8,3 +8,7 @@ rules:
 - apiGroups: [ "kaponata.io" ]
   resources: [ "mobiledevices" ]
   verbs: [ "get", "list" ]
+
+- apiGroups: [ "" ]
+  resources: [ "secrets" ]
+  verbs: [ "get", "list", "create", "delete", "watch" ]

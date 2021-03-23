@@ -16,64 +16,43 @@ namespace Kaponata.iOS.DeveloperProfiles
         /// Gets or sets the thumbprint of the certificate.
         /// </summary>
         public string Thumbprint
-        {
-            get;
-            set;
-        }
+        { get; set; }
 
         /// <summary>
         /// Gets or sets the simple name of the subject of the certificate.
         /// </summary>
         public string CommonName
-        {
-            get;
-            set;
-        }
+        { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating the expiration date of this certificate.
         /// </summary>
         public DateTimeOffset NotAfter
-        {
-            get;
-            set;
-        }
+        { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether a private key for this certificate is available.
         /// </summary>
         public bool HasPrivateKey
-        {
-            get;
-            set;
-        }
+        { get; set; }
 
         /// <summary>
         /// Gets or sets the type (development or production) of the certificate.
         /// </summary>
         public string Type
-        {
-            get;
-            set;
-        }
+        { get; set; }
 
         /// <summary>
         /// Gets or sets the ID of the person for which the certificate was issued.
         /// </summary>
         public string PersonID
-        {
-            get;
-            set;
-        }
+        { get; set; }
 
         /// <summary>
         /// Gets or sets the name of the person to which the certificate was issued.
         /// </summary>
         public string Name
-        {
-            get;
-            set;
-        }
+        { get; set; }
 
         /// <summary>
         /// Converts a <see cref="X509Certificate2"/> object into a <see cref="Identity"/> object.

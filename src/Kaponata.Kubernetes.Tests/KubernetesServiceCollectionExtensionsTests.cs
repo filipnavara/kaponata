@@ -2,6 +2,7 @@
 // Copyright (c) Quamotion bv. All rights reserved.
 // </copyright>
 
+using Kaponata.Kubernetes.DeveloperProfiles;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using Xunit;
@@ -38,6 +39,8 @@ namespace Kaponata.Kubernetes.Tests
                 var client = serviceProvider.GetRequiredService<KubernetesClient>();
                 Assert.NotNull(client);
                 Assert.Equal("default", client.Options.Namespace);
+
+                var developerProfile = serviceProvider.GetRequiredService<KubernetesDeveloperProfile>();
             }
         }
 
