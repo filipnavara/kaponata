@@ -20,6 +20,8 @@ namespace Kaponata.Chart.Tests
     /// </summary>
     public class GuacamoleTests
     {
+        private static readonly TimeSpan Timeout = TimeSpan.FromMinutes(2);
+
         private readonly ITestOutputHelper output;
         private readonly ILoggerFactory loggerFactory;
 
@@ -65,7 +67,7 @@ namespace Kaponata.Chart.Tests
                 var pod = pods.Items[0];
 
                 // The pod is in the running state
-                pod = await client.WaitForPodRunningAsync(pod, TimeSpan.FromMinutes(5), default).ConfigureAwait(false);
+                pod = await client.WaitForPodRunningAsync(pod, Timeout, default).ConfigureAwait(false);
                 Assert.Equal("Running", pod.Status.Phase);
 
                 // Try to perform a handshake
@@ -113,7 +115,7 @@ namespace Kaponata.Chart.Tests
                 var pod = pods.Items[0];
 
                 // The pod is in the running state
-                pod = await client.WaitForPodRunningAsync(pod, TimeSpan.FromMinutes(5), default).ConfigureAwait(false);
+                pod = await client.WaitForPodRunningAsync(pod, Timeout, default).ConfigureAwait(false);
                 Assert.Equal("Running", pod.Status.Phase);
 
                 // Try to perform a handshake
@@ -161,7 +163,7 @@ namespace Kaponata.Chart.Tests
                 var pod = pods.Items[0];
 
                 // The pod is in the running state
-                pod = await client.WaitForPodRunningAsync(pod, TimeSpan.FromMinutes(5), default).ConfigureAwait(false);
+                pod = await client.WaitForPodRunningAsync(pod, Timeout, default).ConfigureAwait(false);
                 Assert.Equal("Running", pod.Status.Phase);
             }
 
