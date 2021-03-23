@@ -20,6 +20,8 @@ namespace Kaponata.Chart.Tests
     /// </summary>
     public class GuacamoleTests
     {
+        private static readonly TimeSpan Timeout = TimeSpan.FromMinutes(2);
+
         private readonly ITestOutputHelper output;
         private readonly ILoggerFactory loggerFactory;
 
@@ -65,7 +67,7 @@ namespace Kaponata.Chart.Tests
                 var pod = pods.Items[0];
 
                 // The pod is in the running state
-                pod = await client.WaitForPodRunningAsync(pod, TimeSpan.FromMinutes(5), default).ConfigureAwait(false);
+                pod = await client.WaitForPodRunningAsync(pod, Timeout, default).ConfigureAwait(false);
                 Assert.Equal("Running", pod.Status.Phase);
 
                 // Try to perform a handshake
@@ -113,7 +115,7 @@ namespace Kaponata.Chart.Tests
                 var pod = pods.Items[0];
 
                 // The pod is in the running state
-                pod = await client.WaitForPodRunningAsync(pod, TimeSpan.FromMinutes(5), default).ConfigureAwait(false);
+                pod = await client.WaitForPodRunningAsync(pod, Timeout, default).ConfigureAwait(false);
                 Assert.Equal("Running", pod.Status.Phase);
 
                 // Try to perform a handshake
@@ -139,6 +141,32 @@ namespace Kaponata.Chart.Tests
         [Trait("TestCategory", "IntegrationTest")]
         public async Task Guacamole_CanAuthenticate_OverIngress_Async()
         {
+            var config = KubernetesClientConfiguration.BuildDefaultConfig();
+            if (config.Namespace == null)
+            {
+                config.Namespace = "default";
+            }
+
+            using (var kubernetes = new KubernetesProtocol(
+                config,
+                this.loggerFactory.CreateLogger<KubernetesProtocol>(),
+                this.loggerFactory))
+            using (var client = new KubernetesClient(
+                kubernetes,
+                KubernetesOptions.Default,
+                this.output.BuildLoggerFor<KubernetesClient>(),
+                this.loggerFactory))
+            {
+                // There's at least one guacamole pod
+                var pods = await kubernetes.ListNamespacedPodAsync(config.Namespace, labelSelector: "app.kubernetes.io/name=guacamole,app.kubernetes.io/component=guacamole");
+                Assert.NotEmpty(pods.Items);
+                var pod = pods.Items[0];
+
+                // The pod is in the running state
+                pod = await client.WaitForPodRunningAsync(pod, Timeout, default).ConfigureAwait(false);
+                Assert.Equal("Running", pod.Status.Phase);
+            }
+
             // Try to perform a handshake
             var httpClient = new HttpClient();
             httpClient.BaseAddress = new Uri($"http://localhost:80/guacamole/");

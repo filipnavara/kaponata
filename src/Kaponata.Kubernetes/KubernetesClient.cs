@@ -59,6 +59,7 @@ namespace Kaponata.Kubernetes
             this.knownTypes.Add(typeof(WebDriverSession), WebDriverSession.KubeMetadata);
             this.knownTypes.Add(typeof(V1Pod), new KindMetadata("core", V1Pod.KubeApiVersion, V1Pod.KubeKind, "pods"));
             this.knownTypes.Add(typeof(V1Service), new KindMetadata("core", V1Service.KubeApiVersion, V1Service.KubeKind, "services"));
+            this.knownTypes.Add(typeof(V1Secret), new KindMetadata("core", V1Secret.KubeApiVersion, V1Secret.KubeKind, "secrets"));
             this.knownTypes.Add(typeof(V1Ingress), new KindMetadata(V1Ingress.KubeGroup, V1Ingress.KubeApiVersion, V1Ingress.KubeKind, "ingresses"));
         }
 
