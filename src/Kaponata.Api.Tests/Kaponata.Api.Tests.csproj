@@ -17,4 +17,9 @@
     <ProjectReference Include="..\Kaponata.Api\Kaponata.Api.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="E7P4EE896K.cer" CopyToOutputDirectory="PreserveNewest"/>
+    <None Update="test.mobileprovision" CopyToOutputDirectory="PreserveNewest"/>
+  </ItemGroup>
+
 </Project>

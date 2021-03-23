@@ -31,7 +31,7 @@ namespace Kaponata.Kubernetes.DeveloperProfiles
         /// A <see cref="CancellationToken"/> which can be used to cancel the asynchronous operation.
         /// </param>
         /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-        public async Task<IList<SignedCms>> GetProvisioningProfilesAsync(CancellationToken cancellationToken)
+        public virtual async Task<IList<SignedCms>> GetProvisioningProfilesAsync(CancellationToken cancellationToken)
         {
             var response = await this.secretClient.ListAsync(
                 labelSelector: ProvisioningProfileLabelSelector,
@@ -50,7 +50,7 @@ namespace Kaponata.Kubernetes.DeveloperProfiles
         /// A <see cref="CancellationToken"/> which can be used to cancel the asynchronous operation.
         /// </param>
         /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-        public async Task<SignedCms?> GetProvisioningProfileAsync(Guid uuid, CancellationToken cancellationToken)
+        public virtual async Task<SignedCms?> GetProvisioningProfileAsync(Guid uuid, CancellationToken cancellationToken)
         {
             var secret = await this.secretClient.TryReadAsync(uuid.ToString(), ProvisioningProfileLabelSelector, cancellationToken).ConfigureAwait(false);
 
@@ -72,7 +72,7 @@ namespace Kaponata.Kubernetes.DeveloperProfiles
         /// A <see cref="CancellationToken"/> which can be used to cancel the asynchronous operation.
         /// </param>
         /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-        public async Task AddProvisioningProfileAsync(SignedCms profile, CancellationToken cancellationToken)
+        public virtual async Task<ProvisioningProfile> AddProvisioningProfileAsync(SignedCms profile, CancellationToken cancellationToken)
         {
             if (profile == null)
             {
@@ -86,6 +86,8 @@ namespace Kaponata.Kubernetes.DeveloperProfiles
             secret.Metadata.Labels[Annotations.DeveloperProfileComponent] = Annotations.ProvisioningProfile;
 
             await this.secretClient.CreateAsync(secret, cancellationToken).ConfigureAwait(false);
+
+            return signedProfile;
         }
 
         /// <summary>
@@ -97,17 +99,21 @@ namespace Kaponata.Kubernetes.DeveloperProfiles
         /// <param name="cancellationToken">
         /// A <see cref="CancellationToken"/> which can be used to cancel the asynchronous operation.
         /// </param>
-        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-        public async Task DeleteProvisioningProfileAsync(Guid uuid, CancellationToken cancellationToken)
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation. The task returns <see langword="true"/>
+        /// when the provisioning profile was deleted; and <see langword="false"/> when the provisioning profile
+        /// could not be deleted because it was not found.
+        /// </returns>
+        public virtual async Task<bool> DeleteProvisioningProfileAsync(Guid uuid, CancellationToken cancellationToken)
         {
             var secret = await this.secretClient.TryReadAsync(uuid.ToString(), ProvisioningProfileLabelSelector, cancellationToken).ConfigureAwait(false);
 
             if (secret == null)
             {
-                throw new InvalidOperationException();
+                return false;
             }
 
             await this.secretClient.DeleteAsync(secret, TimeSpan.FromMinutes(1), cancellationToken).ConfigureAwait(false);
+            return true;
         }
     }
 }
