@@ -24,81 +24,81 @@ namespace Kaponata.iOS.DeveloperProfiles
     public class ProvisioningProfile
     {
         /// <summary>
-        /// Gets the application ID name.
+        /// Gets or sets the application ID name.
         /// </summary>
-        public string AppIdName { get; private set; }
+        public string AppIdName { get; set; }
 
         /// <summary>
-        /// Gets the application identifier prefixes that this provisioning profile applies to.
+        /// Gets or sets the application identifier prefixes that this provisioning profile applies to.
         /// </summary>
-        public IList<string> ApplicationIdentifierPrefix { get; private set; }
+        public IList<string> ApplicationIdentifierPrefix { get; set; }
 
         /// <summary>
-        /// Gets the platforms which this application targets.
+        /// Gets or sets the platforms which this application targets.
         /// </summary>
-        public IList<string> Platform { get; private set; }
+        public IList<string> Platform { get; set; }
 
         /// <summary>
-        /// Gets the date the provisioning profile was created.
+        /// Gets or sets the date the provisioning profile was created.
         /// </summary>
-        public DateTimeOffset CreationDate { get; private set; }
+        public DateTimeOffset CreationDate { get; set; }
 
         /// <summary>
-        /// Gets a list of developer certificates to which this provisioning profile applies.
+        /// Gets or sets a list of developer certificates to which this provisioning profile applies.
         /// </summary>
-        public IEnumerable<X509Certificate2> DeveloperCertificates { get; private set; }
+        public IList<Identity> DeveloperCertificates { get; set; }
 
         /// <summary>
-        /// Gets the entitlements contained in this provisioning profile.
+        /// Gets or sets the entitlements contained in this provisioning profile.
         /// </summary>
-        public Entitlements Entitlements { get; private set; }
+        public Entitlements Entitlements { get; set; }
 
         /// <summary>
-        /// Gets the date this provisioning profile expires.
+        /// Gets or sets the date this provisioning profile expires.
         /// </summary>
-        public DateTimeOffset ExpirationDate { get; private set; }
+        public DateTimeOffset ExpirationDate { get; set; }
 
         /// <summary>
-        /// Gets the name of this provisioning profile.
+        /// Gets or sets the name of this provisioning profile.
         /// </summary>
-        public string Name { get; private set; }
+        public string Name { get; set; }
 
         /// <summary>
-        /// Gets a value indicating whether this provisioning profile can be used to provision
+        /// Gets or sets a value indicating whether this provisioning profile can be used to provision
         /// applications on any device. This is the case for enterprise profiles.
         /// </summary>
-        public bool? ProvisionsAllDevices { get; private set; }
+        public bool? ProvisionsAllDevices { get; set; }
 
         /// <summary>
-        /// Gets a list of devices provisioned in this provisioning profile. Devices are identified
+        /// Gets or sets a list of devices provisioned in this provisioning profile. Devices are identified
         /// by their UUID.
         /// </summary>
-        public IList<string> ProvisionedDevices { get; private set; }
+        public IList<string> ProvisionedDevices { get; set; }
 
         /// <summary>
-        /// Gets the names of the teams implied by this provisioning profile.
+        /// Gets or sets the names of the teams implied by this provisioning profile.
         /// </summary>
-        public IList<string> TeamIdentifier { get; private set; }
+        public IList<string> TeamIdentifier { get; set; }
 
         /// <summary>
-        /// Gets the name of the team which owns the provisioning profile.
+        /// Gets or sets the name of the team which owns the provisioning profile.
         /// </summary>
-        public string TeamName { get; private set; }
+        public string TeamName { get; set; }
 
         /// <summary>
-        /// Gets the number of days this provisioning profile is valid.
+        /// Gets or sets the number of days this provisioning profile is valid.
         /// </summary>
-        public int TimeToLive { get; private set; }
+        public int TimeToLive { get; set; }
 
         /// <summary>
-        /// Gets the unique ID of this provisioning profile.
+        /// Gets or sets the unique ID of this provisioning profile.
         /// </summary>
-        public Guid Uuid { get; private set; }
+        public Guid Uuid { get; set; }
 
         /// <summary>
-        /// Gets the version of this provisioning profile.
+        /// Gets or sets the version of this provisioning profile.
         /// </summary>
-        public int Version { get; private set; }
+        public int Version { get; set; }
 
         /// <summary>
         /// Asynchronously reads a <see cref="ProvisioningProfile"/> off a <see cref="Stream"/>.
@@ -156,7 +156,7 @@ namespace Kaponata.iOS.DeveloperProfiles
                 ApplicationIdentifierPrefix = propertyList.GetStringArray("ApplicationIdentifierPrefix"),
                 Platform = propertyList.GetStringArray("Platform"),
                 CreationDate = propertyList.GetDateTime("CreationDate"),
-                DeveloperCertificates = propertyList.GetDataArray("DeveloperCertificates").Select(d => new X509Certificate2(d)).ToList(),
+                DeveloperCertificates = propertyList.GetDataArray("DeveloperCertificates").Select(d => Identity.FromX509Certificate(new X509Certificate2(d))).ToList(),
                 Entitlements = Entitlements.Read(propertyList.GetDict("Entitlements")),
                 ExpirationDate = propertyList.GetDateTime("ExpirationDate"),
                 Name = propertyList.GetString("Name"),
