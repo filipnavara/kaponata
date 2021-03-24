@@ -39,6 +39,14 @@ namespace Kaponata.iOS.PropertyLists
         }
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="PropertyListProtocol"/> class.
+        /// Intended for unit testing purposes only.
+        /// </summary>
+        protected PropertyListProtocol()
+        {
+        }
+
+        /// <summary>
         /// Asynchronously sends a message to the remote lockdown client.
         /// </summary>
         /// <param name="message">
@@ -88,7 +96,7 @@ namespace Kaponata.iOS.PropertyLists
         /// A <see cref="byte"/> array containing the message data when available; otherwise,
         /// <see langword="null"/>.
         /// </returns>
-        public async Task<NSDictionary> ReadMessageAsync(CancellationToken cancellationToken)
+        public virtual async Task<NSDictionary> ReadMessageAsync(CancellationToken cancellationToken)
         {
             int length;
 
@@ -116,7 +124,14 @@ namespace Kaponata.iOS.PropertyLists
         /// <inheritdoc/>
         public ValueTask DisposeAsync()
         {
-            return this.stream.DisposeAsync();
+            if (this.stream != null)
+            {
+                return this.stream.DisposeAsync();
+            }
+            else
+            {
+                return ValueTask.CompletedTask;
+            }
         }
     }
 }
