@@ -54,6 +54,10 @@ namespace Kaponata.iOS.Muxer
             {
                 return DeviceListMessage.Read(data);
             }
+            else if (data.ContainsKey("BUID"))
+            {
+                return BuidMessage.Read(data);
+            }
             else
             {
                 throw new ArgumentOutOfRangeException(nameof(data));

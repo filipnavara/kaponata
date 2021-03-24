@@ -58,6 +58,7 @@ namespace Kaponata.iOS.Tests.Muxer
             Assert.IsType<DevicePairedMessage>(MuxerMessage.ReadAny((NSDictionary)PropertyListParser.Parse("Muxer/paired.xml")));
             Assert.IsType<ResultMessage>(MuxerMessage.ReadAny((NSDictionary)PropertyListParser.Parse("Muxer/result.xml")));
             Assert.IsType<DeviceListMessage>(MuxerMessage.ReadAny((NSDictionary)PropertyListParser.Parse("Muxer/devicelist.xml")));
+            Assert.IsType<BuidMessage>(MuxerMessage.ReadAny((NSDictionary)PropertyListParser.Parse("Muxer/buid.xml")));
         }
 
         /// <summary>
