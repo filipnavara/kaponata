@@ -60,6 +60,11 @@ namespace Kaponata.iOS.Muxer
         }
 
         /// <summary>
+        /// Gets the <see cref="Stream"/> around which this <see cref="MuxerProtocol"/> wraps.
+        /// </summary>
+        public virtual Stream Stream => this.stream;
+
+        /// <summary>
         /// Asynchronously sends a message to the remote muxer.
         /// </summary>
         /// <param name="message">

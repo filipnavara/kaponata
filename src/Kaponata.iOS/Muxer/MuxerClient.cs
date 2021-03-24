@@ -3,6 +3,7 @@
 // </copyright>
 
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -56,6 +57,7 @@ namespace Kaponata.iOS.Muxer
         /// </summary>
         protected MuxerClient()
         {
+            this.logger = NullLogger<MuxerClient>.Instance;
         }
 
         /// <summary>
