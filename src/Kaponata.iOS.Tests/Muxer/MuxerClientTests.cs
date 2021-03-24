@@ -19,7 +19,7 @@ namespace Kaponata.iOS.Tests.Muxer
     /// <summary>
     /// Tests the <see cref="MuxerClient"/> method.
     /// </summary>
-    public class MuxerClientTests
+    public partial class MuxerClientTests
     {
         /// <summary>
         /// The <see cref="MuxerClient"/> constructors validate the argments being passed.
