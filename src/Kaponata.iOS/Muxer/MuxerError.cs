@@ -33,5 +33,10 @@ namespace Kaponata.iOS.Muxer
         /// A bad muxer version was used.
         /// </summary>
         BadVersion = 6,
+
+        /// <summary>
+        /// A connection occurred when interacting with the muxer.
+        /// </summary>
+        MuxerError = -1,
     }
 }
