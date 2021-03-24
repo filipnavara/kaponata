@@ -70,7 +70,7 @@ namespace Kaponata.iOS.PropertyLists
                 // [UTF-8 XML-encoded property list message] (N bytes)
                 BinaryPrimitives.WriteInt32BigEndian(packet.Memory.Span[0..4], messageLength);
 
-                Encoding.UTF8.GetBytes(xml, packet.Memory.Span[4..(messageLength + 4)]);
+                Encoding.UTF8.GetBytes(xml, packet.Memory.Span[4.. (messageLength + 4)]);
 
                 // Send the packet
                 await this.stream.WriteAsync(packet.Memory[0..packetLength], cancellationToken).ConfigureAwait(false);
