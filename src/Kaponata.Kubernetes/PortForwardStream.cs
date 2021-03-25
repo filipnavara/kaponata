@@ -123,9 +123,17 @@ namespace Kaponata.Kubernetes
 
                     if (index == 0)
                     {
-                        memory.Memory.Slice(1, result.Count - 1).CopyTo(buffer);
-                        this.logger.LogInformation("Read {read}/{count} bytes of a message continuation.", result.Count, buffer.Length);
-                        return result.Count - 1;
+                        if (result.Count > 1)
+                        {
+                            memory.Memory.Slice(1, result.Count - 1).CopyTo(buffer);
+                            this.logger.LogInformation("Read {read}/{count} bytes of a message continuation.", result.Count, buffer.Length);
+                            return result.Count - 1;
+                        }
+                        else
+                        {
+                            this.logger.LogInformation("Read 0 bytes of a message continuation.", result.Count, buffer.Length);
+                            return 0;
+                        }
                     }
                     else
                     {
