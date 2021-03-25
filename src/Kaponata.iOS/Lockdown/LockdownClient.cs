@@ -20,7 +20,6 @@ namespace Kaponata.iOS.Lockdown
         /// </summary>
         private const int LockdownPort = 0xF27E;
 
-        private readonly Stream stream;
         private readonly LockdownProtocol protocol;
         private readonly MuxerClient muxer;
         private readonly MuxerDevice device;
@@ -39,11 +38,34 @@ namespace Kaponata.iOS.Lockdown
         /// </param>
         public LockdownClient(Stream stream, MuxerClient muxer, MuxerDevice device)
         {
-            this.stream = stream ?? throw new ArgumentNullException(nameof(stream));
+            if (stream == null)
+            {
+                throw new ArgumentNullException(nameof(stream));
+            }
+
             this.muxer = muxer ?? throw new ArgumentNullException(nameof(muxer));
             this.device = device ?? throw new ArgumentNullException(nameof(device));
 
             this.protocol = new LockdownProtocol(stream, ownsStream: true);
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="LockdownClient"/> class.
+        /// </summary>
+        /// <param name="protocol">
+        /// A <see cref="LockdownProtocol"/> which represents the connection to the lockdown client.
+        /// </param>
+        /// <param name="muxer">
+        /// The muxer through which we are connected.
+        /// </param>
+        /// <param name="device">
+        /// The device on which lockdown is running.
+        /// </param>
+        public LockdownClient(LockdownProtocol protocol, MuxerClient muxer, MuxerDevice device)
+        {
+            this.protocol = protocol ?? throw new ArgumentNullException(nameof(protocol));
+            this.muxer = muxer ?? throw new ArgumentNullException(nameof(muxer));
+            this.device = device ?? throw new ArgumentNullException(nameof(device));
         }
 
         /// <summary>
@@ -123,7 +145,24 @@ namespace Kaponata.iOS.Lockdown
         /// <inheritdoc/>
         public ValueTask DisposeAsync()
         {
-            return this.stream.DisposeAsync();
+            return this.protocol.DisposeAsync();
+        }
+
+        /// <summary>
+        /// Throws an exception when a <see cref="LockdownResponse{T}"/> indicates an error.
+        /// </summary>
+        /// <typeparam name="T">
+        /// The result type.
+        /// </typeparam>
+        /// <param name="response">
+        /// The response from the server.
+        /// </param>
+        protected void EnsureSuccess<T>(LockdownResponse<T> response)
+        {
+            if (response.Error != null)
+            {
+                throw new LockdownException($"The request failed: {response.Error}");
+            }
         }
     }
 }

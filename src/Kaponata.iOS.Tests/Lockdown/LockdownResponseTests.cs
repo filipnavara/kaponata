@@ -4,6 +4,7 @@
 
 using Claunia.PropertyList;
 using Kaponata.iOS.Lockdown;
+using System;
 using Xunit;
 
 namespace Kaponata.iOS.Tests.Lockdown
@@ -13,6 +14,15 @@ namespace Kaponata.iOS.Tests.Lockdown
     /// </summary>
     public class LockdownResponseTests
     {
+        /// <summary>
+        /// <see cref="LockdownResponse{T}.Read(NSDictionary)"/> validates its arguments.
+        /// </summary>
+        [Fact]
+        public void Read_ValidatesArguments()
+        {
+            Assert.Throws<ArgumentNullException>(() => LockdownResponse<string>.Read(null));
+        }
+
         /// <summary>
         /// Tests the <see cref="LockdownResponse{T}.Read(NSDictionary)"/> method.
         /// </summary>

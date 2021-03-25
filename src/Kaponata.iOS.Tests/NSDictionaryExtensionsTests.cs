@@ -187,5 +187,31 @@ namespace Kaponata.iOS.Tests
             var value = Assert.Single(dict.GetDataArray("key"));
             Assert.Equal(entry, value);
         }
+
+        /// <summary>
+        /// <see cref="NSDictionaryExtensions.GetData(NSDictionary, string)"/> returns <see langword="null"/>
+        /// if the key is not present in the dictionary.
+        /// </summary>
+        [Fact]
+        public void GetData_MissingKey_ReturnsNull()
+        {
+            var dict = new NSDictionary();
+            Assert.Null(dict.GetData("missing"));
+        }
+
+        /// <summary>
+        /// <see cref="NSDictionaryExtensions.GetData(NSDictionary, string)"/> returns the correct value
+        /// if the entry is a <see cref="NSArray"/> of <see cref="NSData"/> values.
+        /// </summary>
+        [Fact]
+        public void GetData_ReturnsValue()
+        {
+            var entry = new byte[] { 1, 2, 3, 4 };
+            var dict = new NSDictionary();
+            dict.Add("key", new NSData(entry));
+
+            var value = dict.GetData("key");
+            Assert.Equal(entry, value);
+        }
     }
 }
