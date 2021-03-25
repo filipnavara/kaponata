@@ -34,6 +34,17 @@ namespace Kaponata.iOS.Tests.Lockdown
         }
 
         /// <summary>
+        /// <see cref="LockdownClient.ConnectAsync(MuxerClient, MuxerDevice, CancellationToken)"/> validates its arguments.
+        /// </summary>
+        /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
+        [Fact]
+        public async Task ConnectAsync_ValidatesArguments_Async()
+        {
+            await Assert.ThrowsAsync<ArgumentNullException>(() => LockdownClient.ConnectAsync(null, new MuxerDevice(), default));
+            await Assert.ThrowsAsync<ArgumentNullException>(() => LockdownClient.ConnectAsync(Mock.Of<MuxerClient>(), null, default));
+        }
+
+        /// <summary>
         /// The <see cref="LockdownClient.ConnectAsync(MuxerClient, MuxerDevice, CancellationToken)"/> method works.
         /// </summary>
         /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>

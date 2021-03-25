@@ -78,6 +78,24 @@ namespace Kaponata.iOS.Tests.PropertyLists
 
         /// <summary>
         /// <see cref="PropertyListProtocol.ReadMessageAsync(CancellationToken)"/> returns <see langword="null"/>
+        /// if the stream was unexpectedly closed.
+        /// </summary>
+        /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
+        [Fact]
+        public async Task Read_PartialRead_ReturnsNull_Async()
+        {
+            await using (var stream = new MemoryStream(File.ReadAllBytes("PropertyLists/message.bin")))
+            await using (var protocol = new PropertyListProtocol(stream, false))
+            {
+                // Let's pretend the last 4 bytes are missing.
+                stream.SetLength(stream.Length - 4);
+
+                Assert.Null(await protocol.ReadMessageAsync(default));
+            }
+        }
+
+        /// <summary>
+        /// <see cref="PropertyListProtocol.ReadMessageAsync(CancellationToken)"/> returns <see langword="null"/>
         /// when the end of stream is reached.
         /// </summary>
         /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
