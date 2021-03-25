@@ -15,5 +15,6 @@
     <None Update="**/*.xml" CopyToOutputDirectory="PreserveNewest" />
     <None Update="**/*.cer" CopyToOutputDirectory="PreserveNewest" />
     <None Update="**/*.mobileprovision" CopyToOutputDirectory="PreserveNewest" />
+    <None Update="**/*.plist" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>
