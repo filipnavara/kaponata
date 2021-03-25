@@ -16,7 +16,7 @@ namespace Kaponata.iOS.Tests.Lockdown
     /// <summary>
     /// Tests the <see cref="LockdownClient"/> class.
     /// </summary>
-    public class LockdownClientTests
+    public partial class LockdownClientTests
     {
         /// <summary>
         /// The <see cref="LockdownClient"/> constructor validates its arguments.
@@ -24,9 +24,13 @@ namespace Kaponata.iOS.Tests.Lockdown
         [Fact]
         public void Constructor_ValidatesArguments()
         {
-            Assert.Throws<ArgumentNullException>(() => new LockdownClient(null, Mock.Of<MuxerClient>(), new MuxerDevice()));
+            Assert.Throws<ArgumentNullException>(() => new LockdownClient((Stream)null, Mock.Of<MuxerClient>(), new MuxerDevice()));
             Assert.Throws<ArgumentNullException>(() => new LockdownClient(Stream.Null, null, new MuxerDevice()));
             Assert.Throws<ArgumentNullException>(() => new LockdownClient(Stream.Null, Mock.Of<MuxerClient>(), null));
+
+            Assert.Throws<ArgumentNullException>(() => new LockdownClient((LockdownProtocol)null, Mock.Of<MuxerClient>(), new MuxerDevice()));
+            Assert.Throws<ArgumentNullException>(() => new LockdownClient(Mock.Of<LockdownProtocol>(), null, new MuxerDevice()));
+            Assert.Throws<ArgumentNullException>(() => new LockdownClient(Mock.Of<LockdownProtocol>(), Mock.Of<MuxerClient>(), null));
         }
 
         /// <summary>

@@ -30,6 +30,14 @@ namespace Kaponata.iOS.Lockdown
         }
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="LockdownProtocol"/> class.
+        /// Intended for unit testing purposes only.
+        /// </summary>
+        protected LockdownProtocol()
+        {
+        }
+
+        /// <summary>
         /// Asynchronously sends a message to the remote lockdown client.
         /// </summary>
         /// <param name="message">
@@ -41,7 +49,7 @@ namespace Kaponata.iOS.Lockdown
         /// <returns>
         /// A <see cref="Task"/> which represents the asynchronous operation.
         /// </returns>
-        public Task WriteMessageAsync(LockdownMessage message, CancellationToken cancellationToken)
+        public virtual Task WriteMessageAsync(LockdownMessage message, CancellationToken cancellationToken)
         {
             if (message == null)
             {
