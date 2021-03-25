@@ -135,6 +135,56 @@ namespace Kaponata.Kubernetes.Tests
         }
 
         /// <summary>
+        /// <see cref="PortForwardStream.ReadAsync(byte[], int, int, CancellationToken)"/> can correctly
+        /// process zero-length data packets.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="Task"/> which represents the asynchronous test.
+        /// </returns>
+        [Fact]
+        public async Task ReadEmptyMessage_Async()
+        {
+            Queue<(bool, byte[])> packets = new Queue<(bool, byte[])>(
+                new (bool, byte[])[]
+                {
+                    // Initialize stream 0 on port 80
+                    (true, new byte[] { 0, 0, 80 }),
+
+                    // Initialize stream 1 (error stream) on port 80
+                    (true, new byte[] { 1, 0, 80 }),
+
+                    // Reads stream 0, data contains values 1 through 3
+                    (true, new byte[] { 0, 1, 2, 3 }),
+
+                    // Read an empty packat on stream 0
+                    (true, new byte[] { 0 }),
+                });
+
+            var socket = new Mock<WebSocket>(MockBehavior.Strict);
+            socket.Setup(s => s.Dispose()).Verifiable();
+            socket
+                .Setup(s => s.ReceiveAsync(It.IsAny<Memory<byte>>(), default))
+                .Returns<Memory<byte>, CancellationToken>((buffer, ct) =>
+                {
+                    (var endOfMessage, byte[] data) = packets.Dequeue();
+                    data.AsMemory().CopyTo(buffer);
+                    ValueWebSocketReceiveResult result =
+                    new ValueWebSocketReceiveResult(data.Length, WebSocketMessageType.Binary, endOfMessage);
+
+                    return ValueTask.FromResult(result);
+                });
+
+            using (var stream = new PortForwardStream(socket.Object, NullLogger<PortForwardStream>.Instance))
+            {
+                byte[] data = new byte[8];
+                Assert.Equal(3, await stream.ReadAsync(data, 0, 8, default).ConfigureAwait(false));
+                Assert.Equal(0, await stream.ReadAsync(data, 0, 8, default).ConfigureAwait(false));
+            }
+
+            socket.Verify();
+        }
+
+        /// <summary>
         /// Calls into <see cref="PortForwardStream.ReadAsync(byte[], int, int, CancellationToken)"/> read data from the
         /// WebSocket. Kubernetes-specific metadata is stripped and the actual payload is copied to the caller.
         /// </summary>
