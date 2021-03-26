@@ -58,6 +58,10 @@ namespace Kaponata.iOS.Muxer
             {
                 return BuidMessage.Read(data);
             }
+            else if (data.ContainsKey("PairRecordData"))
+            {
+                return PairingRecordDataMessage.Read(data);
+            }
             else
             {
                 throw new ArgumentOutOfRangeException(nameof(data));
