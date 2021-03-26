@@ -7,5 +7,8 @@ deploy:
 		--set api.imagePullPolicy=Never \
 		kaponata .
 
+upgrade:
+	helm upgrade kaponata .
+
 lint:
 	helm lint .

@@ -1,0 +1,24 @@
+{{- $systemConfiguration := (lookup "v1" "ConfigMap" .Release.Namespace (include "usbmuxd.configMap.fullname" .)) -}}
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "usbmuxd.configMap.fullname" . }}
+  labels:
+    {{- include "usbmuxd.labels" . | nindent 4 }}
+{{ if $systemConfiguration -}}
+data:
+  SystemConfiguration.plist: |
+    {{ index $systemConfiguration "data" "SystemConfiguration.plist" | nindent 4 }}
+{{ else -}}
+data:
+  SystemConfiguration.plist: |
+    <?xml version="1.0" encoding="UTF-8"?>
+    <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+    <plist version="1.0">
+    <dict>
+        <key>SystemBUID</key>
+        <string>{{ uuidv4 }}</string>
+    </dict>
+    </plist>
+{{ end }}

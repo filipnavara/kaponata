@@ -26,6 +26,10 @@ spec:
             name: usb
           - mountPath: /var/lib/lockdown
             name: lockdown
+          - mountPath: /var/lib/lockdown/SystemConfiguration.plist
+            name: config
+            subPath: SystemConfiguration.plist
+            readOnly: true
         command: [ "/usr/sbin/usbmuxd" ]
         args:
         # Verbose logging
@@ -57,3 +61,9 @@ spec:
         hostPath:
           path: /var/lib/lockdown
           type: DirectoryOrCreate
+      - name: config
+        configMap:
+          name: {{ template "usbmuxd.configMap.fullname" . }}
+          items:
+          - key: SystemConfiguration.plist
+            path: SystemConfiguration.plist
