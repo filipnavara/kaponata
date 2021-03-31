@@ -1,0 +1,93 @@
+﻿// <copyright file="LockdownClient.Session.cs" company="Quamotion bv">
+// Copyright (c) Quamotion bv. All rights reserved.
+// </copyright>
+
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+
+namespace Kaponata.iOS.Lockdown
+{
+    /// <content>
+    /// Session-related methods.
+    /// </content>
+    public partial class LockdownClient
+    {
+        /// <summary>
+        /// Starts a new session.
+        /// </summary>
+        /// <param name="pairingRecord">
+        /// The pairing record used to authenticate the host with the device.
+        /// </param>
+        /// <param name="cancellationToken">
+        /// A <see cref="CancellationToken"/> which can be used to cancel the asynchronous operation.
+        /// </param>
+        /// <returns>
+        /// The response to the request to start a new session.
+        /// </returns>
+        public async Task<StartSessionResponse> StartSessionAsync(PairingRecord pairingRecord, CancellationToken cancellationToken)
+        {
+            if (pairingRecord == null)
+            {
+                throw new ArgumentNullException(nameof(pairingRecord));
+            }
+
+            await this.protocol.WriteMessageAsync(
+                new StartSessionRequest()
+                {
+                    Label = this.Label,
+                    HostID = pairingRecord.HostId,
+                    Request = "StartSession",
+                    SystemBUID = pairingRecord.SystemBUID,
+                },
+                cancellationToken).ConfigureAwait(false);
+
+            var response = await this.protocol.ReadMessageAsync(cancellationToken).ConfigureAwait(false);
+            var message = StartSessionResponse.Read(response);
+
+            if (message.Error != null)
+            {
+                throw new LockdownException(message.Error);
+            }
+
+            return message;
+        }
+
+        /// <summary>
+        /// Stop the currently active session.
+        /// </summary>
+        /// <param name="sessionId">
+        /// The session ID of the session to stop.
+        /// </param>
+        /// <param name="cancellationToken">
+        /// A <see cref="CancellationToken"/> which can be used to cancel the asynchronous operation.
+        /// </param>
+        /// <returns>
+        /// A <see cref="Task"/> which represents the asynchronous operation.
+        /// </returns>
+        public virtual async Task StopSessionAsync(string sessionId, CancellationToken cancellationToken)
+        {
+            if (sessionId == null)
+            {
+                throw new ArgumentNullException(nameof(sessionId));
+            }
+
+            await this.protocol.WriteMessageAsync(
+                new StopSessionRequest()
+                {
+                    Label = this.Label,
+                    SessionID = sessionId,
+                    Request = "StopSession",
+                },
+                cancellationToken).ConfigureAwait(false);
+
+            var message = await this.protocol.ReadMessageAsync(cancellationToken).ConfigureAwait(false);
+            var response = LockdownResponse<string>.Read(message);
+
+            if (response.Error != null)
+            {
+                throw new LockdownException(response.Error);
+            }
+        }
+    }
+}
