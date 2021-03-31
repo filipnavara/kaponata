@@ -63,5 +63,10 @@ namespace Kaponata.iOS.Muxer
         /// Reads the pair record for the device.
         /// </summary>
         ReadPairRecord = 102,
+
+        /// <summary>
+        /// Saves the pair record for the device.
+        /// </summary>
+        SavePairRecord = 103,
     }
 }

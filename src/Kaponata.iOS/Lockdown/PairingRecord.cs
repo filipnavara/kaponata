@@ -89,6 +89,20 @@ namespace Kaponata.iOS.Lockdown
         }
 
         /// <summary>
+        /// Reads a <see cref="PairingRecord"/> from a serialized <see cref="NSDictionary"/>.
+        /// </summary>
+        /// <param name="data">
+        /// A <see cref="byte"/> array which represents the serialized pairing record.
+        /// </param>
+        /// <returns>
+        /// An equivalent <see cref="PairingRecord"/> object.
+        /// </returns>
+        public static PairingRecord Read(byte[] data)
+        {
+            return Read((NSDictionary)PropertyListParser.Parse(data));
+        }
+
+        /// <summary>
         /// Serializes this <see cref="PairingRecord"/> to a <see cref=" NSDictionary"/> object.
         /// </summary>
         /// <param name="includePrivateKeys">
@@ -122,6 +136,23 @@ namespace Kaponata.iOS.Lockdown
             dict.Add("WiFiMACAddress", this.WiFiMacAddress);
 
             return dict;
+        }
+
+        /// <summary>
+        /// Serializes this <see cref="PairingRecord"/> to a <see cref="byte"/> array.
+        /// </summary>
+        /// <param name="includePrivateKeys">
+        /// <see langword="true"/> if the root and host private keys should be serialized;
+        /// otherwise, <see langword="false"/>.
+        /// </param>
+        /// <returns>
+        /// A <see cref="byte"/> array which represens this pairing record.
+        /// </returns>
+        public byte[] ToByteArray(bool includePrivateKeys = true)
+        {
+            var dict = this.ToPropertyList(includePrivateKeys);
+            var xml = dict.ToXmlPropertyList();
+            return Encoding.UTF8.GetBytes(xml);
         }
 
         private static RSA DeserializePrivateKey(byte[] data)
