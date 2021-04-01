@@ -135,6 +135,31 @@ namespace Kaponata.iOS.Tests
         }
 
         /// <summary>
+        /// <see cref="NSDictionaryExtensions.GetNullableInt32(NSDictionary, string)"/> returns the correct value
+        /// if the entry is a single <see cref="NSNumber"/> object.
+        /// </summary>
+        [Fact]
+        public void GetNullabelInt32_ReturnsValue()
+        {
+            var dict = new NSDictionary();
+            dict.Add("key", new NSNumber(42));
+
+            Assert.Equal(42, dict.GetNullableInt32("key"));
+        }
+
+        /// <summary>
+        /// <see cref="NSDictionaryExtensions.GetNullableInt32(NSDictionary, string)"/> returns <see langword="null"/>
+        /// if the key is not present in the dictionary.
+        /// </summary>
+        [Fact]
+        public void GetNullabelInt32_MissingKey_ReturnsNull()
+        {
+            var dict = new NSDictionary();
+
+            Assert.Null(dict.GetNullableInt32("key"));
+        }
+
+        /// <summary>
         /// <see cref="NSDictionaryExtensions.GetDict(NSDictionary, string)"/> returns <see langword="null"/>
         /// if the key is not present in the dictionary.
         /// </summary>

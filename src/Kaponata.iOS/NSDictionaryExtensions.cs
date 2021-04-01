@@ -118,6 +118,28 @@ namespace Kaponata.iOS
         }
 
         /// <summary>
+        /// Gets the value associated with the specified <paramref name="key"/>, as a nullable <see cref="int"/> value.
+        /// </summary>
+        /// <param name="dict">
+        /// The dictionary in which to search for the value associated with the specified <paramref name="key"/>.
+        /// </param>
+        /// <param name="key">
+        /// The key of the value to get.
+        /// </param>
+        /// <returns>
+        /// The value associated with the specified key, or <see langword="null"/> if the specified key does not exist.
+        /// </returns>
+        public static int? GetNullableInt32(this NSDictionary dict, string key)
+        {
+            if (!dict.ContainsKey(key))
+            {
+                return null;
+            }
+
+            return ((NSNumber)dict[key]).ToInt();
+        }
+
+        /// <summary>
         /// Gets the value associated with the specified <paramref name="key"/>, as a <see cref="int"/> value.
         /// </summary>
         /// <param name="dict">
