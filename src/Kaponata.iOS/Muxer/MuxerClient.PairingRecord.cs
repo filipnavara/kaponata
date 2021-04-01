@@ -27,7 +27,7 @@ namespace Kaponata.iOS.Muxer
         /// A <see cref="Task"/> which represents the asynchronous operation, and which returns the pairing
         /// record.
         /// </returns>
-        public async Task<PairingRecord> ReadPairingRecordAsync(string udid, CancellationToken cancellationToken)
+        public async virtual Task<PairingRecord> ReadPairingRecordAsync(string udid, CancellationToken cancellationToken)
         {
             if (udid == null)
             {
@@ -75,7 +75,7 @@ namespace Kaponata.iOS.Muxer
         /// A <see cref="CancellationToken"/> which can be used to cancel the asynchronous operation.
         /// </param>
         /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-        public async Task SavePairingRecordAsync(string udid, PairingRecord pairingRecord, CancellationToken cancellationToken)
+        public async virtual Task SavePairingRecordAsync(string udid, PairingRecord pairingRecord, CancellationToken cancellationToken)
         {
             if (udid == null)
             {
@@ -118,7 +118,7 @@ namespace Kaponata.iOS.Muxer
         /// A <see cref="CancellationToken"/> which can be used to cancel the asynchronous operation.
         /// </param>
         /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-        public async Task DeletePairingRecordAsync(string udid, CancellationToken cancellationToken)
+        public async virtual Task DeletePairingRecordAsync(string udid, CancellationToken cancellationToken)
         {
             if (udid == null)
             {
