@@ -213,5 +213,78 @@ namespace Kaponata.iOS.Tests.Muxer
 
             await muxer.SavePairingRecordAsync("abc", pairingRecord, default).ConfigureAwait(false);
         }
+
+        /// <summary>
+        /// <see cref="MuxerClient.DeletePairingRecordAsync(string, CancellationToken)"/> validates its arguments.
+        /// </summary>
+        /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
+        [Fact]
+        public async Task DeleteRecordAsync_ValidatesArguments_Async()
+        {
+            var muxerMock = new Mock<MuxerClient>();
+            var muxer = muxerMock.Object;
+
+            await Assert.ThrowsAsync<ArgumentNullException>(() => muxer.DeletePairingRecordAsync(null, default));
+        }
+
+        /// <summary>
+        /// <see cref="MuxerClient.DeletePairingRecordAsync(string, CancellationToken)"/> throws on errors.
+        /// </summary>
+        /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
+        [Fact]
+        public async Task DeletePairingRecord_ThrowsOnError_Async()
+        {
+            var protocol = new Mock<MuxerProtocol>();
+            var muxerMock = new Mock<MuxerClient>();
+            muxerMock.Setup(c => c.TryConnectToMuxerAsync(default)).ReturnsAsync(protocol.Object);
+            var muxer = muxerMock.Object;
+
+            protocol
+                .Setup(p => p.WriteMessageAsync(It.IsAny<MuxerMessage>(), default))
+                .Callback<MuxerMessage, CancellationToken>(
+                (message, ct) =>
+                {
+                    var readMessage = Assert.IsType<DeletePairingRecordMessage>(message);
+                    Assert.Equal(MuxerMessageType.DeletePairRecord, readMessage.MessageType);
+                    Assert.Equal("abc", readMessage.PairRecordID);
+                })
+                .Returns(Task.CompletedTask);
+
+            protocol
+                .Setup(p => p.ReadMessageAsync(default))
+                .ReturnsAsync(new ResultMessage() { Number = MuxerError.BadCommand });
+
+            await Assert.ThrowsAsync<MuxerException>(() => muxer.DeletePairingRecordAsync("abc", default)).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// <see cref="MuxerClient.DeletePairingRecordAsync(string, CancellationToken)"/> works.
+        /// </summary>
+        /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
+        [Fact]
+        public async Task DeletePairingRecord_Works_Async()
+        {
+            var protocol = new Mock<MuxerProtocol>();
+            var muxerMock = new Mock<MuxerClient>();
+            muxerMock.Setup(c => c.TryConnectToMuxerAsync(default)).ReturnsAsync(protocol.Object);
+            var muxer = muxerMock.Object;
+
+            protocol
+                .Setup(p => p.WriteMessageAsync(It.IsAny<MuxerMessage>(), default))
+                .Callback<MuxerMessage, CancellationToken>(
+                (message, ct) =>
+                {
+                    var readMessage = Assert.IsType<DeletePairingRecordMessage>(message);
+                    Assert.Equal(MuxerMessageType.DeletePairRecord, readMessage.MessageType);
+                    Assert.Equal("abc", readMessage.PairRecordID);
+                })
+                .Returns(Task.CompletedTask);
+
+            protocol
+                .Setup(p => p.ReadMessageAsync(default))
+                .ReturnsAsync(new ResultMessage());
+
+            await muxer.DeletePairingRecordAsync("abc", default).ConfigureAwait(false);
+        }
     }
 }
