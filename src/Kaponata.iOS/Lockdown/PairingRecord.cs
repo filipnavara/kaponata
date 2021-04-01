@@ -164,6 +164,11 @@ namespace Kaponata.iOS.Lockdown
 
         private static byte[] SerializeCertificate(X509Certificate certificate)
         {
+            if (certificate == null)
+            {
+                return null;
+            }
+
             char[] pemEncoded =
                 PemEncoding.Write(
                     "CERTIFICATE",
@@ -180,6 +185,11 @@ namespace Kaponata.iOS.Lockdown
 
         private static byte[] SerializePrivateKey(RSA privateKey)
         {
+            if (privateKey == null)
+            {
+                return null;
+            }
+
             var pemEncoded =
                 PemEncoding.Write(
                     "RSA PRIVATE KEY",
