@@ -107,5 +107,41 @@ namespace Kaponata.iOS.Muxer
                 }
             }
         }
+
+        /// <summary>
+        /// Asynchronously deletes the pair record for a device.
+        /// </summary>
+        /// <param name="udid">
+        /// The UDID of the device for which to delete the pair record.
+        /// </param>
+        /// <param name="cancellationToken">
+        /// A <see cref="CancellationToken"/> which can be used to cancel the asynchronous operation.
+        /// </param>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+        public async Task DeletePairingRecordAsync(string udid, CancellationToken cancellationToken)
+        {
+            if (udid == null)
+            {
+                throw new ArgumentNullException(nameof(udid));
+            }
+
+            await using (var protocol = await this.TryConnectToMuxerAsync(cancellationToken).ConfigureAwait(false))
+            {
+                await protocol.WriteMessageAsync(
+                    new DeletePairingRecordMessage()
+                    {
+                        MessageType = MuxerMessageType.DeletePairRecord,
+                        PairRecordID = udid,
+                    },
+                    cancellationToken).ConfigureAwait(false);
+
+                var response = (ResultMessage)await protocol.ReadMessageAsync(cancellationToken).ConfigureAwait(false);
+
+                if (response.Number != MuxerError.Success)
+                {
+                    throw new MuxerException($"An error occurred while saving the pairing record for device {udid}: {response.Number}.", response.Number);
+                }
+            }
+        }
     }
 }

@@ -68,5 +68,10 @@ namespace Kaponata.iOS.Muxer
         /// Saves the pair record for the device.
         /// </summary>
         SavePairRecord = 103,
+
+        /// <summary>
+        /// Deletes the pair record for the device.
+        /// </summary>
+        DeletePairRecord = 104,
     }
 }
