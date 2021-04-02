@@ -26,6 +26,7 @@ namespace Kaponata.iOS.Tests.Muxer
         public async Task ReadPairingRecordAsync_ValidatesArguments_Async()
         {
             var muxerMock = new Mock<MuxerClient>();
+            muxerMock.CallBase = true;
             var muxer = muxerMock.Object;
 
             await Assert.ThrowsAsync<ArgumentNullException>(() => muxer.ReadPairingRecordAsync(null, default));
@@ -75,6 +76,7 @@ namespace Kaponata.iOS.Tests.Muxer
         {
             var protocol = new Mock<MuxerProtocol>();
             var muxerMock = new Mock<MuxerClient>();
+            muxerMock.CallBase = true;
             muxerMock.Setup(c => c.TryConnectToMuxerAsync(default)).ReturnsAsync(protocol.Object);
             var muxer = muxerMock.Object;
 
@@ -109,6 +111,7 @@ namespace Kaponata.iOS.Tests.Muxer
         {
             var protocol = new Mock<MuxerProtocol>();
             var muxerMock = new Mock<MuxerClient>();
+            muxerMock.CallBase = true;
             muxerMock.Setup(c => c.TryConnectToMuxerAsync(default)).ReturnsAsync(protocol.Object);
             var muxer = muxerMock.Object;
             var pairingRecord = PairingRecord.Read(File.ReadAllBytes("Lockdown/0123456789abcdef0123456789abcdef01234567.plist"));
@@ -144,6 +147,7 @@ namespace Kaponata.iOS.Tests.Muxer
         public async Task SavePairingRecordAsync_ValidatesArguments_Async()
         {
             var muxerMock = new Mock<MuxerClient>();
+            muxerMock.CallBase = true;
             var muxer = muxerMock.Object;
 
             await Assert.ThrowsAsync<ArgumentNullException>(() => muxer.SavePairingRecordAsync(null, new PairingRecord(), default));
@@ -159,6 +163,7 @@ namespace Kaponata.iOS.Tests.Muxer
         {
             var protocol = new Mock<MuxerProtocol>();
             var muxerMock = new Mock<MuxerClient>();
+            muxerMock.CallBase = true;
             muxerMock.Setup(c => c.TryConnectToMuxerAsync(default)).ReturnsAsync(protocol.Object);
             var muxer = muxerMock.Object;
             var pairingRecord = PairingRecord.Read(File.ReadAllBytes("Lockdown/0123456789abcdef0123456789abcdef01234567.plist"));
@@ -222,6 +227,7 @@ namespace Kaponata.iOS.Tests.Muxer
         public async Task DeleteRecordAsync_ValidatesArguments_Async()
         {
             var muxerMock = new Mock<MuxerClient>();
+            muxerMock.CallBase = true;
             var muxer = muxerMock.Object;
 
             await Assert.ThrowsAsync<ArgumentNullException>(() => muxer.DeletePairingRecordAsync(null, default));
@@ -236,6 +242,7 @@ namespace Kaponata.iOS.Tests.Muxer
         {
             var protocol = new Mock<MuxerProtocol>();
             var muxerMock = new Mock<MuxerClient>();
+            muxerMock.CallBase = true;
             muxerMock.Setup(c => c.TryConnectToMuxerAsync(default)).ReturnsAsync(protocol.Object);
             var muxer = muxerMock.Object;
 
