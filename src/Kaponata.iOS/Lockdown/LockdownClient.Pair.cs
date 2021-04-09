@@ -2,7 +2,6 @@
 // Copyright (c) Quamotion bv. All rights reserved.
 // </copyright>
 
-using Claunia.PropertyList;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -25,7 +24,7 @@ namespace Kaponata.iOS.Lockdown
         /// operation.
         /// </param>
         /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-        public Task<PairResult?> PairAsync(PairingRecord pairingRecord, CancellationToken cancellationToken)
+        public Task<PairingResult> PairAsync(PairingRecord pairingRecord, CancellationToken cancellationToken)
         {
             return this.PairAsync(
                 "Pair",
@@ -48,7 +47,7 @@ namespace Kaponata.iOS.Lockdown
         /// operation.
         /// </param>
         /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-        public Task<PairResult?> UnpairAsync(PairingRecord pairingRecord, CancellationToken cancellationToken)
+        public Task<PairingResult> UnpairAsync(PairingRecord pairingRecord, CancellationToken cancellationToken)
         {
             return this.PairAsync("Unpair", pairingRecord, null, cancellationToken);
         }
@@ -64,12 +63,12 @@ namespace Kaponata.iOS.Lockdown
         /// operation.
         /// </param>
         /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-        public Task<PairResult?> ValidatePairAsync(PairingRecord pairingRecord, CancellationToken cancellationToken)
+        public Task<PairingResult> ValidatePairAsync(PairingRecord pairingRecord, CancellationToken cancellationToken)
         {
             return this.PairAsync("ValidatePair", pairingRecord, null, cancellationToken);
         }
 
-        private async Task<PairResult?> PairAsync(string request, PairingRecord pairingRecord, PairingOptions options, CancellationToken cancellationToken)
+        private async Task<PairingResult> PairAsync(string request, PairingRecord pairingRecord, PairingOptions options, CancellationToken cancellationToken)
         {
             if (pairingRecord == null)
             {
@@ -81,6 +80,7 @@ namespace Kaponata.iOS.Lockdown
                 Request = request,
                 PairRecord = pairingRecord,
                 PairingOptions = options,
+                Label = this.Label,
             };
 
             await this.protocol.WriteMessageAsync(
@@ -95,15 +95,22 @@ namespace Kaponata.iOS.Lockdown
                 return null;
             }
 
-            var response = LockdownResponse<string>.Read(message);
+            var response = PairResponse.Read(message);
 
             if (response.Error == null)
             {
-                return PairResult.Success;
+                return new PairingResult()
+                {
+                    Status = PairingStatus.Success,
+                    EscrowBag = response.EscrowBag,
+                };
             }
-            else if (Enum.TryParse(response.Error, out PairResult result))
+            else if (Enum.TryParse(response.Error, out PairingStatus status))
             {
-                return result;
+                return new PairingResult()
+                {
+                    Status = status,
+                };
             }
             else
             {

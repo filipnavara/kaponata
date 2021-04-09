@@ -1,4 +1,4 @@
-﻿// <copyright file="PairResult.cs" company="Quamotion bv">
+﻿// <copyright file="PairingStatus.cs" company="Quamotion bv">
 // Copyright (c) Quamotion bv. All rights reserved.
 // </copyright>
 
@@ -10,7 +10,7 @@ namespace Kaponata.iOS.Lockdown
     /// The result of a <see cref="LockdownClient.PairAsync(PairingRecord, CancellationToken)"/>
     /// operation.
     /// </summary>
-    public enum PairResult
+    public enum PairingStatus
     {
         /// <summary>
         /// The operation completed successfully. The host and device have paired successfully.
@@ -27,5 +27,10 @@ namespace Kaponata.iOS.Lockdown
         /// is waiting for the server to accept or deny the pairing request.
         /// </summary>
         PairingDialogResponsePending,
+
+        /// <summary>
+        /// An inavlid pair record was presented to the device.
+        /// </summary>
+        InvalidPairRecord,
     }
 }
