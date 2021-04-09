@@ -3,6 +3,7 @@
 // </copyright>
 
 using Kaponata.iOS.PropertyLists;
+using Microsoft.Extensions.Logging;
 using System;
 using System.IO;
 using System.Threading;
@@ -18,7 +19,12 @@ namespace Kaponata.iOS.NotificationProxy
         /// <summary>
         /// Gets the name of the notification proxy service on the device.
         /// </summary>
-        private const string ServiceName = "com.apple.mobile.notification_proxy";
+        public const string ServiceName = "com.apple.mobile.notification_proxy";
+
+        /// <summary>
+        /// Gets the name of the insecure notification proxy service on the device.
+        /// </summary>
+        public const string InsecureServiceName = "com.apple.mobile.insecure_notification_proxy";
 
         private readonly PropertyListProtocol protocol;
 
@@ -28,9 +34,12 @@ namespace Kaponata.iOS.NotificationProxy
         /// <param name="stream">
         /// A <see cref="Stream"/> which represents a connection to the notification proxy running on the device.
         /// </param>
-        public NotificationProxyClient(Stream stream)
+        /// <param name="logger">
+        /// A <see cref="ILogger"/> which can be used when logging.
+        /// </param>
+        public NotificationProxyClient(Stream stream, ILogger logger)
         {
-            this.protocol = new PropertyListProtocol(stream, ownsStream: true);
+            this.protocol = new PropertyListProtocol(stream, ownsStream: true, logger: logger);
         }
 
         /// <summary>

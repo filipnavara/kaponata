@@ -4,6 +4,7 @@
 
 using Claunia.PropertyList;
 using Kaponata.iOS.PropertyLists;
+using Microsoft.Extensions.Logging.Abstractions;
 using System;
 using System.IO;
 using System.Threading;
@@ -23,7 +24,8 @@ namespace Kaponata.iOS.Tests.PropertyLists
         [Fact]
         public void Constructor_ValidatesArguments()
         {
-            Assert.Throws<ArgumentNullException>("stream", () => new PropertyListProtocol(null, true));
+            Assert.Throws<ArgumentNullException>("stream", () => new PropertyListProtocol(null, true, NullLogger<PropertyListProtocol>.Instance));
+            Assert.Throws<ArgumentNullException>("stream", () => new PropertyListProtocol(Stream.Null, true, null));
         }
 
         /// <summary>
@@ -33,7 +35,7 @@ namespace Kaponata.iOS.Tests.PropertyLists
         [Fact]
         public async Task Write_ValidatesArguments_Async()
         {
-            var protocol = new PropertyListProtocol(Stream.Null, false);
+            var protocol = new PropertyListProtocol(Stream.Null, false, NullLogger<PropertyListProtocol>.Instance);
 
             await Assert.ThrowsAsync<ArgumentNullException>(() => protocol.WriteMessageAsync(null, default)).ConfigureAwait(false);
         }
@@ -47,7 +49,7 @@ namespace Kaponata.iOS.Tests.PropertyLists
         public async Task Write_Works_Async()
         {
             await using (MemoryStream stream = new MemoryStream())
-            await using (var protocol = new PropertyListProtocol(stream, false))
+            await using (var protocol = new PropertyListProtocol(stream, false, NullLogger<PropertyListProtocol>.Instance))
             {
                 var dict = new NSDictionary();
                 dict.Add("Request", "QueryType");
@@ -67,7 +69,7 @@ namespace Kaponata.iOS.Tests.PropertyLists
         public async Task Read_Works_Async()
         {
             await using (Stream stream = File.OpenRead("PropertyLists/message.bin"))
-            await using (var protocol = new PropertyListProtocol(stream, false))
+            await using (var protocol = new PropertyListProtocol(stream, false, NullLogger<PropertyListProtocol>.Instance))
             {
                 var dict = await protocol.ReadMessageAsync(default);
 
@@ -85,7 +87,7 @@ namespace Kaponata.iOS.Tests.PropertyLists
         public async Task Read_PartialRead_ReturnsNull_Async()
         {
             await using (var stream = new MemoryStream(File.ReadAllBytes("PropertyLists/message.bin")))
-            await using (var protocol = new PropertyListProtocol(stream, false))
+            await using (var protocol = new PropertyListProtocol(stream, false, NullLogger<PropertyListProtocol>.Instance))
             {
                 // Let's pretend the last 4 bytes are missing.
                 stream.SetLength(stream.Length - 4);
@@ -102,7 +104,7 @@ namespace Kaponata.iOS.Tests.PropertyLists
         [Fact]
         public async Task Read_EndOfStream_ReturnsNull_Async()
         {
-            await using (var protocol = new PropertyListProtocol(Stream.Null, false))
+            await using (var protocol = new PropertyListProtocol(Stream.Null, false, NullLogger<PropertyListProtocol>.Instance))
             {
                 Assert.Null(await protocol.ReadMessageAsync(default).ConfigureAwait(false));
             }

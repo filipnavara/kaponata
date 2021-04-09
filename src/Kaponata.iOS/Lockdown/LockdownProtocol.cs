@@ -3,6 +3,7 @@
 // </copyright>
 
 using Kaponata.iOS.PropertyLists;
+using Microsoft.Extensions.Logging;
 using System;
 using System.IO;
 using System.Threading;
@@ -24,8 +25,11 @@ namespace Kaponata.iOS.Lockdown
         /// <param name="ownsStream">
         /// A value indicating whether this <see cref="LockdownProtocol"/> instance owns the <paramref name="stream"/> or not.
         /// </param>
-        public LockdownProtocol(Stream stream, bool ownsStream)
-            : base(stream, ownsStream)
+        /// <param name="logger">
+        /// A <see cref="ILogger"/> which can be used when logging.
+        /// </param>
+        public LockdownProtocol(Stream stream, bool ownsStream, ILogger logger)
+            : base(stream, ownsStream, logger)
         {
         }
 

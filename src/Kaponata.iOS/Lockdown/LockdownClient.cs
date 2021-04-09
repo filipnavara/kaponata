@@ -3,6 +3,7 @@
 // </copyright>
 
 using Kaponata.iOS.Muxer;
+using Microsoft.Extensions.Logging;
 using System;
 using System.IO;
 using System.Threading;
@@ -24,6 +25,8 @@ namespace Kaponata.iOS.Lockdown
         private readonly MuxerClient muxer;
         private readonly MuxerDevice device;
 
+        private readonly ILogger<LockdownClient> logger;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="LockdownClient"/> class.
         /// </summary>
@@ -36,7 +39,10 @@ namespace Kaponata.iOS.Lockdown
         /// <param name="device">
         /// The device on which lockdown is running.
         /// </param>
-        public LockdownClient(Stream stream, MuxerClient muxer, MuxerDevice device)
+        /// <param name="logger">
+        /// A <see cref="ILogger"/> which can be used when logging.
+        /// </param>
+        public LockdownClient(Stream stream, MuxerClient muxer, MuxerDevice device, ILogger<LockdownClient> logger)
         {
             if (stream == null)
             {
@@ -45,8 +51,9 @@ namespace Kaponata.iOS.Lockdown
 
             this.muxer = muxer ?? throw new ArgumentNullException(nameof(muxer));
             this.device = device ?? throw new ArgumentNullException(nameof(device));
+            this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
-            this.protocol = new LockdownProtocol(stream, ownsStream: true);
+            this.protocol = new LockdownProtocol(stream, ownsStream: true, logger);
         }
 
         /// <summary>
@@ -61,11 +68,15 @@ namespace Kaponata.iOS.Lockdown
         /// <param name="device">
         /// The device on which lockdown is running.
         /// </param>
-        public LockdownClient(LockdownProtocol protocol, MuxerClient muxer, MuxerDevice device)
+        /// <param name="logger">
+        /// A <see cref="ILogger"/> which can be used when logging.
+        /// </param>
+        public LockdownClient(LockdownProtocol protocol, MuxerClient muxer, MuxerDevice device, ILogger<LockdownClient> logger)
         {
             this.protocol = protocol ?? throw new ArgumentNullException(nameof(protocol));
             this.muxer = muxer ?? throw new ArgumentNullException(nameof(muxer));
             this.device = device ?? throw new ArgumentNullException(nameof(device));
+            this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         /// <summary>
@@ -83,6 +94,9 @@ namespace Kaponata.iOS.Lockdown
         /// <param name="device">
         /// The device to which to connect.
         /// </param>
+        /// <param name="logger">
+        /// A <see cref="ILogger"/> which can be used when logging.
+        /// </param>
         /// <param name="cancellationToken">
         /// A <see cref="CancellationToken"/> which can be used to cancel the asynchronous operation.
         /// </param>
@@ -90,7 +104,7 @@ namespace Kaponata.iOS.Lockdown
         /// A <see cref="Task"/> which represents the asynchronous oepration and returns the <see cref="LockdownClient"/> once
         /// connected.
         /// </returns>
-        public static async Task<LockdownClient> ConnectAsync(MuxerClient muxer, MuxerDevice device, CancellationToken cancellationToken)
+        public static async Task<LockdownClient> ConnectAsync(MuxerClient muxer, MuxerDevice device, ILogger<LockdownClient> logger, CancellationToken cancellationToken)
         {
             if (muxer == null)
             {
@@ -104,7 +118,7 @@ namespace Kaponata.iOS.Lockdown
 
             var stream = await muxer.ConnectAsync(device, LockdownPort, cancellationToken).ConfigureAwait(false);
 
-            LockdownClient client = new LockdownClient(stream, muxer, device);
+            LockdownClient client = new LockdownClient(stream, muxer, device, logger);
 
             // Make sure we are really connected to lockdown
             var type = await client.QueryTypeAsync(cancellationToken).ConfigureAwait(false);
