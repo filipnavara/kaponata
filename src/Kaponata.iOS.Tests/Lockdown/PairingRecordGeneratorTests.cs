@@ -62,6 +62,10 @@ namespace Kaponata.iOS.Tests.Lockdown
             Assert.NotNull(pairingRecord.RootCertificate);
             Assert.NotNull(pairingRecord.RootPrivateKey);
 
+            // The host ID must be a well-formed, upper-case UUID
+            Assert.True(Guid.TryParse(pairingRecord.HostId, out Guid hostId));
+            Assert.Equal(hostId.ToString("D").ToUpperInvariant(), pairingRecord.HostId);
+
             var rootSubjectKeyIdentifier = pairingRecord.RootCertificate.Extensions.OfType<X509SubjectKeyIdentifierExtension>().Single();
 
             // Validate the root certificate
