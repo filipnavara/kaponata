@@ -130,6 +130,8 @@ namespace Kaponata.iOS.Lockdown
                 notAfter: notAfter,
                 serialNumber: new byte[] { 0 });
 
+            var hostId = Guid.NewGuid();
+
             return new PairingRecord()
             {
                 DeviceCertificate = deviceCertificate,
@@ -138,7 +140,7 @@ namespace Kaponata.iOS.Lockdown
                 RootPrivateKey = rootKeyPair,
                 RootCertificate = rootCert,
                 SystemBUID = systemBuid,
-                HostId = Guid.NewGuid().ToString(),
+                HostId = hostId.ToString("D").ToUpperInvariant(),
             };
         }
 
