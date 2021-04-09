@@ -32,7 +32,7 @@ namespace Kaponata.Android.Tests.Adb
             var exception = await Assert.ThrowsAsync<Exception>(() => client.CreateForwardAsync(new DeviceData(), true, "local", "remote", default)).ConfigureAwait(false);
             Assert.Equal("device not valid.", exception.Message);
 
-            exception = await Assert.ThrowsAsync<Exception>(() => client.CreateReverseForwardAsync(new DeviceData(), true, "remote", "local", default)).ConfigureAwait(false);
+            exception = await Assert.ThrowsAsync<Exception>(() => client.CreateReverseForwardAsync(new DeviceData(), true, "local", "remote", default)).ConfigureAwait(false);
             Assert.Equal("device not valid.", exception.Message);
 
             exception = await Assert.ThrowsAsync<Exception>(() => client.ListForwardAsync(new DeviceData(), default)).ConfigureAwait(false);

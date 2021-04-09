@@ -34,33 +34,10 @@ namespace Kaponata.Android.Adb
         /// If set to <see langword="true"/>, the request will fail if if the specified socket is already bound through a previous reverse command.
         /// </param>
         /// <param name="local">
-        /// <para>
-        /// The local address to reverse forward. This value can be in one of:
-        /// </para>
-        /// <list type="ordered">
-        ///   <item>
-        ///     <c>tcp:&lt;port&gt;</c>: TCP connection on localhost:&lt;port&gt;
-        ///   </item>
-        ///   <item>
-        ///     <c>local:&lt;path&gt;</c>: Unix local domain socket on &lt;path&gt;
-        ///   </item>
-        /// </list>
+        /// The local address to reverse forward. Corresponds to the socket on the device.
         /// </param>
         /// <param name="remote">
-        /// <para>
-        /// The remote address to reverse forward. This value can be in one of:
-        /// </para>
-        /// <list type="ordered">
-        ///   <item>
-        ///     <c>tcp:&lt;port&gt;</c>: TCP connection on localhost:&lt;port&gt; on device
-        ///   </item>
-        ///   <item>
-        ///     <c>local:&lt;path&gt;</c>: Unix local domain socket on &lt;path&gt; on device
-        ///   </item>
-        ///   <item>
-        ///     <c>jdwp:&lt;pid&gt;</c>: JDWP thread on VM process &lt;pid&gt; on device.
-        ///   </item>
-        /// </list>
+        /// The remote address to reverse forward. Remote corresponds to the socket on the host.
         /// </param>
         /// <param name="cancellationToken">
         /// A <see cref="CancellationToken"/> which can be used to cancel the asynchronous operation.
