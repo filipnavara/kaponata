@@ -65,7 +65,48 @@ namespace Kaponata.iOS.Tests.Lockdown
             await using (var lockdown = new LockdownClient(protocol.Object, Mock.Of<MuxerClient>(), new MuxerDevice()))
             {
                 var result = await lockdown.PairAsync(pairingRecord, default).ConfigureAwait(false);
-                Assert.Equal(PairResult.Success, result);
+                Assert.Equal(PairingStatus.Success, result.Status);
+            }
+        }
+
+        /// <summary>
+        /// <see cref="LockdownClient.PairAsync(PairingRecord, CancellationToken)"/> returns an escrow bag if one is provided.
+        /// </summary>
+        /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
+        [Fact]
+        public async Task PairAsync_ReturnsEscrowBag_Async()
+        {
+            var pairingRecord = new PairingRecord();
+
+            var protocol = new Mock<LockdownProtocol>();
+
+            protocol
+                .Setup(p => p.WriteMessageAsync(It.IsAny<LockdownMessage>(), default))
+                .Callback<LockdownMessage, CancellationToken>(
+                (message, ct) =>
+                {
+                    var request = Assert.IsType<PairRequest>(message);
+
+                    Assert.Same(pairingRecord, request.PairRecord);
+                    Assert.NotNull(request.PairingOptions);
+                    Assert.True(request.PairingOptions.ExtendedPairingErrors);
+                    Assert.Equal("Pair", request.Request);
+                })
+                .Returns(Task.CompletedTask);
+
+            var dict = new NSDictionary();
+            var data = new byte[] { 1, 2, 3, 4 };
+            dict.Add("EscrowBag", data);
+
+            protocol
+                .Setup(p => p.ReadMessageAsync(default))
+                .ReturnsAsync(dict);
+
+            await using (var lockdown = new LockdownClient(protocol.Object, Mock.Of<MuxerClient>(), new MuxerDevice()))
+            {
+                var result = await lockdown.PairAsync(pairingRecord, default).ConfigureAwait(false);
+                Assert.Equal(PairingStatus.Success, result.Status);
+                Assert.Equal(data, result.EscrowBag);
             }
         }
 
@@ -95,7 +136,7 @@ namespace Kaponata.iOS.Tests.Lockdown
             await using (var lockdown = new LockdownClient(protocol.Object, Mock.Of<MuxerClient>(), new MuxerDevice()))
             {
                 var result = await lockdown.PairAsync(pairingRecord, default).ConfigureAwait(false);
-                Assert.Equal(PairResult.PairingDialogResponsePending, result);
+                Assert.Equal(PairingStatus.PairingDialogResponsePending, result.Status);
             }
         }
 
@@ -187,7 +228,7 @@ namespace Kaponata.iOS.Tests.Lockdown
             await using (var lockdown = new LockdownClient(protocol.Object, Mock.Of<MuxerClient>(), new MuxerDevice()))
             {
                 var result = await lockdown.UnpairAsync(pairingRecord, default).ConfigureAwait(false);
-                Assert.Equal(PairResult.Success, result);
+                Assert.Equal(PairingStatus.Success, result.Status);
             }
         }
 
@@ -224,7 +265,7 @@ namespace Kaponata.iOS.Tests.Lockdown
             await using (var lockdown = new LockdownClient(protocol.Object, Mock.Of<MuxerClient>(), new MuxerDevice()))
             {
                 var result = await lockdown.ValidatePairAsync(pairingRecord, default).ConfigureAwait(false);
-                Assert.Equal(PairResult.Success, result);
+                Assert.Equal(PairingStatus.Success, result.Status);
             }
         }
     }
