@@ -62,6 +62,8 @@ namespace Kaponata.Android.Adb
             protocol.EnsureValidAdbResponse(await protocol.ReadAdbResponseAsync(cancellationToken).ConfigureAwait(false));
             protocol.EnsureValidAdbResponse(await protocol.ReadAdbResponseAsync(cancellationToken).ConfigureAwait(false));
 
+            // The port will be resolved if the remote TCP port is 0. In this case <c>ADB</c> sends the actual port number back.
+            // <seealso href="https://android.googlesource.com/platform/system/core/+/refs/tags/android-11.0.0_r33/adb/adb.cpp#1035"/>
             if (remote.Equals("tcp:0", StringComparison.OrdinalIgnoreCase))
             {
                 var length = await protocol.ReadUInt16Async(cancellationToken).ConfigureAwait(false);
