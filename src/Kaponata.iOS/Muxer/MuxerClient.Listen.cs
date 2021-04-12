@@ -35,9 +35,9 @@ namespace Kaponata.iOS.Muxer
         /// the client aborted the listen operation, <see langword="false"/> when the server disconnected.
         /// </returns>
         public virtual async Task<bool> ListenAsync(
-            Func<DeviceAttachedMessage, Task<MuxerListenAction>> onAttached,
-            Func<DeviceDetachedMessage, Task<MuxerListenAction>> onDetached,
-            Func<DevicePairedMessage, Task<MuxerListenAction>> onPaired,
+            Func<DeviceAttachedMessage, CancellationToken, Task<MuxerListenAction>> onAttached,
+            Func<DeviceDetachedMessage, CancellationToken, Task<MuxerListenAction>> onDetached,
+            Func<DevicePairedMessage, CancellationToken, Task<MuxerListenAction>> onPaired,
             CancellationToken cancellationToken)
         {
             var protocol = await this.TryConnectToMuxerAsync(cancellationToken).ConfigureAwait(false);
@@ -81,7 +81,7 @@ namespace Kaponata.iOS.Muxer
 
                         if (onAttached != null)
                         {
-                            if (await onAttached(attachedMessage) == MuxerListenAction.StopListening)
+                            if (await onAttached(attachedMessage, cancellationToken) == MuxerListenAction.StopListening)
                             {
                                 break;
                             }
@@ -93,7 +93,7 @@ namespace Kaponata.iOS.Muxer
 
                         if (onDetached != null)
                         {
-                            if (await onDetached(detachedMessage) == MuxerListenAction.StopListening)
+                            if (await onDetached(detachedMessage, cancellationToken) == MuxerListenAction.StopListening)
                             {
                                 break;
                             }
@@ -105,7 +105,7 @@ namespace Kaponata.iOS.Muxer
 
                         if (onPaired != null)
                         {
-                            if (await onPaired(pairedMessage) == MuxerListenAction.StopListening)
+                            if (await onPaired(pairedMessage, cancellationToken) == MuxerListenAction.StopListening)
                             {
                                 break;
                             }

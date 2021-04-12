@@ -386,9 +386,9 @@ namespace Kaponata.iOS.Tests.Muxer
 
             Assert.False(
                 await client.ListenAsync(
-                    (onAttached) => { return Task.FromResult(MuxerListenAction.ContinueListening); },
-                    (onDetached) => { return Task.FromResult(MuxerListenAction.ContinueListening); },
-                    (onPaired) => { return Task.FromResult(MuxerListenAction.ContinueListening); },
+                    (onAttached, ct) => { return Task.FromResult(MuxerListenAction.ContinueListening); },
+                    (onDetached, ct) => { return Task.FromResult(MuxerListenAction.ContinueListening); },
+                    (onPaired, ct) => { return Task.FromResult(MuxerListenAction.ContinueListening); },
                     default).ConfigureAwait(false));
 
             Assert.Empty(queue);
@@ -440,9 +440,9 @@ namespace Kaponata.iOS.Tests.Muxer
 
             Assert.True(
                 await client.ListenAsync(
-                    (onAttached) => { return Task.FromResult(onAttached.DeviceID == 1 ? MuxerListenAction.ContinueListening : MuxerListenAction.StopListening); },
-                    (onDetached) => { return Task.FromResult(MuxerListenAction.ContinueListening); },
-                    (onPaired) => { return Task.FromResult(MuxerListenAction.ContinueListening); },
+                    (onAttached, ct) => { return Task.FromResult(onAttached.DeviceID == 1 ? MuxerListenAction.ContinueListening : MuxerListenAction.StopListening); },
+                    (onDetached, ct) => { return Task.FromResult(MuxerListenAction.ContinueListening); },
+                    (onPaired, ct) => { return Task.FromResult(MuxerListenAction.ContinueListening); },
                     default).ConfigureAwait(false));
 
             Assert.Equal(3, queue.Count);
@@ -494,9 +494,9 @@ namespace Kaponata.iOS.Tests.Muxer
 
             Assert.True(
                 await client.ListenAsync(
-                    (onAttached) => { return Task.FromResult(MuxerListenAction.ContinueListening); },
-                    (onDetached) => { return Task.FromResult(onDetached.DeviceID == 1 ? MuxerListenAction.ContinueListening : MuxerListenAction.StopListening); },
-                    (onPaired) => { return Task.FromResult(MuxerListenAction.ContinueListening); },
+                    (onAttached, ct) => { return Task.FromResult(MuxerListenAction.ContinueListening); },
+                    (onDetached, ct) => { return Task.FromResult(onDetached.DeviceID == 1 ? MuxerListenAction.ContinueListening : MuxerListenAction.StopListening); },
+                    (onPaired, ct) => { return Task.FromResult(MuxerListenAction.ContinueListening); },
                     default).ConfigureAwait(false));
 
             Assert.Single(queue);
@@ -548,9 +548,9 @@ namespace Kaponata.iOS.Tests.Muxer
 
             Assert.True(
                 await client.ListenAsync(
-                    (onAttached) => { return Task.FromResult(MuxerListenAction.ContinueListening); },
-                    (onDetached) => { return Task.FromResult(MuxerListenAction.ContinueListening);  },
-                    (onPaired) => { return Task.FromResult(onPaired.DeviceID == 1 ? MuxerListenAction.ContinueListening : MuxerListenAction.StopListening); },
+                    (onAttached, ct) => { return Task.FromResult(MuxerListenAction.ContinueListening); },
+                    (onDetached, ct) => { return Task.FromResult(MuxerListenAction.ContinueListening);  },
+                    (onPaired, ct) => { return Task.FromResult(onPaired.DeviceID == 1 ? MuxerListenAction.ContinueListening : MuxerListenAction.StopListening); },
                     default).ConfigureAwait(false));
 
             Assert.Equal(2, queue.Count);
@@ -597,9 +597,9 @@ namespace Kaponata.iOS.Tests.Muxer
 
             await Assert.ThrowsAsync<InvalidDataException>(
                 () => client.ListenAsync(
-                    (onAttached) => { return Task.FromResult(MuxerListenAction.ContinueListening); },
-                    (onDetached) => { return Task.FromResult(MuxerListenAction.ContinueListening); },
-                    (onPaired) => { return Task.FromResult(MuxerListenAction.ContinueListening); },
+                    (onAttached, ct) => { return Task.FromResult(MuxerListenAction.ContinueListening); },
+                    (onDetached, ct) => { return Task.FromResult(MuxerListenAction.ContinueListening); },
+                    (onPaired, ct) => { return Task.FromResult(MuxerListenAction.ContinueListening); },
                     default)).ConfigureAwait(false);
 
             Assert.Empty(queue);

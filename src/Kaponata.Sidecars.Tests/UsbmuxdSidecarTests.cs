@@ -3,6 +3,7 @@
 // </copyright>
 
 using k8s.Models;
+using Kaponata.iOS.Lockdown;
 using Kaponata.iOS.Muxer;
 using Kaponata.Kubernetes;
 using Kaponata.Kubernetes.Models;
@@ -183,6 +184,9 @@ namespace Kaponata.Sidecars.Tests
                         },
                     })
                 .Verifiable();
+            muxer
+                .Setup(m => m.ReadPairingRecordAsync("my-udid", default))
+                .ReturnsAsync((PairingRecord)null);
 
             var configuration = new UsbmuxdSidecarConfiguration()
             {
@@ -323,6 +327,9 @@ namespace Kaponata.Sidecars.Tests
                         },
                     })
                 .Verifiable();
+            muxer
+                .Setup(m => m.ReadPairingRecordAsync("my-udid", default))
+                .ReturnsAsync((PairingRecord)null);
 
             var configuration = new UsbmuxdSidecarConfiguration()
             {
@@ -401,19 +408,19 @@ namespace Kaponata.Sidecars.Tests
             var muxer = new Mock<MuxerClient>(MockBehavior.Strict);
             var listenCompleted = new TaskCompletionSource<bool>();
 
-            Func<DeviceAttachedMessage, Task<MuxerListenAction>> attachedCallback = null;
-            Func<DeviceDetachedMessage, Task<MuxerListenAction>> detachedCallback = null;
-            Func<DevicePairedMessage, Task<MuxerListenAction>> pairedCallback = null;
+            Func<DeviceAttachedMessage, CancellationToken, Task<MuxerListenAction>> attachedCallback = null;
+            Func<DeviceDetachedMessage, CancellationToken, Task<MuxerListenAction>> detachedCallback = null;
+            Func<DevicePairedMessage, CancellationToken, Task<MuxerListenAction>> pairedCallback = null;
 
             var listenInitialized = new TaskCompletionSource();
 
             muxer.Setup(
                 m => m.ListenAsync(
-                    It.IsAny<Func<DeviceAttachedMessage, Task<MuxerListenAction>>>(),
-                    It.IsAny<Func<DeviceDetachedMessage, Task<MuxerListenAction>>>(),
-                    It.IsAny<Func<DevicePairedMessage, Task<MuxerListenAction>>>(),
+                    It.IsAny<Func<DeviceAttachedMessage, CancellationToken, Task<MuxerListenAction>>>(),
+                    It.IsAny<Func<DeviceDetachedMessage, CancellationToken, Task<MuxerListenAction>>>(),
+                    It.IsAny<Func<DevicePairedMessage, CancellationToken, Task<MuxerListenAction>>>(),
                     It.IsAny<CancellationToken>()))
-                .Callback<Func<DeviceAttachedMessage, Task<MuxerListenAction>>, Func<DeviceDetachedMessage, Task<MuxerListenAction>>, Func<DevicePairedMessage, Task<MuxerListenAction>>, CancellationToken>(
+                .Callback<Func<DeviceAttachedMessage, CancellationToken, Task<MuxerListenAction>>, Func<DeviceDetachedMessage, CancellationToken, Task<MuxerListenAction>>, Func<DevicePairedMessage, CancellationToken, Task<MuxerListenAction>>, CancellationToken>(
                     (attached, detached, paired, ct) =>
                     {
                         attachedCallback = attached;
@@ -447,13 +454,13 @@ namespace Kaponata.Sidecars.Tests
 
                 await listenInitialized.Task.ConfigureAwait(false);
 
-                Assert.Equal(MuxerListenAction.ContinueListening, await attachedCallback(new DeviceAttachedMessage() { Properties = new DeviceProperties() }).ConfigureAwait(false));
+                Assert.Equal(MuxerListenAction.ContinueListening, await attachedCallback(new DeviceAttachedMessage() { Properties = new DeviceProperties() }, default).ConfigureAwait(false));
                 Assert.True(mre.WaitOne(0), "Failed to schedule the reconciliation after a device attached message");
 
-                Assert.Equal(MuxerListenAction.ContinueListening, await detachedCallback(new DeviceDetachedMessage()).ConfigureAwait(false));
+                Assert.Equal(MuxerListenAction.ContinueListening, await detachedCallback(new DeviceDetachedMessage(), default).ConfigureAwait(false));
                 Assert.True(mre.WaitOne(0), "Failed to schedule the reconciliation after a device detached message");
 
-                Assert.Equal(MuxerListenAction.ContinueListening, await pairedCallback(new DevicePairedMessage()).ConfigureAwait(false));
+                Assert.Equal(MuxerListenAction.ContinueListening, await pairedCallback(new DevicePairedMessage(), default).ConfigureAwait(false));
                 Assert.True(mre.WaitOne(0), "Failed to schedule the reconciliation after a device paired message");
 
                 listenCompleted.SetResult(true);
