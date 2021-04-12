@@ -37,7 +37,7 @@ namespace Kaponata.iOS.NotificationProxy
         /// <param name="logger">
         /// A <see cref="ILogger"/> which can be used when logging.
         /// </param>
-        public NotificationProxyClient(Stream stream, ILogger logger)
+        public NotificationProxyClient(Stream stream, ILogger<NotificationProxyClient> logger)
         {
             this.protocol = new PropertyListProtocol(stream, ownsStream: true, logger: logger);
         }

@@ -40,6 +40,14 @@ namespace Kaponata.iOS
         }
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="ClientFactory{T}"/> class. Intended
+        /// for mocking purposes only.
+        /// </summary>
+        protected ClientFactory()
+        {
+        }
+
+        /// <summary>
         /// Gets the <see cref="MuxerClient"/> which represents the connection to the iOS USB Multiplexor.
         /// </summary>
         public MuxerClient Muxer { get; }

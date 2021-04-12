@@ -62,6 +62,14 @@ namespace Kaponata.iOS.Lockdown
         }
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="LockdownClient"/> class. Intended for
+        /// mocking purposes only.
+        /// </summary>
+        protected LockdownClient()
+        {
+        }
+
+        /// <summary>
         /// Gets or sets the label to use when sending or receiving messages.
         /// </summary>
         public string Label
@@ -95,7 +103,14 @@ namespace Kaponata.iOS.Lockdown
         /// <inheritdoc/>
         public ValueTask DisposeAsync()
         {
-            return this.protocol.DisposeAsync();
+            if (this.protocol == null)
+            {
+                return ValueTask.CompletedTask;
+            }
+            else
+            {
+                return this.protocol.DisposeAsync();
+            }
         }
 
         /// <summary>
