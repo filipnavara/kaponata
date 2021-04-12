@@ -3,6 +3,7 @@
 // </copyright>
 
 using Claunia.PropertyList;
+using Microsoft.Extensions.Logging;
 using Nerdbank.Streams;
 using System;
 using System.Buffers;
@@ -22,6 +23,7 @@ namespace Kaponata.iOS.PropertyLists
         private readonly Stream stream;
         private readonly bool ownsStream;
         private readonly MemoryPool<byte> memoryPool = MemoryPool<byte>.Shared;
+        private readonly ILogger logger;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PropertyListProtocol"/> class.
@@ -32,10 +34,14 @@ namespace Kaponata.iOS.PropertyLists
         /// <param name="ownsStream">
         /// A value indicating whether this <see cref="PropertyListProtocol"/> instance owns the <paramref name="stream"/> or not.
         /// </param>
-        public PropertyListProtocol(Stream stream, bool ownsStream)
+        /// <param name="logger">
+        /// A <see cref="ILogger"/> which can be used when logging.
+        /// </param>
+        public PropertyListProtocol(Stream stream, bool ownsStream, ILogger logger)
         {
             this.stream = stream ?? throw new ArgumentNullException(nameof(stream));
             this.ownsStream = ownsStream;
+            this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         /// <summary>
@@ -67,6 +73,12 @@ namespace Kaponata.iOS.PropertyLists
 
             // Serialize the underlying message so we can calculate the packet size
             var xml = message.ToXmlPropertyList();
+
+            if (this.logger.IsEnabled(LogLevel.Trace))
+            {
+                this.logger.LogTrace("Sending data:\r\n{data}", xml);
+            }
+
             int messageLength = Encoding.UTF8.GetByteCount(xml);
 
             var packetLength = 4 + messageLength;
@@ -117,7 +129,14 @@ namespace Kaponata.iOS.PropertyLists
                     return null;
                 }
 
-                return (NSDictionary)PropertyListParser.Parse(messageBuffer.Memory[0..length].Span);
+                var dict = (NSDictionary)PropertyListParser.Parse(messageBuffer.Memory[0..length].Span);
+
+                if (this.logger.IsEnabled(LogLevel.Trace))
+                {
+                    this.logger.LogTrace("Recieving data:\r\n{data}", dict.ToXmlPropertyList());
+                }
+
+                return dict;
             }
         }
 

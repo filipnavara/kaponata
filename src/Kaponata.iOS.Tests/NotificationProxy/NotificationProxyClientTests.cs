@@ -5,6 +5,7 @@
 using Claunia.PropertyList;
 using Kaponata.iOS.NotificationProxy;
 using Kaponata.iOS.PropertyLists;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using System;
 using System.IO;
@@ -25,8 +26,10 @@ namespace Kaponata.iOS.Tests.NotificationProxy
         [Fact]
         public void Constructor_ValidatesArguments()
         {
-            Assert.Throws<ArgumentNullException>(() => new NotificationProxyClient((Stream)null));
-            Assert.Throws<ArgumentNullException>(() => new NotificationProxyClient((PropertyListProtocol)null));
+            Assert.Throws<ArgumentNullException>(() => new NotificationProxyClient(null, NullLogger<NotificationProxyClient>.Instance));
+            Assert.Throws<ArgumentNullException>(() => new NotificationProxyClient(Stream.Null, null));
+
+            Assert.Throws<ArgumentNullException>(() => new NotificationProxyClient(null));
         }
 
         /// <summary>
@@ -38,7 +41,7 @@ namespace Kaponata.iOS.Tests.NotificationProxy
         public async Task ObserveNotificationAsync_Works_Async()
         {
             await using (MemoryStream stream = new MemoryStream())
-            await using (NotificationProxyClient client = new NotificationProxyClient(stream))
+            await using (NotificationProxyClient client = new NotificationProxyClient(stream, NullLogger<NotificationProxyClient>.Instance))
             {
                 await client.ObserveNotificationAsync("com.apple.mobile.application_installed", default).ConfigureAwait(false);
 
@@ -57,7 +60,7 @@ namespace Kaponata.iOS.Tests.NotificationProxy
         public async Task ReadRelayNotificationAsync_Works_Async()
         {
             await using (Stream stream = File.OpenRead("NotificationProxy/notificationproxy-device.bin"))
-            await using (NotificationProxyClient client = new NotificationProxyClient(stream))
+            await using (NotificationProxyClient client = new NotificationProxyClient(stream, NullLogger<NotificationProxyClient>.Instance))
             {
                 var notification = await client.ReadRelayNotificationAsync(default).ConfigureAwait(false);
                 Assert.Equal("com.apple.mobile.application_installed", notification);
