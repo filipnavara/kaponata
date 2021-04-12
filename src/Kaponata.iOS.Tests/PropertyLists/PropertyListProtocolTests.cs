@@ -25,7 +25,7 @@ namespace Kaponata.iOS.Tests.PropertyLists
         public void Constructor_ValidatesArguments()
         {
             Assert.Throws<ArgumentNullException>("stream", () => new PropertyListProtocol(null, true, NullLogger<PropertyListProtocol>.Instance));
-            Assert.Throws<ArgumentNullException>("stream", () => new PropertyListProtocol(Stream.Null, true, null));
+            Assert.Throws<ArgumentNullException>("logger", () => new PropertyListProtocol(Stream.Null, true, null));
         }
 
         /// <summary>

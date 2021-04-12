@@ -5,6 +5,7 @@
 using Claunia.PropertyList;
 using Kaponata.iOS.Lockdown;
 using Kaponata.iOS.Muxer;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using System;
 using System.Threading;
@@ -25,7 +26,7 @@ namespace Kaponata.iOS.Tests.Lockdown
         [Fact]
         public async Task StartServiceAsync_ValidatesArguments_Async()
         {
-            await using (var lockdown = new LockdownClient(Mock.Of<LockdownProtocol>(), Mock.Of<MuxerClient>(), new MuxerDevice()))
+            await using (var lockdown = new LockdownClient(Mock.Of<LockdownProtocol>(), NullLogger<LockdownClient>.Instance))
             {
                 await Assert.ThrowsAsync<ArgumentNullException>(() => lockdown.StartServiceAsync(null, default)).ConfigureAwait(false);
             }
@@ -58,7 +59,7 @@ namespace Kaponata.iOS.Tests.Lockdown
                 .Setup(p => p.ReadMessageAsync(default))
                 .ReturnsAsync(dict);
 
-            await using (var lockdown = new LockdownClient(protocol.Object, Mock.Of<MuxerClient>(), new MuxerDevice()))
+            await using (var lockdown = new LockdownClient(protocol.Object, NullLogger<LockdownClient>.Instance))
             {
                 var result = await lockdown.StartServiceAsync("test", default).ConfigureAwait(false);
 
@@ -93,7 +94,7 @@ namespace Kaponata.iOS.Tests.Lockdown
                 .Setup(p => p.ReadMessageAsync(default))
                 .ReturnsAsync((NSDictionary)null);
 
-            await using (var lockdown = new LockdownClient(protocol.Object, Mock.Of<MuxerClient>(), new MuxerDevice()))
+            await using (var lockdown = new LockdownClient(protocol.Object, NullLogger<LockdownClient>.Instance))
             {
                 var result = await lockdown.StartServiceAsync("test", default).ConfigureAwait(false);
                 Assert.Null(result);
@@ -128,7 +129,7 @@ namespace Kaponata.iOS.Tests.Lockdown
                 .Setup(p => p.ReadMessageAsync(default))
                 .ReturnsAsync(dict);
 
-            await using (var lockdown = new LockdownClient(protocol.Object, Mock.Of<MuxerClient>(), new MuxerDevice()))
+            await using (var lockdown = new LockdownClient(protocol.Object, NullLogger<LockdownClient>.Instance))
             {
                 await Assert.ThrowsAsync<LockdownException>(() => lockdown.StartServiceAsync("test", default)).ConfigureAwait(false);
             }

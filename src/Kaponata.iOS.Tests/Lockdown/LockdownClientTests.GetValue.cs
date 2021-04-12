@@ -4,7 +4,6 @@
 
 using Claunia.PropertyList;
 using Kaponata.iOS.Lockdown;
-using Kaponata.iOS.Muxer;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using System;
@@ -47,7 +46,7 @@ namespace Kaponata.iOS.Tests.Lockdown
                 .Setup(p => p.ReadMessageAsync(default))
                 .ReturnsAsync(dict);
 
-            await using (var client = new LockdownClient(protocol.Object, Mock.Of<MuxerClient>(), new MuxerDevice(), NullLogger<LockdownClient>.Instance))
+            await using (var client = new LockdownClient(protocol.Object, NullLogger<LockdownClient>.Instance))
             {
                 var value = await client.GetValueAsync("my-key", default).ConfigureAwait(false);
                 Assert.Equal("my-value", value);
@@ -83,7 +82,7 @@ namespace Kaponata.iOS.Tests.Lockdown
                 .Setup(p => p.ReadMessageAsync(default))
                 .ReturnsAsync(dict);
 
-            await using (var client = new LockdownClient(protocol.Object, Mock.Of<MuxerClient>(), new MuxerDevice(), NullLogger<LockdownClient>.Instance))
+            await using (var client = new LockdownClient(protocol.Object, NullLogger<LockdownClient>.Instance))
             {
                 var value = await client.GetValueAsync<string>("my-domain", "my-key", default).ConfigureAwait(false);
                 Assert.Equal("my-value", value);
@@ -120,7 +119,7 @@ namespace Kaponata.iOS.Tests.Lockdown
                 .Setup(p => p.ReadMessageAsync(default))
                 .ReturnsAsync(dict);
 
-            await using (var client = new LockdownClient(protocol.Object, Mock.Of<MuxerClient>(), new MuxerDevice(), NullLogger<LockdownClient>.Instance))
+            await using (var client = new LockdownClient(protocol.Object, NullLogger<LockdownClient>.Instance))
             {
                 await Assert.ThrowsAsync<LockdownException>(() => client.GetValueAsync<string>("my-domain", "my-key", default)).ConfigureAwait(false);
             }
@@ -161,7 +160,7 @@ namespace Kaponata.iOS.Tests.Lockdown
                 .Setup(p => p.ReadMessageAsync(default))
                 .ReturnsAsync(dict);
 
-            await using (var client = new LockdownClient(protocol.Object, Mock.Of<MuxerClient>(), new MuxerDevice(), NullLogger<LockdownClient>.Instance))
+            await using (var client = new LockdownClient(protocol.Object, NullLogger<LockdownClient>.Instance))
             {
                 var result = await client.GetPublicKeyAsync(default).ConfigureAwait(false);
                 Assert.Equal(key, result);

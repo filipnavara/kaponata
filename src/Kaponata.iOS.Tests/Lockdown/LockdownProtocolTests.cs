@@ -3,6 +3,7 @@
 // </copyright>
 
 using Kaponata.iOS.Lockdown;
+using Microsoft.Extensions.Logging.Abstractions;
 using System;
 using System.IO;
 using System.Threading;
@@ -23,7 +24,7 @@ namespace Kaponata.iOS.Tests.Lockdown
         [Fact]
         public async Task WriteMessageAsync_ValidatesArgumentsAsync()
         {
-            await using (var protocol = new LockdownProtocol(Stream.Null, false))
+            await using (var protocol = new LockdownProtocol(Stream.Null, false, NullLogger.Instance))
             {
                 await Assert.ThrowsAsync<ArgumentNullException>(() => protocol.WriteMessageAsync(null, default)).ConfigureAwait(false);
             }
