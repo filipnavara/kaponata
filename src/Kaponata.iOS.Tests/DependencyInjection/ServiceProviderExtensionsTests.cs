@@ -3,6 +3,7 @@
 // </copyright>
 
 using Kaponata.iOS.DependencyInjection;
+using Kaponata.iOS.Lockdown;
 using Kaponata.iOS.Muxer;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
@@ -147,6 +148,39 @@ namespace Kaponata.iOS.Tests.DependencyInjection
             {
                 var context = scope.ServiceProvider.GetRequiredService<DeviceContext>();
                 Assert.Same(device, context.Device);
+            }
+        }
+
+        /// <summary>
+        /// The <see cref="ServiceProviderExtensions.StartServiceAsync{T}(IServiceProvider, string, CancellationToken)"/> method works correctly.
+        /// </summary>
+        /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
+        [Fact]
+        public async Task StartServiceAsync_Works_Async()
+        {
+            var device = new MuxerDevice() { Udid = "2" };
+
+            var muxer = new Mock<MuxerClient>(MockBehavior.Strict);
+            muxer
+                .Setup(m => m.ListDevicesAsync(default))
+                .ReturnsAsync(new Collection<MuxerDevice>() { device });
+
+            var client = new Mock<LockdownClient>(MockBehavior.Strict);
+
+            var factory = new Mock<ClientFactory<LockdownClient>>(MockBehavior.Strict);
+            factory.Setup(f => f.CreateAsync(default)).ReturnsAsync(client.Object);
+
+            var provider = new ServiceCollection()
+                .AddSingleton<MuxerClient>(muxer.Object)
+                .AddScoped<DeviceContext>()
+                .AddScoped<ClientFactory<LockdownClient>>((sp) => factory.Object)
+                .BuildServiceProvider();
+
+            using (var context = await provider.StartServiceAsync<LockdownClient>("2", default).ConfigureAwait(false))
+            {
+                Assert.Same(device, context.Device);
+                Assert.NotNull(context.Scope);
+                Assert.Same(client.Object, context.Service);
             }
         }
     }
