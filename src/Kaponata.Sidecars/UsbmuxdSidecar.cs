@@ -102,9 +102,12 @@ namespace Kaponata.Sidecars
 
                 foreach (var muxerDevice in muxerDevices)
                 {
-                    // TODO - to discuss: Figure out whether the device is trusted by creating a Lockdown connection.
                     this.logger.LogInformation("Processing device {device}", muxerDevice.Udid);
                     var kubernetesDevice = kubernetesDevices.Items.SingleOrDefault(d => string.Equals(d.Metadata.Name, muxerDevice.Udid, StringComparison.OrdinalIgnoreCase));
+
+                    // Pairing records can be stored at both the cluster level and locally. Use the first pairing record which is valid, and make sure the cluster
+                    // and local records are in sync.
+                    var usbmuxdPairingRecord = await this.muxerClient.ReadPairingRecordAsync(muxerDevice.Udid, cancellationToken).ConfigureAwait(false);
 
                     if (kubernetesDevice == null)
                     {
@@ -166,19 +169,19 @@ namespace Kaponata.Sidecars
             await this.ReconcileAsync(stoppingToken);
 
             await this.muxerClient.ListenAsync(
-                async (attached) =>
+                async (attached, ct) =>
                 {
                     this.logger.LogInformation("Got an attached message for device {deviceId} ({udid}). Starting reconcilation.", attached.DeviceID, attached.Properties.SerialNumber);
                     await this.ReconcileAsync(stoppingToken);
                     return MuxerListenAction.ContinueListening;
                 },
-                async (detached) =>
+                async (detached, ct) =>
                 {
                     this.logger.LogInformation("Got a detached message for device {deviceId}. Starting reconcilation.", detached.DeviceID);
                     await this.ReconcileAsync(stoppingToken);
                     return MuxerListenAction.ContinueListening;
                 },
-                async (trusted) =>
+                async (trusted, ct) =>
                 {
                     this.logger.LogInformation("Got a trusted message for device {deviceId} ({udid}). Starting reconcilation.", trusted.DeviceID);
                     await this.ReconcileAsync(stoppingToken);
