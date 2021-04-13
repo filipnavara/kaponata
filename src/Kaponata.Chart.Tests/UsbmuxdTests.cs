@@ -185,7 +185,7 @@ namespace Kaponata.Chart.Tests
                 var pairingRecord = await muxerClient.ReadPairingRecordAsync(udid, default).ConfigureAwait(false);
                 Assert.Null(pairingRecord);
 
-                pairingRecord = PairingRecordGenerator.Generate(key, systemBuid);
+                pairingRecord = new PairingRecordGenerator().Generate(key, systemBuid);
                 await muxerClient.SavePairingRecordAsync(udid, pairingRecord, default).ConfigureAwait(false);
 
                 var muxerPairingRecord = await muxerClient.ReadPairingRecordAsync(udid, default).ConfigureAwait(false);

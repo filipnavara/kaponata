@@ -26,6 +26,7 @@ namespace Kaponata.iOS.DependencyInjection
         public static IServiceCollection AddAppleServices(this IServiceCollection services)
         {
             services.AddSingleton<MuxerClient>();
+            services.AddSingleton<PairingRecordGenerator>();
 
             services.AddScoped<DeviceContext>();
 

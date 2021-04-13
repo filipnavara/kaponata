@@ -22,8 +22,8 @@ namespace Kaponata.iOS.Tests.Lockdown
         [Fact]
         public void Generate_ValidatesArguments()
         {
-            Assert.Throws<ArgumentNullException>("devicePublicKey", () => PairingRecordGenerator.Generate(null, "test"));
-            Assert.Throws<ArgumentNullException>("systemBuid", () => PairingRecordGenerator.Generate(Array.Empty<byte>(), null));
+            Assert.Throws<ArgumentNullException>("devicePublicKey", () => new PairingRecordGenerator().Generate(null, "test"));
+            Assert.Throws<ArgumentNullException>("systemBuid", () => new PairingRecordGenerator().Generate(Array.Empty<byte>(), null));
         }
 
         /// <summary>
@@ -53,7 +53,7 @@ namespace Kaponata.iOS.Tests.Lockdown
                 "QUhidUx6M1VWOHpDdG5wOFNiUzRBWmFnNkR6dzMrakJRSURBUUFCCi0tLS0tRU5EIFJT" +
                 "QSBQVUJMSUMgS0VZLS0tLS0=");
 
-            var pairingRecord = PairingRecordGenerator.Generate(key, udid, "system-buid");
+            var pairingRecord = new PairingRecordGenerator().Generate(key, udid, "system-buid");
 
             Assert.NotNull(pairingRecord.DeviceCertificate);
             Assert.NotNull(pairingRecord.HostCertificate);
