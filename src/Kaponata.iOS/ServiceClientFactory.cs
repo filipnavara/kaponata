@@ -20,7 +20,7 @@ namespace Kaponata.iOS
     /// </typeparam>
     public abstract class ServiceClientFactory<T> : ClientFactory<T>
     {
-        private readonly LockdownClientFactory factory;
+        private readonly ClientFactory<LockdownClient> factory;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ServiceClientFactory{T}"/> class.
@@ -38,7 +38,7 @@ namespace Kaponata.iOS
         /// <param name="logger">
         /// A <see cref="ILogger"/> which can be used when logging.
         /// </param>
-        public ServiceClientFactory(MuxerClient muxer, DeviceContext context, LockdownClientFactory lockdownClientFactory, ILogger<T> logger)
+        public ServiceClientFactory(MuxerClient muxer, DeviceContext context, ClientFactory<LockdownClient> lockdownClientFactory, ILogger<T> logger)
             : base(muxer, context, logger)
         {
             this.factory = lockdownClientFactory ?? throw new ArgumentNullException(nameof(lockdownClientFactory));
