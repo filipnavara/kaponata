@@ -33,6 +33,14 @@ namespace Kaponata.iOS.Lockdown
         {
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref=" LockdownClientFactory"/> class. Intended
+        /// for mocking purposes only.
+        /// </summary>
+        protected LockdownClientFactory()
+        {
+        }
+
         /// <inheritdoc/>
         public override async Task<LockdownClient> CreateAsync(CancellationToken cancellationToken)
         {
