@@ -74,9 +74,21 @@ namespace Kaponata.iOS.Lockdown
         /// A <see cref="CancellationToken"/> which can be used to cancel the asynchronous operation.
         /// </param>
         /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-        public Task<byte[]> GetPublicKeyAsync(CancellationToken cancellationToken)
+        public virtual Task<byte[]> GetPublicKeyAsync(CancellationToken cancellationToken)
         {
             return this.GetValueAsync<byte[]>(null, "DevicePublicKey", cancellationToken);
+        }
+
+        /// <summary>
+        /// Asynchronously gets the WiFi address of a device.
+        /// </summary>
+        /// <param name="cancellationToken">
+        /// A <see cref="CancellationToken"/> which can be used to cancel the asynchronous operation.
+        /// </param>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+        public virtual Task<string> GetWifiAddressAsync(CancellationToken cancellationToken)
+        {
+            return this.GetValueAsync("WiFiAddress", cancellationToken);
         }
     }
 }

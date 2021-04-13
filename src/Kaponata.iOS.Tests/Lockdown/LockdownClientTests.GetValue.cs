@@ -166,5 +166,40 @@ namespace Kaponata.iOS.Tests.Lockdown
                 Assert.Equal(key, result);
             }
         }
+
+        /// <summary>
+        /// Tests the <see cref="LockdownClient.GetWifiAddressAsync(CancellationToken)"/> method.
+        /// </summary>
+        /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
+        [Fact]
+        public async Task GetWifiAddress_Works_Async()
+        {
+            var dict = new NSDictionary();
+            dict.Add("Request", "GetValue");
+            dict.Add("Key", "WiFiAddress");
+            dict.Add("Value", "aa:bb:cc");
+
+            var protocol = new Mock<LockdownProtocol>(MockBehavior.Strict);
+            protocol
+                .Setup(p => p.WriteMessageAsync(It.IsAny<LockdownMessage>(), default))
+                .Callback<LockdownMessage, CancellationToken>(
+                (message, cancellationToken) =>
+                {
+                    var getValueRequest = Assert.IsType<GetValueRequest>(message);
+                    Assert.Null(getValueRequest.Domain);
+                    Assert.Equal("WiFiAddress", getValueRequest.Key);
+                })
+                .Returns(Task.CompletedTask);
+
+            protocol
+                .Setup(p => p.ReadMessageAsync(default))
+                .ReturnsAsync(dict);
+
+            await using (var client = new LockdownClient(protocol.Object, NullLogger<LockdownClient>.Instance))
+            {
+                var result = await client.GetWifiAddressAsync(default).ConfigureAwait(false);
+                Assert.Equal("aa:bb:cc", result);
+            }
+        }
     }
 }

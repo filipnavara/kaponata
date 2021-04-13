@@ -24,7 +24,7 @@ namespace Kaponata.iOS.Lockdown
         /// operation.
         /// </param>
         /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-        public Task<PairingResult> PairAsync(PairingRecord pairingRecord, CancellationToken cancellationToken)
+        public virtual Task<PairingResult> PairAsync(PairingRecord pairingRecord, CancellationToken cancellationToken)
         {
             return this.PairAsync(
                 "Pair",
@@ -47,7 +47,7 @@ namespace Kaponata.iOS.Lockdown
         /// operation.
         /// </param>
         /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-        public Task<PairingResult> UnpairAsync(PairingRecord pairingRecord, CancellationToken cancellationToken)
+        public virtual Task<PairingResult> UnpairAsync(PairingRecord pairingRecord, CancellationToken cancellationToken)
         {
             return this.PairAsync("Unpair", pairingRecord, null, cancellationToken);
         }
@@ -63,7 +63,7 @@ namespace Kaponata.iOS.Lockdown
         /// operation.
         /// </param>
         /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-        public Task<PairingResult> ValidatePairAsync(PairingRecord pairingRecord, CancellationToken cancellationToken)
+        public virtual Task<PairingResult> ValidatePairAsync(PairingRecord pairingRecord, CancellationToken cancellationToken)
         {
             return this.PairAsync("ValidatePair", pairingRecord, null, cancellationToken);
         }
