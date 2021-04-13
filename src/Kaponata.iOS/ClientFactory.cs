@@ -75,5 +75,21 @@ namespace Kaponata.iOS
         /// newly created <typeparamref name="T"/> service client when completed.
         /// </returns>
         public abstract Task<T> CreateAsync(CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Asynchronously creates a new instance of the <typeparamref name="T"/> client.
+        /// </summary>
+        /// <param name="serviceName">
+        /// The name of the service to which to connect.
+        /// </param>
+        /// <param name="cancellationToken">
+        /// A <see cref="CancellationToken"/> which can be used to cancel the asynchronous
+        /// operation.
+        /// </param>
+        /// <returns>
+        /// A <see cref="Task"/> which represents the asynchronous operation, and returns the
+        /// newly created <typeparamref name="T"/> service client when completed.
+        /// </returns>
+        public abstract Task<T> CreateAsync(string serviceName, CancellationToken cancellationToken);
     }
 }
