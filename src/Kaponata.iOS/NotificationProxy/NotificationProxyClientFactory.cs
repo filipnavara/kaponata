@@ -31,7 +31,7 @@ namespace Kaponata.iOS.NotificationProxy
         /// <param name="logger">
         /// A <see cref="ILogger"/> which can be used when logging.
         /// </param>
-        public NotificationProxyClientFactory(MuxerClient muxer, DeviceContext context, LockdownClientFactory lockdownClientFactory, ILogger<NotificationProxyClient> logger)
+        public NotificationProxyClientFactory(MuxerClient muxer, DeviceContext context, ClientFactory<LockdownClient> lockdownClientFactory, ILogger<NotificationProxyClient> logger)
             : base(muxer, context, lockdownClientFactory, logger)
         {
         }
