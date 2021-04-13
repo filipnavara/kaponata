@@ -38,6 +38,7 @@ namespace Kaponata.iOS.Tests.Muxer
         {
             var protocol = new Mock<MuxerProtocol>();
             var client = new Mock<MuxerClient>();
+            client.Setup(c => c.ReadBuidAsync(default)).CallBase();
             client.Setup(c => c.TryConnectToMuxerAsync(default)).ReturnsAsync(protocol.Object);
 
             protocol
