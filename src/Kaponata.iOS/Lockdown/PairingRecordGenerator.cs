@@ -3,6 +3,7 @@
 // </copyright>
 
 using System;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Security.Cryptography;
@@ -155,12 +156,8 @@ namespace Kaponata.iOS.Lockdown
 
             public override byte[] GetSignatureAlgorithmIdentifier(HashAlgorithmName hashAlgorithm)
             {
-                if (hashAlgorithm == HashAlgorithmName.SHA1)
-                {
-                    return new byte[] { 0x30, 0x0D, 0x06, 0x09, 0x2A, 0x86, 0x48, 0x86, 0xF7, 0x0D, 0x01, 0x01, 0x05, 0x05, 0x00 };
-                }
-
-                throw new NotSupportedException();
+                Debug.Assert(hashAlgorithm == HashAlgorithmName.SHA1, "Only SHA1 hashes are supported");
+                return new byte[] { 0x30, 0x0D, 0x06, 0x09, 0x2A, 0x86, 0x48, 0x86, 0xF7, 0x0D, 0x01, 0x01, 0x05, 0x05, 0x00 };
             }
 
             public override byte[] SignData(byte[] data, HashAlgorithmName hashAlgorithm) =>
