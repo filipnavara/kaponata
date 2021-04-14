@@ -58,6 +58,18 @@ namespace Kaponata.iOS.Tests.Muxer
         }
 
         /// <summary>
+        /// The <see cref="MuxerProtocol"/> constructor initializes the <see cref="MuxerProtocol.Stream"/> property.
+        /// </summary>
+        /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
+        [Fact]
+        public async Task Constructor_InitializesProperties_Async()
+        {
+            await using var protocol = new MuxerProtocol(Stream.Null, ownsStream: false, NullLogger<MuxerProtocol>.Instance);
+
+            Assert.Equal(Stream.Null, protocol.Stream);
+        }
+
+        /// <summary>
         /// The <see cref="MuxerProtocol.WriteMessageAsync(MuxerMessage, CancellationToken)"/> method checks for <see langword="null"/>
         /// values.
         /// </summary>
