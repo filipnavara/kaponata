@@ -65,6 +65,24 @@ namespace Kaponata.iOS.Tests.Lockdown
         }
 
         /// <summary>
+        /// <see cref="PairingRecord.ToPropertyList(bool)"/> correctly serializes the pairing record when the private
+        /// keys are not available.
+        /// </summary>
+        [Fact]
+        public void ToPropertyList_NoPrivateKeys_Works()
+        {
+            var raw = File.ReadAllText("Lockdown/0123456789abcdef0123456789abcdef01234567.plist");
+            var dict = (NSDictionary)XmlPropertyListParser.ParseString(raw);
+
+            var pairingRecord = PairingRecord.Read(dict);
+            pairingRecord.HostPrivateKey = null;
+            pairingRecord.RootPrivateKey = null;
+            var serializedDict = pairingRecord.ToPropertyList();
+
+            Assert.Equal(dict.Keys.Count - 2, serializedDict.Keys.Count);
+        }
+
+        /// <summary>
         /// <see cref="PairingRecord.ToPropertyList(bool)"/> correctly serializes the pairing record.
         /// </summary>
         [Fact]

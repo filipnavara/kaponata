@@ -21,6 +21,11 @@ namespace Kaponata.iOS.Lockdown
         /// </summary>
         public const int LockdownPort = 0xF27E;
 
+        /// <summary>
+        /// The name of the lockdown service.
+        /// </summary>
+        public const string ServiceName = "com.apple.mobile.lockdown";
+
         private readonly LockdownProtocol protocol;
 
         private readonly ILogger<LockdownClient> logger;

@@ -4,7 +4,6 @@
 
 using Kaponata.iOS.Muxer;
 using Microsoft.Extensions.Logging;
-using System;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -51,9 +50,9 @@ namespace Kaponata.iOS.Lockdown
             // Make sure we are really connected to lockdown
             var type = await client.QueryTypeAsync(cancellationToken).ConfigureAwait(false);
 
-            if (type != "com.apple.mobile.lockdown")
+            if (type != LockdownClient.ServiceName)
             {
-                throw new InvalidOperationException($"Expected a connection to Lockdown but got a connection to '{type}' instead");
+                throw new LockdownException($"Expected a connection to Lockdown but got a connection to '{type}' instead");
             }
 
             return client;
