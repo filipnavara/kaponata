@@ -3,6 +3,7 @@
 // </copyright>
 
 using Claunia.PropertyList;
+using Divergic.Logging.Xunit;
 using Kaponata.iOS.PropertyLists;
 using Microsoft.Extensions.Logging.Abstractions;
 using System;
@@ -108,6 +109,50 @@ namespace Kaponata.iOS.Tests.PropertyLists
             {
                 Assert.Null(await protocol.ReadMessageAsync(default).ConfigureAwait(false));
             }
+        }
+
+        /// <summary>
+        /// <see cref="PropertyListProtocol.WriteMessageAsync(NSDictionary, CancellationToken)"/> properly logs data sent over the wire.
+        /// </summary>
+        /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
+        [Fact]
+        public async Task WriteMessageAsync_Logs_Async()
+        {
+            using var logger = new CacheLogger();
+            await using var protocol = new PropertyListProtocol(Stream.Null, false, logger);
+
+            var dict = new NSDictionary();
+            dict.Add("Foo", "Bar");
+
+            await protocol.WriteMessageAsync(dict, default).ConfigureAwait(false);
+
+            var entry = Assert.Single(logger.Entries);
+            Assert.Equal(
+                "Sending data:\n<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">\n<plist version=\"1.0\">\n<dict>\n	<key>Foo</key>\n	<string>Bar</string>\n</dict>\n</plist>\n",
+                entry.Message,
+                ignoreLineEndingDifferences: true,
+                ignoreWhiteSpaceDifferences: true);
+        }
+
+        /// <summary>
+        /// <see cref="PropertyListProtocol.ReadMessageAsync(CancellationToken)"/> property logs data sent over the wire.
+        /// </summary>
+        /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
+        [Fact]
+        public async Task ReadMessageAsync_Logs_Async()
+        {
+            using var logger = new CacheLogger();
+            await using var stream = File.OpenRead("PropertyLists/message.bin");
+            await using var protocol = new PropertyListProtocol(stream, false, logger);
+
+            await protocol.ReadMessageAsync(default).ConfigureAwait(false);
+
+            var entry = Assert.Single(logger.Entries);
+            Assert.Equal(
+                "Recieving data:\n<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">\n<plist version=\"1.0\">\n<dict>\n	<key>Request</key>\n	<string>QueryType</string>\n</dict>\n</plist>\n",
+                entry.Message,
+                ignoreLineEndingDifferences: true,
+                ignoreWhiteSpaceDifferences: true);
         }
     }
 }

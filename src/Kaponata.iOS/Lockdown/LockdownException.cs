@@ -15,6 +15,7 @@ namespace Kaponata.iOS.Lockdown
         /// Initializes a new instance of the <see cref="LockdownException"/> class.
         /// </summary>
         public LockdownException()
+            : base("An unknown lockdown error occurred")
         {
         }
 
