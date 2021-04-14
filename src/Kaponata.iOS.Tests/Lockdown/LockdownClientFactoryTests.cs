@@ -54,5 +54,28 @@ namespace Kaponata.iOS.Tests.Lockdown
                 }
             }
         }
+
+        /// <summary>
+        /// The <see cref="LockdownClientFactory.CreateAsync(CancellationToken)"/> method works.
+        /// </summary>
+        /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
+        [Fact]
+        public async Task Connect_InvalidResponse_Throws_Async()
+        {
+            // Sample traffic from https://www.theiphonewiki.com/wiki/Usbmux ("lockdownd protocol")
+            var muxer = new Mock<MuxerClient>();
+            var device = new MuxerDevice();
+
+            using (var traceStream = new TraceStream("Lockdown/connect-device-invalid.bin", "Lockdown/connect-host.bin"))
+            {
+                muxer
+                    .Setup(m => m.ConnectAsync(device, 0xF27E, default))
+                    .ReturnsAsync(traceStream);
+
+                var factory = new LockdownClientFactory(muxer.Object, new DeviceContext() { Device = device }, NullLogger<LockdownClient>.Instance);
+
+                await Assert.ThrowsAsync<LockdownException>(() => factory.CreateAsync(default)).ConfigureAwait(false);
+            }
+        }
     }
 }
