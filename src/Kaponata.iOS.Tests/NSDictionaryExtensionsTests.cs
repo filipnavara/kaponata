@@ -39,6 +39,19 @@ namespace Kaponata.iOS.Tests
         }
 
         /// <summary>
+        /// <see cref="NSDictionaryExtensions.GetStringArray(NSDictionary, string)"/> throws an exception when
+        /// the array contains values which are not strings.
+        /// </summary>
+        [Fact]
+        public void GetStringArray_NSArrayOfInvalid_ReturnsValue()
+        {
+            var dict = new NSDictionary();
+            dict.Add("foo", new NSNumber(1));
+
+            Assert.Throws<ArgumentOutOfRangeException>(() => dict.GetStringArray("foo"));
+        }
+
+        /// <summary>
         /// <see cref="NSDictionaryExtensions.GetStringArray(NSDictionary, string)"/> returns the correct value
         /// if the entry is a <see cref="NSArray"/> of <see cref=" NSString"/> objects.
         /// </summary>
