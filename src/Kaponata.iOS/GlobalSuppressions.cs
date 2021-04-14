@@ -10,4 +10,5 @@ using System.Diagnostics.CodeAnalysis;
 [assembly: SuppressMessage("StyleCop.CSharp.NamingRules", "SA1300:Element should begin with upper-case letter", Justification = "Standard iOS spelling", Scope = "namespace", Target = "~N:Kaponata.iOS.PropertyLists")]
 [assembly: SuppressMessage("StyleCop.CSharp.NamingRules", "SA1300:Element should begin with upper-case letter", Justification = "Standard iOS spelling", Scope = "namespace", Target = "~N:Kaponata.iOS.NotificationProxy")]
 [assembly: SuppressMessage("StyleCop.CSharp.NamingRules", "SA1300:Element should begin with upper-case letter", Justification = "Standard iOS spelling", Scope = "namespace", Target = "~N:Kaponata.iOS.Lockdown")]
+[assembly: SuppressMessage("StyleCop.CSharp.NamingRules", "SA1300:Element should begin with upper-case letter", Justification = "Standard iOS spelling", Scope = "namespace", Target = "~N:Kaponata.iOS.Workers")]
 [assembly: SuppressMessage("StyleCop.CSharp.NamingRules", "SA1300:Element should begin with upper-case letter", Justification = "Standard iOS spelling", Scope = "namespace", Target = "~N:Kaponata.iOS.DependencyInjection")]

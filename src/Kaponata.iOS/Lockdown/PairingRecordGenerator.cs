@@ -13,7 +13,7 @@ namespace Kaponata.iOS.Lockdown
     /// <summary>
     /// Generates a pairing record which can be used to pair a usbmuxd host with a device.
     /// </summary>
-    public static class PairingRecordGenerator
+    public class PairingRecordGenerator
     {
         private const int KeySize = 2048;
         private static readonly X500DistinguishedName Name = new X500DistinguishedName(string.Empty);
@@ -30,9 +30,9 @@ namespace Kaponata.iOS.Lockdown
         /// <returns>
         /// A new <see cref="PairingRecord"/> which can be used to pair the host with the device.
         /// </returns>
-        public static PairingRecord Generate(byte[] devicePublicKey, string systemBuid)
+        public virtual PairingRecord Generate(byte[] devicePublicKey, string systemBuid)
         {
-            return Generate(devicePublicKey, null, systemBuid);
+            return this.Generate(devicePublicKey, null, systemBuid);
         }
 
         /// <summary>
@@ -54,7 +54,7 @@ namespace Kaponata.iOS.Lockdown
         /// <returns>
         /// A new <see cref="PairingRecord"/> which can be used to pair the host with the device.
         /// </returns>
-        public static PairingRecord Generate(byte[] devicePublicKey, string udid, string systemBuid)
+        public virtual PairingRecord Generate(byte[] devicePublicKey, string udid, string systemBuid)
         {
             if (devicePublicKey == null)
             {

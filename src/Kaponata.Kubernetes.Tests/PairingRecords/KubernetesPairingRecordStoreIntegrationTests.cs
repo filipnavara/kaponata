@@ -53,7 +53,7 @@ namespace Kaponata.Kubernetes.Tests.PairingRecords
             var udid = "pairingrecord-lifecycle";
             var buid = Guid.NewGuid().ToString();
 
-            var record = PairingRecordGenerator.Generate(key, buid);
+            var record = new PairingRecordGenerator().Generate(key, buid);
 
             using (var client = this.CreateKubernetesClient())
             {

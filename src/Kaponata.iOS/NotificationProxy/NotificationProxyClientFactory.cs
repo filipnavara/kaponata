@@ -40,21 +40,8 @@ namespace Kaponata.iOS.NotificationProxy
         public override Task<NotificationProxyClient> CreateAsync(CancellationToken cancellationToken)
             => this.CreateAsync(NotificationProxyClient.ServiceName, cancellationToken);
 
-        /// <summary>
-        /// Asynchronously creates a new instance of the <see cref="NotificationProxyClient"/> client.
-        /// </summary>
-        /// <param name="serviceName">
-        /// The name of the service to which to connect.
-        /// </param>
-        /// <param name="cancellationToken">
-        /// A <see cref="CancellationToken"/> which can be used to cancel the asynchronous
-        /// operation.
-        /// </param>
-        /// <returns>
-        /// A <see cref="Task"/> which represents the asynchronous operation, and returns the
-        /// newly created <see cref="NotificationProxyClient"/> service client when completed.
-        /// </returns>
-        public async Task<NotificationProxyClient> CreateAsync(string serviceName, CancellationToken cancellationToken)
+        /// <inheritdoc/>
+        public override async Task<NotificationProxyClient> CreateAsync(string serviceName, CancellationToken cancellationToken)
         {
             var serviceStream = await this.StartServiceAsync(serviceName, cancellationToken);
             return new NotificationProxyClient(serviceStream, this.Logger);

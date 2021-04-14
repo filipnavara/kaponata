@@ -57,5 +57,8 @@ namespace Kaponata.iOS.Lockdown
 
             return client;
         }
+
+        /// <inheritdoc/>
+        public override Task<LockdownClient> CreateAsync(string serviceName, CancellationToken cancellationToken) => this.CreateAsync(cancellationToken);
     }
 }

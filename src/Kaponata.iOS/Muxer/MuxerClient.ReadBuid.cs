@@ -22,7 +22,7 @@ namespace Kaponata.iOS.Muxer
         /// A <see cref="Task"/> representing the asynchronous operation. The result of the task is the BUID
         /// of the usbmuxd instance.
         /// </returns>
-        public async Task<string> ReadBuidAsync(CancellationToken cancellationToken)
+        public virtual async Task<string> ReadBuidAsync(CancellationToken cancellationToken)
         {
             // On Linux, usbmuxd is not running if no devices are connected. In this scenario,
             // TryConnect() will return null. Don't error out but return an empty list instead.

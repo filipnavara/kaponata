@@ -50,7 +50,7 @@ namespace Kaponata.Kubernetes.Tests.PairingRecords
                 "T2FmNVhEQworZWFZeGdjWTYvbjBXODNrSklXMGF0czhMWmUwTW9XNXpXSTh6cnM4eDIw" +
                 "UFFJK1RGU1p4QWdNQkFBRT0KLS0tLS1FTkQgUlNBIFBVQkxJQyBLRVktLS0tLQo=");
 
-            var pairingRecord = PairingRecordGenerator.Generate(key, systemBuid);
+            var pairingRecord = new PairingRecordGenerator().Generate(key, systemBuid);
             var secret = V1SecretExtensions.AsSecret(pairingRecord);
 
             Assert.NotNull(secret.Data["ca.crt"]);
@@ -89,7 +89,7 @@ namespace Kaponata.Kubernetes.Tests.PairingRecords
                 "T2FmNVhEQworZWFZeGdjWTYvbjBXODNrSklXMGF0czhMWmUwTW9XNXpXSTh6cnM4eDIw" +
                 "UFFJK1RGU1p4QWdNQkFBRT0KLS0tLS1FTkQgUlNBIFBVQkxJQyBLRVktLS0tLQo=");
 
-            var pairingRecord = PairingRecordGenerator.Generate(key, systemBuid);
+            var pairingRecord = new PairingRecordGenerator().Generate(key, systemBuid);
             pairingRecord.EscrowBag = new byte[] { 1, 2, 3, 4 };
             pairingRecord.WiFiMacAddress = "aa:bb:cc:dd";
 

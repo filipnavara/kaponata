@@ -103,7 +103,7 @@ namespace Kaponata.Kubernetes.Tests.PairingRecords
                 "T2FmNVhEQworZWFZeGdjWTYvbjBXODNrSklXMGF0czhMWmUwTW9XNXpXSTh6cnM4eDIw" +
                 "UFFJK1RGU1p4QWdNQkFBRT0KLS0tLS1FTkQgUlNBIFBVQkxJQyBLRVktLS0tLQo=");
 
-            var pairingRecord = PairingRecordGenerator.Generate(key, "abc");
+            var pairingRecord = new PairingRecordGenerator().Generate(key, "abc");
             var secret = pairingRecord.AsSecret();
 
             var client = new Mock<KubernetesClient>(MockBehavior.Strict);
@@ -141,7 +141,7 @@ namespace Kaponata.Kubernetes.Tests.PairingRecords
                 "T2FmNVhEQworZWFZeGdjWTYvbjBXODNrSklXMGF0czhMWmUwTW9XNXpXSTh6cnM4eDIw" +
                 "UFFJK1RGU1p4QWdNQkFBRT0KLS0tLS1FTkQgUlNBIFBVQkxJQyBLRVktLS0tLQo=");
 
-            var pairingRecord = PairingRecordGenerator.Generate(key, "abc");
+            var pairingRecord = new PairingRecordGenerator().Generate(key, "abc");
             var secret = pairingRecord.AsSecret();
 
             var client = new Mock<KubernetesClient>(MockBehavior.Strict);

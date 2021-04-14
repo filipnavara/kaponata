@@ -54,6 +54,14 @@ namespace Kaponata.iOS.NotificationProxy
         }
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="NotificationProxyClient"/> class. Intended for unit
+        /// testing purposes only.
+        /// </summary>
+        protected NotificationProxyClient()
+        {
+        }
+
+        /// <summary>
         /// Instructs the device to start observing a specific notification.
         /// </summary>
         /// <param name="name">
@@ -107,7 +115,14 @@ namespace Kaponata.iOS.NotificationProxy
         /// <inheritdoc/>
         public ValueTask DisposeAsync()
         {
-            return this.protocol.DisposeAsync();
+            if (this.protocol == null)
+            {
+                return ValueTask.CompletedTask;
+            }
+            else
+            {
+                return this.protocol.DisposeAsync();
+            }
         }
     }
 }
