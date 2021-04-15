@@ -2,6 +2,8 @@
 
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
+    <Description>Kaponata.iOS is a .NET library that allows .NET and .NET Core applications to communicate with iOS devices, such as iPhones or iPads, using C# or VB.NET.</Description>
+    <PackageTags>ios;iphone;ipad;imobiledevice;usbmuxd;lockdown</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>
