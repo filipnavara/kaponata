@@ -3,7 +3,9 @@
 // </copyright>
 
 using Claunia.PropertyList;
+using Kaponata.iOS.DependencyInjection;
 using Kaponata.iOS.Lockdown;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using System;
@@ -113,6 +115,41 @@ namespace Kaponata.iOS.Tests.Lockdown
         }
 
         /// <summary>
+        /// <see cref="LockdownClient.StartSessionAsync(PairingRecord, CancellationToken)"/> enables SSL when required.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="Task"/> representing the asynchronous unit test.
+        /// </returns>
+        [Fact]
+        public async Task TryStartSessionAsync_EnablesSsl_Async()
+        {
+            var pairingRecord = new PairingRecord();
+            var protocol = new Mock<LockdownProtocol>(MockBehavior.Strict);
+
+            protocol
+                .Setup(p => p.WriteMessageAsync(It.IsAny<LockdownMessage>(), default))
+                .Returns(Task.CompletedTask);
+
+            var response = new NSDictionary();
+            response.Add("EnableSessionSSL", true);
+            protocol
+                .Setup(p => p.ReadMessageAsync(default))
+                .ReturnsAsync(response);
+
+            protocol
+                .Setup(p => p.EnableSslAsync(pairingRecord, default))
+                .Returns(Task.CompletedTask)
+                .Verifiable();
+
+            await using (var client = new LockdownClient(protocol.Object, NullLogger<LockdownClient>.Instance))
+            {
+                await client.StartSessionAsync(pairingRecord, default).ConfigureAwait(false);
+            }
+
+            protocol.Verify();
+        }
+
+        /// <summary>
         /// <see cref="LockdownClient.StopSessionAsync(string, CancellationToken)"/> validates its arguments.
         /// </summary>
         /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
@@ -156,5 +193,82 @@ namespace Kaponata.iOS.Tests.Lockdown
                     () => client.StopSessionAsync("1234", default)).ConfigureAwait(false);
             }
         }
+
+        /// <summary>
+        /// <see cref="LockdownClient.StopSessionAsync(string, CancellationToken)"/> disables SSL encryption
+        /// when SSL is enabled.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="Task"/> representing the asynchronous unit test.
+        /// </returns>
+        [Fact]
+        public async Task StopSessionAsync_DisablesSsl_Async()
+        {
+            var protocol = new Mock<LockdownProtocol>(MockBehavior.Strict);
+
+            protocol
+                .Setup(p => p.WriteMessageAsync(It.IsAny<LockdownMessage>(), default))
+                .Returns(Task.CompletedTask);
+
+            protocol
+                .Setup(p => p.SslEnabled)
+                .Returns(true);
+
+            protocol
+                .Setup(p => p.DisableSslAsync(default))
+                .Returns(Task.CompletedTask);
+
+            var response = new NSDictionary();
+            protocol
+                .Setup(p => p.ReadMessageAsync(default))
+                .ReturnsAsync(response);
+
+            await using (var client = new LockdownClient(protocol.Object, NullLogger<LockdownClient>.Instance))
+            {
+                await client.StopSessionAsync("1234", default).ConfigureAwait(false);
+            }
+
+            protocol.Verify();
+        }
+
+        /// <summary>
+        /// Tests the <see cref="LockdownClient.StartSessionAsync(PairingRecord, CancellationToken)"/> method by creating a session and ensuring
+        /// a protected property can be retreived.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="Task"/> representing the asynchronous unit test.
+        /// </returns>
+        [Fact(Skip = "Requires a device")]
+        public async Task StartSession_OverSsl_Works_Async()
+        {
+            var serviceProvider = new ServiceCollection()
+                .AddLogging()
+                .AddAppleServices()
+                .BuildServiceProvider();
+
+            using (var scope = await serviceProvider.CreateDeviceScopeAsync(null, default).ConfigureAwait(false))
+            await using (var lockdown = await scope.StartServiceAsync<LockdownClient>(default).ConfigureAwait(false))
+            {
+                var context = scope.ServiceProvider.GetRequiredService<DeviceContext>();
+
+                // Get a secured and an unsecured property
+                var name = await lockdown.GetValueAsync("DeviceName", default).ConfigureAwait(false);
+                await Assert.ThrowsAsync<LockdownException>(() => lockdown.GetValueAsync("SerialNumber", default)).ConfigureAwait(false);
+
+                // Start the session
+                var response = await lockdown.StartSessionAsync(context.PairingRecord, default).ConfigureAwait(false);
+
+                // Try getting a secured and unsecured property
+                name = await lockdown.GetValueAsync("DeviceName", default).ConfigureAwait(false);
+                var developerStatus = await lockdown.GetValueAsync("SerialNumber", default).ConfigureAwait(false);
+
+                // Stop the session
+                await lockdown.StopSessionAsync(response.SessionID, default).ConfigureAwait(false);
+
+                // Try getting a secured and unsecured proeprty.
+                name = await lockdown.GetValueAsync("DeviceName", default).ConfigureAwait(false);
+                await Assert.ThrowsAsync<LockdownException>(() => lockdown.GetValueAsync("SerialNumber", default)).ConfigureAwait(false);
+            }
     }
+}
 }

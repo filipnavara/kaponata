@@ -2,6 +2,7 @@
 // Copyright (c) Quamotion bv. All rights reserved.
 // </copyright>
 
+using Kaponata.iOS.Lockdown;
 using Kaponata.iOS.Muxer;
 
 namespace Kaponata.iOS
@@ -17,5 +18,10 @@ namespace Kaponata.iOS
         /// Gets or sets the device to which the session is scoped.
         /// </summary>
         public MuxerDevice Device { get; set; }
+
+        /// <summary>
+        /// Gets or sets the <see cref="PairingRecord"/> for this device, if available.
+        /// </summary>
+        public PairingRecord PairingRecord { get; set; }
     }
 }

@@ -17,7 +17,7 @@ namespace Kaponata.iOS.Tests.PropertyLists
     /// <summary>
     /// Tests the <see cref="PropertyListProtocol"/> class.
     /// </summary>
-    public class PropertyListProtocolTests
+    public partial class PropertyListProtocolTests
     {
         /// <summary>
         /// The <see cref="PropertyListProtocol"/> constructor validates its arguments.

@@ -73,7 +73,8 @@ namespace Kaponata.iOS.Tests.DependencyInjection
         [Fact]
         public async Task CreateDeviceScopeAsync_NoUdid_SingleDevice_WorksAsync()
         {
-            var device = new MuxerDevice();
+            var device = new MuxerDevice() { Udid = "udid" };
+            var pairingRecord = new PairingRecord();
 
             var muxer = new Mock<MuxerClient>(MockBehavior.Strict);
             muxer
@@ -82,6 +83,9 @@ namespace Kaponata.iOS.Tests.DependencyInjection
                 {
                     device,
                 });
+            muxer
+                .Setup(m => m.ReadPairingRecordAsync("udid", default))
+                .ReturnsAsync(pairingRecord);
 
             var provider = new ServiceCollection()
                 .AddSingleton<MuxerClient>(muxer.Object)
@@ -92,6 +96,7 @@ namespace Kaponata.iOS.Tests.DependencyInjection
             {
                 var context = scope.ServiceProvider.GetRequiredService<DeviceContext>();
                 Assert.Same(device, context.Device);
+                Assert.Same(pairingRecord, context.PairingRecord);
             }
         }
 
@@ -129,6 +134,7 @@ namespace Kaponata.iOS.Tests.DependencyInjection
         public async Task CreateDeviceScopeAsync_Udid_Match_ReturnsDeviceAsync()
         {
             var device = new MuxerDevice() { Udid = "2" };
+            var pairingRecord = new PairingRecord();
 
             var muxer = new Mock<MuxerClient>(MockBehavior.Strict);
             muxer
@@ -138,6 +144,9 @@ namespace Kaponata.iOS.Tests.DependencyInjection
                     new MuxerDevice() { Udid = "1" },
                     device,
                 });
+            muxer
+                .Setup(m => m.ReadPairingRecordAsync("2", default))
+                .ReturnsAsync(pairingRecord);
 
             var provider = new ServiceCollection()
                 .AddSingleton<MuxerClient>(muxer.Object)
@@ -148,6 +157,7 @@ namespace Kaponata.iOS.Tests.DependencyInjection
             {
                 var context = scope.ServiceProvider.GetRequiredService<DeviceContext>();
                 Assert.Same(device, context.Device);
+                Assert.Same(pairingRecord, context.PairingRecord);
             }
         }
 
@@ -159,11 +169,15 @@ namespace Kaponata.iOS.Tests.DependencyInjection
         public async Task StartServiceAsync_Works_Async()
         {
             var device = new MuxerDevice() { Udid = "2" };
+            var pairingRecord = new PairingRecord();
 
             var muxer = new Mock<MuxerClient>(MockBehavior.Strict);
             muxer
                 .Setup(m => m.ListDevicesAsync(default))
                 .ReturnsAsync(new Collection<MuxerDevice>() { device });
+            muxer
+                .Setup(m => m.ReadPairingRecordAsync("2", default))
+                .ReturnsAsync(pairingRecord);
 
             var client = new Mock<LockdownClient>(MockBehavior.Strict);
 

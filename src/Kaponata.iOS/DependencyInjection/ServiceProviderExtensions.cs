@@ -53,6 +53,8 @@ namespace Kaponata.iOS.DependencyInjection
             var context = scope.ServiceProvider.GetRequiredService<DeviceContext>();
             context.Device = devices[0];
 
+            context.PairingRecord = await muxer.ReadPairingRecordAsync(context.Device.Udid, cancellationToken).ConfigureAwait(false);
+
             return scope;
         }
 
