@@ -120,6 +120,14 @@ jobs:
           make
         working-directory: src/Kaponata.Sidecars/
 
+      - name: Package Kaponata.iOS NuGet packages
+        run: dotnet pack -c Release -o ${{ github.workspace }}/bin/nuget --include-source --include-symbols
+        working-directory: src/Kaponata.iOS/
+
+      - name: Package Kapoanta.Android NuGet packages
+        run: dotnet pack -c Release -o ${{ github.workspace }}/bin/nuget --include-source --include-symbols
+        working-directory: src/Kaponata.Android/
+
       - name: Package UI
         run: |
           export PATH="$PATH:/usr/local/lib/npm/bin/"
@@ -293,3 +301,11 @@ jobs:
           container_name: '$web'
           connection_string: ${{ secrets.CiStorageConnectionString }}
           sync: false
+
+      - name: Upload NuGet artifacts
+        uses: actions/upload-artifact@v2
+        if: always()
+        with:
+          name: nuget
+          path: |
+            ${{ github.workspace }}/bin/nuget/

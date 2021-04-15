@@ -1,6 +1,7 @@
 <Project>
   <ItemGroup>
     <PackageReference Include="Nerdbank.GitVersioning" Version="3.4.165-alpha" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="all"/>
     <PackageReference Include="StyleCop.Analyzers" Version="1.1.118" PrivateAssets="all" />
     <AdditionalFiles Include="$(MSBuildThisFileDirectory)\stylecop.json" />
 
@@ -23,6 +24,7 @@
   </ItemGroup>
 
   <PropertyGroup>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 
