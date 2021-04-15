@@ -11,6 +11,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="System.Security.Cryptography.Cng" Version="5.0.0"/>
+  </ItemGroup>
+
+  <ItemGroup>
     <None Update="**/*.bin" CopyToOutputDirectory="PreserveNewest" />
     <None Update="**/*.xml" CopyToOutputDirectory="PreserveNewest" />
     <None Update="**/*.cer" CopyToOutputDirectory="PreserveNewest" />

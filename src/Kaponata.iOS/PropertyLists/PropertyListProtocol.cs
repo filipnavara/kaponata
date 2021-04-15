@@ -18,12 +18,14 @@ namespace Kaponata.iOS.PropertyLists
     /// <summary>
     /// The <see cref="PropertyListProtocol"/> supports reading and writing messages in property list format.
     /// </summary>
-    public class PropertyListProtocol : IAsyncDisposable
+    public partial class PropertyListProtocol : IAsyncDisposable
     {
-        private readonly Stream stream;
+        private readonly Stream rawStream;
         private readonly bool ownsStream;
         private readonly MemoryPool<byte> memoryPool = MemoryPool<byte>.Shared;
         private readonly ILogger logger;
+
+        private Stream stream;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PropertyListProtocol"/> class.
@@ -39,7 +41,8 @@ namespace Kaponata.iOS.PropertyLists
         /// </param>
         public PropertyListProtocol(Stream stream, bool ownsStream, ILogger logger)
         {
-            this.stream = stream ?? throw new ArgumentNullException(nameof(stream));
+            this.rawStream = stream ?? throw new ArgumentNullException(nameof(stream));
+            this.stream = this.rawStream;
             this.ownsStream = ownsStream;
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
@@ -51,6 +54,11 @@ namespace Kaponata.iOS.PropertyLists
         protected PropertyListProtocol()
         {
         }
+
+        /// <summary>
+        /// Gets the <see cref="Stream"/> which is used to communicate with the device.
+        /// </summary>
+        public Stream Stream => this.stream;
 
         /// <summary>
         /// Asynchronously sends a message to the remote lockdown client.
@@ -141,15 +149,16 @@ namespace Kaponata.iOS.PropertyLists
         }
 
         /// <inheritdoc/>
-        public ValueTask DisposeAsync()
+        public async ValueTask DisposeAsync()
         {
-            if (this.stream != null)
+            if (this.stream != this.rawStream)
             {
-                return this.stream.DisposeAsync();
+                await this.stream.DisposeAsync().ConfigureAwait(false);
             }
-            else
+
+            if (this.rawStream != null)
             {
-                return ValueTask.CompletedTask;
+                await this.rawStream.DisposeAsync().ConfigureAwait(false);
             }
         }
     }
