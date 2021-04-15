@@ -2,8 +2,10 @@
 // Copyright (c) Quamotion bv. All rights reserved.
 // </copyright>
 
+using Kaponata.iOS.DependencyInjection;
 using Kaponata.iOS.Muxer;
 using Kaponata.Kubernetes;
+using Kaponata.Kubernetes.PairingRecords;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System;
@@ -65,9 +67,11 @@ namespace Kaponata.Sidecars
             {
                 services.AddLogging();
                 services.AddKubernetes();
+                services.AddAppleServices();
+                services.AddSingleton<KubernetesPairingRecordStore>();
+                services.AddSingleton<PairingRecordProvisioner>();
                 services.AddSingleton<UsbmuxdSidecar>();
                 services.AddSingleton<UsbmuxdSidecarConfiguration>();
-                services.AddSingleton<MuxerClient>();
             });
         }
 

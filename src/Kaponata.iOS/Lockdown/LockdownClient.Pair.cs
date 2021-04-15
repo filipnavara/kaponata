@@ -63,9 +63,19 @@ namespace Kaponata.iOS.Lockdown
         /// operation.
         /// </param>
         /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-        public virtual Task<PairingResult> ValidatePairAsync(PairingRecord pairingRecord, CancellationToken cancellationToken)
+        public virtual async Task<bool> ValidatePairAsync(PairingRecord pairingRecord, CancellationToken cancellationToken)
         {
-            return this.PairAsync("ValidatePair", pairingRecord, null, cancellationToken);
+            var result = await this.TryStartSessionAsync(pairingRecord, cancellationToken);
+
+            if (result.Error != null)
+            {
+                return false;
+            }
+            else
+            {
+                await this.StopSessionAsync(result.SessionID, cancellationToken).ConfigureAwait(false);
+                return true;
+            }
         }
 
         private async Task<PairingResult> PairAsync(string request, PairingRecord pairingRecord, PairingOptions options, CancellationToken cancellationToken)

@@ -25,6 +25,7 @@ namespace Kaponata.Sidecars
         private readonly KubernetesClient kubernetesClient;
         private readonly NamespacedKubernetesClient<MobileDevice> deviceClient;
         private readonly UsbmuxdSidecarConfiguration configuration;
+        private readonly PairingRecordProvisioner pairingRecordProvisioner;
         private readonly ILogger<UsbmuxdSidecar> logger;
 
         /// <summary>
@@ -36,16 +37,20 @@ namespace Kaponata.Sidecars
         /// <param name="kubernetes">
         /// A <see cref="KubernetesClient"/> which represents a connection to the Kubernetes cluster.
         /// </param>
+        /// <param name="pairingRecordProvisioner">
+        /// A <see cref="PairingRecordProvisioner"/> which can be used to retrieve or generate a pairing record.
+        /// </param>
         /// <param name="configuration">
         /// A <see cref="UsbmuxdSidecarConfiguration"/> which represents the configuration for this sidecar.
         /// </param>
         /// <param name="logger">
         /// A <see cref="ILogger"/> which can be used to log messages.
         /// </param>
-        public UsbmuxdSidecar(MuxerClient muxerClient, KubernetesClient kubernetes, UsbmuxdSidecarConfiguration configuration, ILogger<UsbmuxdSidecar> logger)
+        public UsbmuxdSidecar(MuxerClient muxerClient, KubernetesClient kubernetes, PairingRecordProvisioner pairingRecordProvisioner, UsbmuxdSidecarConfiguration configuration, ILogger<UsbmuxdSidecar> logger)
         {
             this.muxerClient = muxerClient ?? throw new ArgumentNullException(nameof(muxerClient));
             this.kubernetesClient = kubernetes ?? throw new ArgumentNullException(nameof(kubernetes));
+            this.pairingRecordProvisioner = pairingRecordProvisioner ?? throw new ArgumentNullException(nameof(pairingRecordProvisioner));
             this.configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
@@ -105,11 +110,13 @@ namespace Kaponata.Sidecars
                     this.logger.LogInformation("Processing device {device}", muxerDevice.Udid);
                     var kubernetesDevice = kubernetesDevices.Items.SingleOrDefault(d => string.Equals(d.Metadata.Name, muxerDevice.Udid, StringComparison.OrdinalIgnoreCase));
 
-                    // Pairing records can be stored at both the cluster level and locally. Use the first pairing record which is valid, and make sure the cluster
-                    // and local records are in sync.
-                    var usbmuxdPairingRecord = await this.muxerClient.ReadPairingRecordAsync(muxerDevice.Udid, cancellationToken).ConfigureAwait(false);
+                    var pairingRecord = await this.pairingRecordProvisioner.ProvisionPairingRecordAsync(muxerDevice.Udid, cancellationToken).ConfigureAwait(false);
 
-                    if (kubernetesDevice == null)
+                    if (pairingRecord == null)
+                    {
+                        this.logger.LogInformation("The host has not paired with device {device}. Not propagating it to the cluster.", muxerDevice.Udid);
+                    }
+                    else if (kubernetesDevice == null)
                     {
                         this.logger.LogInformation("Creating a new device {device}", muxerDevice.Udid);
 
