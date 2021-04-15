@@ -17,7 +17,7 @@ push: all
 	docker push $(registry)/$(image):latest-udev-amd64
 
 .version: .amd64.docker-id
-	docker run --rm -i $(shell cat .amd64.docker-id) /usr/bin/usbmuxd --version | awk "{ print $$2 }" | tee .version
+	docker run --rm -i $(shell cat .amd64.docker-id) /usr/bin/usbmuxd --version | cut -d " " -f 2 | tee .version
 
 Dockerfile.default: Dockerfile.template default.yaml
 	gomplate -d config=./default.yaml -f Dockerfile.template -o Dockerfile.default
