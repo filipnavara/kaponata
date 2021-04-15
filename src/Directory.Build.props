@@ -24,6 +24,10 @@
   </ItemGroup>
 
   <PropertyGroup>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://www.kaponata.io</PackageProjectUrl>
+    <Copyright>Quamotion bv</Copyright>
+    <Authors>Quamotion bv</Authors>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
