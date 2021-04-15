@@ -14,7 +14,7 @@ namespace Kaponata.iOS.Lockdown
     public partial class LockdownClient
     {
         /// <summary>
-        /// Starts a new session.
+        /// Attempts to start a new session.
         /// </summary>
         /// <param name="pairingRecord">
         /// The pairing record used to authenticate the host with the device.
@@ -25,7 +25,7 @@ namespace Kaponata.iOS.Lockdown
         /// <returns>
         /// The response to the request to start a new session.
         /// </returns>
-        public async Task<StartSessionResponse> StartSessionAsync(PairingRecord pairingRecord, CancellationToken cancellationToken)
+        public async Task<StartSessionResponse> TryStartSessionAsync(PairingRecord pairingRecord, CancellationToken cancellationToken)
         {
             if (pairingRecord == null)
             {
@@ -44,6 +44,30 @@ namespace Kaponata.iOS.Lockdown
 
             var response = await this.protocol.ReadMessageAsync(cancellationToken).ConfigureAwait(false);
             var message = StartSessionResponse.Read(response);
+
+            if (message.EnableSessionSSL)
+            {
+                await this.protocol.EnableSslAsync(pairingRecord, cancellationToken).ConfigureAwait(false);
+            }
+
+            return message;
+        }
+
+        /// <summary>
+        /// Starts a new exception, and throws an exception when a new session could not be created.
+        /// </summary>
+        /// <param name="pairingRecord">
+        /// The pairing record used to authenticate the host with the device.
+        /// </param>
+        /// <param name="cancellationToken">
+        /// A <see cref="CancellationToken"/> which can be used to cancel the asynchronous operation.
+        /// </param>
+        /// <returns>
+        /// The response to the request to start a new session.
+        /// </returns>
+        public async Task<StartSessionResponse> StartSessionAsync(PairingRecord pairingRecord, CancellationToken cancellationToken)
+        {
+            var message = await this.TryStartSessionAsync(pairingRecord, cancellationToken).ConfigureAwait(false);
 
             if (message.Error != null)
             {
@@ -87,6 +111,11 @@ namespace Kaponata.iOS.Lockdown
             if (response.Error != null)
             {
                 throw new LockdownException(response.Error);
+            }
+
+            if (this.protocol.SslEnabled)
+            {
+                await this.protocol.DisableSslAsync(cancellationToken).ConfigureAwait(false);
             }
         }
     }
