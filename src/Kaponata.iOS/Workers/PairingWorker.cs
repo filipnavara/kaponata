@@ -57,6 +57,13 @@ namespace Kaponata.iOS.Workers
         }
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="PairingWorker"/> class. Intended for mocking purposes only.
+        /// </summary>
+        protected PairingWorker()
+        {
+        }
+
+        /// <summary>
         /// Asynchronously pairs a device with the host.
         /// </summary>
         /// <param name="cancellationToken">
@@ -66,7 +73,7 @@ namespace Kaponata.iOS.Workers
         /// A <see cref="Task"/> representing the asynchronous operation. The task completes when the device has
         /// paired successfully, or when the user has refused pairing.
         /// </returns>
-        public async Task<PairingRecord> PairAsync(CancellationToken cancellationToken)
+        public virtual async Task<PairingRecord> PairAsync(CancellationToken cancellationToken)
         {
             PairingResult result = null;
 
@@ -83,7 +90,15 @@ namespace Kaponata.iOS.Workers
                 {
                     await using (var lockdownClient = await this.lockdownClientFactory.CreateAsync(cancellationToken))
                     {
-                        result = await lockdownClient.ValidatePairAsync(pairingRecord, cancellationToken).ConfigureAwait(false);
+                        // Check the validity of the current pairing record. If the pairing record is valid (i.e. we can start a Lockdown session),
+                        // use that pairing record. If the pairing record is not valid, we need to check whether we're still pending user validation
+                        // of this pairing record or whether the user has rejected pairing.
+                        if (await lockdownClient.ValidatePairAsync(pairingRecord, cancellationToken).ConfigureAwait(false))
+                        {
+                            return pairingRecord;
+                        }
+
+                        result = await lockdownClient.PairAsync(pairingRecord, cancellationToken).ConfigureAwait(false);
 
                         // If the pairing record is invalid, delete the pairing record from the muxer.
                         if (result?.Status == PairingStatus.UserDeniedPairing)

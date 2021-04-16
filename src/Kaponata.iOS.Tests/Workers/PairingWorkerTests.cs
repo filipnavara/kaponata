@@ -80,8 +80,7 @@ namespace Kaponata.iOS.Tests.Workers
             var pairingRecord = new PairingRecord();
             this.muxer.Setup(m => m.ReadPairingRecordAsync(this.device.Udid, default)).ReturnsAsync(pairingRecord);
 
-            var pairingResult = new PairingResult() { Status = PairingStatus.Success };
-            this.lockdown.Setup(l => l.ValidatePairAsync(pairingRecord, default)).ReturnsAsync(pairingResult);
+            this.lockdown.Setup(l => l.ValidatePairAsync(pairingRecord, default)).ReturnsAsync(true);
 
             using (var scope = this.provider.CreateScope())
             {
@@ -271,7 +270,7 @@ namespace Kaponata.iOS.Tests.Workers
             var wifiAddress = "AA:BB:CC";
             var buid = "123456789abcdef";
 
-            this.lockdown.Setup(l => l.ValidatePairAsync(pairingRecord, default)).ReturnsAsync(pairingResult).Verifiable();
+            this.lockdown.Setup(l => l.ValidatePairAsync(pairingRecord, default)).ReturnsAsync(false).Verifiable();
             this.lockdown
                 .Setup(l => l.UnpairAsync(pairingRecord, default))
                 .Callback(() => { pairingResult.Status = PairingStatus.PairingDialogResponsePending; })

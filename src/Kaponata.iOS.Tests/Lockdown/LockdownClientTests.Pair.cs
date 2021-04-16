@@ -4,10 +4,10 @@
 
 using Claunia.PropertyList;
 using Kaponata.iOS.Lockdown;
-using Kaponata.iOS.Muxer;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
@@ -240,24 +240,30 @@ namespace Kaponata.iOS.Tests.Lockdown
         [Fact]
         public async Task ValidatePairAsync_Works_Async()
         {
-            var pairingRecord = new PairingRecord();
+            var pairingRecord = new PairingRecord()
+            {
+                HostId = "abc",
+                SystemBUID = "def",
+            };
 
-            var protocol = new Mock<LockdownProtocol>();
+            List<LockdownMessage> requests = new List<LockdownMessage>();
+            var protocol = new Mock<LockdownProtocol>(MockBehavior.Strict);
 
             protocol
                 .Setup(p => p.WriteMessageAsync(It.IsAny<LockdownMessage>(), default))
                 .Callback<LockdownMessage, CancellationToken>(
                 (message, ct) =>
                 {
-                    var request = Assert.IsType<PairRequest>(message);
-
-                    Assert.Same(pairingRecord, request.PairRecord);
-                    Assert.Null(request.PairingOptions);
-                    Assert.Equal("ValidatePair", request.Request);
+                    requests.Add(message);
                 })
                 .Returns(Task.CompletedTask);
 
+            protocol
+                .Setup(p => p.SslEnabled)
+                .Returns(false);
+
             var dict = new NSDictionary();
+            dict.Add("SessionID", "1234");
 
             protocol
                 .Setup(p => p.ReadMessageAsync(default))
@@ -266,8 +272,79 @@ namespace Kaponata.iOS.Tests.Lockdown
             await using (var lockdown = new LockdownClient(protocol.Object, NullLogger<LockdownClient>.Instance))
             {
                 var result = await lockdown.ValidatePairAsync(pairingRecord, default).ConfigureAwait(false);
-                Assert.Equal(PairingStatus.Success, result.Status);
+                Assert.True(result);
             }
+
+            Assert.Collection(
+                requests,
+                message =>
+                {
+                    var request = Assert.IsType<StartSessionRequest>(message);
+
+                    Assert.Equal("abc", request.HostID);
+                    Assert.Equal("def", request.SystemBUID);
+                    Assert.Equal("StartSession", request.Request);
+                },
+                message =>
+                {
+                    var request = Assert.IsType<StopSessionRequest>(message);
+
+                    Assert.Equal("1234", request.SessionID);
+                });
+        }
+
+        /// <summary>
+        /// <see cref="LockdownClient.ValidatePairAsync(PairingRecord, CancellationToken)"/> works.
+        /// </summary>
+        /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
+        [Fact]
+        public async Task ValidatePairAsync_ThrowsOnError_Async()
+        {
+            var pairingRecord = new PairingRecord()
+            {
+                HostId = "abc",
+                SystemBUID = "def",
+            };
+
+            List<LockdownMessage> requests = new List<LockdownMessage>();
+            var protocol = new Mock<LockdownProtocol>(MockBehavior.Strict);
+
+            protocol
+                .Setup(p => p.WriteMessageAsync(It.IsAny<LockdownMessage>(), default))
+                .Callback<LockdownMessage, CancellationToken>(
+                (message, ct) =>
+                {
+                    requests.Add(message);
+                })
+                .Returns(Task.CompletedTask);
+
+            protocol
+                .Setup(p => p.SslEnabled)
+                .Returns(false);
+
+            var dict = new NSDictionary();
+            dict.Add("Error", "InvalidHostBuid");
+
+            protocol
+                .Setup(p => p.ReadMessageAsync(default))
+                .ReturnsAsync(dict);
+
+            await using (var lockdown = new LockdownClient(protocol.Object, NullLogger<LockdownClient>.Instance))
+            {
+                var result = await lockdown.ValidatePairAsync(pairingRecord, default).ConfigureAwait(false);
+                Assert.False(result);
+            }
+
+            Assert.Collection(
+                requests,
+                message =>
+                {
+                    var request = Assert.IsType<StartSessionRequest>(message);
+
+                    Assert.Equal("abc", request.HostID);
+                    Assert.Equal("def", request.SystemBUID);
+                    Assert.Equal("StartSession", request.Request);
+                });
         }
     }
 }

@@ -36,6 +36,16 @@ namespace Kaponata.Kubernetes.PairingRecords
             this.secretClient = this.client.GetClient<V1Secret>();
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="KubernetesPairingRecordStore"/> class. Intended for mocking
+        /// purposes only.
+        /// </summary>
+#nullable disable
+        protected KubernetesPairingRecordStore()
+        {
+        }
+#nullable restore
+
         /// <inheritdoc/>
         public override Task DeleteAsync(string udid, CancellationToken cancellationToken)
         {
