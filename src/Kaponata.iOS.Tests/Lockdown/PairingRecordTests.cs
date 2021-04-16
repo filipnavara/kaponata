@@ -97,5 +97,48 @@ namespace Kaponata.iOS.Tests.Lockdown
             Assert.False(serializedDict.ContainsKey("HostPrivateKey"));
             Assert.False(serializedDict.ContainsKey("RootPrivateKey"));
         }
+
+        /// <summary>
+        /// <see cref="PairingRecord.Equals(object)"/> and <see cref="PairingRecord.GetHashCode"/> work correctly.
+        /// </summary>
+        /// <param name="systemBuid">
+        /// The <see cref="PairingRecord.SystemBUID"/> for the first pairing record.
+        /// </param>
+        /// <param name="hostId">
+        /// The <see cref="PairingRecord.HostId"/> for the first pairing record.
+        /// </param>
+        /// <param name="otherSystemBuid">
+        /// The <see cref="PairingRecord.SystemBUID"/> for the second pairing record.
+        /// </param>
+        /// <param name="otherHostId">
+        /// The <see cref="PairingRecord.HostId"/> for the second pairing record.
+        /// </param>
+        /// <param name="equal">
+        /// A value indicating whether the two values are considered equal.
+        /// </param>
+        /// <param name="sameHashCode">
+        /// A value indicating whether the two values have the same hashcode.
+        /// </param>
+        [Theory]
+        [InlineData(null, null, null, null, false, true)]
+        [InlineData(null, "a", null, "a", false, true)]
+        [InlineData("a", null, "a", null, false, true)]
+        [InlineData("a", "b", "a", "c", false, false)]
+        [InlineData("a", "b", "c", "a", false, false)]
+        [InlineData("a", "b", "a", "b", true, true)]
+        public void Equals_Works(string systemBuid, string hostId, string otherSystemBuid, string otherHostId, bool equal, bool sameHashCode)
+        {
+            var record = new PairingRecord() { SystemBUID = systemBuid, HostId = hostId };
+            var other = new PairingRecord() { SystemBUID = otherSystemBuid, HostId = otherHostId };
+
+            Assert.Equal(equal, record.Equals(other));
+            Assert.Equal(equal, other.Equals(record));
+            Assert.Equal(equal, PairingRecord.Equals(other, record));
+            Assert.Equal(equal, PairingRecord.Equals(record, other));
+            Assert.Equal(equal, object.Equals(other, record));
+            Assert.Equal(equal, object.Equals(record, other));
+
+            Assert.Equal(sameHashCode, record.GetHashCode() == other.GetHashCode());
+        }
     }
 }

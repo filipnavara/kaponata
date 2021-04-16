@@ -3,6 +3,7 @@
 // </copyright>
 
 using Claunia.PropertyList;
+using System;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
@@ -153,6 +154,24 @@ namespace Kaponata.iOS.Lockdown
             var dict = this.ToPropertyList(includePrivateKeys);
             var xml = dict.ToXmlPropertyList();
             return Encoding.UTF8.GetBytes(xml);
+        }
+
+        /// <inheritdoc/>
+        public override bool Equals(object obj)
+        {
+            var other = obj as PairingRecord;
+
+            return other != null
+                && other.HostId != null
+                && other.SystemBUID != null
+                && other.HostId == this.HostId
+                && other.SystemBUID == this.SystemBUID;
+        }
+
+        /// <inheritdoc/>
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(this.SystemBUID, this.HostId);
         }
 
         private static RSA DeserializePrivateKey(byte[] data)
