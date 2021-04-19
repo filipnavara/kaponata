@@ -72,6 +72,28 @@ namespace Kaponata.iOS.PropertyLists
         /// <returns>
         /// A <see cref="Task"/> which represents the asynchronous operation.
         /// </returns>
+        public virtual Task WriteMessageAsync(IPropertyList message, CancellationToken cancellationToken)
+        {
+            if (message == null)
+            {
+                throw new ArgumentNullException(nameof(message));
+            }
+
+            return this.WriteMessageAsync(message.ToDictionary(), cancellationToken);
+        }
+
+        /// <summary>
+        /// Asynchronously sends a message to the remote lockdown client.
+        /// </summary>
+        /// <param name="message">
+        /// The message to send.
+        /// </param>
+        /// <param name="cancellationToken">
+        /// A <see cref="CancellationToken"/> which can be used to cancel the asynchronous operation.
+        /// </param>
+        /// <returns>
+        /// A <see cref="Task"/> which represents the asynchronous operation.
+        /// </returns>
         public virtual async Task WriteMessageAsync(NSDictionary message, CancellationToken cancellationToken)
         {
             if (message == null)

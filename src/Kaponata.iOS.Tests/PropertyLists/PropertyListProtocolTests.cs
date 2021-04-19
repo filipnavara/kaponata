@@ -6,6 +6,7 @@ using Claunia.PropertyList;
 using Divergic.Logging.Xunit;
 using Kaponata.iOS.PropertyLists;
 using Microsoft.Extensions.Logging.Abstractions;
+using Moq;
 using System;
 using System.IO;
 using System.Threading;
@@ -38,7 +39,8 @@ namespace Kaponata.iOS.Tests.PropertyLists
         {
             var protocol = new PropertyListProtocol(Stream.Null, false, NullLogger<PropertyListProtocol>.Instance);
 
-            await Assert.ThrowsAsync<ArgumentNullException>(() => protocol.WriteMessageAsync(null, default)).ConfigureAwait(false);
+            await Assert.ThrowsAsync<ArgumentNullException>(() => protocol.WriteMessageAsync((NSDictionary)null, default)).ConfigureAwait(false);
+            await Assert.ThrowsAsync<ArgumentNullException>(() => protocol.WriteMessageAsync((IPropertyList)null, default)).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -55,6 +57,30 @@ namespace Kaponata.iOS.Tests.PropertyLists
                 var dict = new NSDictionary();
                 dict.Add("Request", "QueryType");
                 await protocol.WriteMessageAsync(dict, default).ConfigureAwait(false);
+
+                var data = stream.ToArray();
+                Assert.Equal(File.ReadAllBytes("PropertyLists/message.bin"), data);
+            }
+        }
+
+        /// <summary>
+        /// <see cref="PropertyListProtocol.WriteMessageAsync(IPropertyList, CancellationToken)"/> correctly serializes the
+        /// underlying message.
+        /// </summary>
+        /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
+        [Fact]
+        public async Task WritePropertyList_Works_Async()
+        {
+            var dict = new NSDictionary();
+            dict.Add("Request", "QueryType");
+
+            var message = new Mock<IPropertyList>();
+            message.Setup(m => m.ToDictionary()).Returns(dict);
+
+            await using (MemoryStream stream = new MemoryStream())
+            await using (var protocol = new PropertyListProtocol(stream, false, NullLogger<PropertyListProtocol>.Instance))
+            {
+                await protocol.WriteMessageAsync(message.Object, default).ConfigureAwait(false);
 
                 var data = stream.ToArray();
                 Assert.Equal(File.ReadAllBytes("PropertyLists/message.bin"), data);
