@@ -253,6 +253,46 @@ namespace Kaponata.iOS.Tests
         }
 
         /// <summary>
+        /// <see cref="NSDictionaryExtensions.GetDictionary(NSDictionary, string)"/> return <see langword="null"/>
+        /// when a value with the requested key could not be found.
+        /// </summary>
+        [Fact]
+        public void GetDictionary_MissingKey_ReturnsNull()
+        {
+            var dict = new NSDictionary();
+            Assert.Null(dict.GetDictionary("missing"));
+        }
+
+        /// <summary>
+        /// <see cref="NSDictionaryExtensions.GetDictionary(NSDictionary, string)"/> returns the correct value
+        /// when a value with the requested key exists.
+        /// </summary>
+        [Fact]
+        public void GetDictionary_ReturnsValue()
+        {
+            var dict = new NSDictionary();
+            var entry = new NSDictionary();
+            entry.Add("A", "a");
+            entry.Add("1", 1);
+            dict.Add("entry", entry);
+
+            var value = dict.GetDictionary("entry");
+
+            Assert.Collection(
+                value,
+                p =>
+                {
+                    Assert.Equal("A", p.Key);
+                    Assert.Equal("a", p.Value);
+                },
+                p =>
+                {
+                    Assert.Equal("1", p.Key);
+                    Assert.Equal(1, p.Value);
+                });
+        }
+
+        /// <summary>
         /// <see cref="NSDictionaryExtensions.AddWhenNotNull(NSDictionary, string, object)"/> works correctly.
         /// </summary>
         [Fact]
