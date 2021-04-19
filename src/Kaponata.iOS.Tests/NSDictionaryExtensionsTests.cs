@@ -251,5 +251,19 @@ namespace Kaponata.iOS.Tests
             var value = dict.GetData("key");
             Assert.Equal(entry, value);
         }
+
+        /// <summary>
+        /// <see cref="NSDictionaryExtensions.AddWhenNotNull(NSDictionary, string, object)"/> works correctly.
+        /// </summary>
+        [Fact]
+        public void AddWhenNotNull_Works()
+        {
+            var dict = new NSDictionary();
+            dict.AddWhenNotNull("null", null);
+            dict.AddWhenNotNull("notnull", string.Empty);
+
+            var key = Assert.Single(dict.Keys);
+            Assert.Equal("notnull", key);
+        }
     }
 }

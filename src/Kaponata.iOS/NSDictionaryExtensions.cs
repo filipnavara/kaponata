@@ -229,5 +229,25 @@ namespace Kaponata.iOS
 
             return value;
         }
+
+        /// <summary>
+        /// Adds a value to the dictionary, if the value is not <see langword="null"/>.
+        /// </summary>
+        /// <param name="dictionary">
+        /// The dictionary to which to add the value.
+        /// </param>
+        /// <param name="key">
+        /// The key with which to add the value.
+        /// </param>
+        /// <param name="value">
+        /// The value to add.
+        /// </param>
+        public static void AddWhenNotNull(this NSDictionary dictionary, string key, object value)
+        {
+            if (value != null)
+            {
+                dictionary.Add(key, value);
+            }
+        }
     }
 }
