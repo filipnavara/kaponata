@@ -313,6 +313,6 @@ jobs:
       - name: Publish to NuGet
         if: github.ref == 'refs/heads/main'
         run: |
-          dotnet nuget push Kaponata.iOS.nupkg -k "${{ secrets.NUGET_TOKEN }}"
-          dotnet nuget push Kaponata.Android.nupkg -k "${{ secrets.NUGET_TOKEN }}"
+          dotnet nuget push Kaponata.iOS.nupkg -k "${{ secrets.NUGET_TOKEN }}" -s https://api.nuget.org/v3/index.json
+          dotnet nuget push Kaponata.Android.nupkg -k "${{ secrets.NUGET_TOKEN }}" -s https://api.nuget.org/v3/index.json
         working-directory: ${{ github.workspace }}/bin/nuget/
