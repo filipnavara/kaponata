@@ -5,6 +5,7 @@
 using Claunia.PropertyList;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 
 namespace Kaponata.iOS
 {
@@ -228,6 +229,56 @@ namespace Kaponata.iOS
             }
 
             return value;
+        }
+
+        /// <summary>
+        /// Gets a dictionary of objects with a <see cref="string"/> as the key from the property list.
+        /// </summary>
+        /// <param name="dict">
+        /// The dictionary in which to search for the value associated with the specified <paramref name="key"/>.
+        /// </param>
+        /// <param name="key">
+        /// The name of the value to retrieve.
+        /// </param>
+        /// <returns>
+        /// The requested value.
+        /// </returns>
+        public static ReadOnlyDictionary<string, object> GetDictionary(this NSDictionary dict, string key)
+        {
+            if (!dict.ContainsKey(key))
+            {
+                return null;
+            }
+
+            Dictionary<string, object> value = new Dictionary<string, object>();
+
+            var array = (NSDictionary)dict[key];
+            foreach (var child in array.Keys)
+            {
+                value.Add(child, array.ObjectForKey(child).ToObject());
+            }
+
+            return new ReadOnlyDictionary<string, object>(value);
+        }
+
+        /// <summary>
+        /// Adds a value to the dictionary, if the value is not <see langword="null"/>.
+        /// </summary>
+        /// <param name="dictionary">
+        /// The dictionary to which to add the value.
+        /// </param>
+        /// <param name="key">
+        /// The key with which to add the value.
+        /// </param>
+        /// <param name="value">
+        /// The value to add.
+        /// </param>
+        public static void AddWhenNotNull(this NSDictionary dictionary, string key, object value)
+        {
+            if (value != null)
+            {
+                dictionary.Add(key, value);
+            }
         }
     }
 }
