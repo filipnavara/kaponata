@@ -72,7 +72,7 @@ namespace Kaponata.iOS.PropertyLists
         /// <returns>
         /// A <see cref="Task"/> which represents the asynchronous operation.
         /// </returns>
-        public async Task WriteMessageAsync(NSDictionary message, CancellationToken cancellationToken)
+        public virtual async Task WriteMessageAsync(NSDictionary message, CancellationToken cancellationToken)
         {
             if (message == null)
             {
