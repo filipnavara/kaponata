@@ -153,6 +153,11 @@ namespace Kaponata.Kubernetes
             public const string Android = "android";
 
             /// <summary>
+            /// The Linux operating system.
+            /// </summary>
+            public const string Linux = "linux";
+
+            /// <summary>
             /// The Apple iOS operating system.
             /// </summary>
             /// <remarks>
