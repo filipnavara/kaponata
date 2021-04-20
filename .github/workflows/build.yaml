@@ -120,6 +120,10 @@ jobs:
           make
         working-directory: src/Kaponata.Sidecars/
 
+      - name: Package Kaponata.FileSystems NuGet packages
+        run: dotnet pack -c Release -o ${{ github.workspace }}/bin/nuget --include-source --include-symbols
+        working-directory: src/Kaponata.FileFormats/
+
       - name: Package Kaponata.iOS NuGet packages
         run: dotnet pack -c Release -o ${{ github.workspace }}/bin/nuget --include-source --include-symbols
         working-directory: src/Kaponata.iOS/
@@ -313,6 +317,7 @@ jobs:
       - name: Publish to NuGet
         if: github.ref == 'refs/heads/main'
         run: |
+          dotnet nuget push Kaponata.FileFormats.*.nupkg -k "${{ secrets.NUGET_TOKEN }}" -s https://api.nuget.org/v3/index.json
           dotnet nuget push Kaponata.iOS.*.nupkg -k "${{ secrets.NUGET_TOKEN }}" -s https://api.nuget.org/v3/index.json
           dotnet nuget push Kaponata.Android.*.nupkg -k "${{ secrets.NUGET_TOKEN }}" -s https://api.nuget.org/v3/index.json
         working-directory: ${{ github.workspace }}/bin/nuget/
