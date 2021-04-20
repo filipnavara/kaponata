@@ -27,7 +27,7 @@ body {
         padding-left: 20px;
     }
 
-.navbar-collapse > ul > li > a {
+.navbar-items > ul > li > a {
     font-weight: 600;
     letter-spacing: 1px;
     text-transform: uppercase;
@@ -63,14 +63,18 @@ body {
     height: 65px;
 }
 
-    .navbar-custom .navbar-nav > li > a {
-        color: white;
-    }
+.navbar-custom .navbar-nav > li > a {
+    color: white;
+}
 
-    .navbar-custom > .container {
-        padding-top: 7px;
-    }
+.navbar-custom > .container {
+    padding-top: 7px;
+}
 
 .navbar-inverse .navbar-text {
-    color: white;
+color: white;
+}
+
+.popover{
+    max-width: 100%; /* Max Width of the popover (depending on the container!) */
 }
