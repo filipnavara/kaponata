@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Kaponata.FileFormats\Kaponata.FileFormats.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="**\*.tar"  CopyToOutputDirectory="PreserveNewest"/>
+  </ItemGroup>
+
+</Project>
