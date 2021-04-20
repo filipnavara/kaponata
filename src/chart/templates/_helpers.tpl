@@ -155,3 +155,31 @@ app.kubernetes.io/name: {{ include "kaponata.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 app.kubernetes.io/component: "operator"
 {{- end }}
+
+{{/*
+Registry: Full Name
+*/}}
+{{- define "registry.fullname" -}}
+{{- printf "%s-registry" (include "kaponata.fullname" .) | trunc 63 | trimSuffix "-" }}
+{{- end }}
+
+{{/*
+Registry: Common labels
+*/}}
+{{- define "registry.labels" -}}
+helm.sh/chart: {{ include "kaponata.chart" . }}
+{{ include "registry.selectorLabels" . }}
+{{- if .Chart.AppVersion }}
+app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
+{{- end }}
+app.kubernetes.io/managed-by: {{ .Release.Service }}
+{{- end }}
+
+{{/*
+Registry: Selector labels
+*/}}
+{{- define "registry.selectorLabels" -}}
+app.kubernetes.io/name: {{ include "kaponata.name" . }}
+app.kubernetes.io/instance: {{ .Release.Name }}
+app.kubernetes.io/component: "registry"
+{{- end }}

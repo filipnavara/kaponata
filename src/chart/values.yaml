@@ -8,4 +8,10 @@ api:
   image:
     repository: quay.io/kaponata/api
     tag: latest-amd64
-imagePullPolicy: IfNotPresent
+  imagePullPolicy: IfNotPresent
+
+registry:
+  image:
+    repository: registry
+    tag: "2.7"
+  imagePullPolicy: IfNotPresent

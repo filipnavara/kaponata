@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+
+# The registry uses a StatefulSet to ensure the PVC/PV is reusable
+# when the pod is deleted / recreated
+kind: StatefulSet
+metadata:
+  name: {{ template "registry.fullname" . }}
+  labels:
+    {{- include "registry.labels" . | nindent 4 }}
+spec:
+  serviceName: {{ template "registry.fullname" . }}
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "registry.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "registry.selectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+        - name: "operator"
+          image: "{{ .Values.registry.image.repository }}:{{ tpl .Values.registry.image.tag . }}"
+          imagePullPolicy: "{{ .Values.registry.imagePullPolicy }}"
+          ports:
+            - name: http
+              containerPort: 5000
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/registry/
+  volumeClaimTemplates:
+  - metadata:
+      name: data
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      storageClassName: "local-path"
+      resources:
+        requests:
+          storage: 1Gi
