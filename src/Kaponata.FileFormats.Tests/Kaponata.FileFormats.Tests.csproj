@@ -10,4 +10,8 @@
     <ProjectReference Include="..\Kaponata.FileFormats\Kaponata.FileFormats.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="**\*.tar"  CopyToOutputDirectory="PreserveNewest"/>
+  </ItemGroup>
+
 </Project>
