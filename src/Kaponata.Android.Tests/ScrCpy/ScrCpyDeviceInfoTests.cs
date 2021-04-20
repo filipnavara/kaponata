@@ -2,8 +2,13 @@
 // Copyright (c) Quamotion bv. All rights reserved.
 // </copyright>
 
+using Kaponata.Android.Adb;
 using Kaponata.Android.ScrCpy;
+using Microsoft.Extensions.Logging.Abstractions;
 using System.IO;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace Kaponata.Android.Tests.ScrCpy
@@ -25,6 +30,15 @@ namespace Kaponata.Android.Tests.ScrCpy
             Assert.Equal("SM-G950F", deviceInfo.DeviceName);
             Assert.Equal(2960, deviceInfo.Width);
             Assert.Equal(1440, deviceInfo.Height);
+        }
+
+        /// <summary>
+        /// The <see cref="ScrCpyDeviceInfo.BinarySize"/> returns the binary size.
+        /// </summary>
+        [Fact]
+        public void BinarySize()
+        {
+            Assert.Equal(68, ScrCpyDeviceInfo.BinarySize);
         }
     }
 }
