@@ -20,52 +20,55 @@
 // DEALINGS IN THE SOFTWARE.
 //
 
+#nullable disable
+
+using DiscUtils.Streams;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using DiscUtils.Streams;
 
 namespace DiscUtils.Dmg
 {
     internal sealed class DiskImageFile : VirtualDiskLayer
     {
-        private readonly Ownership _ownsStream;
-        private readonly ResourceFork _resources;
-        private Stream _stream;
-        private readonly UdifResourceFile _udifHeader;
+        private readonly Ownership ownsStream;
+        private readonly ResourceFork resources;
+        private readonly UdifResourceFile udifHeader;
+        private Stream stream;
 
         /// <summary>
-        /// Initializes a new instance of the DiskImageFile class.
+        /// Initializes a new instance of the <see cref="DiskImageFile"/> class.
         /// </summary>
         /// <param name="stream">The stream to read.</param>
         /// <param name="ownsStream">Indicates if the new instance should control the lifetime of the stream.</param>
         public DiskImageFile(Stream stream, Ownership ownsStream)
         {
-            _udifHeader = new UdifResourceFile();
-            _stream = stream;
-            _ownsStream = ownsStream;
+            this.udifHeader = new UdifResourceFile();
+            this.stream = stream;
+            this.ownsStream = ownsStream;
 
-            stream.Position = stream.Length - _udifHeader.Size;
-            byte[] data = StreamUtilities.ReadExact(stream, _udifHeader.Size);
+            stream.Position = stream.Length - this.udifHeader.Size;
+            byte[] data = StreamUtilities.ReadExact(stream, this.udifHeader.Size);
 
-            _udifHeader.ReadFrom(data, 0);
+            this.udifHeader.ReadFrom(data, 0);
 
-            if (_udifHeader.SignatureValid)
+            if (this.udifHeader.SignatureValid)
             {
-                stream.Position = (long)_udifHeader.XmlOffset;
-                byte[] xmlData = StreamUtilities.ReadExact(stream, (int)_udifHeader.XmlLength);
+                stream.Position = (long)this.udifHeader.XmlOffset;
+                byte[] xmlData = StreamUtilities.ReadExact(stream, (int)this.udifHeader.XmlLength);
                 Dictionary<string, object> plist = Plist.Parse(new MemoryStream(xmlData));
 
-                _resources = ResourceFork.FromPlist(plist);
-                Buffer = new UdifBuffer(stream, _resources, _udifHeader.SectorCount);
+                this.resources = ResourceFork.FromPlist(plist);
+                this.Buffer = new UdifBuffer(stream, this.resources, this.udifHeader.SectorCount);
             }
         }
 
         public UdifBuffer Buffer { get; }
 
+        /// <inheritdoc/>
         public override long Capacity
         {
-            get { return Buffer == null ? _stream.Length : Buffer.Capacity; }
+            get { return this.Buffer == null ? this.stream.Length : this.Buffer.Capacity; }
         }
 
         /// <summary>
@@ -73,12 +76,13 @@ namespace DiscUtils.Dmg
         /// </summary>
         public override Geometry Geometry
         {
-            get { return Geometry.FromCapacity(Capacity); }
+            get { return Geometry.FromCapacity(this.Capacity); }
         }
 
+        /// <inheritdoc/>
         public override bool IsSparse
         {
-            get { return Buffer != null; }
+            get { return this.Buffer != null; }
         }
 
         /// <summary>
@@ -89,11 +93,13 @@ namespace DiscUtils.Dmg
             get { return false; }
         }
 
+        /// <inheritdoc/>
         public override FileLocator RelativeFileLocator
         {
             get { throw new NotImplementedException(); }
         }
 
+        /// <inheritdoc/>
         public override SparseStream OpenContent(SparseStream parentStream, Ownership ownsStream)
         {
             if (parentStream != null && ownsStream == Ownership.Dispose)
@@ -101,12 +107,13 @@ namespace DiscUtils.Dmg
                 parentStream.Dispose();
             }
 
-            if (Buffer != null)
+            if (this.Buffer != null)
             {
-                SparseStream rawStream = new BufferStream(Buffer, FileAccess.Read);
+                SparseStream rawStream = new BufferStream(this.Buffer, FileAccess.Read);
                 return new BlockCacheStream(rawStream, Ownership.Dispose);
             }
-            return SparseStream.FromStream(_stream, Ownership.None);
+
+            return SparseStream.FromStream(this.stream, Ownership.None);
         }
 
         /// <summary>
@@ -118,16 +125,17 @@ namespace DiscUtils.Dmg
             return new string[0];
         }
 
+        /// <inheritdoc/>
         protected override void Dispose(bool disposing)
         {
             try
             {
-                if (_stream != null && _ownsStream == Ownership.Dispose)
+                if (this.stream != null && this.ownsStream == Ownership.Dispose)
                 {
-                    _stream.Dispose();
+                    this.stream.Dispose();
                 }
 
-                _stream = null;
+                this.stream = null;
             }
             finally
             {

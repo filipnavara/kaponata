@@ -20,11 +20,13 @@
 // DEALINGS IN THE SOFTWARE.
 //
 
+using DiscUtils.Partitions;
+using DiscUtils.Streams;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using DiscUtils.Partitions;
-using DiscUtils.Streams;
+
+#nullable disable
 
 namespace DiscUtils.Dmg
 {
@@ -33,17 +35,17 @@ namespace DiscUtils.Dmg
     /// </summary>
     public class Disk : VirtualDisk
     {
-        private SparseStream _content;
-        private DiskImageFile _file;
+        private SparseStream content;
+        private DiskImageFile file;
 
         /// <summary>
-        /// Initializes a new instance of the Disk class.
+        /// Initializes a new instance of the <see cref="Disk"/> class.
         /// </summary>
         /// <param name="stream">The stream containing the disk.</param>
         /// <param name="ownsStream">Whether the new instance takes ownership of stream.</param>
         public Disk(Stream stream, Ownership ownsStream)
         {
-            _file = new DiskImageFile(stream, ownsStream);
+            this.file = new DiskImageFile(stream, ownsStream);
         }
 
         /// <summary>
@@ -51,7 +53,7 @@ namespace DiscUtils.Dmg
         /// </summary>
         public override long Capacity
         {
-            get { return _file.Capacity; }
+            get { return this.file.Capacity; }
         }
 
         /// <summary>
@@ -66,12 +68,12 @@ namespace DiscUtils.Dmg
         {
             get
             {
-                if (_content == null)
+                if (this.content == null)
                 {
-                    _content = _file.OpenContent(null, Ownership.None);
+                    this.content = this.file.OpenContent(null, Ownership.None);
                 }
 
-                return _content;
+                return this.content;
             }
         }
 
@@ -109,7 +111,7 @@ namespace DiscUtils.Dmg
         /// </summary>
         public override Geometry Geometry
         {
-            get { return _file.Geometry; }
+            get { return this.file.Geometry; }
         }
 
         /// <summary>
@@ -117,12 +119,13 @@ namespace DiscUtils.Dmg
         /// </summary>
         public override IEnumerable<VirtualDiskLayer> Layers
         {
-            get { return new VirtualDiskLayer[] { _file }; }
+            get { return new VirtualDiskLayer[] { this.file }; }
         }
 
+        /// <inheritdoc/>
         public override PartitionTable Partitions
         {
-            get { return new UdifPartitionTable(this, _file.Buffer); }
+            get { return new UdifPartitionTable(this, this.file.Buffer); }
         }
 
         /// <summary>
@@ -156,16 +159,16 @@ namespace DiscUtils.Dmg
             {
                 if (disposing)
                 {
-                    if (_content != null)
+                    if (this.content != null)
                     {
-                        _content.Dispose();
-                        _content = null;
+                        this.content.Dispose();
+                        this.content = null;
                     }
 
-                    if (_file != null)
+                    if (this.file != null)
                     {
-                        _file.Dispose();
-                        _file = null;
+                        this.file.Dispose();
+                        this.file = null;
                     }
                 }
             }

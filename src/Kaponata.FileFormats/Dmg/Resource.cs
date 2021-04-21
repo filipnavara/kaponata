@@ -20,6 +20,8 @@
 // DEALINGS IN THE SOFTWARE.
 //
 
+#nullable disable
+
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -31,8 +33,8 @@ namespace DiscUtils.Dmg
     {
         protected Resource(string type, Dictionary<string, object> parts)
         {
-            Type = type;
-            Name = parts["Name"] as string;
+            this.Type = type;
+            this.Name = parts["Name"] as string;
 
             string idStr = parts["ID"] as string;
             if (!string.IsNullOrEmpty(idStr))
@@ -43,7 +45,7 @@ namespace DiscUtils.Dmg
                     throw new InvalidDataException("Invalid ID field");
                 }
 
-                Id = id;
+                this.Id = id;
             }
 
             string attrString = parts["Attributes"] as string;
@@ -62,7 +64,7 @@ namespace DiscUtils.Dmg
                     throw new InvalidDataException("Invalid Attributes field");
                 }
 
-                Attributes = attributes;
+                this.Attributes = attributes;
             }
         }
 

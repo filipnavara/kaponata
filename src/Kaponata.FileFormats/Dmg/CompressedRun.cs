@@ -20,35 +20,42 @@
 // DEALINGS IN THE SOFTWARE.
 //
 
-using System;
 using DiscUtils.Streams;
+using System;
 
 namespace DiscUtils.Dmg
 {
     internal class CompressedRun : IByteArraySerializable
     {
-        public long CompLength;
-        public long CompOffset;
-        public long SectorCount;
-        public long SectorStart;
-        public RunType Type;
+        public long CompLength { get; set; }
 
+        public long CompOffset { get; set; }
+
+        public long SectorCount { get; set; }
+
+        public long SectorStart { get; set; }
+
+        public RunType Type { get; set; }
+
+        /// <inheritdoc/>
         public int Size
         {
             get { return 40; }
         }
 
+        /// <inheritdoc/>
         public int ReadFrom(byte[] buffer, int offset)
         {
-            Type = (RunType)EndianUtilities.ToUInt32BigEndian(buffer, offset + 0);
-            SectorStart = EndianUtilities.ToInt64BigEndian(buffer, offset + 8);
-            SectorCount = EndianUtilities.ToInt64BigEndian(buffer, offset + 16);
-            CompOffset = EndianUtilities.ToInt64BigEndian(buffer, offset + 24);
-            CompLength = EndianUtilities.ToInt64BigEndian(buffer, offset + 32);
+            this.Type = (RunType)EndianUtilities.ToUInt32BigEndian(buffer, offset + 0);
+            this.SectorStart = EndianUtilities.ToInt64BigEndian(buffer, offset + 8);
+            this.SectorCount = EndianUtilities.ToInt64BigEndian(buffer, offset + 16);
+            this.CompOffset = EndianUtilities.ToInt64BigEndian(buffer, offset + 24);
+            this.CompLength = EndianUtilities.ToInt64BigEndian(buffer, offset + 32);
 
             return 40;
         }
 
+        /// <inheritdoc/>
         public void WriteTo(byte[] buffer, int offset)
         {
             throw new NotImplementedException();

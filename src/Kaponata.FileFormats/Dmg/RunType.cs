@@ -32,6 +32,6 @@ namespace DiscUtils.Dmg
         BZlibCompressed = 0x80000006,
         LzfseCompressed = 0x80000007,
         Comment = 0x7FFFFFFE,
-        Terminator = 0xFFFFFFFF
+        Terminator = 0xFFFFFFFF,
     }
 }

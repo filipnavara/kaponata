@@ -20,8 +20,8 @@
 // DEALINGS IN THE SOFTWARE.
 //
 
-using System.Collections.Generic;
 using DiscUtils.Streams;
+using System.Collections.Generic;
 
 namespace DiscUtils.Dmg
 {
@@ -30,7 +30,7 @@ namespace DiscUtils.Dmg
         internal BlkxResource(Dictionary<string, object> parts)
             : base("blkx", parts)
         {
-            Block = EndianUtilities.ToStruct<CompressedBlock>(parts["Data"] as byte[], 0);
+            this.Block = EndianUtilities.ToStruct<CompressedBlock>(parts["Data"] as byte[], 0);
         }
 
         public CompressedBlock Block { get; }

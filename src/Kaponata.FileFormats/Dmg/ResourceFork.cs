@@ -20,6 +20,8 @@
 // DEALINGS IN THE SOFTWARE.
 //
 
+#nullable disable
+
 using System;
 using System.Collections.Generic;
 
@@ -27,18 +29,18 @@ namespace DiscUtils.Dmg
 {
     internal class ResourceFork
     {
-        private readonly List<Resource> _resources;
+        private readonly List<Resource> resources;
 
         public ResourceFork(List<Resource> resources)
         {
-            _resources = resources;
+            this.resources = resources;
         }
 
         public IList<Resource> GetAllResources(string type)
         {
             List<Resource> results = new List<Resource>();
 
-            foreach (Resource res in _resources)
+            foreach (Resource res in this.resources)
             {
                 if (res.Type == type)
                 {

@@ -20,6 +20,8 @@
 // DEALINGS IN THE SOFTWARE.
 //
 
+#nullable disable
+
 using System.Collections.Generic;
 
 namespace DiscUtils.Dmg
@@ -29,7 +31,7 @@ namespace DiscUtils.Dmg
         internal GenericResource(string type, Dictionary<string, object> parts)
             : base(type, parts)
         {
-            Data = parts["Data"] as byte[];
+            this.Data = parts["Data"] as byte[];
         }
 
         public byte[] Data { get; set; }

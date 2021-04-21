@@ -20,31 +20,32 @@
 // DEALINGS IN THE SOFTWARE.
 //
 
+using DiscUtils.Partitions;
 using System;
 using System.Collections.ObjectModel;
-using DiscUtils.Partitions;
 
 namespace DiscUtils.Dmg
 {
     internal class UdifPartitionTable : PartitionTable
     {
-        private readonly UdifBuffer _buffer;
-        private readonly Disk _disk;
-        private readonly Collection<PartitionInfo> _partitions;
+        private readonly UdifBuffer buffer;
+        private readonly Disk disk;
+        private readonly Collection<PartitionInfo> partitions;
 
         public UdifPartitionTable(Disk disk, UdifBuffer buffer)
         {
-            _buffer = buffer;
-            _partitions = new Collection<PartitionInfo>();
-            _disk = disk;
+            this.buffer = buffer;
+            this.partitions = new Collection<PartitionInfo>();
+            this.disk = disk;
 
-            foreach (CompressedBlock block in _buffer.Blocks)
+            foreach (CompressedBlock block in this.buffer.Blocks)
             {
-                UdifPartitionInfo partition = new UdifPartitionInfo(_disk, block);
-                _partitions.Add(partition);
+                UdifPartitionInfo partition = new UdifPartitionInfo(this.disk, block);
+                this.partitions.Add(partition);
             }
         }
 
+        /// <inheritdoc/>
         public override Guid DiskGuid
         {
             get { return Guid.Empty; }
@@ -55,29 +56,34 @@ namespace DiscUtils.Dmg
         /// </summary>
         public override ReadOnlyCollection<PartitionInfo> Partitions
         {
-            get { return new ReadOnlyCollection<PartitionInfo>(_partitions); }
+            get { return new ReadOnlyCollection<PartitionInfo>(this.partitions); }
         }
 
+        /// <inheritdoc/>
         public override void Delete(int index)
         {
             throw new NotImplementedException();
         }
 
+        /// <inheritdoc/>
         public override int CreateAligned(long size, WellKnownPartitionType type, bool active, int alignment)
         {
             throw new NotImplementedException();
         }
 
+        /// <inheritdoc/>
         public override int Create(long size, WellKnownPartitionType type, bool active)
         {
             throw new NotImplementedException();
         }
 
+        /// <inheritdoc/>
         public override int CreateAligned(WellKnownPartitionType type, bool active, int alignment)
         {
             throw new NotImplementedException();
         }
 
+        /// <inheritdoc/>
         public override int Create(WellKnownPartitionType type, bool active)
         {
             throw new NotImplementedException();
