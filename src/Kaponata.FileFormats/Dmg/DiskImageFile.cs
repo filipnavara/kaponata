@@ -57,15 +57,17 @@ namespace DiscUtils.Dmg
 
             this.udifHeader.ReadFrom(data, 0);
 
-            if (this.udifHeader.SignatureValid)
+            if (!this.udifHeader.SignatureValid)
             {
-                stream.Position = (long)this.udifHeader.XmlOffset;
-                byte[] xmlData = StreamUtilities.ReadExact(stream, (int)this.udifHeader.XmlLength);
-                Dictionary<string, object> plist = (Dictionary<string, object>)XmlPropertyListParser.Parse(xmlData).ToObject();
-
-                this.resources = ResourceFork.FromPlist(plist);
-                this.Buffer = new UdifBuffer(stream, this.resources, this.udifHeader.SectorCount);
+                throw new InvalidDataException("The file is not a valid DMG file: could not read the UDIF header.");
             }
+
+            stream.Position = (long)this.udifHeader.XmlOffset;
+            byte[] xmlData = StreamUtilities.ReadExact(stream, (int)this.udifHeader.XmlLength);
+            Dictionary<string, object> plist = (Dictionary<string, object>)XmlPropertyListParser.Parse(xmlData).ToObject();
+
+            this.resources = ResourceFork.FromPlist(plist);
+            this.Buffer = new UdifBuffer(stream, this.resources, this.udifHeader.SectorCount);
         }
 
         /// <summary>
