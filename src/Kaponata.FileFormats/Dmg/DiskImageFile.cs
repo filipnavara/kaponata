@@ -22,6 +22,7 @@
 
 #nullable disable
 
+using Claunia.PropertyList;
 using DiscUtils.Streams;
 using System;
 using System.Collections.Generic;
@@ -56,7 +57,7 @@ namespace DiscUtils.Dmg
             {
                 stream.Position = (long)this.udifHeader.XmlOffset;
                 byte[] xmlData = StreamUtilities.ReadExact(stream, (int)this.udifHeader.XmlLength);
-                Dictionary<string, object> plist = Plist.Parse(new MemoryStream(xmlData));
+                Dictionary<string, object> plist = (Dictionary<string, object>)XmlPropertyListParser.Parse(xmlData).ToObject();
 
                 this.resources = ResourceFork.FromPlist(plist);
                 this.Buffer = new UdifBuffer(stream, this.resources, this.udifHeader.SectorCount);

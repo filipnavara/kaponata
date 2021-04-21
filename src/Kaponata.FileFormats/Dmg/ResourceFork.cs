@@ -65,7 +65,7 @@ namespace DiscUtils.Dmg
 
             foreach (string type in types.Keys)
             {
-                List<object> typeResources = types[type] as List<object>;
+                var typeResources = types[type] as IEnumerable<object>;
                 foreach (object typeResource in typeResources)
                 {
                     resources.Add(Resource.FromPlist(type, typeResource as Dictionary<string, object>));
