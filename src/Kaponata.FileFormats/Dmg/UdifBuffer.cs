@@ -112,6 +112,7 @@ namespace DiscUtils.Dmg
                 switch (this.activeRun.Type)
                 {
                     case RunType.Zeros:
+                    case RunType.None:
                         Array.Clear(buffer, offset + totalCopied, toCopy);
                         break;
 
@@ -355,6 +356,7 @@ namespace DiscUtils.Dmg
 
                 case RunType.Zeros:
                 case RunType.Raw:
+                case RunType.None:
                     break;
 
                 default:
