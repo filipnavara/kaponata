@@ -1,5 +1,6 @@
-﻿//
-// Copyright (c) 2014, Quamotion
+﻿// <copyright file="UdifPartitionInfo.cs" company="Quamotion bv">
+// Copyright (c) Quamotion bv. All rights reserved.
+// </copyright>
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
 // copy of this software and associated documentation files (the "Software"),

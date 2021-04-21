@@ -1,5 +1,7 @@
-//
+// <copyright file="Resource.cs" company="Kenneth Bell, Quamotion bv">
 // Copyright (c) 2008-2011, Kenneth Bell
+// Copyright (c) Quamotion bv. All rights reserved.
+// </copyright>
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
 // copy of this software and associated documentation files (the "Software"),
