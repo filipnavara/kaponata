@@ -90,7 +90,18 @@ namespace DiscUtils.Dmg
         /// BIOS geometry is preserved in the disk file.</remarks>
         public override VirtualDiskTypeInfo DiskTypeInfo
         {
-            get { return DiskFactory.MakeDiskTypeInfo(); }
+            get
+            {
+                return new VirtualDiskTypeInfo
+                {
+                    Name = "DMG",
+                    Variant = string.Empty,
+                    CanBeHardDisk = true,
+                    DeterministicGeometry = true,
+                    PreservesBiosGeometry = false,
+                    CalcGeometry = c => Geometry.FromCapacity(c),
+                };
+            }
         }
 
         /// <summary>
