@@ -27,15 +27,34 @@ using System.Collections.Generic;
 
 namespace DiscUtils.Dmg
 {
+    /// <summary>
+    /// The main resource fork of this DMG file. Embedded as a property list in the
+    /// trailer of the DMG file.
+    /// </summary>
     internal class ResourceFork
     {
         private readonly List<Resource> resources;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ResourceFork"/> class.
+        /// </summary>
+        /// <param name="resources">
+        /// The individual resources in the resource fork.
+        /// </param>
         public ResourceFork(List<Resource> resources)
         {
             this.resources = resources;
         }
 
+        /// <summary>
+        /// Lists all resources of a given type which are embedded in this DMG file.
+        /// </summary>
+        /// <param name="type">
+        /// The the type of resource to retrieve.
+        /// </param>
+        /// <returns>
+        /// A list of all resources of the requested type.
+        /// </returns>
         public IList<Resource> GetAllResources(string type)
         {
             List<Resource> results = new List<Resource>();
@@ -51,6 +70,15 @@ namespace DiscUtils.Dmg
             return results;
         }
 
+        /// <summary>
+        /// Creates a new <see cref="ResourceFork"/> object based on the metadata.
+        /// </summary>
+        /// <param name="plist">
+        /// The property list data which describes the <see cref="ResourceFork"/>.
+        /// </param>
+        /// <returns>
+        /// A <see cref="ResourceFork"/> object.
+        /// </returns>
         internal static ResourceFork FromPlist(Dictionary<string, object> plist)
         {
             object typesObject;

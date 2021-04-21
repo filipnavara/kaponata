@@ -30,6 +30,9 @@ using System.IO;
 
 namespace DiscUtils.Dmg
 {
+    /// <summary>
+    /// A <see cref="VirtualDiskLayer"/> wich provides access to a DMG file.
+    /// </summary>
     internal sealed class DiskImageFile : VirtualDiskLayer
     {
         private readonly Ownership ownsStream;
@@ -64,6 +67,9 @@ namespace DiscUtils.Dmg
             }
         }
 
+        /// <summary>
+        /// Gets the <see cref="UdifBuffer"/> which enables access to the data stored on the disk.
+        /// </summary>
         public UdifBuffer Buffer { get; }
 
         /// <inheritdoc/>

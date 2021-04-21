@@ -25,14 +25,26 @@ using System.Collections.Generic;
 
 namespace DiscUtils.Dmg
 {
+    /// <summary>
+    /// Represents a <c>blkx</c> resource.
+    /// </summary>
     internal class BlkxResource : Resource
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BlkxResource"/> class.
+        /// </summary>
+        /// <param name="parts">
+        /// A dictionary which contains the metadata (property list data) of the blkx resource.
+        /// </param>
         internal BlkxResource(Dictionary<string, object> parts)
             : base("blkx", parts)
         {
             this.Block = EndianUtilities.ToStruct<CompressedBlock>(parts["Data"] as byte[], 0);
         }
 
+        /// <summary>
+        /// Gets the <see cref="CompressedBlock"/> which contains the data of this resource.
+        /// </summary>
         public CompressedBlock Block { get; }
     }
 }

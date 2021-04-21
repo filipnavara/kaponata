@@ -26,14 +26,29 @@ using System.Collections.Generic;
 
 namespace DiscUtils.Dmg
 {
+    /// <summary>
+    /// A generic resource in the DMG file.
+    /// </summary>
     internal class GenericResource : Resource
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="GenericResource"/> class.
+        /// </summary>
+        /// <param name="type">
+        /// The resource type.
+        /// </param>
+        /// <param name="parts">
+        /// A dictionary (property list) which contains the resource metadata.
+        /// </param>
         internal GenericResource(string type, Dictionary<string, object> parts)
             : base(type, parts)
         {
             this.Data = parts["Data"] as byte[];
         }
 
-        public byte[] Data { get; set; }
+        /// <summary>
+        /// Gets additional data embedded in this resource.
+        /// </summary>
+        public byte[] Data { get; }
     }
 }

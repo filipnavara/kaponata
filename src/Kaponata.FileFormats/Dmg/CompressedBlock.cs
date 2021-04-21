@@ -28,24 +28,57 @@ using System.Collections.Generic;
 
 namespace DiscUtils.Dmg
 {
+    /// <summary>
+    /// Contains information about a block of compressed data in a DMG file. Also known
+    /// as a <c>blkx</c> descriptor. A compressed block usually maps to an entire partition.
+    /// </summary>
+    /// <seealso href="http://newosxbook.com/DMG.html"/>
     internal class CompressedBlock : IByteArraySerializable
     {
+        /// <summary>
+        /// Gets or sets the number of block descriptors.
+        /// </summary>
         public uint BlocksDescriptor { get; set; }
 
+        /// <summary>
+        /// Gets or sets a checksum for the current block.
+        /// </summary>
         public UdifChecksum CheckSum { get; set; }
 
+        /// <summary>
+        /// Gets or sets the offset at which the data starts.
+        /// </summary>
         public ulong DataStart { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether decompress buffers are required
+        /// when processing this block.
+        /// </summary>
         public uint DecompressBufferRequested { get; set; }
 
+        /// <summary>
+        /// Gets or sets the starting disk sector in this <c>blkx</c> descriptor.
+        /// </summary>
         public long FirstSector { get; set; }
 
+        /// <summary>
+        /// Gets or sets the version number of this header.
+        /// </summary>
         public uint InfoVersion { get; set; }
 
+        /// <summary>
+        /// Gets or sets a list containing all individual run entries in this block.
+        /// </summary>
         public List<CompressedRun> Runs { get; set; }
 
+        /// <summary>
+        /// Gets or sets the total number of disk sectors in this <c>blkx</c> descriptor.
+        /// </summary>
         public long SectorCount { get; set; }
 
+        /// <summary>
+        /// Gets or sets the magic of this compressed block. Always <c>mish</c>.
+        /// </summary>
         public uint Signature { get; set; }
 
         /// <inheritdoc/>

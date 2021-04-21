@@ -28,11 +28,23 @@ using System;
 
 namespace DiscUtils.Dmg
 {
+    /// <summary>
+    /// Provides information about an individual partition in a DMG file.
+    /// </summary>
     internal class UdifPartitionInfo : PartitionInfo
     {
         private readonly CompressedBlock block;
         private readonly Disk disk;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="UdifPartitionInfo"/> class.
+        /// </summary>
+        /// <param name="disk">
+        /// The disk to which the partition belongs.
+        /// </param>
+        /// <param name="block">
+        /// A <see cref="CompressedBlock"/> which represents the individual partition.
+        /// </param>
         public UdifPartitionInfo(Disk disk, CompressedBlock block)
         {
             this.block = block;

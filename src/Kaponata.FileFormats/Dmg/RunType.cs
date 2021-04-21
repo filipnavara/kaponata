@@ -22,16 +22,55 @@
 
 namespace DiscUtils.Dmg
 {
+    /// <summary>
+    /// Determines the approach used to store data in a <see cref="CompressedRun"/>.
+    /// </summary>
     internal enum RunType : uint
     {
+        /// <summary>
+        /// Data is zero-filled.
+        /// </summary>
         None = 0x00000000,
+
+        /// <summary>
+        /// The data is not compressed.
+        /// </summary>
         Raw = 0x00000001,
+
+        /// <summary>
+        /// The data is zero-filled.
+        /// </summary>
         Zeros = 0x00000002,
+
+        /// <summary>
+        /// The data is compressed using Apple Data Compression (ADC).
+        /// </summary>
         AdcCompressed = 0x80000004,
+
+        /// <summary>
+        /// The data is compressed using zlib data compressed.
+        /// </summary>
         ZlibCompressed = 0x80000005,
+
+        /// <summary>
+        /// The data is compressed uzing bz2lib data compression.
+        /// </summary>
         BZlibCompressed = 0x80000006,
+
+        /// <summary>
+        /// THe data is compressed using LZFSE data compression.
+        /// </summary>
         LzfseCompressed = 0x80000007,
+
+        /// <summary>
+        /// The <see cref="CompressedRun"/> represents a comment, not actual data.
+        /// </summary>
         Comment = 0x7FFFFFFE,
+
+        /// <summary>
+        /// The <see cref="CompressedRun"/> is the last entry. This run contains no
+        /// actual data.
+        /// </summary>
         Terminator = 0xFFFFFFFF,
     }
 }

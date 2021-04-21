@@ -29,8 +29,21 @@ using System.IO;
 
 namespace DiscUtils.Dmg
 {
+    /// <summary>
+    /// Represents an individual resource in the DMG file.
+    /// </summary>
+    /// <seealso href="http://newosxbook.com/DMG.html"/>
     internal abstract class Resource
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Resource"/> class.
+        /// </summary>
+        /// <param name="type">
+        /// The resource data.
+        /// </param>
+        /// <param name="parts">
+        /// Metadata (property list data) which describes the resource.
+        /// </param>
         protected Resource(string type, Dictionary<string, object> parts)
         {
             this.Type = type;
@@ -68,14 +81,38 @@ namespace DiscUtils.Dmg
             }
         }
 
+        /// <summary>
+        /// Gets or sets additional attributes of this resource.
+        /// </summary>
         public uint Attributes { get; set; }
 
+        /// <summary>
+        /// Gets or sets a number which uniquely identifies this resource.
+        /// </summary>
         public int Id { get; set; }
 
+        /// <summary>
+        /// Gets or sets a user-friendly name of this resource.
+        /// </summary>
         public string Name { get; set; }
 
+        /// <summary>
+        /// Gets the type of resource.
+        /// </summary>
         public string Type { get; }
 
+        /// <summary>
+        /// Creates a <see cref="Resource"/> object based on the property list data.
+        /// </summary>
+        /// <param name="type">
+        /// The resource type.
+        /// </param>
+        /// <param name="parts">
+        /// The resource metadata.
+        /// </param>
+        /// <returns>
+        /// A new <see cref="Resource"/> object.
+        /// </returns>
         internal static Resource FromPlist(string type, Dictionary<string, object> parts)
         {
             switch (type)

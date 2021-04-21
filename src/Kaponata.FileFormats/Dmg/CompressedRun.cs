@@ -25,16 +25,37 @@ using System;
 
 namespace DiscUtils.Dmg
 {
+    /// <summary>
+    /// Represents an individual compressed run in a <see cref="CompressedBlock"/> entry.
+    /// </summary>
     internal class CompressedRun : IByteArraySerializable
     {
+        /// <summary>
+        /// Gets or sets the length of the compressed data of this <see cref="CompressedRun"/>,
+        /// expressed in bytes.
+        /// </summary>
         public long CompLength { get; set; }
 
+        /// <summary>
+        /// Gets or sets the offset of this <see cref="CompressedRun"/>, relative to the start
+        /// of the data fork.
+        /// </summary>
         public long CompOffset { get; set; }
 
+        /// <summary>
+        /// Gets or sets length of the decompresed data of this <see cref="CompressedRun"/>, expressed
+        /// in sectors.
+        /// </summary>
         public long SectorCount { get; set; }
 
+        /// <summary>
+        /// Gets or sets the number of the first sector in this <see cref="CompressedRun"/>.
+        /// </summary>
         public long SectorStart { get; set; }
 
+        /// <summary>
+        /// Gets or sets the compression type used for this <see cref="CompressedRun"/>.
+        /// </summary>
         public RunType Type { get; set; }
 
         /// <inheritdoc/>

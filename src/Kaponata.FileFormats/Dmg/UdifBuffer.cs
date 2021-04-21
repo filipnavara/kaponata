@@ -30,6 +30,9 @@ using Buffer=DiscUtils.Streams.Buffer;
 
 namespace DiscUtils.Dmg
 {
+    /// <summary>
+    /// A <see cref="Buffer"/> which supports reading data from a DMG file.
+    /// </summary>
     internal class UdifBuffer : Buffer
     {
         private readonly ResourceFork resources;
@@ -41,6 +44,18 @@ namespace DiscUtils.Dmg
 
         private byte[] decompBuffer;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="UdifBuffer"/> class.
+        /// </summary>
+        /// <param name="stream">
+        /// A <see cref="Stream"/> which provides access to the raw dmg image.
+        /// </param>
+        /// <param name="resources">
+        /// The resource fork.
+        /// </param>
+        /// <param name="sectorCount">
+        /// The total number of sectors in the disk image.
+        /// </param>
         public UdifBuffer(Stream stream, ResourceFork resources, long sectorCount)
         {
             this.stream = stream;
@@ -55,6 +70,9 @@ namespace DiscUtils.Dmg
             }
         }
 
+        /// <summary>
+        /// Gets a list of blocks which provide access to the raw, compressed data.
+        /// </summary>
         public List<CompressedBlock> Blocks { get; }
 
         /// <inheritdoc/>

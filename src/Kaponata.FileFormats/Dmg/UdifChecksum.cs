@@ -27,12 +27,26 @@ using System;
 
 namespace DiscUtils.Dmg
 {
+    /// <summary>
+    /// Represents a checksum found in DMG files.
+    /// </summary>
+    /// <seealso href="http://newosxbook.com/DMG.html"/>
     internal class UdifChecksum : IByteArraySerializable
     {
+        /// <summary>
+        /// Gets or sets the size of the checksum.
+        /// </summary>
         public uint ChecksumSize { get; set; }
 
+        /// <summary>
+        /// Gets or sets the actual checksum data.
+        /// </summary>
         public byte[] Data { get; set; }
 
+        /// <summary>
+        /// Gets or sets the type of data being checked (e.g. data fork
+        /// or master).
+        /// </summary>
         public uint Type { get; set; }
 
         /// <inheritdoc/>

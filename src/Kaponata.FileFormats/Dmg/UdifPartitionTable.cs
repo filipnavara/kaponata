@@ -26,12 +26,24 @@ using System.Collections.ObjectModel;
 
 namespace DiscUtils.Dmg
 {
+    /// <summary>
+    /// A <see cref="PartitionTable"/> which is read from a DMG file.
+    /// </summary>
     internal class UdifPartitionTable : PartitionTable
     {
         private readonly UdifBuffer buffer;
         private readonly Disk disk;
         private readonly Collection<PartitionInfo> partitions;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="UdifPartitionTable"/> class.
+        /// </summary>
+        /// <param name="disk">
+        /// The disk to which the partition table belongs.
+        /// </param>
+        /// <param name="buffer">
+        /// A <see cref="UdifBuffer"/> which supports reading data from the disk.
+        /// </param>
         public UdifPartitionTable(Disk disk, UdifBuffer buffer)
         {
             this.buffer = buffer;
