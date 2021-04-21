@@ -59,9 +59,14 @@ namespace DiscUtils.Dmg
         BZlibCompressed = 0x80000006,
 
         /// <summary>
-        /// THe data is compressed using LZFSE data compression.
+        /// The data is compressed using LZFSE data compression.
         /// </summary>
         LzfseCompressed = 0x80000007,
+
+        /// <summary>
+        /// The data is compressed uzing LZMA data compresion.
+        /// </summary>
+        LzmaCompressed = 0x80000008,
 
         /// <summary>
         /// The <see cref="CompressedRun"/> represents a comment, not actual data.
