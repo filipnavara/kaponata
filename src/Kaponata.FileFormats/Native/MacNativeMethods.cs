@@ -1,4 +1,8 @@
-﻿using System;
+﻿// <copyright file="MacNativeMethods.cs" company="Quamotion bv">
+// Copyright (c) Quamotion bv. All rights reserved.
+// </copyright>
+
+using System;
 using System.Runtime.InteropServices;
 
 namespace Packaging.Targets.Native

@@ -1,4 +1,8 @@
-﻿namespace Packaging.Targets.IO
+﻿// <copyright file="LzmaCheck.cs" company="Quamotion bv">
+// Copyright (c) Quamotion bv. All rights reserved.
+// </copyright>
+
+namespace Packaging.Targets.IO
 {
     /// <summary>
     /// Type of the integrity check (Check ID)

@@ -1,4 +1,8 @@
-﻿namespace Packaging.Targets.IO
+﻿// <copyright file="LzmaAction.cs" company="Quamotion bv">
+// Copyright (c) Quamotion bv. All rights reserved.
+// </copyright>
+
+namespace Packaging.Targets.IO
 {
     /// <summary>
     /// The `action' argument for lzma_code()

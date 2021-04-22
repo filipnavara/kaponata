@@ -1,4 +1,8 @@
-﻿using System;
+﻿// <copyright file="FunctionLoader.cs" company="Quamotion bv">
+// Copyright (c) Quamotion bv. All rights reserved.
+// </copyright>
+
+using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 

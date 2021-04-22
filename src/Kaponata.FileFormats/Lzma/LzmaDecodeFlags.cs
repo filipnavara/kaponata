@@ -1,4 +1,8 @@
-﻿namespace Packaging.Targets.IO
+﻿// <copyright file="LzmaDecodeFlags.cs" company="Quamotion bv">
+// Copyright (c) Quamotion bv. All rights reserved.
+// </copyright>
+
+namespace Packaging.Targets.IO
 {
     /// <summary>
     /// Flags that control the decoding behavior of liblzma.

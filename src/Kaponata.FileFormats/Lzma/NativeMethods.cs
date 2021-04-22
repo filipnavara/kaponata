@@ -1,4 +1,8 @@
-﻿using System;
+﻿// <copyright file="NativeMethods.cs" company="Quamotion bv">
+// Copyright (c) Quamotion bv. All rights reserved.
+// </copyright>
+
+using System;
 using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;

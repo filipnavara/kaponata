@@ -1,4 +1,8 @@
-﻿using System;
+﻿// <copyright file="LzmaMT.cs" company="Quamotion bv">
+// Copyright (c) Quamotion bv. All rights reserved.
+// </copyright>
+
+using System;
 
 namespace Packaging.Targets.IO
 {
