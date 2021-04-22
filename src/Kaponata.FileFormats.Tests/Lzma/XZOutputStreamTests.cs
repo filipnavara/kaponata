@@ -117,13 +117,50 @@ namespace Kaponata.FileFormats.Tests.Lzma
         }
 
         /// <summary>
-        /// <see cref="XZOutputStream.Write(byte[], int, int)"/> decompresses an .xz stream.
+        /// <see cref="XZOutputStream.Write(byte[], int, int)"/> compresses an .xz stream.
         /// </summary>
         [Fact]
         public void Write_Works()
         {
             using (Stream stream = new MemoryStream())
             using (XZOutputStream xzStream = new XZOutputStream(stream))
+            {
+                byte[] buffer = Encoding.UTF8.GetBytes("Hello, World!\n");
+
+                xzStream.Write(buffer, 0, buffer.Length);
+
+                xzStream.Dispose();
+                Assert.Throws<ObjectDisposedException>(() => xzStream.Write(buffer, 0, 128));
+            }
+        }
+
+        /// <summary>
+        /// <see cref="XZOutputStream.Write(byte[], int, int)"/> compresses an .xz stream in single-threaded mode.
+        /// </summary>
+        [Fact]
+        public void Write_SingleThreaded_Works()
+        {
+            using (Stream stream = new MemoryStream())
+            using (XZOutputStream xzStream = new XZOutputStream(stream, threads: 1))
+            {
+                byte[] buffer = Encoding.UTF8.GetBytes("Hello, World!\n");
+
+                xzStream.Write(buffer, 0, buffer.Length);
+
+                xzStream.Dispose();
+                Assert.Throws<ObjectDisposedException>(() => xzStream.Write(buffer, 0, 128));
+            }
+        }
+
+        /// <summary>
+        /// <see cref="XZOutputStream.Write(byte[], int, int)"/> compresses an .xz stream even when
+        /// the number of threads is too large.
+        /// </summary>
+        [Fact]
+        public void Write_OverThreaded_Works()
+        {
+            using (Stream stream = new MemoryStream())
+            using (XZOutputStream xzStream = new XZOutputStream(stream, threads: 5 * Environment.ProcessorCount))
             {
                 byte[] buffer = Encoding.UTF8.GetBytes("Hello, World!\n");
 

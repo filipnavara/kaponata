@@ -178,6 +178,34 @@ namespace Kaponata.FileFormats.Tests.Lzma
         }
 
         /// <summary>
+        /// <see cref="XZInputStream.Read(byte[], int, int)"/> decompresses an .xz or .lzma stream,
+        /// using partial reads.
+        /// </summary>
+        /// <param name="path">
+        /// The path to the file to parse.
+        /// </param>
+        [Theory]
+        [InlineData("Lzma/hello.xz")]
+        [InlineData("Lzma/hello.lzma")]
+        public void Read_Partial_Works(string path)
+        {
+            using (Stream stream = File.OpenRead(path))
+            using (XZInputStream xzStream = new XZInputStream(stream))
+            {
+                byte[] buffer = new byte[128];
+                Assert.Equal(7, xzStream.Read(buffer, 0, 7));
+                Assert.Equal(7, xzStream.Read(buffer, 7, 7));
+                Assert.Equal(0, xzStream.Read(buffer, 14, 114));
+
+                Assert.Equal("Hello, World!\n", Encoding.UTF8.GetString(buffer, 0, 14));
+
+                xzStream.Dispose();
+
+                Assert.Throws<ObjectDisposedException>(() => xzStream.Read(buffer, 0, 128));
+            }
+        }
+
+        /// <summary>
         /// <see cref="XZInputStream.Read(byte[], int, int)"/> throws when parsing invalid data.
         /// </summary>
         /// <param name="path">
