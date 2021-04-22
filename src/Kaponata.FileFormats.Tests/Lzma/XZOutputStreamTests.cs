@@ -2,7 +2,7 @@
 // Copyright (c) Quamotion bv. All rights reserved.
 // </copyright>
 
-using Packaging.Targets.IO;
+using Kaponata.FileFormats.Lzma;
 using System;
 using System.IO;
 using System.Text;

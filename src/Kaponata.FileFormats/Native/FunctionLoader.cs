@@ -9,7 +9,7 @@ using System.Runtime.InteropServices;
 
 #nullable disable
 
-namespace Packaging.Targets.Native
+namespace Kaponata.FileFormats.Native
 {
     /// <summary>
     /// Supports loading functions from native libraries. Provides a more flexible alternative to P/Invoke.

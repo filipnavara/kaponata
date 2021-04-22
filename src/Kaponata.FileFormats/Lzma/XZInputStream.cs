@@ -26,7 +26,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
 
-namespace Packaging.Targets.IO
+namespace Kaponata.FileFormats.Lzma
 {
     /// <summary>
     /// Represents a <see cref="Stream"/> which can decompress xz-compressed data.

@@ -4,7 +4,7 @@
 
 using System;
 
-namespace Packaging.Targets.IO
+namespace Kaponata.FileFormats.Lzma
 {
     /// <summary>
     /// The exception which is thrown when an LZMA error occurs.

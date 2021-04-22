@@ -2,8 +2,9 @@
 // Copyright (c) Quamotion bv. All rights reserved.
 // </copyright>
 
-using Packaging.Targets.Native;
+using Kaponata.FileFormats.Native;
 using System;
+using System.Collections.Generic;
 using Xunit;
 
 namespace Kaponata.FileFormats.Tests.Native
@@ -14,7 +15,7 @@ namespace Kaponata.FileFormats.Tests.Native
     public class FunctionLoaderTests
     {
         /// <summary>
-        /// <see cref="FunctionLoader.LoadNativeLibrary(System.Collections.Generic.IEnumerable{string})"/>
+        /// <see cref="FunctionLoader.LoadNativeLibrary(IEnumerable{string})"/>
         /// returns a zero pointer when the library is missing.
         /// </summary>
         [Fact]

@@ -4,7 +4,7 @@
 
 using System.Runtime.InteropServices;
 
-namespace Packaging.Targets.IO
+namespace Kaponata.FileFormats.Lzma
 {
     /// <summary>
     /// Options for encoding/decoding Stream Header and Stream Footer.

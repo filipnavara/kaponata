@@ -4,7 +4,7 @@
 
 using System;
 
-namespace Packaging.Targets.IO
+namespace Kaponata.FileFormats.Lzma
 {
     /// <summary>
     /// Return values used by several functions in liblzma.

@@ -27,7 +27,7 @@ using System.IO;
 
 #nullable disable
 
-namespace Packaging.Targets.IO
+namespace Kaponata.FileFormats.Lzma
 {
     /// <summary>
     /// A <see cref="Stream"/> which writes XZ (or LZMA)-compressed data.

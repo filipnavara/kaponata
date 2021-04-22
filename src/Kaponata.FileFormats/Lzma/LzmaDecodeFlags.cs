@@ -2,7 +2,7 @@
 // Copyright (c) Quamotion bv. All rights reserved.
 // </copyright>
 
-namespace Packaging.Targets.IO
+namespace Kaponata.FileFormats.Lzma
 {
     /// <summary>
     /// Flags that control the decoding behavior of liblzma.

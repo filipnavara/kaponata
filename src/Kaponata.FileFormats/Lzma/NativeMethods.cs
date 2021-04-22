@@ -2,13 +2,13 @@
 // Copyright (c) Quamotion bv. All rights reserved.
 // </copyright>
 
+using Kaponata.FileFormats.Native;
 using System;
 using System.IO;
-using FunctionLoader = Packaging.Targets.Native.FunctionLoader;
 
 #nullable disable
 
-namespace Packaging.Targets.IO
+namespace Kaponata.FileFormats.Lzma
 {
     /// <summary>
     /// Provides access to the liblzma API. liblzma is part of the xz suite.

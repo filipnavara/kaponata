@@ -4,7 +4,7 @@
 
 using System;
 
-namespace Packaging.Targets.IO
+namespace Kaponata.FileFormats.Lzma
 {
 #pragma warning disable SA1307 // Accessible fields must begin with upper-case letter
 #pragma warning disable SA1310 // Field names must not contain underscore
