@@ -62,8 +62,8 @@ namespace DiscUtils.Dmg
         /// </param>
         public UdifBuffer(Stream stream, ResourceFork resources, long sectorCount)
         {
-            this.stream = stream;
-            this.resources = resources;
+            this.stream = stream ?? throw new ArgumentNullException(nameof(stream));
+            this.resources = resources ?? throw new ArgumentNullException(nameof(resources));
             this.sectorCount = sectorCount;
 
             this.Blocks = new List<CompressedBlock>();
