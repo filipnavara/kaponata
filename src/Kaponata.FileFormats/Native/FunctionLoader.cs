@@ -14,7 +14,7 @@ namespace Packaging.Targets.Native
     /// <summary>
     /// Supports loading functions from native libraries. Provides a more flexible alternative to P/Invoke.
     /// </summary>
-    internal static class FunctionLoader
+    public static class FunctionLoader
     {
         /// <summary>
         /// Attempts to load a native library.
@@ -118,9 +118,7 @@ namespace Packaging.Targets.Native
         public static T LoadFunctionDelegate<T>(IntPtr nativeLibraryHandle, string functionName, bool throwOnError = true)
             where T : class
         {
-            IntPtr ptr = NativeLibrary.GetExport(nativeLibraryHandle, functionName);
-
-            if (ptr == IntPtr.Zero)
+            if (!NativeLibrary.TryGetExport(nativeLibraryHandle, functionName, address: out IntPtr address))
             {
                 if (throwOnError)
                 {
@@ -132,7 +130,7 @@ namespace Packaging.Targets.Native
                 }
             }
 
-            return Marshal.GetDelegateForFunctionPointer<T>(ptr);
+            return Marshal.GetDelegateForFunctionPointer<T>(address);
         }
     }
 }

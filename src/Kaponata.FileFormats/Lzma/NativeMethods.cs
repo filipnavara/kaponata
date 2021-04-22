@@ -49,7 +49,7 @@ namespace Packaging.Targets.IO
 
             if (library == IntPtr.Zero)
             {
-                throw new FileLoadException("Could not load liblzma. On Linux, make sure you've installed liblzma-dev or an equivalent package.");
+                throw new FileLoadException("Could not load liblzma. On Linux, make sure you've installed liblzma or an equivalent package.");
             }
 
             lzma_stream_decoder_ptr = FunctionLoader.LoadFunctionDelegate<lzma_stream_decoder_delegate>(library, nameof(lzma_stream_decoder));
