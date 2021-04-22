@@ -71,22 +71,7 @@ namespace Packaging.Targets.IO
             this.lzmaStream.NextOut = this.outbuf;
             this.lzmaStream.AvailOut = BufSize;
 
-            if (ret == LzmaResult.OK)
-            {
-                return;
-            }
-
-            switch (ret)
-            {
-                case LzmaResult.MemError:
-                    throw new Exception("Memory allocation failed");
-
-                case LzmaResult.OptionsError:
-                    throw new Exception("Unsupported decompressor flags");
-
-                default:
-                    throw new Exception("Unknown error, possibly a bug");
-            }
+            LzmaException.ThrowOnError(ret);
         }
 
         /// <inheritdoc/>
@@ -152,7 +137,7 @@ namespace Packaging.Targets.IO
                     if (inPos != lzmaStreamFlags.BackwardSize)
                     {
                         NativeMethods.lzma_index_end(index, IntPtr.Zero);
-                        throw new Exception("Index decoding failed!");
+                        throw new LzmaException("Index decoding failed!");
                     }
 
                     var uSize = NativeMethods.lzma_index_uncompressed_size(index);
@@ -268,26 +253,7 @@ namespace Packaging.Targets.IO
 
                     NativeMethods.lzma_end(ref this.lzmaStream);
 
-                    switch (ret)
-                    {
-                        case LzmaResult.MemError:
-                            throw new Exception("Memory allocation failed");
-
-                        case LzmaResult.FormatError:
-                            throw new Exception("The input is not in the .xz format");
-
-                        case LzmaResult.OptionsError:
-                            throw new Exception("Unsupported compression options");
-
-                        case LzmaResult.DataError:
-                            throw new Exception("Compressed file is corrupt");
-
-                        case LzmaResult.BufferError:
-                            throw new Exception("Compressed file is truncated or otherwise corrupt");
-
-                        default:
-                            throw new Exception("Unknown error.Possibly a bug");
-                    }
+                    LzmaException.ThrowOnError(ret);
                 }
             }
 

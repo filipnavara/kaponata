@@ -9,7 +9,7 @@ namespace Packaging.Targets.IO
     /// <summary>
     /// Return values used by several functions in liblzma.
     /// </summary>
-    internal enum LzmaResult : uint
+    public enum LzmaResult : uint
     {
         /// <summary>
         /// The operation completed successfully.

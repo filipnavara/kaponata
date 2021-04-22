@@ -25,6 +25,8 @@ using System;
 using System.Diagnostics;
 using System.IO;
 
+#nullable disable
+
 namespace Packaging.Targets.IO
 {
     /// <summary>
@@ -155,7 +157,7 @@ namespace Packaging.Targets.IO
             }
 
             GC.SuppressFinalize(this);
-            throw GetError(ret);
+            LzmaException.ThrowOnError(ret);
         }
 
         /// <summary>
@@ -250,10 +252,7 @@ namespace Packaging.Targets.IO
 
             UIntPtr outPos;
             var ret = NativeMethods.lzma_easy_buffer_encode(preset, LzmaCheck.Crc64, null, buffer, (UIntPtr)buffer.Length, res, &outPos, (UIntPtr)res.Length);
-            if (ret != LzmaResult.OK)
-            {
-                throw GetError(ret);
-            }
+            LzmaException.ThrowOnError(ret);
 
             if ((long)outPos < res.Length)
             {
@@ -326,7 +325,8 @@ namespace Packaging.Targets.IO
 
                 if (ret != LzmaResult.OK)
                 {
-                    throw this.ThrowError(ret);
+                    NativeMethods.lzma_end(ref this.lzmaStream);
+                    LzmaException.ThrowOnError(ret);
                 }
 
                 if (this.lzmaStream.AvailOut == 0)
@@ -355,7 +355,8 @@ namespace Packaging.Targets.IO
 
                     if (ret > LzmaResult.StreamEnd)
                     {
-                        throw this.ThrowError(ret);
+                        NativeMethods.lzma_end(ref this.lzmaStream);
+                        LzmaException.ThrowOnError(ret);
                     }
 
                     var writeSize = BufSize - (int)this.lzmaStream.AvailOut;
@@ -380,18 +381,6 @@ namespace Packaging.Targets.IO
             this.disposed = true;
         }
 
-        private static Exception GetError(LzmaResult ret)
-        {
-            switch (ret)
-            {
-                case LzmaResult.MemError: return new OutOfMemoryException("Memory allocation failed");
-                case LzmaResult.OptionsError: return new ArgumentException("Specified preset is not supported");
-                case LzmaResult.UnsupportedCheck: return new Exception("Specified integrity check is not supported");
-                case LzmaResult.DataError: return new InvalidDataException("File size limits exceeded");
-                default: return new Exception("Unknown error, possibly a bug: " + ret);
-            }
-        }
-
         /// <summary>
         /// Throws an exception if this stream is disposed of.
         /// </summary>
@@ -401,12 +390,6 @@ namespace Packaging.Targets.IO
             {
                 throw new ObjectDisposedException(nameof(XZOutputStream));
             }
-        }
-
-        private Exception ThrowError(LzmaResult ret)
-        {
-            NativeMethods.lzma_end(ref this.lzmaStream);
-            return GetError(ret);
         }
     }
 }

@@ -38,9 +38,8 @@ namespace Kaponata.FileFormats.Tests.Native
             Assert.Throws<EntryPointNotFoundException>(() => FunctionLoader.LoadFunctionDelegate<Action>(library, string.Empty, true));
         }
 
-
         /// <summary>
-        /// <see cref="FunctionLoader.LoadFunctionDelegate{T}(IntPtr, string, bool)"/> 
+        /// <see cref="FunctionLoader.LoadFunctionDelegate{T}(IntPtr, string, bool)"/>
         /// returns <see langword="null"/> when the function could not be found.
         /// </summary>
         [Fact]
