@@ -22,7 +22,21 @@ namespace Kaponata.FileFormats.Tests.Dmg
         {
             Assert.Throws<ArgumentNullException>(() => new GenericResource(string.Empty, null));
             Assert.Throws<ArgumentOutOfRangeException>(() => new GenericResource(string.Empty, new Dictionary<string, object>()));
-            Assert.Throws<ArgumentOutOfRangeException>(() => new GenericResource(string.Empty, new Dictionary<string, object>() { { "Data", 1 } }));
+            Assert.Throws<ArgumentOutOfRangeException>(
+                () => new GenericResource(
+                    string.Empty,
+                    new Dictionary<string, object>()
+                    {
+                        { "Name", "a" },
+                    }));
+            Assert.Throws<ArgumentOutOfRangeException>(
+                () => new GenericResource(
+                    string.Empty,
+                    new Dictionary<string, object>()
+                    {
+                        { "Name", "a" },
+                        { "Data", 1 },
+                    }));
         }
 
         /// <summary>

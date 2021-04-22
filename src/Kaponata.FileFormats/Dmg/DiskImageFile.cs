@@ -115,18 +115,15 @@ namespace DiscUtils.Dmg
         /// <inheritdoc/>
         public override SparseStream OpenContent(SparseStream parentStream, Ownership ownsStream)
         {
-            if (parentStream != null && ownsStream == Ownership.Dispose)
+            if (parentStream != null)
             {
-                parentStream.Dispose();
+                // The origina implementation would dispose of the parent stream when not null and ownsStream is
+                // set. This use case seems to never occur; so just throw instead.
+                throw new ArgumentException("DiskImageFile.OpenContent does not support the parentStream parameter");
             }
 
-            if (this.Buffer != null)
-            {
-                SparseStream rawStream = new BufferStream(this.Buffer, FileAccess.Read);
-                return new BlockCacheStream(rawStream, Ownership.Dispose);
-            }
-
-            return SparseStream.FromStream(this.stream, Ownership.None);
+            SparseStream rawStream = new BufferStream(this.Buffer, FileAccess.Read);
+            return new BlockCacheStream(rawStream, Ownership.Dispose);
         }
 
         /// <summary>

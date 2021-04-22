@@ -83,6 +83,19 @@ namespace Kaponata.FileFormats.Tests.Dmg
         }
 
         /// <summary>
+        /// <see cref="DiskImageFile.OpenContent(SparseStream, Ownership)"/> throws when the stream argument is set.
+        /// </summary>
+        [Fact]
+        public void OpenContent_WithParentStream_Throws()
+        {
+            using (Stream stream = File.OpenRead("TestAssets/ipod-fat32.dmg"))
+            using (DiskImageFile file = new DiskImageFile(stream, Ownership.None))
+            {
+                Assert.Throws<ArgumentException>(() => file.OpenContent(SparseStream.FromStream(Stream.Null, Ownership.None), Ownership.Dispose));
+            }
+        }
+
+        /// <summary>
         /// <see cref="DiskImageFile.GetParentLocations()"/> returns an empty array.
         /// </summary>
         [Fact]
@@ -93,6 +106,22 @@ namespace Kaponata.FileFormats.Tests.Dmg
             {
                 Assert.Empty(file.GetParentLocations());
             }
+        }
+
+        /// <summary>
+        /// <see cref="DiskImageFile"/> disposes of the parent stream.
+        /// </summary>
+        [Fact]
+        public void DisposesOfParentStream()
+        {
+            var stream = File.OpenRead("TestAssets/ipod-fat32.dmg");
+
+            using (DiskImageFile file = new DiskImageFile(stream, Ownership.Dispose))
+            {
+                // Do nothing; just dispose
+            }
+
+            Assert.Throws<ObjectDisposedException>(() => stream.Position);
         }
     }
 }

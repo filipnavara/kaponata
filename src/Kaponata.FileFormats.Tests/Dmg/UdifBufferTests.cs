@@ -70,7 +70,7 @@ namespace Kaponata.FileFormats.Tests.Dmg
             {
                 var buffer = file.Buffer;
 
-                Assert.Throws<NotSupportedException>(() => buffer.Write(0, Array.Empty<byte>(), 0, 0));
+                Assert.Throws<NotSupportedException>(() => buffer.SetCapacity(0));
             }
         }
 

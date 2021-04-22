@@ -42,6 +42,9 @@ namespace Kaponata.FileFormats.Tests.Dmg
                 Assert.True(disk.DiskTypeInfo.DeterministicGeometry);
                 Assert.False(disk.DiskTypeInfo.PreservesBiosGeometry);
                 Assert.NotNull(disk.DiskTypeInfo.CalcGeometry);
+                var geometry = disk.DiskTypeInfo.CalcGeometry(disk.Capacity);
+                Assert.Equal(0x2101000, geometry.Capacity);
+
                 Assert.NotNull(disk.Geometry);
                 var layer = Assert.Single(disk.Layers);
                 Assert.IsType<DiskImageFile>(layer);

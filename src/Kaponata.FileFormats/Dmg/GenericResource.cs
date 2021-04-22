@@ -43,11 +43,6 @@ namespace DiscUtils.Dmg
         public GenericResource(string type, Dictionary<string, object> parts)
             : base(type, parts)
         {
-            if (parts == null)
-            {
-                throw new ArgumentNullException(nameof(parts));
-            }
-
             if (!parts.ContainsKey("Data") || !(parts["Data"] is byte[]))
             {
                 throw new ArgumentOutOfRangeException(nameof(parts));
