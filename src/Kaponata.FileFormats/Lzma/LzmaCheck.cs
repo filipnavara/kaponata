@@ -12,7 +12,7 @@ namespace Packaging.Targets.IO
     /// from the uncompressed data. They vary in both speed and ability to
     /// detect errors.
     /// </remarks>
-    /// <seealso href="https://github.com/nobled/xz/blob/master/src/liblzma/api/lzma/check.h"/>
+    /// <seealso href="https://github.com/xz-mirror/xz/blob/master/src/liblzma/api/lzma/check.h"/>
     internal enum LzmaCheck
     {
         /// <summary>

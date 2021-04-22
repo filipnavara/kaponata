@@ -9,7 +9,7 @@ namespace Packaging.Targets.IO
     /// <summary>
     /// Options for encoding/decoding Stream Header and Stream Footer.
     /// </summary>
-    /// <seealso href="https://github.com/nobled/xz/blob/master/src/liblzma/api/lzma/stream_flags.h"/>
+    /// <seealso href="https://github.com/xz-mirror/xz/blob/master/src/liblzma/api/lzma/stream_flags.h"/>
     [StructLayout(LayoutKind.Sequential)]
     internal struct LzmaStreamFlags
     {

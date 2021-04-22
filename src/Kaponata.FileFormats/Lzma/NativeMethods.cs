@@ -19,7 +19,7 @@ namespace Packaging.Targets.IO
     /// You can download pre-built binaries from Windows from https://tukaani.org/xz/.
     /// </remarks>
     /// <seealso href="http://git.tukaani.org/?p=xz.git;a=blob;f=src/liblzma/api/lzma/index.h;h=dda60ec1c185c5c1f8475122ff35fbcf67f1bb6f;hb=446e4318fa79788e09299d5953b5dd428953d14b"/>
-    /// <seealso href="https://github.com/nobled/xz/blob/master/src/liblzma/api/lzma/index.h"/>
+    /// <seealso href="https://github.com/xz-mirror/xz/blob/master/src/liblzma/api/lzma/index.h"/>
     internal static class NativeMethods
     {
         /// <summary>
@@ -129,7 +129,7 @@ namespace Packaging.Targets.IO
         /// <see cref="LzmaResult.OptionsError"/>: Unsupported flags,
         /// <see cref="LzmaResult.ProgError"/>.
         /// </returns>
-        /// <seealso href="https://github.com/nobled/xz/blob/master/src/liblzma/api/lzma/container.h"/>
+        /// <seealso href="https://github.com/xz-mirror/xz/blob/master/src/liblzma/api/lzma/container.h"/>
         public static LzmaResult lzma_stream_decoder(ref LzmaStream stream, ulong memLimit, LzmaDecodeFlags flags) => lzma_stream_decoder_ptr(ref stream, memLimit, flags);
 
         /// <summary>
@@ -183,7 +183,7 @@ namespace Packaging.Targets.IO
         /// is corrupt(possibly truncated). Stream decoder in liblzma
         /// uses <see cref="LzmaResult.DataError"/> in this situation.
         /// </remarks>
-        /// <seealso href="https://github.com/nobled/xz/blob/master/src/liblzma/api/lzma/stream_flags.h"/>
+        /// <seealso href="https://github.com/xz-mirror/xz/blob/master/src/liblzma/api/lzma/stream_flags.h"/>
         public static LzmaResult lzma_stream_footer_decode(ref LzmaStreamFlags options, byte[] inp) => lzma_stream_footer_decode_ptr(ref options, inp);
 
         /// <summary>
@@ -195,7 +195,7 @@ namespace Packaging.Targets.IO
         /// <returns>
         /// The uncompressed size of the file.
         /// </returns>
-        /// <seealso href="https://github.com/nobled/xz/blob/master/src/liblzma/api/lzma/index.h"/>
+        /// <seealso href="https://github.com/xz-mirror/xz/blob/master/src/liblzma/api/lzma/index.h"/>
         public static ulong lzma_index_uncompressed_size(IntPtr i) => lzma_index_uncompressed_size_ptr(i);
 
         /// <summary>
@@ -228,7 +228,7 @@ namespace Packaging.Targets.IO
         /// <see cref="LzmaResult.DataError"/>,
         /// <see cref="LzmaResult.ProgError"/>.
         /// </returns>
-        /// <seealso href="https://github.com/nobled/xz/blob/master/src/liblzma/api/lzma/index.h"/>
+        /// <seealso href="https://github.com/xz-mirror/xz/blob/master/src/liblzma/api/lzma/index.h"/>
         public static uint lzma_index_buffer_decode(ref IntPtr i, ref ulong memLimit, IntPtr allocator, byte[] indexBuffer, ref uint inPosition, ulong inSize)
             => lzma_index_buffer_decode_ptr(ref i, ref memLimit, allocator, indexBuffer, ref inPosition, inSize);
 
@@ -244,7 +244,7 @@ namespace Packaging.Targets.IO
         /// <remarks>
         /// If <paramref name="i"/> is <see cref="IntPtr.Zero"/>, this does nothing.
         /// </remarks>
-        /// <seealso href="https://github.com/nobled/xz/blob/master/src/liblzma/api/lzma/index.h"/>
+        /// <seealso href="https://github.com/xz-mirror/xz/blob/master/src/liblzma/api/lzma/index.h"/>
         public static void lzma_index_end(IntPtr i, IntPtr allocator) => lzma_index_end_ptr(i, allocator);
 
         /// <summary>
@@ -260,7 +260,7 @@ namespace Packaging.Targets.IO
         /// liblzma doesn't do this, and assumes that
         /// application knows what it is doing.
         /// </remarks>
-        /// <seealso href="https://github.com/nobled/xz/blob/master/src/liblzma/api/lzma/base.h"/>
+        /// <seealso href="https://github.com/xz-mirror/xz/blob/master/src/liblzma/api/lzma/base.h"/>
         public static void lzma_end(ref LzmaStream stream) => lzma_end_ptr(ref stream);
 
         /// <summary>
