@@ -5,7 +5,7 @@
 namespace Packaging.Targets.IO
 {
     /// <summary>
-    /// Type of the integrity check (Check ID)
+    /// Type of the integrity check (Check ID).
     /// </summary>
     /// <remarks>
     /// The.xz format supports multiple types of checks that are calculated
@@ -33,6 +33,6 @@ namespace Packaging.Targets.IO
         /// <summary>
         /// SHA-256
         /// </summary>
-        Sha256 = 10
+        Sha256 = 10,
     }
 }

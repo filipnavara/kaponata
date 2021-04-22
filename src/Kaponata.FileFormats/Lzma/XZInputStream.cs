@@ -34,7 +34,7 @@ namespace Packaging.Targets.IO
     public class XZInputStream : Stream
     {
         /// <summary>
-        /// The size of the buffer
+        /// The size of the buffer.
         /// </summary>
         private const int BufSize = 512;
 
@@ -207,9 +207,18 @@ namespace Packaging.Targets.IO
         }
 
         /// <summary>
-        /// Reads bytes from stream
+        /// Reads bytes from stream.
         /// </summary>
-        /// <returns>byte read or -1 on end of stream</returns>
+        /// <param name="buffer">
+        /// The buffer into which to read the data.
+        /// </param>
+        /// <param name="offset">
+        /// The offset at which to start writing the data.
+        /// </param>
+        /// <param name="count">
+        /// The number of bytes to read.
+        /// </param>
+        /// <returns>byte read or -1 on end of stream.</returns>
         public override int Read(byte[] buffer, int offset, int count)
         {
             this.EnsureNotDisposed();

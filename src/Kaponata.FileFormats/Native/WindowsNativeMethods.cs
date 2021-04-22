@@ -7,10 +7,25 @@ using System.Runtime.InteropServices;
 
 namespace Packaging.Targets.Native
 {
+    /// <summary>
+    /// Native methods which can be used for function loading on Windows.
+    /// </summary>
     internal static class WindowsNativeMethods
     {
         private const string Kernel32 = "kernel32";
 
+        /// <summary>
+        /// Retrieves the address of an exported function or variable from the specified dynamic-link library (DLL).
+        /// </summary>
+        /// <param name="hModule">
+        /// A handle to the DLL module that contains the function or variable.
+        /// </param>
+        /// <param name="lpProcName">
+        /// The function or variable name, or the function's ordinal value.
+        /// </param>
+        /// <returns>
+        /// If the function succeeds, the return value is the address of the exported function or variable.
+        /// </returns>
         [DllImport(Kernel32, CharSet = CharSet.Ansi, BestFitMapping = false)]
         public static extern IntPtr GetProcAddress(IntPtr hModule, string lpProcName);
 

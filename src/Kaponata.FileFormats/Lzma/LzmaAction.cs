@@ -5,7 +5,7 @@
 namespace Packaging.Targets.IO
 {
     /// <summary>
-    /// The `action' argument for lzma_code()
+    /// The `action' argument for lzma_code().
     /// </summary>
     /// <remarks>
     /// After the first use of <see cref="SyncFlush"/>, <see cref="FullBarrier"/> , <see cref="FullBarrier"/>,
@@ -135,6 +135,6 @@ namespace Packaging.Targets.IO
         /// <see cref="FullBarrier"/> is an alias for <see cref="FullFlush"/>.
         /// </para>
         /// </remarks>
-        FullBarrier = 4
+        FullBarrier = 4,
     }
 }

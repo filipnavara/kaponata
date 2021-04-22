@@ -229,6 +229,6 @@ namespace Packaging.Targets.IO
         /// how to report bugs.
         /// </para>
         /// </remarks>
-        ProgError = 11
+        ProgError = 11,
     }
 }

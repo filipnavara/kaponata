@@ -8,10 +8,11 @@ namespace Packaging.Targets.IO
 {
 #pragma warning disable SA1307 // Accessible fields must begin with upper-case letter
 #pragma warning disable SA1310 // Field names must not contain underscore
+#pragma warning disable CS0649 // Field ''  is never assigned to, and will always have its default value
 #pragma warning disable CS0169 // The field '' is never used
 #pragma warning disable IDE0051 // Remove unused private members
     /// <summary>
-    /// Multithreading options
+    /// Multithreading options.
     /// </summary>
     internal struct LzmaMT
     {
@@ -24,12 +25,12 @@ namespace Packaging.Targets.IO
         public uint flags;
 
         /// <summary>
-        /// Number of worker threads to use
+        /// Number of worker threads to use.
         /// </summary>
         public uint threads;
 
         /// <summary>
-        /// Maximum uncompressed size of a Block
+        /// Maximum uncompressed size of a Block.
         /// </summary>
         /// <remarks>
         /// <para>
@@ -60,7 +61,7 @@ namespace Packaging.Targets.IO
         public ulong block_size;
 
         /// <summary>
-        /// Timeout to allow lzma_code() to return early
+        /// Timeout to allow lzma_code() to return early.
         /// </summary>
         /// <remarks>
         /// <para>
@@ -98,7 +99,7 @@ namespace Packaging.Targets.IO
         public uint timeout;
 
         /// <summary>
-        /// Compression preset (level and possible flags)
+        /// Compression preset (level and possible flags).
         /// </summary>
         /// <remarks>
         /// <para>

@@ -8,7 +8,7 @@ using System.Runtime.InteropServices;
 namespace Packaging.Targets.IO
 {
     /// <summary>
-    ///  Passing data to and from liblzma
+    ///  Passing data to and from liblzma.
     /// </summary>
     /// <remarks>
     /// <para>
@@ -90,7 +90,7 @@ namespace Packaging.Targets.IO
         public ulong TotalOut;
 
         /// <summary>
-        /// Custom memory allocation functions
+        /// Custom memory allocation functions.
         /// </summary>
         /// <remarks>
         /// In most cases this is NULL which makes liblzma use

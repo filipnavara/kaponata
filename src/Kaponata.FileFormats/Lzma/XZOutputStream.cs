@@ -27,13 +27,20 @@ using System.IO;
 
 namespace Packaging.Targets.IO
 {
+    /// <summary>
+    /// A <see cref="Stream"/> which writes XZ (or LZMA)-compressed data.
+    /// </summary>
     public unsafe class XZOutputStream : Stream
     {
         /// <summary>
         /// Default compression preset.
         /// </summary>
         public const uint DefaultPreset = 6;
-        public const uint PresetExtremeFlag = (uint)1 << 31;
+
+        /// <summary>
+        /// The extreme compression preset.
+        /// </summary>
+        public const uint PresetExtremeFlag = 1U << 31;
 
         // You can tweak BufSize value to get optimal results
         // of speed and chunk size
@@ -45,21 +52,64 @@ namespace Packaging.Targets.IO
         private LzmaStream lzmaStream;
         private bool disposed;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="XZOutputStream"/> class.
+        /// </summary>
+        /// <param name="s">
+        /// The <see cref="Stream"/> to which to write compressed data.
+        /// </param>
         public XZOutputStream(Stream s)
             : this(s, DefaultThreads)
         {
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="XZOutputStream"/> class.
+        /// </summary>
+        /// <param name="s">
+        /// The <see cref="Stream"/> to which to write compressed data.
+        /// </param>
+        /// <param name="threads">
+        /// The number of threads to use when compressing data.
+        /// </param>
         public XZOutputStream(Stream s, int threads)
             : this(s, threads, DefaultPreset)
         {
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="XZOutputStream"/> class.
+        /// </summary>
+        /// <param name="s">
+        /// The <see cref="Stream"/> to which to write compressed data.
+        /// </param>
+        /// <param name="threads">
+        /// The number of threads to use when compressing data.
+        /// </param>
+        /// <param name="preset">
+        /// The compression preset to use.
+        /// </param>
         public XZOutputStream(Stream s, int threads, uint preset)
             : this(s, threads, preset, false)
         {
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="XZOutputStream"/> class.
+        /// </summary>
+        /// <param name="s">
+        /// The <see cref="Stream"/> to which to write compressed data.
+        /// </param>
+        /// <param name="threads">
+        /// The number of threads to use when compressing data.
+        /// </param>
+        /// <param name="preset">
+        /// The compression preset to use.
+        /// </param>
+        /// <param name="leaveOpen">
+        /// A value indicating whether to dispose of <paramref name="s"/> when this <see cref="XZOutputStream"/>
+        /// is disposed of, or not.
+        /// </param>
         public XZOutputStream(Stream s, int threads, uint preset, bool leaveOpen)
         {
             this.innerStream = s;
@@ -87,7 +137,7 @@ namespace Packaging.Targets.IO
                 {
                     preset = preset,
                     check = LzmaCheck.Crc64,
-                    threads = (uint)threads
+                    threads = (uint)threads,
                 };
                 ret = NativeMethods.lzma_stream_encoder_mt(ref this.lzmaStream, ref mt);
             }
@@ -103,13 +153,22 @@ namespace Packaging.Targets.IO
             throw GetError(ret);
         }
 
+        /// <summary>
+        /// Finalizes an instance of the <see cref="XZOutputStream"/> class.
+        /// </summary>
         ~XZOutputStream()
         {
             this.Dispose(false);
         }
 
+        /// <summary>
+        /// Gets the default numbers of threads to use.
+        /// </summary>
         public static int DefaultThreads => Environment.ProcessorCount;
 
+        /// <summary>
+        /// Gets a value indicating whether multithreading is supported.
+        /// </summary>
         public static bool SupportsMultiThreading => NativeMethods.SupportsMultiThreading;
 
         /// <inheritdoc/>
@@ -169,8 +228,17 @@ namespace Packaging.Targets.IO
         }
 
         /// <summary>
-        /// Single-call buffer encoding
+        /// Single-call buffer encoding.
         /// </summary>
+        /// <param name="buffer">
+        /// The buffer to encode.
+        /// </param>
+        /// <param name="preset">
+        /// The compression preset to use.
+        /// </param>
+        /// <returns>
+        /// A <see cref="byte"/> array which contains the compressed data.
+        /// </returns>
         public static byte[] Encode(byte[] buffer, uint preset = DefaultPreset)
         {
             var res = new byte[(long)NativeMethods.lzma_stream_buffer_bound((UIntPtr)buffer.Length)];

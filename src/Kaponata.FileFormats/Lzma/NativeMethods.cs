@@ -8,6 +8,8 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using FunctionLoader = Packaging.Targets.Native.FunctionLoader;
 
+#nullable disable
+
 namespace Packaging.Targets.IO
 {
     /// <summary>
@@ -24,7 +26,7 @@ namespace Packaging.Targets.IO
         /// The name of the lzma library.
         /// </summary>
         /// <remarks>
-        /// You can fetch liblzma from https://github.com/RomanBelkov/XZ.NET/blob/master/XZ.NET/liblzma.dll
+        /// You can fetch liblzma from https://github.com/RomanBelkov/XZ.NET/blob/master/XZ.NET/liblzma.dll.
         /// </remarks>
         private const string LibraryName = @"lzma";
 
@@ -107,10 +109,10 @@ namespace Packaging.Targets.IO
         }
 
         /// <summary>
-        /// Initialize .xz Stream decoder
+        /// Initialize .xz Stream decoder.
         /// </summary>
         /// <param name="stream">
-        /// Pointer to properly prepared <see cref="LzmaStream"/>
+        /// Pointer to properly prepared <see cref="LzmaStream"/>.
         /// </param>
         /// <param name="memLimit">
         /// Memory usage limit as bytes. Use UINT64_MAX
@@ -131,7 +133,7 @@ namespace Packaging.Targets.IO
         public static LzmaResult lzma_stream_decoder(ref LzmaStream stream, ulong memLimit, LzmaDecodeFlags flags) => lzma_stream_decoder_ptr(ref stream, memLimit, flags);
 
         /// <summary>
-        /// Encode or decode data
+        /// Encode or decode data.
         /// </summary>
         /// <param name="stream">
         /// The <see cref="LzmaStream"/> for which to read the data.
@@ -158,7 +160,7 @@ namespace Packaging.Targets.IO
         public static LzmaResult lzma_code(ref LzmaStream stream, LzmaAction action) => lzma_code_ptr(ref stream, action);
 
         /// <summary>
-        /// Decode Stream Footer
+        /// Decode Stream Footer.
         /// </summary>
         /// <param name="options">
         /// Target for the decoded Stream Header options.
@@ -185,13 +187,19 @@ namespace Packaging.Targets.IO
         public static LzmaResult lzma_stream_footer_decode(ref LzmaStreamFlags options, byte[] inp) => lzma_stream_footer_decode_ptr(ref options, inp);
 
         /// <summary>
-        /// Get the uncompressed size of the file
+        /// Get the uncompressed size of the file.
         /// </summary>
+        /// <param name="i">
+        /// A pointer to a <c>lzma_index</c> object.
+        /// </param>
+        /// <returns>
+        /// The uncompressed size of the file.
+        /// </returns>
         /// <seealso href="https://github.com/nobled/xz/blob/master/src/liblzma/api/lzma/index.h"/>
         public static ulong lzma_index_uncompressed_size(IntPtr i) => lzma_index_uncompressed_size_ptr(i);
 
         /// <summary>
-        /// Single-call .xz Index decoder
+        /// Single-call .xz Index decoder.
         /// </summary>
         /// <param name="i">If decoding succeeds, <paramref name="i"/> will point to a new lzma_index, which the application has to
         /// later free with lzma_index_end(). If an error occurs, <paramref name="i"/> will be <see cref="IntPtr.Zero"/>. The old value of <paramref name="i"/>
@@ -202,10 +210,10 @@ namespace Packaging.Targets.IO
         /// pointed by this pointer is modified if and only if <see cref="LzmaResult.MemlimitError"/> is returned.
         /// </param>
         /// <param name="allocator">
-        /// Pointer to lzma_allocator, or <see cref="IntPtr.Zero"/> to use malloc()
+        /// Pointer to lzma_allocator, or <see cref="IntPtr.Zero"/> to use malloc().
         /// </param>
         /// <param name="indexBuffer">
-        /// Beginning of the input buffer
+        /// Beginning of the input buffer.
         /// </param>
         /// <param name="inPosition">
         /// The next byte will be read from in[*in_pos]. *in_pos is updated only if decoding succeeds.
@@ -225,10 +233,10 @@ namespace Packaging.Targets.IO
             => lzma_index_buffer_decode_ptr(ref i, ref memLimit, allocator, indexBuffer, ref inPosition, inSize);
 
         /// <summary>
-        /// Deallocate lzma_index
+        /// Deallocate lzma_index.
         /// </summary>
         /// <param name="i">
-        /// The index to deallocate
+        /// The index to deallocate.
         /// </param>
         /// <param name="allocator">
         /// The allocated used to allocate the memory.
@@ -240,7 +248,7 @@ namespace Packaging.Targets.IO
         public static void lzma_index_end(IntPtr i, IntPtr allocator) => lzma_index_end_ptr(i, allocator);
 
         /// <summary>
-        /// Free memory allocated for the coder data structures
+        /// Free memory allocated for the coder data structures.
         /// </summary>
         /// <param name="stream">
         /// Pointer to lzma_stream that is at least initialized with LZMA_STREAM_INIT.
@@ -297,7 +305,7 @@ namespace Packaging.Targets.IO
 
         /// <summary>
         /// <para>
-        /// Initialize multithreaded .xz Stream encoder
+        /// Initialize multithreaded .xz Stream encoder.
         /// </para>
         /// <para>
         /// This provides the functionality of lzma_easy_encoder() and
@@ -310,10 +318,10 @@ namespace Packaging.Targets.IO
         /// </para>
         /// </summary>
         /// <param name="stream">
-        /// Pointer to properly prepared lzma_stream
+        /// Pointer to properly prepared lzma_stream.
         /// </param>
         /// <param name="mt">
-        /// Pointer to multithreaded compression options
+        /// Pointer to multithreaded compression options.
         /// </param>
         /// <returns>
         /// A <see cref="LzmaResult"/> value which indicates success or failure.
@@ -332,7 +340,7 @@ namespace Packaging.Targets.IO
 
         /// <summary>
         /// <para>
-        /// Calculate output buffer size for single-call Stream encoder
+        /// Calculate output buffer size for single-call Stream encoder.
         /// </para>
         /// <para>
         /// When trying to compress uncompressible data, the encoded size will be slightly bigger than the input data.This function calculates how much output buffer space is required to be sure that lzma_stream_buffer_encode() doesn't return LZMA_BUF_ERROR.
@@ -368,13 +376,13 @@ namespace Packaging.Targets.IO
         /// lzma_allocator for custom allocator functions. Set to NULL to use malloc() and free().
         /// </param>
         /// <param name="in">
-        /// Beginning of the input buffer
+        /// Beginning of the input buffer.
         /// </param>
         /// <param name="in_size">
-        /// Size of the input buffer
+        /// Size of the input buffer.
         /// </param>
         /// <param name="out">
-        /// Beginning of the output buffer
+        /// Beginning of the output buffer.
         /// </param>
         /// <param name="out_pos">
         /// The next byte will be written to out[*out_pos]. *out_pos is updated only if encoding succeeds.
@@ -390,20 +398,20 @@ namespace Packaging.Targets.IO
         /// - LZMA_BUF_ERROR: Not enough output buffer space.
         /// </para>
         /// <para>
-        /// - LZMA_OPTIONS_ERROR
+        /// - LZMA_OPTIONS_ERROR.
         /// </para>
         /// <para>
-        /// - LZMA_MEM_ERROR
+        /// - LZMA_MEM_ERROR.
         /// </para>
         /// <para>
-        /// - LZMA_DATA_ERROR
+        /// - LZMA_DATA_ERROR.
         /// </para>
         /// <para>
-        /// - LZMA_PROG_ERROR
+        /// - LZMA_PROG_ERROR.
         /// </para>
         /// </returns>
         /// <remarks>
-        /// The maximum required output buffer size can be calculated with lzma_stream_buffer_bound()
+        /// The maximum required output buffer size can be calculated with lzma_stream_buffer_bound().
         /// </remarks>
         public static unsafe LzmaResult lzma_easy_buffer_encode(uint preset, LzmaCheck check, void* allocator, byte[] @in, UIntPtr in_size, byte[] @out, UIntPtr* out_pos, UIntPtr out_size)
             => lzma_easy_buffer_encode_ptr(preset, check, allocator, @in, in_size, @out, out_pos, out_size);

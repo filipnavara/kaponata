@@ -46,6 +46,6 @@ namespace Packaging.Targets.IO
         /// <see cref="LzmaAction.Finish"/> in the same way as it does when encoding.
         /// </para>
         /// </summary>
-        Concatenated = 0x08
+        Concatenated = 0x08,
     }
 }

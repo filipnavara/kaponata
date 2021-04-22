@@ -6,6 +6,8 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 
+#nullable disable
+
 namespace Packaging.Targets.Native
 {
     /// <summary>
@@ -89,6 +91,9 @@ namespace Packaging.Targets.Native
         /// </param>
         /// <param name="functionName">
         /// The name of the function for which to create the delegate.
+        /// </param>
+        /// <param name="throwOnError">
+        /// A value indicating whether to throw when the operation fails.
         /// </param>
         /// <returns>
         /// A new delegate which points to the native function.

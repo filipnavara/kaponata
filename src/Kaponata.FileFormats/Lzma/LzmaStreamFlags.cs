@@ -7,14 +7,14 @@ using System.Runtime.InteropServices;
 namespace Packaging.Targets.IO
 {
     /// <summary>
-    /// Options for encoding/decoding Stream Header and Stream Footer
+    /// Options for encoding/decoding Stream Header and Stream Footer.
     /// </summary>
     /// <seealso href="https://github.com/nobled/xz/blob/master/src/liblzma/api/lzma/stream_flags.h"/>
     [StructLayout(LayoutKind.Sequential)]
     internal struct LzmaStreamFlags
     {
         /// <summary>
-        /// Stream Flags format version
+        /// Stream Flags format version.
         /// </summary>
         /// <remarks>
         /// <para>
@@ -38,7 +38,7 @@ namespace Packaging.Targets.IO
         public readonly uint Version;
 
         /// <summary>
-        /// Backward Size
+        /// Backward Size.
         /// </summary>
         /// <remarks>
         /// <para>
@@ -63,7 +63,7 @@ namespace Packaging.Targets.IO
         public ulong BackwardSize;
 
         /// <summary>
-        /// Check ID
+        /// Check ID.
         /// </summary>
         /// <remarks>
         /// This indicates the type of the integrity check calculated from
