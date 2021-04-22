@@ -21,8 +21,7 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
 
-#nullable disable
-
+using System;
 using System.Collections.Generic;
 
 namespace DiscUtils.Dmg
@@ -30,7 +29,7 @@ namespace DiscUtils.Dmg
     /// <summary>
     /// A generic resource in the DMG file.
     /// </summary>
-    internal class GenericResource : Resource
+    public class GenericResource : Resource
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="GenericResource"/> class.
@@ -41,10 +40,20 @@ namespace DiscUtils.Dmg
         /// <param name="parts">
         /// A dictionary (property list) which contains the resource metadata.
         /// </param>
-        internal GenericResource(string type, Dictionary<string, object> parts)
+        public GenericResource(string type, Dictionary<string, object> parts)
             : base(type, parts)
         {
-            this.Data = parts["Data"] as byte[];
+            if (parts == null)
+            {
+                throw new ArgumentNullException(nameof(parts));
+            }
+
+            if (!parts.ContainsKey("Data") || !(parts["Data"] is byte[]))
+            {
+                throw new ArgumentOutOfRangeException(nameof(parts));
+            }
+
+            this.Data = (byte[])parts["Data"];
         }
 
         /// <summary>

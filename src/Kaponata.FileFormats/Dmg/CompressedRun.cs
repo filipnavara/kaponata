@@ -29,7 +29,7 @@ namespace DiscUtils.Dmg
     /// <summary>
     /// Represents an individual compressed run in a <see cref="CompressedBlock"/> entry.
     /// </summary>
-    internal class CompressedRun : IByteArraySerializable
+    public class CompressedRun : IByteArraySerializable
     {
         /// <summary>
         /// Gets or sets the length of the compressed data of this <see cref="CompressedRun"/>,

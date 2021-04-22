@@ -37,7 +37,7 @@ namespace DiscUtils.Dmg
     /// <summary>
     /// A <see cref="Buffer"/> which supports reading data from a DMG file.
     /// </summary>
-    internal class UdifBuffer : Buffer
+    public class UdifBuffer : Buffer
     {
         private readonly ResourceFork resources;
         private readonly long sectorCount;

@@ -26,7 +26,7 @@ namespace DiscUtils.Dmg
     /// <summary>
     /// Determines the approach used to store data in a <see cref="CompressedRun"/>.
     /// </summary>
-    internal enum RunType : uint
+    public enum RunType : uint
     {
         /// <summary>
         /// Data is zero-filled.

@@ -34,7 +34,7 @@ namespace DiscUtils.Dmg
     /// <c>koly</c> block.
     /// </summary>
     /// <seealso href="http://newosxbook.com/DMG.html"/>
-    internal class UdifResourceFile : IByteArraySerializable
+    public class UdifResourceFile : IByteArraySerializable
     {
         /// <summary>
         /// Gets or sets a <see cref="UdifChecksum"/> which represents the checksum

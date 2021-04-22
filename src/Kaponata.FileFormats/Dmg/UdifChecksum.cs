@@ -32,7 +32,7 @@ namespace DiscUtils.Dmg
     /// Represents a checksum found in DMG files.
     /// </summary>
     /// <seealso href="http://newosxbook.com/DMG.html"/>
-    internal class UdifChecksum : IByteArraySerializable
+    public class UdifChecksum : IByteArraySerializable
     {
         /// <summary>
         /// Gets or sets the size of the checksum.

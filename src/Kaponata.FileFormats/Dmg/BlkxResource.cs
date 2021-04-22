@@ -29,7 +29,7 @@ namespace DiscUtils.Dmg
     /// <summary>
     /// Represents a <c>blkx</c> resource.
     /// </summary>
-    internal class BlkxResource : Resource
+    public class BlkxResource : Resource
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="BlkxResource"/> class.
@@ -37,7 +37,7 @@ namespace DiscUtils.Dmg
         /// <param name="parts">
         /// A dictionary which contains the metadata (property list data) of the blkx resource.
         /// </param>
-        internal BlkxResource(Dictionary<string, object> parts)
+        public BlkxResource(Dictionary<string, object> parts)
             : base("blkx", parts)
         {
             this.Block = EndianUtilities.ToStruct<CompressedBlock>(parts["Data"] as byte[], 0);

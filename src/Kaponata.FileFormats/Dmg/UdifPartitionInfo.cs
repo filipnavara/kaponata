@@ -32,7 +32,7 @@ namespace DiscUtils.Dmg
     /// <summary>
     /// Provides information about an individual partition in a DMG file.
     /// </summary>
-    internal class UdifPartitionInfo : PartitionInfo
+    public class UdifPartitionInfo : PartitionInfo
     {
         private readonly CompressedBlock block;
         private readonly Disk disk;

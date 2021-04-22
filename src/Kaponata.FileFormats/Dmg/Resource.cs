@@ -35,7 +35,7 @@ namespace DiscUtils.Dmg
     /// Represents an individual resource in the DMG file.
     /// </summary>
     /// <seealso href="http://newosxbook.com/DMG.html"/>
-    internal abstract class Resource
+    public abstract class Resource
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="Resource"/> class.
@@ -48,12 +48,23 @@ namespace DiscUtils.Dmg
         /// </param>
         protected Resource(string type, Dictionary<string, object> parts)
         {
+            if (parts == null)
+            {
+                throw new ArgumentNullException(nameof(parts));
+            }
+
+            if (!parts.ContainsKey("Name"))
+            {
+                throw new ArgumentOutOfRangeException(nameof(parts));
+            }
+
             this.Type = type;
             this.Name = parts["Name"] as string;
 
-            string idStr = parts["ID"] as string;
-            if (!string.IsNullOrEmpty(idStr))
+            if (parts.ContainsKey("ID") && parts["ID"] is string && !string.IsNullOrEmpty((string)parts["ID"]))
             {
+                string idStr = (string)parts["ID"];
+
                 int id;
                 if (!int.TryParse(idStr, out id))
                 {
@@ -63,9 +74,10 @@ namespace DiscUtils.Dmg
                 this.Id = id;
             }
 
-            string attrString = parts["Attributes"] as string;
-            if (!string.IsNullOrEmpty(attrString))
+            if (parts.ContainsKey("Attributes") && parts["Attributes"] is string && !string.IsNullOrEmpty((string)parts["Attributes"]))
             {
+                var attrString = (string)parts["Attributes"];
+
                 NumberStyles style = NumberStyles.Integer;
                 if (attrString.StartsWith("0x", StringComparison.OrdinalIgnoreCase))
                 {

@@ -32,7 +32,7 @@ namespace DiscUtils.Dmg
     /// The main resource fork of this DMG file. Embedded as a property list in the
     /// trailer of the DMG file.
     /// </summary>
-    internal class ResourceFork
+    public class ResourceFork
     {
         private readonly List<Resource> resources;
 
@@ -45,6 +45,44 @@ namespace DiscUtils.Dmg
         public ResourceFork(List<Resource> resources)
         {
             this.resources = resources;
+        }
+
+        /// <summary>
+        /// Creates a new <see cref="ResourceFork"/> object based on the metadata.
+        /// </summary>
+        /// <param name="plist">
+        /// The property list data which describes the <see cref="ResourceFork"/>.
+        /// </param>
+        /// <returns>
+        /// A <see cref="ResourceFork"/> object.
+        /// </returns>
+        public static ResourceFork FromPlist(Dictionary<string, object> plist)
+        {
+            if (plist == null)
+            {
+                throw new ArgumentNullException(nameof(plist));
+            }
+
+            object typesObject;
+            if (!plist.TryGetValue("resource-fork", out typesObject))
+            {
+                throw new ArgumentException("plist doesn't contain resource fork");
+            }
+
+            Dictionary<string, object> types = typesObject as Dictionary<string, object>;
+
+            List<Resource> resources = new List<Resource>();
+
+            foreach (string type in types.Keys)
+            {
+                var typeResources = types[type] as IEnumerable<object>;
+                foreach (object typeResource in typeResources)
+                {
+                    resources.Add(Resource.FromPlist(type, typeResource as Dictionary<string, object>));
+                }
+            }
+
+            return new ResourceFork(resources);
         }
 
         /// <summary>
@@ -69,39 +107,6 @@ namespace DiscUtils.Dmg
             }
 
             return results;
-        }
-
-        /// <summary>
-        /// Creates a new <see cref="ResourceFork"/> object based on the metadata.
-        /// </summary>
-        /// <param name="plist">
-        /// The property list data which describes the <see cref="ResourceFork"/>.
-        /// </param>
-        /// <returns>
-        /// A <see cref="ResourceFork"/> object.
-        /// </returns>
-        internal static ResourceFork FromPlist(Dictionary<string, object> plist)
-        {
-            object typesObject;
-            if (!plist.TryGetValue("resource-fork", out typesObject))
-            {
-                throw new ArgumentException("plist doesn't contain resource fork");
-            }
-
-            Dictionary<string, object> types = typesObject as Dictionary<string, object>;
-
-            List<Resource> resources = new List<Resource>();
-
-            foreach (string type in types.Keys)
-            {
-                var typeResources = types[type] as IEnumerable<object>;
-                foreach (object typeResource in typeResources)
-                {
-                    resources.Add(Resource.FromPlist(type, typeResource as Dictionary<string, object>));
-                }
-            }
-
-            return new ResourceFork(resources);
         }
     }
 }

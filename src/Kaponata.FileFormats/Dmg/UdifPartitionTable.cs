@@ -29,7 +29,7 @@ namespace DiscUtils.Dmg
     /// <summary>
     /// A <see cref="PartitionTable"/> which is read from a DMG file.
     /// </summary>
-    internal class UdifPartitionTable : PartitionTable
+    public class UdifPartitionTable : PartitionTable
     {
         private readonly UdifBuffer buffer;
         private readonly Disk disk;

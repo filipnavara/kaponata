@@ -34,7 +34,7 @@ namespace DiscUtils.Dmg
     /// as a <c>blkx</c> descriptor. A compressed block usually maps to an entire partition.
     /// </summary>
     /// <seealso href="http://newosxbook.com/DMG.html"/>
-    internal class CompressedBlock : IByteArraySerializable
+    public class CompressedBlock : IByteArraySerializable
     {
         /// <summary>
         /// Gets or sets the number of block descriptors.

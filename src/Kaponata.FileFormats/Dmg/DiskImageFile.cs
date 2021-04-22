@@ -21,8 +21,6 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
 
-#nullable disable
-
 using Claunia.PropertyList;
 using DiscUtils.Streams;
 using System;
@@ -34,7 +32,7 @@ namespace DiscUtils.Dmg
     /// <summary>
     /// A <see cref="VirtualDiskLayer"/> wich provides access to a DMG file.
     /// </summary>
-    internal sealed class DiskImageFile : VirtualDiskLayer
+    public sealed class DiskImageFile : VirtualDiskLayer
     {
         private readonly Ownership ownsStream;
         private readonly ResourceFork resources;
@@ -49,8 +47,13 @@ namespace DiscUtils.Dmg
         public DiskImageFile(Stream stream, Ownership ownsStream)
         {
             this.udifHeader = new UdifResourceFile();
-            this.stream = stream;
+            this.stream = stream ?? throw new ArgumentNullException(nameof(stream));
             this.ownsStream = ownsStream;
+
+            if (stream.Length < this.udifHeader.Size)
+            {
+                throw new InvalidDataException("The file is not a valid DMG file: could not read the UDIF header.");
+            }
 
             stream.Position = stream.Length - this.udifHeader.Size;
             byte[] data = StreamUtilities.ReadExact(stream, this.udifHeader.Size);
@@ -78,7 +81,7 @@ namespace DiscUtils.Dmg
         /// <inheritdoc/>
         public override long Capacity
         {
-            get { return this.Buffer == null ? this.stream.Length : this.Buffer.Capacity; }
+            get { return this.Buffer.Capacity; }
         }
 
         /// <summary>
@@ -92,7 +95,7 @@ namespace DiscUtils.Dmg
         /// <inheritdoc/>
         public override bool IsSparse
         {
-            get { return this.Buffer != null; }
+            get { return true; }
         }
 
         /// <summary>
@@ -132,7 +135,7 @@ namespace DiscUtils.Dmg
         /// <returns>Array of candidate file locations.</returns>
         public override string[] GetParentLocations()
         {
-            return new string[0];
+            return Array.Empty<string>();
         }
 
         /// <inheritdoc/>
@@ -144,8 +147,6 @@ namespace DiscUtils.Dmg
                 {
                     this.stream.Dispose();
                 }
-
-                this.stream = null;
             }
             finally
             {
