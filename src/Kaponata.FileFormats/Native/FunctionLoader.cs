@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Runtime.InteropServices;
 
 #nullable disable
@@ -19,7 +20,7 @@ namespace Packaging.Targets.Native
         /// Attempts to load a native library.
         /// </summary>
         /// <param name="windowsNames">
-        /// Possible names of the library on Windows. This can include full paths.
+        /// Possible names of the library on Windows.
         /// </param>
         /// <param name="linuxNames">
         /// Possible names of the library on Linux.
@@ -32,47 +33,63 @@ namespace Packaging.Targets.Native
         /// </returns>
         public static IntPtr LoadNativeLibrary(IEnumerable<string> windowsNames, IEnumerable<string> linuxNames, IEnumerable<string> osxNames)
         {
-            IntPtr lib = IntPtr.Zero;
-
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                foreach (var name in linuxNames)
-                {
-                    lib = LinuxNativeMethods.dlopen(name, LinuxNativeMethods.RTLD_NOW);
-
-                    if (lib != IntPtr.Zero)
-                    {
-                        break;
-                    }
-                }
+                return LoadNativeLibrary(windowsNames);
+            }
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            {
+                return LoadNativeLibrary(linuxNames);
             }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             {
-                foreach (var name in osxNames)
-                {
-                    lib = MacNativeMethods.dlopen(name, MacNativeMethods.RTLD_NOW);
-
-                    if (lib != IntPtr.Zero)
-                    {
-                        break;
-                    }
-                }
-            }
-            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                foreach (var name in windowsNames)
-                {
-                    lib = WindowsNativeMethods.LoadLibrary(name);
-
-                    if (lib != IntPtr.Zero)
-                    {
-                        break;
-                    }
-                }
+                return LoadNativeLibrary(osxNames);
             }
             else
             {
                 throw new PlatformNotSupportedException();
+            }
+        }
+
+        /// <summary>
+        /// Attempts to load a native library.
+        /// </summary>
+        /// <param name="libraryNames">
+        /// Possible names of the library on the current platform.
+        /// </param>
+        /// <returns>
+        /// A handle to the library when found; otherwise, <see cref="IntPtr.Zero"/>.
+        /// </returns>
+        public static IntPtr LoadNativeLibrary(IEnumerable<string> libraryNames)
+        {
+            IntPtr lib = IntPtr.Zero;
+
+            // First, attempt to load the native library from the NuGet packages
+            var nativeSearchDirectories = AppContext.GetData("NATIVE_DLL_SEARCH_DIRECTORIES") as string;
+            var delimiter = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? ";" : ":";
+
+            if (nativeSearchDirectories != null)
+            {
+                foreach (var name in libraryNames)
+                {
+                    foreach (var directory in nativeSearchDirectories.Split(delimiter))
+                    {
+                        var path = Path.Combine(directory, name);
+                        if (NativeLibrary.TryLoad(path, out lib))
+                        {
+                            break;
+                        }
+                    }
+                }
+            }
+
+            // Next, attempt to locate the library in the standard OS search path.
+            foreach (var name in libraryNames)
+            {
+                if (NativeLibrary.TryLoad(name, out lib))
+                {
+                    break;
+                }
             }
 
             // This function may return a null handle. If it does, individual functions loaded from it will throw a DllNotFoundException,
@@ -101,17 +118,13 @@ namespace Packaging.Targets.Native
         public static T LoadFunctionDelegate<T>(IntPtr nativeLibraryHandle, string functionName, bool throwOnError = true)
             where T : class
         {
-            IntPtr ptr = LoadFunctionPointer(nativeLibraryHandle, functionName);
+            IntPtr ptr = NativeLibrary.GetExport(nativeLibraryHandle, functionName);
 
             if (ptr == IntPtr.Zero)
             {
                 if (throwOnError)
                 {
-#if NETSTANDARD2_0
                     throw new EntryPointNotFoundException($"Could not find the entrypoint for {functionName}");
-#else
-                    throw new Exception($"Could not find the entrypoint for {functionName}");
-#endif
                 }
                 else
                 {
@@ -120,26 +133,6 @@ namespace Packaging.Targets.Native
             }
 
             return Marshal.GetDelegateForFunctionPointer<T>(ptr);
-        }
-
-        private static IntPtr LoadFunctionPointer(IntPtr nativeLibraryHandle, string functionName)
-        {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-            {
-                return LinuxNativeMethods.dlsym(nativeLibraryHandle, functionName);
-            }
-            else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-            {
-                return MacNativeMethods.dlsym(nativeLibraryHandle, functionName);
-            }
-            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                return WindowsNativeMethods.GetProcAddress(nativeLibraryHandle, functionName);
-            }
-            else
-            {
-                throw new PlatformNotSupportedException();
-            }
         }
     }
 }

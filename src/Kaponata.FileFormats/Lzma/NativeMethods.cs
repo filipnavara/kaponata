@@ -4,8 +4,6 @@
 
 using System;
 using System.IO;
-using System.Reflection;
-using System.Runtime.InteropServices;
 using FunctionLoader = Packaging.Targets.Native.FunctionLoader;
 
 #nullable disable
@@ -44,19 +42,8 @@ namespace Packaging.Targets.IO
 
         static NativeMethods()
         {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                if (RuntimeInformation.OSArchitecture != Architecture.X64)
-                {
-                    throw new InvalidOperationException(".NET packaging only supports 64-bit Windows processes");
-                }
-            }
-
-            var libraryPath = Path.GetDirectoryName(typeof(NativeMethods).GetTypeInfo().Assembly.Location);
-            var lzmaWindowsPath = Path.GetFullPath(Path.Combine(libraryPath, "../../runtimes/win7-x64/native/lzma.dll"));
-
             IntPtr library = FunctionLoader.LoadNativeLibrary(
-                new string[] { lzmaWindowsPath, "lzma.dll" }, // lzma.dll is used when running unit tests.
+                new string[] { "libzma.dll", "lzma.dll" },
                 new string[] { "liblzma.so.5", "liblzma.so" },
                 new string[] { "liblzma.dylib" });
 
