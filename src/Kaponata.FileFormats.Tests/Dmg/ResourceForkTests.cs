@@ -22,7 +22,7 @@ namespace Kaponata.FileFormats.Tests.Dmg
         {
             var dict = new Dictionary<string, object>();
             Assert.Throws<ArgumentNullException>(() => ResourceFork.FromPlist(null));
-            Assert.Throws<ArgumentNullException>(() => ResourceFork.FromPlist(dict));
+            Assert.Throws<ArgumentException>(() => ResourceFork.FromPlist(dict));
         }
     }
 }
