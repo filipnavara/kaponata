@@ -29,6 +29,8 @@ namespace Packaging.Targets.IO
         private const string LibraryName = @"lzma";
 
         private static lzma_stream_decoder_delegate lzma_stream_decoder_ptr;
+        private static lzma_auto_decoder_delegate lzma_auto_decoder_ptr;
+        private static lzma_alone_decoder_delegate lzma_alone_decoder_ptr;
         private static lzma_code_delegate lzma_code_ptr;
         private static lzma_stream_footer_decode_delegate lzma_stream_footer_decode_ptr;
         private static lzma_index_uncompressed_size_delegate lzma_index_uncompressed_size_ptr;
@@ -53,6 +55,8 @@ namespace Packaging.Targets.IO
             }
 
             lzma_stream_decoder_ptr = FunctionLoader.LoadFunctionDelegate<lzma_stream_decoder_delegate>(library, nameof(lzma_stream_decoder));
+            lzma_auto_decoder_ptr = FunctionLoader.LoadFunctionDelegate<lzma_auto_decoder_delegate>(library, nameof(lzma_auto_decoder));
+            lzma_alone_decoder_ptr = FunctionLoader.LoadFunctionDelegate<lzma_alone_decoder_delegate>(library, nameof(lzma_alone_decoder));
             lzma_code_ptr = FunctionLoader.LoadFunctionDelegate<lzma_code_delegate>(library, nameof(lzma_code));
             lzma_stream_footer_decode_ptr = FunctionLoader.LoadFunctionDelegate<lzma_stream_footer_decode_delegate>(library, nameof(lzma_stream_footer_decode));
             lzma_index_uncompressed_size_ptr = FunctionLoader.LoadFunctionDelegate<lzma_index_uncompressed_size_delegate>(library, nameof(lzma_index_uncompressed_size));
@@ -66,6 +70,10 @@ namespace Packaging.Targets.IO
         }
 
         private delegate LzmaResult lzma_stream_decoder_delegate(ref LzmaStream stream, ulong memLimit, LzmaDecodeFlags flags);
+
+        private delegate LzmaResult lzma_auto_decoder_delegate(ref LzmaStream stream, ulong memLimit, LzmaDecodeFlags flags);
+
+        private delegate LzmaResult lzma_alone_decoder_delegate(ref LzmaStream stream, ulong memLimit);
 
         private unsafe delegate LzmaResult lzma_easy_buffer_encode_delegate(uint preset, LzmaCheck check, void* allocator, byte[] @in, UIntPtr in_size, byte[] @out, UIntPtr* out_pos, UIntPtr out_size);
 
@@ -102,8 +110,7 @@ namespace Packaging.Targets.IO
         /// Pointer to properly prepared <see cref="LzmaStream"/>.
         /// </param>
         /// <param name="memLimit">
-        /// Memory usage limit as bytes. Use UINT64_MAX
-        /// to effectively disable the limiter.
+        /// Memory usage limit as bytes. Use <see cref="ulong.MaxValue"/> to effectively disable the limiter.
         /// </param>
         /// <param name="flags">
         /// Bitwise-or of zero or more of the decoder flags:
@@ -118,6 +125,53 @@ namespace Packaging.Targets.IO
         /// </returns>
         /// <seealso href="https://github.com/xz-mirror/xz/blob/master/src/liblzma/api/lzma/container.h"/>
         public static LzmaResult lzma_stream_decoder(ref LzmaStream stream, ulong memLimit, LzmaDecodeFlags flags) => lzma_stream_decoder_ptr(ref stream, memLimit, flags);
+
+        /// <summary>
+        /// Decode .xz Streams and .lzma files with autodetection.
+        /// </summary>
+        /// <remarks>
+        /// This decoder autodetects between the .xz and .lzma file formats, and
+        /// calls <see cref="lzma_stream_decoder"/> or <see cref="lzma_alone_decoder"/> once the type
+        /// of the input file has been detected.
+        /// </remarks>
+        /// <param name="stream">
+        /// Pointer to properly prepared lzma_stream.
+        /// </param>
+        /// <param name="memLimit">
+        /// Memory usage limit as bytes. Use <see cref="ulong.MaxValue"/> to effectively disable the limiter. liblzma
+        /// 5.2.3 and earlier don't allow 0 here and return <see cref="LzmaResult.ProgError"/>; later versions treat 0 as if 1
+        /// had been specified.
+        /// </param>
+        /// <param name="flags">
+        /// Bitwise-or of flags, or zero for no flags.
+        /// </param>
+        /// <returns>
+        /// <see cref="LzmaResult.OK"/>: Initialization was successful,
+        /// <see cref="LzmaResult.MemError"/>: Cannot allocate memory,
+        /// <see cref="LzmaResult.OptionsError"/>: Unsupported flags,
+        /// <see cref="LzmaResult.ProgError"/>.
+        /// </returns>
+        /// <seealso href="https://github.com/xz-mirror/xz/blob/master/src/liblzma/api/lzma/container.h"/>
+        public static LzmaResult lzma_auto_decoder(ref LzmaStream stream, ulong memLimit, LzmaDecodeFlags flags) => lzma_auto_decoder_ptr(ref stream, memLimit, flags);
+
+        /// <summary>
+        /// Initialize .lzma decoder (legacy file format).
+        /// </summary>
+        /// <param name="stream">
+        /// Pointer to properly prepared <see cref="LzmaStream"/>.
+        /// </param>
+        /// <param name="memLimit">
+        /// Memory usage limit as bytes. Use <see cref="ulong.MaxValue"/> to effectively disable the limiter. liblzma
+        /// 5.2.3 and earlier don't allow 0 here and return <see cref="LzmaResult.ProgError"/>; later versions treat 0 as if 1
+        /// had been specified.
+        /// </param>
+        /// <returns>
+        /// <see cref="LzmaResult.OK"/>: Initialization was successful,
+        /// <see cref="LzmaResult.MemError"/>: Cannot allocate memory,
+        /// <see cref="LzmaResult.ProgError"/>.
+        /// </returns>
+        /// <seealso href="https://github.com/xz-mirror/xz/blob/master/src/liblzma/api/lzma/container.h"/>
+        public static LzmaResult lzma_alone_decoder(ref LzmaStream stream, ulong memLimit) => lzma_alone_decoder_ptr(ref stream, memLimit);
 
         /// <summary>
         /// Encode or decode data.

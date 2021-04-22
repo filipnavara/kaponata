@@ -121,12 +121,48 @@ namespace Kaponata.FileFormats.Tests.Lzma
         }
 
         /// <summary>
-        /// <see cref="XZInputStream.Read(byte[], int, int)"/> decompresses an .xz stream.
+        /// <see cref="XZInputStream.Read(byte[], int, int)"/> decompresses an .xz or .lzma stream.
         /// </summary>
-        [Fact]
-        public void Read_Works()
+        /// <param name="path">
+        /// The path to the file to parse.
+        /// </param>
+        /// <param name="format">
+        /// The format to parse.
+        /// </param>
+        [Theory]
+        [InlineData("Lzma/hello.xz", LzmaFormat.Auto)]
+        [InlineData("Lzma/hello.xz", LzmaFormat.Xz)]
+        [InlineData("Lzma/hello.lzma", LzmaFormat.Auto)]
+        [InlineData("Lzma/hello.lzma", LzmaFormat.Lzma)]
+        public void Read_WithFormat_Works(string path, LzmaFormat format)
         {
-            using (Stream stream = File.OpenRead("Lzma/hello.xz"))
+            using (Stream stream = File.OpenRead(path))
+            using (XZInputStream xzStream = new XZInputStream(stream, format))
+            {
+                byte[] buffer = new byte[128];
+                Assert.Equal(14, xzStream.Read(buffer, 0, 128));
+                Assert.Equal(0, xzStream.Read(buffer, 0, 128));
+
+                Assert.Equal("Hello, World!\n", Encoding.UTF8.GetString(buffer, 0, 14));
+
+                xzStream.Dispose();
+
+                Assert.Throws<ObjectDisposedException>(() => xzStream.Read(buffer, 0, 128));
+            }
+        }
+
+        /// <summary>
+        /// <see cref="XZInputStream.Read(byte[], int, int)"/> decompresses an .xz or .lzma stream.
+        /// </summary>
+        /// <param name="path">
+        /// The path to the file to parse.
+        /// </param>
+        [Theory]
+        [InlineData("Lzma/hello.xz")]
+        [InlineData("Lzma/hello.lzma")]
+        public void Read_Works(string path)
+        {
+            using (Stream stream = File.OpenRead(path))
             using (XZInputStream xzStream = new XZInputStream(stream))
             {
                 byte[] buffer = new byte[128];
@@ -134,6 +170,32 @@ namespace Kaponata.FileFormats.Tests.Lzma
                 Assert.Equal(0, xzStream.Read(buffer, 0, 128));
 
                 Assert.Equal("Hello, World!\n", Encoding.UTF8.GetString(buffer, 0, 14));
+
+                xzStream.Dispose();
+
+                Assert.Throws<ObjectDisposedException>(() => xzStream.Read(buffer, 0, 128));
+            }
+        }
+
+        /// <summary>
+        /// <see cref="XZInputStream.Read(byte[], int, int)"/> throws when parsing invalid data.
+        /// </summary>
+        /// <param name="path">
+        /// The path to the file to parse.
+        /// </param>
+        /// <param name="format">
+        /// The format to parse.
+        /// </param>
+        [Theory]
+        [InlineData("Lzma/hello.lzma", LzmaFormat.Xz)]
+        [InlineData("Lzma/hello.xz", LzmaFormat.Lzma)]
+        public void Read_InvalidFormat_Throws(string path, LzmaFormat format)
+        {
+            using (Stream stream = File.OpenRead(path))
+            using (XZInputStream xzStream = new XZInputStream(stream, format))
+            {
+                byte[] buffer = new byte[128];
+                Assert.Throws<LzmaException>(() => xzStream.Read(buffer, 0, 128));
 
                 xzStream.Dispose();
 

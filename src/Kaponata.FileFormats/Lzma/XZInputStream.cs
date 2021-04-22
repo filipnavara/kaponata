@@ -53,7 +53,10 @@ namespace Packaging.Targets.IO
         /// <param name="stream">
         /// The underlying <see cref="Stream"/> from which to decompress the data.
         /// </param>
-        public XZInputStream(Stream stream)
+        /// <param name="format">
+        /// The lzma formats which are supported.
+        /// </param>
+        public XZInputStream(Stream stream, LzmaFormat format = LzmaFormat.Auto)
         {
             if (stream == null)
             {
@@ -62,7 +65,23 @@ namespace Packaging.Targets.IO
 
             this.innerStream = stream;
 
-            var ret = NativeMethods.lzma_stream_decoder(ref this.lzmaStream, ulong.MaxValue, LzmaDecodeFlags.Concatenated);
+            LzmaResult ret;
+
+            switch (format)
+            {
+                case LzmaFormat.Lzma:
+                    ret = NativeMethods.lzma_alone_decoder(ref this.lzmaStream, ulong.MaxValue);
+                    break;
+
+                case LzmaFormat.Xz:
+                    ret = NativeMethods.lzma_stream_decoder(ref this.lzmaStream, ulong.MaxValue, LzmaDecodeFlags.Concatenated);
+                    break;
+
+                default:
+                case LzmaFormat.Auto:
+                    ret = NativeMethods.lzma_auto_decoder(ref this.lzmaStream, ulong.MaxValue, LzmaDecodeFlags.Concatenated);
+                    break;
+            }
 
             this.inbuf = Marshal.AllocHGlobal(BufSize);
             this.outbuf = Marshal.AllocHGlobal(BufSize);
