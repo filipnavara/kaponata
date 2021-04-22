@@ -66,7 +66,7 @@ namespace Packaging.Targets.IO
                 LzmaResult.OptionsError => "Invalid or unsupported options.",
                 LzmaResult.FormatError => "The input is not in the .xz format.",
                 LzmaResult.DataError => "Compressed file is corrupt or file size limits exceeded.",
-                LzmaResult.UnsupportedCheck => "Specified integrity check is not supported",
+                LzmaResult.UnsupportedCheck => "Specified integrity check is not supported.",
                 LzmaResult.BufferError => "Compressed file is truncated or otherwise corrupt.",
                 _ => $"An unknown LZMA error occurred: {result}.",
             };

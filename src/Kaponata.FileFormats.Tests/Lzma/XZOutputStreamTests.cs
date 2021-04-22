@@ -22,6 +22,7 @@ namespace Kaponata.FileFormats.Tests.Lzma
         public void Constructor_ValidatesArguments()
         {
             Assert.Throws<ArgumentNullException>(() => new XZOutputStream(null));
+            Assert.Throws<ArgumentOutOfRangeException>(() => new XZOutputStream(Stream.Null, 0));
         }
 
         /// <summary>
@@ -131,6 +132,38 @@ namespace Kaponata.FileFormats.Tests.Lzma
                 xzStream.Dispose();
                 Assert.Throws<ObjectDisposedException>(() => xzStream.Write(buffer, 0, 128));
             }
+        }
+
+        /// <summary>
+        /// <see cref="XZOutputStream.Write(byte[], int, int)"/> does nothing when requested to
+        /// write a zero-length value.
+        /// </summary>
+        [Fact]
+        public void WriteEmpty_DoesNothing()
+        {
+            using (Stream stream = new MemoryStream())
+            using (XZOutputStream xzStream = new XZOutputStream(stream))
+            {
+                xzStream.Write(Array.Empty<byte>(), 0, 0);
+
+                Assert.Equal(0, stream.Position);
+            }
+        }
+
+        /// <summary>
+        /// <see cref="XZOutputStream.Encode(byte[], uint)"/> returns a valid XZ stream.
+        /// </summary>
+        [Fact]
+        public void Encode_Works()
+        {
+            byte[] buffer = Encoding.UTF8.GetBytes("Hello, World!\n");
+            var xz = XZOutputStream.Encode(buffer);
+
+            Assert.Equal(0xfd, xz[0]);
+            Assert.Equal((byte)'7', xz[1]);
+            Assert.Equal((byte)'z', xz[2]);
+            Assert.Equal((byte)'X', xz[3]);
+            Assert.Equal((byte)'Z', xz[4]);
         }
     }
 }

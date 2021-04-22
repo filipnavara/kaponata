@@ -45,9 +45,10 @@ namespace Kaponata.FileFormats.Tests.Lzma
         [InlineData(LzmaResult.MemError, "Memory allocation failed.")]
         [InlineData(LzmaResult.OptionsError, "Invalid or unsupported options.")]
         [InlineData(LzmaResult.FormatError, "The input is not in the .xz format.")]
-        [InlineData(LzmaResult.DataError, "Compressed file is corrupt.")]
+        [InlineData(LzmaResult.DataError, "Compressed file is corrupt or file size limits exceeded.")]
         [InlineData(LzmaResult.BufferError, "Compressed file is truncated or otherwise corrupt.")]
-        [InlineData(LzmaResult.UnsupportedCheck, "An unknown LZMA error occurred: UnsupportedCheck.")]
+        [InlineData(LzmaResult.UnsupportedCheck, "Specified integrity check is not supported.")]
+        [InlineData(LzmaResult.StreamEnd, "An unknown LZMA error occurred: StreamEnd.")]
         [InlineData((LzmaResult)99, "An unknown LZMA error occurred: 99.")]
         public void LzaResultConstructor_Works(LzmaResult result, string expectedMessage)
         {
