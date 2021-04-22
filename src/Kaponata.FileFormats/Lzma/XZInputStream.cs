@@ -203,6 +203,8 @@ namespace Packaging.Targets.IO
         /// <inheritdoc/>
         public override void SetLength(long value)
         {
+            this.EnsureNotDisposed();
+
             throw new NotSupportedException("XZ Stream does not support setting length");
         }
 
@@ -309,6 +311,8 @@ namespace Packaging.Targets.IO
         /// <inheritdoc/>
         public override void Write(byte[] buffer, int offset, int count)
         {
+            this.EnsureNotDisposed();
+
             throw new NotSupportedException("XZ Input stream does not support writing");
         }
 

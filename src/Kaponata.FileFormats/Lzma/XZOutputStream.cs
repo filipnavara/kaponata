@@ -55,32 +55,32 @@ namespace Packaging.Targets.IO
         /// <summary>
         /// Initializes a new instance of the <see cref="XZOutputStream"/> class.
         /// </summary>
-        /// <param name="s">
+        /// <param name="stream">
         /// The <see cref="Stream"/> to which to write compressed data.
         /// </param>
-        public XZOutputStream(Stream s)
-            : this(s, DefaultThreads)
+        public XZOutputStream(Stream stream)
+            : this(stream, DefaultThreads)
         {
         }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="XZOutputStream"/> class.
         /// </summary>
-        /// <param name="s">
+        /// <param name="stream">
         /// The <see cref="Stream"/> to which to write compressed data.
         /// </param>
         /// <param name="threads">
         /// The number of threads to use when compressing data.
         /// </param>
-        public XZOutputStream(Stream s, int threads)
-            : this(s, threads, DefaultPreset)
+        public XZOutputStream(Stream stream, int threads)
+            : this(stream, threads, DefaultPreset)
         {
         }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="XZOutputStream"/> class.
         /// </summary>
-        /// <param name="s">
+        /// <param name="stream">
         /// The <see cref="Stream"/> to which to write compressed data.
         /// </param>
         /// <param name="threads">
@@ -89,15 +89,15 @@ namespace Packaging.Targets.IO
         /// <param name="preset">
         /// The compression preset to use.
         /// </param>
-        public XZOutputStream(Stream s, int threads, uint preset)
-            : this(s, threads, preset, false)
+        public XZOutputStream(Stream stream, int threads, uint preset)
+            : this(stream, threads, preset, false)
         {
         }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="XZOutputStream"/> class.
         /// </summary>
-        /// <param name="s">
+        /// <param name="stream">
         /// The <see cref="Stream"/> to which to write compressed data.
         /// </param>
         /// <param name="threads">
@@ -107,12 +107,17 @@ namespace Packaging.Targets.IO
         /// The compression preset to use.
         /// </param>
         /// <param name="leaveOpen">
-        /// A value indicating whether to dispose of <paramref name="s"/> when this <see cref="XZOutputStream"/>
+        /// A value indicating whether to dispose of <paramref name="stream"/> when this <see cref="XZOutputStream"/>
         /// is disposed of, or not.
         /// </param>
-        public XZOutputStream(Stream s, int threads, uint preset, bool leaveOpen)
+        public XZOutputStream(Stream stream, int threads, uint preset, bool leaveOpen)
         {
-            this.innerStream = s;
+            if (stream == null)
+            {
+                throw new ArgumentNullException(nameof(stream));
+            }
+
+            this.innerStream = stream;
             this.leaveOpen = leaveOpen;
 
             LzmaResult ret;
@@ -261,6 +266,7 @@ namespace Packaging.Targets.IO
         /// <inheritdoc/>
         public override void Flush()
         {
+            this.EnsureNotDisposed();
             throw new NotSupportedException();
         }
 
