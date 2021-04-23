@@ -27,18 +27,36 @@ using System;
 
 namespace DiscUtils.HfsPlus
 {
+    /// <summary>
+    /// A record of a leaf node.
+    /// </summary>
+    /// <typeparam name="TKey">
+    /// The key of the node.
+    /// </typeparam>
     internal sealed class BTreeLeafRecord<TKey> : BTreeNodeRecord
         where TKey : BTreeKey, new()
     {
         private readonly int size;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BTreeLeafRecord{TKey}"/> class.
+        /// </summary>
+        /// <param name="size">
+        /// The size of the record.
+        /// </param>
         public BTreeLeafRecord(int size)
         {
             this.size = size;
         }
 
+        /// <summary>
+        /// Gets the data associated with the key of this node.
+        /// </summary>
         public byte[] Data { get; private set; }
 
+        /// <summary>
+        /// Gets the key of this node.
+        /// </summary>
         public TKey Key { get; private set; }
 
         /// <inheritdoc/>

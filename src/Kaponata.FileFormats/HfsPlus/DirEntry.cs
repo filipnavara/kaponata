@@ -23,7 +23,6 @@
 
 #nullable disable
 
-using DiscUtils.Internal;
 using DiscUtils.Streams;
 using DiscUtils.Vfs;
 using System;
@@ -31,14 +30,29 @@ using System.IO;
 
 namespace DiscUtils.HfsPlus
 {
+    /// <summary>
+    /// An entry in a directory.
+    /// </summary>
     internal sealed class DirEntry : VfsDirEntry
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DirEntry"/> class.
+        /// </summary>
+        /// <param name="name">
+        /// The name of the entry.
+        /// </param>
+        /// <param name="dirEntryData">
+        /// The entry data.
+        /// </param>
         public DirEntry(string name, byte[] dirEntryData)
         {
             this.FileName = name;
             this.CatalogFileInfo = ParseDirEntryData(dirEntryData);
         }
 
+        /// <summary>
+        /// Gets the <see cref="CommonCatalogFileInfo"/> which describes this entry.
+        /// </summary>
         public CommonCatalogFileInfo CatalogFileInfo { get; }
 
         /// <inheritdoc/>
@@ -50,7 +64,7 @@ namespace DiscUtils.HfsPlus
         /// <inheritdoc/>
         public override FileAttributes FileAttributes
         {
-            get { return Utilities.FileAttributesFromUnixFileType(this.CatalogFileInfo.FileSystemInfo.FileType); }
+            get { return HfsPlusUtilities.FileAttributesFromUnixFileType(this.CatalogFileInfo.FileSystemInfo.FileType); }
         }
 
         /// <inheritdoc/>
@@ -97,6 +111,9 @@ namespace DiscUtils.HfsPlus
             get { return this.CatalogFileInfo.ContentModifyTime; }
         }
 
+        /// <summary>
+        /// Gets the <see cref="CatalogNodeId"/> for this entry.
+        /// </summary>
         public CatalogNodeId NodeId
         {
             get { return this.CatalogFileInfo.FileId; }
@@ -108,6 +125,16 @@ namespace DiscUtils.HfsPlus
             get { return this.CatalogFileInfo.FileId; }
         }
 
+        /// <summary>
+        /// Gets a value indicating whether this entry is a file or a directory.
+        /// </summary>
+        /// <param name="dirEntryData">
+        /// The raw entry data.
+        /// </param>
+        /// <returns>
+        /// <see langword="true"/> if this entry is a file or a directory; othwerise,
+        /// <see langword="false"/>.
+        /// </returns>
         internal static bool IsFileOrDirectory(byte[] dirEntryData)
         {
             CatalogRecordType type = (CatalogRecordType)EndianUtilities.ToInt16BigEndian(dirEntryData, 0);

@@ -27,11 +27,20 @@ using System;
 
 namespace DiscUtils.HfsPlus
 {
+    /// <summary>
+    /// Represents a generic record.
+    /// </summary>
     internal class BTreeGenericRecord : BTreeNodeRecord
     {
-        private byte[] data;
         private readonly int size;
+        private byte[] data;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BTreeGenericRecord"/> class.
+        /// </summary>
+        /// <param name="size">
+        /// The size of the record.
+        /// </param>
         public BTreeGenericRecord(int size)
         {
             this.size = size;

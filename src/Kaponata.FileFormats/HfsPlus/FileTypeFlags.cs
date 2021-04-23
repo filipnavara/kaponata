@@ -24,13 +24,37 @@ using System;
 
 namespace DiscUtils.HfsPlus
 {
+    /// <summary>
+    /// Describes the type of file.
+    /// </summary>
+    /// <seealso href="https://developer.apple.com/library/archive/technotes/tn/tn1150.html#HardLinks"/>
+    /// <seealso href="https://developer.apple.com/library/archive/technotes/tn/tn1150.html#SymbolicLinks"/>
     [Flags]
     internal enum FileTypeFlags
     {
+        /// <summary>
+        /// The file is a regular file.
+        /// </summary>
         None = 0x0,
+
+        /// <summary>
+        /// The file is a symbolic link.
+        /// </summary>
         SymLinkFileType = 0x736C6E6B, /* 'slnk' */
+
+        /// <summary>
+        /// The file is a symbolic link creator.
+        /// </summary>
         SymLinkCreator = 0x72686170, /* 'rhap' */
+
+        /// <summary>
+        /// The file is a hard link.
+        /// </summary>
         HardLinkFileType = 0x686C6E6B, /* 'hlnk' */
+
+        /// <summary>
+        /// The file is a HFS+ creator.
+        /// </summary>
         HFSPlusCreator = 0x6866732B, /* 'hfs+' */
     }
 }

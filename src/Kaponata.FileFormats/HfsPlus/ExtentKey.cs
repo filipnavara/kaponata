@@ -28,16 +28,34 @@ using System;
 
 namespace DiscUtils.HfsPlus
 {
+    /// <summary>
+    /// The key for an extent node.
+    /// </summary>
     internal sealed class ExtentKey : BTreeKey, IComparable<ExtentKey>
     {
         private byte forkType; // 0 is data, 0xff is rsrc
         private ushort keyLength;
         private uint startBlock;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ExtentKey"/> class.
+        /// </summary>
         public ExtentKey()
         {
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ExtentKey"/> class.
+        /// </summary>
+        /// <param name="cnid">
+        /// The <see cref="CatalogNodeId"/> of the file to which the extent belongs.
+        /// </param>
+        /// <param name="startBlock">
+        /// The first block of the extent.
+        /// </param>
+        /// <param name="resource_fork">
+        /// A value indicating whether the extent is a resource fork.
+        /// </param>
         public ExtentKey(CatalogNodeId cnid, uint startBlock, bool resource_fork = false)
         {
             this.keyLength = 10;
@@ -46,6 +64,9 @@ namespace DiscUtils.HfsPlus
             this.forkType = (byte)(resource_fork ? 0xff : 0x00);
         }
 
+        /// <summary>
+        /// Gets <see cref="CatalogNodeId"/> of the file to which the extent belongs.
+        /// </summary>
         public CatalogNodeId NodeId { get; private set; }
 
         /// <inheritdoc/>

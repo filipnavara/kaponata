@@ -26,10 +26,21 @@ using System;
 
 namespace DiscUtils.HfsPlus
 {
+    /// <summary>
+    /// A descriptor for a directory record.
+    /// </summary>
+    /// <seealso href="https://developer.apple.com/library/archive/technotes/tn/tn1150.html#CatalogFile"/>
     internal sealed class CatalogDirInfo : CommonCatalogFileInfo
     {
-        public ushort Flags;
-        public uint Valence;
+        /// <summary>
+        /// Gets or sets bit flags about the folder. No bits are currently defined for folder records.
+        /// </summary>
+        public ushort Flags { get; set; }
+
+        /// <summary>
+        /// Gets or sets the number of files and folders directly contained by this folder.
+        /// </summary>
+        public uint Valence { get; set; }
 
         /// <inheritdoc/>
         public override int Size

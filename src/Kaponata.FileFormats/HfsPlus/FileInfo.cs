@@ -28,12 +28,31 @@ using System;
 
 namespace DiscUtils.HfsPlus
 {
+    /// <summary>
+    /// Describes additional file metadata, as used by Finder.
+    /// </summary>
+    /// <seealso href="https://developer.apple.com/library/archive/technotes/tn/tn1150.html#FinderInfo"/>
     internal class FileInfo : IByteArraySerializable
     {
-        public uint FileCreator;
-        public uint FileType;
-        public FinderFlags FinderFlags;
-        public Point Point;
+        /// <summary>
+        /// Gets or sets the file's creator.
+        /// </summary>
+        public uint FileCreator { get; set; }
+
+        /// <summary>
+        /// Gets or sets the type of the file.
+        /// </summary>
+        public uint FileType { get; set; }
+
+        /// <summary>
+        /// Gets or sets flags used by Finder.
+        /// </summary>
+        public FinderFlags FinderFlags { get; set; }
+
+        /// <summary>
+        /// Gets or sets the file's location in the folder.
+        /// </summary>
+        public Point Point { get; set; }
 
         /// <inheritdoc/>
         public int Size

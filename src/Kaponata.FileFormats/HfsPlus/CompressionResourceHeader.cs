@@ -26,16 +26,16 @@ namespace DiscUtils.HfsPlus
 {
     internal class CompressionResourceHeader
     {
+        public static int Size
+        {
+            get { return 16; }
+        }
+
         public uint DataSize { get; private set; }
 
         public uint Flags { get; private set; }
 
         public uint HeaderSize { get; private set; }
-
-        public static int Size
-        {
-            get { return 16; }
-        }
 
         public uint TotalSize { get; private set; }
 

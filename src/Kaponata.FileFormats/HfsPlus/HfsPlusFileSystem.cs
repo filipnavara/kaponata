@@ -33,7 +33,7 @@ namespace DiscUtils.HfsPlus
     public class HfsPlusFileSystem : VfsFileSystemFacade, IUnixFileSystem
     {
         /// <summary>
-        /// Initializes a new instance of the HfsPlusFileSystem class.
+        /// Initializes a new instance of the <see cref="HfsPlusFileSystem"/> class.
         /// </summary>
         /// <param name="stream">A stream containing the file system.</param>
         public HfsPlusFileSystem(Stream stream)
@@ -51,9 +51,19 @@ namespace DiscUtils.HfsPlus
             return this.GetRealFileSystem<HfsPlusFileSystemImpl>().GetUnixFileInfo(path);
         }
 
+        /// <summary>
+        /// Detects whether a <see cref="Stream"/> represents a HFS+ file system or not.
+        /// </summary>
+        /// <param name="stream">
+        /// The stream for which to detect whether it contains a HFS+ file system or not.
+        /// </param>
+        /// <returns>
+        /// <see langword="true"/> if <paramref name="stream"/> contains a HFS+ file system;
+        /// otherwise, <see langword="false"/>.
+        /// </returns>
         internal static bool Detect(Stream stream)
         {
-            if (stream.Length < 1536)
+            if (stream == null || stream.Length < 1536)
             {
                 return false;
             }

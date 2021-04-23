@@ -28,11 +28,26 @@ using System;
 
 namespace DiscUtils.HfsPlus
 {
+    /// <summary>
+    /// The catalog thread record is used in the catalog B-tree file to link a <see cref="CatalogNodeId"/> to the file or folder record using that CNID.
+    /// </summary>
+    /// <seealso href="https://developer.apple.com/library/archive/technotes/tn/tn1150.html#CatalogThreadRecord"/>
     internal sealed class CatalogThread : IByteArraySerializable
     {
-        public string Name;
-        public CatalogNodeId ParentId;
-        public CatalogRecordType RecordType;
+        /// <summary>
+        /// Gets or sets the name of the file or folder referenced by this thread record.
+        /// </summary>
+        public string Name { get; set; }
+
+        /// <summary>
+        /// Gets or sets the CNID of the parent of the file or folder referenced by this thread record.
+        /// </summary>
+        public CatalogNodeId ParentId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the The catalog data record type.
+        /// </summary>
+        public CatalogRecordType RecordType { get; set; }
 
         /// <inheritdoc/>
         public int Size

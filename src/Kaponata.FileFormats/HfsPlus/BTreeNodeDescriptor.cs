@@ -26,14 +26,40 @@ using System;
 
 namespace DiscUtils.HfsPlus
 {
+    /// <summary>
+    /// The node descriptor contains basic information about the node as well as forward and backward links to other nodes.
+    /// </summary>
     internal sealed class BTreeNodeDescriptor : IByteArraySerializable
     {
-        public uint BackwardLink;
-        public uint ForwardLink;
-        public byte Height;
-        public BTreeNodeKind Kind;
-        public ushort NumRecords;
-        public ushort Reserved;
+        /// <summary>
+        /// Gets or sets the node number of the previous node of this type, or 0 if this is the first node.
+        /// </summary>
+        public uint BackwardLink { get; set; }
+
+        /// <summary>
+        /// Gets or sets the node number of the next node of this type, or 0 if this is the last node.
+        /// </summary>
+        public uint ForwardLink { get; set; }
+
+        /// <summary>
+        /// Gets or sets the level, or depth, of this node in the B-tree hierarchy.
+        /// </summary>
+        public byte Height { get; set; }
+
+        /// <summary>
+        /// Gets or sets the type of this node.
+        /// </summary>
+        public BTreeNodeKind Kind { get; set; }
+
+        /// <summary>
+        /// Gets or sets the number of records contained in this node.
+        /// </summary>
+        public ushort NumRecords { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value which must be treated as a reserved field.
+        /// </summary>
+        public ushort Reserved { get; set; }
 
         /// <inheritdoc/>
         public int Size

@@ -27,24 +27,45 @@ using System;
 
 namespace DiscUtils.HfsPlus
 {
+    /// <summary>
+    /// Represents the keys used by the attribute file.
+    /// </summary>
     internal class AttributeKey : BTreeKey
     {
         private ushort keyLength;
         private ushort pad;
         private uint startBlock;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AttributeKey"/> class.
+        /// </summary>
         public AttributeKey()
         {
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AttributeKey"/> class.
+        /// </summary>
+        /// <param name="nodeId">
+        /// The node ID of the node to which the attribute applies.
+        /// </param>
+        /// <param name="name">
+        /// The name of the attribute.
+        /// </param>
         public AttributeKey(CatalogNodeId nodeId, string name)
         {
             this.FileId = nodeId;
             this.Name = name;
         }
 
+        /// <summary>
+        /// Gets the ID of the file to which the attribute applies.
+        /// </summary>
         public CatalogNodeId FileId { get; private set; }
 
+        /// <summary>
+        /// Gets the name of the attribute.
+        /// </summary>
         public string Name { get; private set; }
 
         /// <inheritdoc/>
@@ -74,22 +95,19 @@ namespace DiscUtils.HfsPlus
         /// <inheritdoc/>
         public override int CompareTo(BTreeKey other)
         {
-            return this.CompareTo(other as AttributeKey);
-        }
+            var attributeKey = other as AttributeKey;
 
-        public int CompareTo(AttributeKey other)
-        {
-            if (other == null)
+            if (attributeKey == null)
             {
                 throw new ArgumentNullException(nameof(other));
             }
 
-            if (this.FileId != other.FileId)
+            if (this.FileId != attributeKey.FileId)
             {
-                return this.FileId < other.FileId ? -1 : 1;
+                return this.FileId < attributeKey.FileId ? -1 : 1;
             }
 
-            return HfsPlusUtilities.FastUnicodeCompare(this.Name, other.Name);
+            return HfsPlusUtilities.FastUnicodeCompare(this.Name, attributeKey.Name);
         }
 
         /// <inheritdoc/>

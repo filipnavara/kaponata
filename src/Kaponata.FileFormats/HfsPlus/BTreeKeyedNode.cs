@@ -23,16 +23,47 @@
 
 namespace DiscUtils.HfsPlus
 {
+    /// <summary>
+    /// Represents a node in a keyed B-tree.
+    /// </summary>
+    /// <typeparam name="TKey">
+    /// The type of the key.
+    /// </typeparam>
+    /// <seealso gref="https://developer.apple.com/library/archive/technotes/tn/tn1150.html#KeyedRecords"/>
     internal abstract class BTreeKeyedNode<TKey> : BTreeNode
         where TKey : BTreeKey
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BTreeKeyedNode{TKey}"/> class.
+        /// </summary>
+        /// <param name="tree">
+        /// The tree to which this node belongs.
+        /// </param>
+        /// <param name="descriptor">
+        /// A descriptor which describes the key.
+        /// </param>
         public BTreeKeyedNode(BTree tree, BTreeNodeDescriptor descriptor)
             : base(tree, descriptor)
         {
         }
 
+        /// <summary>
+        /// Finds a node with a specific key.
+        /// </summary>
+        /// <param name="key">
+        /// The key of the node to find.
+        /// </param>
+        /// <returns>
+        /// The requested node.
+        /// </returns>
         public abstract byte[] FindKey(TKey key);
 
+        /// <summary>
+        /// Visits a range in this node.
+        /// </summary>
+        /// <param name="visitor">
+        /// A visitor.
+        /// </param>
         public abstract void VisitRange(BTreeVisitor<TKey> visitor);
     }
 }

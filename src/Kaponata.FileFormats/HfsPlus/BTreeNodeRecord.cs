@@ -25,6 +25,9 @@ using DiscUtils.Streams;
 
 namespace DiscUtils.HfsPlus
 {
+    /// <summary>
+    /// An individual record embedded in a B-tree node.
+    /// </summary>
     internal abstract class BTreeNodeRecord : IByteArraySerializable
     {
         /// <inheritdoc/>

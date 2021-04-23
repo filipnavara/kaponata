@@ -28,19 +28,31 @@ using System.IO;
 
 namespace DiscUtils.HfsPlus
 {
+    /// <summary>
+    /// An implementation of the HFS+ file system.
+    /// </summary>
     internal sealed class HfsPlusFileSystemImpl : VfsFileSystem<DirEntry, File, Directory, Context>, IUnixFileSystem
     {
-        public HfsPlusFileSystemImpl(Stream s)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="HfsPlusFileSystemImpl"/> class.
+        /// </summary>
+        /// <param name="stream">A stream containing the file system.</param>
+        public HfsPlusFileSystemImpl(Stream stream)
             : base(new DiscFileSystemOptions())
         {
-            s.Position = 1024;
+            if (stream == null)
+            {
+                throw new ArgumentNullException(nameof(stream));
+            }
 
-            byte[] headerBuf = StreamUtilities.ReadExact(s, 512);
+            stream.Position = 1024;
+
+            byte[] headerBuf = StreamUtilities.ReadExact(stream, 512);
             VolumeHeader hdr = new VolumeHeader();
             hdr.ReadFrom(headerBuf, 0);
 
             this.Context = new Context();
-            this.Context.VolumeStream = s;
+            this.Context.VolumeStream = stream;
             this.Context.VolumeHeader = hdr;
 
             FileBuffer catalogBuffer = new FileBuffer(this.Context, hdr.CatalogFile, CatalogNodeId.CatalogFileId);
@@ -87,6 +99,24 @@ namespace DiscUtils.HfsPlus
         }
 
         /// <inheritdoc/>
+        public override long Size
+        {
+            get { throw new NotSupportedException("Filesystem size is not (yet) supported"); }
+        }
+
+        /// <inheritdoc/>
+        public override long UsedSpace
+        {
+            get { throw new NotSupportedException("Filesystem size is not (yet) supported"); }
+        }
+
+        /// <inheritdoc/>
+        public override long AvailableSpace
+        {
+            get { throw new NotSupportedException("Filesystem size is not (yet) supported"); }
+        }
+
+        /// <inheritdoc/>
         public UnixFileSystemInfo GetUnixFileInfo(string path)
         {
             DirEntry dirEntry = this.GetDirectoryEntry(path);
@@ -112,30 +142,6 @@ namespace DiscUtils.HfsPlus
             }
 
             return new File(this.Context, dirEntry.NodeId, dirEntry.CatalogFileInfo);
-        }
-
-        /// <summary>
-        /// Size of the Filesystem in bytes.
-        /// </summary>
-        public override long Size
-        {
-            get { throw new NotSupportedException("Filesystem size is not (yet) supported"); }
-        }
-
-        /// <summary>
-        /// Used space of the Filesystem in bytes.
-        /// </summary>
-        public override long UsedSpace
-        {
-            get { throw new NotSupportedException("Filesystem size is not (yet) supported"); }
-        }
-
-        /// <summary>
-        /// Available space of the Filesystem in bytes.
-        /// </summary>
-        public override long AvailableSpace
-        {
-            get { throw new NotSupportedException("Filesystem size is not (yet) supported"); }
         }
     }
 }

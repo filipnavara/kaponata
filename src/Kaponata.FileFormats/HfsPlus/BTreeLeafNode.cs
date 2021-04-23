@@ -28,11 +28,26 @@ using System.Collections.Generic;
 
 namespace DiscUtils.HfsPlus
 {
+    /// <summary>
+    /// Represents a leaf node (the bottom level) of a B-tree. Leaf nodes contain data records instead of pointer records.
+    /// </summary>
+    /// <typeparam name="TKey">
+    /// The type of the key of the node.
+    /// </typeparam>
     internal sealed class BTreeLeafNode<TKey> : BTreeKeyedNode<TKey>
         where TKey : BTreeKey, new()
     {
         private BTreeLeafRecord<TKey>[] records;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BTreeLeafNode{TKey}"/> class.
+        /// </summary>
+        /// <param name="tree">
+        /// The tree to which the leaf node belongs.
+        /// </param>
+        /// <param name="descriptor">
+        /// A descriptor which describes the leaf node.
+        /// </param>
         public BTreeLeafNode(BTree tree, BTreeNodeDescriptor descriptor)
             : base(tree, descriptor)
         {

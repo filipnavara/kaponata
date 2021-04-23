@@ -25,22 +25,77 @@ using System.Globalization;
 
 namespace DiscUtils.HfsPlus
 {
+    /// <summary>
+    /// Represents the HFS+ Catalog Node ID. Each file or folder in the catalog file is assigned a unique
+    /// catalog node ID (CNID).
+    /// </summary>
+    /// <seealso href="https://developer.apple.com/library/archive/technotes/tn/tn1150.html#CNID"/>
     internal struct CatalogNodeId
     {
+        /// <summary>
+        /// Parent ID of the root folder.
+        /// </summary>
         public static readonly CatalogNodeId RootParentId = new CatalogNodeId(1);
+
+        /// <summary>
+        /// Folder ID of the root folder.
+        /// </summary>
         public static readonly CatalogNodeId RootFolderId = new CatalogNodeId(2);
+
+        /// <summary>
+        /// File ID of the extents overflow file.
+        /// </summary>
         public static readonly CatalogNodeId ExtentsFileId = new CatalogNodeId(3);
+
+        /// <summary>
+        /// File ID of the catalog file.
+        /// </summary>
         public static readonly CatalogNodeId CatalogFileId = new CatalogNodeId(4);
+
+        /// <summary>
+        /// File ID of the bad block file. The bad block file is not a file in the same sense as a
+        /// special file and a user file.
+        /// </summary>
         public static readonly CatalogNodeId BadBlockFileId = new CatalogNodeId(5);
+
+        /// <summary>
+        /// File ID of the allocation file (introduced with HFS Plus).
+        /// </summary>
         public static readonly CatalogNodeId AllocationFileId = new CatalogNodeId(6);
+
+        /// <summary>
+        /// File ID of the startup file (introduced with HFS Plus).
+        /// </summary>
         public static readonly CatalogNodeId StartupFileId = new CatalogNodeId(7);
+
+        /// <summary>
+        /// File ID of the attributes file (introduced with HFS Plus).
+        /// </summary>
         public static readonly CatalogNodeId AttributesFileId = new CatalogNodeId(8);
+
+        /// <summary>
+        /// Used temporarily by <c>fsck_hfs</c> when rebuilding the catalog file.
+        /// </summary>
         public static readonly CatalogNodeId RepairCatalogFileId = new CatalogNodeId(14);
+
+        /// <summary>
+        /// Used temporarily during <c>ExchangeFiles</c> operations.
+        /// </summary>
         public static readonly CatalogNodeId BogusExtentFileId = new CatalogNodeId(15);
+
+        /// <summary>
+        /// First CNID available for use by user files and folders.
+        /// </summary>
         public static readonly CatalogNodeId FirstUserCatalogNodeId = new CatalogNodeId(16);
 
         private readonly uint id;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CatalogNodeId"/> struct.
+        /// </summary>
+        /// <param name="id">
+        /// The raw catalog node id.
+        /// </param>
         public CatalogNodeId(uint id)
         {
             this.id = id;

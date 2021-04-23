@@ -22,12 +22,16 @@
 // DEALINGS IN THE SOFTWARE.
 
 using DiscUtils.Vfs;
+using System;
 using System.IO;
 
 namespace DiscUtils.HfsPlus
 {
+    /// <summary>
+    /// A factory for HFS+ file systems.
+    /// </summary>
     [VfsFileSystemFactory]
-    internal class FileSystemFactory : VfsFileSystemFactory
+    public class FileSystemFactory : VfsFileSystemFactory
     {
         /// <inheritdoc/>
         public override FileSystemInfo[] Detect(Stream stream, VolumeInfo volume)
@@ -37,7 +41,7 @@ namespace DiscUtils.HfsPlus
                 return new FileSystemInfo[] { new VfsFileSystemInfo("HFS+", "Apple HFS+", this.Open) };
             }
 
-            return new FileSystemInfo[0];
+            return Array.Empty<FileSystemInfo>();
         }
 
         private DiscFileSystem Open(Stream stream, VolumeInfo volumeInfo, FileSystemParameters parameters)

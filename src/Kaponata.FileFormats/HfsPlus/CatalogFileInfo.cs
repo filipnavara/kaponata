@@ -28,12 +28,31 @@ using System;
 
 namespace DiscUtils.HfsPlus
 {
+    /// <summary>
+    /// A descriptor for a file record.
+    /// </summary>
+    /// <seealso href="https://developer.apple.com/library/archive/technotes/tn/tn1150.html#CatalogFile"/>
     internal sealed class CatalogFileInfo : CommonCatalogFileInfo
     {
-        public ForkData DataFork;
-        public FileInfo FileInfo;
-        public ushort Flags;
-        public ForkData ResourceFork;
+        /// <summary>
+        /// Gets or sets information about the location and size of the data fork.
+        /// </summary>
+        public ForkData DataFork { get; set; }
+
+        /// <summary>
+        /// Gets or sets file information.
+        /// </summary>
+        public FileInfo FileInfo { get; set; }
+
+        /// <summary>
+        /// Gets or sets bit flags about the file.
+        /// </summary>
+        public ushort Flags { get; set; }
+
+        /// <summary>
+        /// Gets or sets information about the location and size of the resource fork.
+        /// </summary>
+        public ForkData ResourceFork { get; set; }
 
         /// <inheritdoc/>
         public override int Size

@@ -28,22 +28,51 @@ using System;
 
 namespace DiscUtils.HfsPlus
 {
+    /// <summary>
+    /// For a given file, folder, or thread record, the catalog file key consists of the parent folder's <see cref="CatalogNodeId"/> and the name of the file or folder.
+    /// </summary>
     internal sealed class CatalogKey : BTreeKey, IComparable<CatalogKey>
     {
         private ushort keyLength;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CatalogKey"/> class.
+        /// </summary>
         public CatalogKey()
         {
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CatalogKey"/> class.
+        /// </summary>
+        /// <param name="nodeId">
+        /// The parent record's <see cref="CatalogNodeId"/>.
+        /// </param>
+        /// <param name="name">
+        /// The name of the node.
+        /// </param>
         public CatalogKey(CatalogNodeId nodeId, string name)
         {
             this.NodeId = nodeId;
             this.Name = name;
         }
 
+        /// <summary>
+        /// Gets the name of the node.
+        /// </summary>
+        /// <remarks>
+        /// For file or folder records, this is the name of the file or folder inside the parentID folder.
+        /// For thread records, this is the empty string.
+        /// </remarks>
         public string Name { get; private set; }
 
+        /// <summary>
+        /// Gets the parent record's <see cref="CatalogNodeId"/>.
+        /// </summary>
+        /// <remarks>
+        /// For file and folder records, this is the folder containing the file or folder represented by the record.
+        /// For thread records, this is the CNID of the file or folder itself.
+        /// </remarks>
         public CatalogNodeId NodeId { get; private set; }
 
         /// <inheritdoc/>

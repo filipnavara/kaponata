@@ -28,11 +28,27 @@ using System.Collections.Generic;
 
 namespace DiscUtils.HfsPlus
 {
+    /// <summary>
+    /// Represents an index node.
+    /// </summary>
+    /// <typeparam name="TKey">
+    /// The type of the key of the index node.
+    /// </typeparam>
+    /// <seealso href="https://developer.apple.com/library/archive/technotes/tn/tn1150.html#IndexNodes"/>
     internal class BTreeIndexNode<TKey> : BTreeKeyedNode<TKey>
         where TKey : BTreeKey, new()
     {
         private BTreeIndexRecord<TKey>[] records;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BTreeIndexNode{TKey}"/> class.
+        /// </summary>
+        /// <param name="tree">
+        /// The B-tree to which this node belongs.
+        /// </param>
+        /// <param name="descriptor">
+        /// The node descriptor for this node.
+        /// </param>
         public BTreeIndexNode(BTree tree, BTreeNodeDescriptor descriptor)
             : base(tree, descriptor)
         {

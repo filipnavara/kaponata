@@ -38,6 +38,11 @@ namespace DiscUtils.HfsPlus
         private uint reserved3;
         #pragma warning restore CS0169
 
+        public static int Size
+        {
+            get { return 32; }
+        }
+
         public uint AttrSize { get; private set; }
 
         public string CompressionMagic
@@ -46,11 +51,6 @@ namespace DiscUtils.HfsPlus
         }
 
         public FileCompressionType CompressionType { get; private set; }
-
-        public static int Size
-        {
-            get { return 32; }
-        }
 
         public uint UncompressedSize { get; private set; }
 

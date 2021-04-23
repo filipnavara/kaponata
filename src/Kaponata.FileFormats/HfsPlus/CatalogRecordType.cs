@@ -23,12 +23,34 @@
 
 namespace DiscUtils.HfsPlus
 {
+    /// <summary>
+    /// describes the type of catalog data record.
+    /// </summary>
     internal enum CatalogRecordType : short
     {
+        /// <summary>
+        /// The type is unknown.
+        /// </summary>
         None = 0x0000,
+
+        /// <summary>
+        /// This record is a folder record. You can use the <see cref="FolderRecord"/> type to interpret the data.
+        /// </summary>
         FolderRecord = 0x0001,
+
+        /// <summary>
+        /// This record is a file record. You can use the <see cref="FileRecord"/> type to interpret the data.
+        /// </summary>
         FileRecord = 0x0002,
+
+        /// <summary>
+        /// The record is a folder thread record. You can use the <see cref="FolderThreadRecord"/> type to interpret the data.
+        /// </summary>
         FolderThreadRecord = 0x0003,
+
+        /// <summary>
+        /// The record is a file thread record. You can use the <see cref="FileThreadRecord"/> type to interpret the data.
+        /// </summary>
         FileThreadRecord = 0x0004,
     }
 }

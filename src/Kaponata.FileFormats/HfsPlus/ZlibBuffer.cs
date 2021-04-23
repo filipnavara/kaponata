@@ -28,12 +28,24 @@ using Buffer=DiscUtils.Streams.Buffer;
 
 namespace DiscUtils.Compression
 {
+    /// <summary>
+    /// A <see cref="Buffer"/> which reads zlib-compressed data.
+    /// </summary>
     internal class ZlibBuffer : Buffer
     {
-        private Ownership ownership;
         private readonly Stream stream;
+        private Ownership ownership;
         private int position;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ZlibBuffer"/> class.
+        /// </summary>
+        /// <param name="stream">
+        /// The <see cref="Stream"/> from which to read data.
+        /// </param>
+        /// <param name="ownership">
+        /// The stream ownership model.
+        /// </param>
         public ZlibBuffer(Stream stream, Ownership ownership)
         {
             this.stream = stream;

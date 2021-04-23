@@ -26,10 +26,21 @@ using System;
 
 namespace DiscUtils.HfsPlus
 {
+    /// <summary>
+    /// Describes a file's location in the folder. For use by Finder only.
+    /// </summary>
+    /// <seealso href="https://developer.apple.com/library/archive/technotes/tn/tn1150.html#FinderInfo"/>
     internal sealed class Point : IByteArraySerializable
     {
-        public short Horizontal;
-        public short Vertical;
+        /// <summary>
+        /// Gets or sets the horizontal location.
+        /// </summary>
+        public short Horizontal { get; set; }
+
+        /// <summary>
+        /// Gets or sets the vertical location.
+        /// </summary>
+        public short Vertical { get; set; }
 
         /// <inheritdoc/>
         public int Size

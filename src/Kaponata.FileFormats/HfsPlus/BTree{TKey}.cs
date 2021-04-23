@@ -1,4 +1,4 @@
-﻿// <copyright file="BTree_T.cs" company="Kenneth Bell, Quamotion bv">
+﻿// <copyright file="BTree{TKey}.cs" company="Kenneth Bell, Quamotion bv">
 // Copyright (c) 2008-2011, Kenneth Bell
 // Copyright (c) Quamotion bv. All rights reserved.
 // </copyright>
@@ -27,6 +27,12 @@ using DiscUtils.Streams;
 
 namespace DiscUtils.HfsPlus
 {
+    /// <summary>
+    /// Represents an B-tree.
+    /// </summary>
+    /// <typeparam name="TKey">
+    /// The type of the key used by this B-tree.
+    /// </typeparam>
     internal sealed class BTree<TKey> : BTree
         where TKey : BTreeKey, new()
     {
@@ -34,6 +40,12 @@ namespace DiscUtils.HfsPlus
         private readonly BTreeHeaderRecord header;
         private readonly BTreeKeyedNode<TKey> rootNode;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BTree{TKey}"/> class.
+        /// </summary>
+        /// <param name="data">
+        /// The raw data which represents the B-tree.
+        /// </param>
         public BTree(IBuffer data)
         {
             this.data = data;
@@ -60,16 +72,40 @@ namespace DiscUtils.HfsPlus
             get { return this.header.NodeSize; }
         }
 
+        /// <summary>
+        /// Finds a node in this B-tree.
+        /// </summary>
+        /// <param name="key">
+        /// The key of the node to find.
+        /// </param>
+        /// <returns>
+        /// If found, the requested node. Otherwise, <see langword="null"/>.
+        /// </returns>
         public byte[] Find(TKey key)
         {
             return this.rootNode == null ? null : this.rootNode.FindKey(key);
         }
 
+        /// <summary>
+        /// Visits a range.
+        /// </summary>
+        /// <param name="visitor">
+        /// The node visitor.
+        /// </param>
         public void VisitRange(BTreeVisitor<TKey> visitor)
         {
             this.rootNode.VisitRange(visitor);
         }
 
+        /// <summary>
+        /// Gets a keyed node.
+        /// </summary>
+        /// <param name="nodeId">
+        /// The id of the node.
+        /// </param>
+        /// <returns>
+        /// The requested node.
+        /// </returns>
         internal BTreeKeyedNode<TKey> GetKeyedNode(uint nodeId)
         {
             byte[] nodeData = StreamUtilities.ReadExact(this.data, (int)nodeId * this.header.NodeSize, this.header.NodeSize);

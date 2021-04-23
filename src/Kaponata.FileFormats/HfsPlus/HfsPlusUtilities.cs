@@ -23,15 +23,17 @@
 
 using DiscUtils.Streams;
 using System;
+using System.IO;
 using System.Text;
 
 namespace DiscUtils.HfsPlus
 {
+    /// <summary>
+    /// Common HFS+ helper methods.
+    /// </summary>
     internal static class HfsPlusUtilities
     {
-        #region LowerCase Table
-
-        private static readonly ushort[] lowerCaseTable =
+        private static readonly ushort[] LowerCaseTable =
         {
             /* 0 */ 0x0100, 0x0200, 0x0000, 0x0300, 0x0400, 0x0500, 0x0000, 0x0000,
             0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,
@@ -387,14 +389,39 @@ namespace DiscUtils.HfsPlus
             0xFFF8, 0xFFF9, 0xFFFA, 0xFFFB, 0xFFFC, 0xFFFD, 0xFFFE, 0xFFFF,
         };
 
-        #endregion
-
+        /// <summary>
+        /// Reads a unicode string.
+        /// </summary>
+        /// <param name="buffer">
+        /// The buffer which contains the unicode string.
+        /// </param>
+        /// <param name="offset">
+        /// The offset at which to start reading.
+        /// </param>
+        /// <returns>
+        /// The requested string.
+        /// </returns>
         public static string ReadUniStr255(byte[] buffer, int offset)
         {
             int len = EndianUtilities.ToUInt16BigEndian(buffer, offset + 0);
             return Encoding.BigEndianUnicode.GetString(buffer, offset + 2, len * 2);
         }
 
+        /// <summary>
+        /// Reads a date and time value.
+        /// </summary>
+        /// <param name="kind">
+        /// The kind of date and time to read.
+        /// </param>
+        /// <param name="buffer">
+        /// The buffer which contains the date and time value.
+        /// </param>
+        /// <param name="offset">
+        /// The offset at which to start reading.
+        /// </param>
+        /// <returns>
+        /// The requested date and time value.
+        /// </returns>
         public static DateTime ReadHFSPlusDate(DateTimeKind kind, byte[] buffer, int offset)
         {
             uint val = EndianUtilities.ToUInt32BigEndian(buffer, offset);
@@ -404,6 +431,21 @@ namespace DiscUtils.HfsPlus
             return result;
         }
 
+        /// <summary>
+        /// Reads BSD filesystem information.
+        /// </summary>
+        /// <param name="buffer">
+        /// The buffer which contains the filesystem information.
+        /// </param>
+        /// <param name="offset">
+        /// The offset at which to start reading.
+        /// </param>
+        /// <param name="special">
+        /// The value of the 'special' field.
+        /// </param>
+        /// <returns>
+        /// A <see cref="UnixFileSystemInfo"/> object which describes the BSD filesystem information.
+        /// </returns>
         public static UnixFileSystemInfo ReadBsdInfo(byte[] buffer, int offset, out uint special)
         {
             UnixFileSystemInfo result = new UnixFileSystemInfo();
@@ -423,6 +465,18 @@ namespace DiscUtils.HfsPlus
             return result;
         }
 
+        /// <summary>
+        /// Compares two unicode strings.
+        /// </summary>
+        /// <param name="a">
+        /// The first string.
+        /// </param>
+        /// <param name="b">
+        /// The second string.
+        /// </param>
+        /// <returns>
+        /// A value indicating how both strings compare to each other.
+        /// </returns>
         public static int FastUnicodeCompare(string a, string b)
         {
             int aPos = 0;
@@ -436,20 +490,20 @@ namespace DiscUtils.HfsPlus
                 while (aPos < a.Length && aChar == '\0')
                 {
                     aChar = a[aPos++];
-                    int temp = lowerCaseTable[(aChar >> 8) & 0xFF];
+                    int temp = LowerCaseTable[(aChar >> 8) & 0xFF];
                     if (temp != 0)
                     {
-                        aChar = (char)lowerCaseTable[temp + (aChar & 0xFF)];
+                        aChar = (char)LowerCaseTable[temp + (aChar & 0xFF)];
                     }
                 }
 
                 while (bPos < b.Length && bChar == '\0')
                 {
                     bChar = b[bPos++];
-                    int temp = lowerCaseTable[(bChar >> 8) & 0xFF];
+                    int temp = LowerCaseTable[(bChar >> 8) & 0xFF];
                     if (temp != 0)
                     {
-                        bChar = (char)lowerCaseTable[temp + (bChar & 0xFF)];
+                        bChar = (char)LowerCaseTable[temp + (bChar & 0xFF)];
                     }
                 }
 
@@ -463,6 +517,38 @@ namespace DiscUtils.HfsPlus
                 {
                     return 0;
                 }
+            }
+        }
+
+        /// <summary>
+        /// Converts a <see cref="UnixFileType"/> value to a <see cref="FileAttributes"/> value.
+        /// </summary>
+        /// <param name="fileType">
+        /// The <see cref="UnixFileType"/> to convert.
+        /// </param>
+        /// <returns>
+        /// The equivalent <see cref="FileAttributes"/> value.
+        /// </returns>
+        public static FileAttributes FileAttributesFromUnixFileType(UnixFileType fileType)
+        {
+            switch (fileType)
+            {
+                case UnixFileType.Fifo:
+                    return FileAttributes.Device | FileAttributes.System;
+                case UnixFileType.Character:
+                    return FileAttributes.Device | FileAttributes.System;
+                case UnixFileType.Directory:
+                    return FileAttributes.Directory;
+                case UnixFileType.Block:
+                    return FileAttributes.Device | FileAttributes.System;
+                case UnixFileType.Regular:
+                    return FileAttributes.Normal;
+                case UnixFileType.Link:
+                    return FileAttributes.ReparsePoint;
+                case UnixFileType.Socket:
+                    return FileAttributes.Device | FileAttributes.System;
+                default:
+                    return 0;
             }
         }
     }

@@ -1,4 +1,4 @@
-﻿// <copyright file="ZlibBuffer.cs" company="Quamotion bv">
+﻿// <copyright file="SizedDeflateStream.cs" company="Quamotion bv">
 // Copyright (c) Quamotion bv. All rights reserved.
 // </copyright>
 //
@@ -26,11 +26,31 @@ using System.IO.Compression;
 
 namespace DiscUtils.Compression
 {
+    /// <summary>
+    /// A <see cref="DeflateStream"/> which is aware of its size.
+    /// </summary>
     internal class SizedDeflateStream : DeflateStream
     {
         private readonly int length;
         private int position;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SizedDeflateStream"/> class.
+        /// </summary>
+        /// <param name="stream">
+        /// The stream to compress or decompress.
+        /// </param>
+        /// <param name="mode">
+        /// One of the enumeration values that indicates whether to compress or decompress
+        /// the stream.
+        /// </param>
+        /// <param name="leaveOpen">
+        /// <see langword="true"/> to leave the stream open after disposing the <see cref="SizedDeflateStream"/>;
+        /// otherwise, <see langword="false"/>.
+        /// </param>
+        /// <param name="length">
+        /// The decompressed data size.
+        /// </param>
         public SizedDeflateStream(Stream stream, CompressionMode mode, bool leaveOpen, int length)
             : base(stream, mode, leaveOpen)
         {
@@ -46,7 +66,11 @@ namespace DiscUtils.Compression
         /// <inheritdoc/>
         public override long Position
         {
-            get { return this.position; }
+            get
+            {
+                return this.position;
+            }
+
             set
             {
                 if (value != this.Position)

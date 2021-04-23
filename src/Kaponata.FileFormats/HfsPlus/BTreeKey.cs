@@ -24,8 +24,13 @@
 using DiscUtils.Streams;
 using System;
 
+#nullable disable
+
 namespace DiscUtils.HfsPlus
 {
+    /// <summary>
+    /// Represents a key for a B-tree node.
+    /// </summary>
     internal abstract class BTreeKey : IByteArraySerializable, IComparable<BTreeKey>
     {
         /// <inheritdoc/>

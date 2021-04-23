@@ -28,44 +28,153 @@ using System;
 
 namespace DiscUtils.HfsPlus
 {
+    /// <summary>
+    /// Represents the HFS+ volume header. The volume header contains information about the volume as a whole,
+    /// including the location of other key structures in the volume.
+    /// </summary>
+    /// <seealso href="https://developer.apple.com/library/archive/technotes/tn/tn1150.html#VolumeHeader"/>
     internal sealed class VolumeHeader : IByteArraySerializable
     {
+        /// <summary>
+        /// The signature of the HFS+ volume header.
+        /// </summary>
         public const ushort HfsPlusSignature = 0x482b;
 
-        public ForkData AllocationFile;
-        public VolumeAttributes Attributes;
-        public ForkData AttributesFile;
-        public DateTime BackupDate;
+        /// <summary>
+        /// Gets or sets information about the location and size of the allocation file.
+        /// </summary>
+        public ForkData AllocationFile { get; set; }
 
-        public uint BlockSize;
-        public ForkData CatalogFile;
-        public DateTime CheckedDate;
+        /// <summary>
+        /// Gets or sets the volume attributes.
+        /// </summary>
+        public VolumeAttributes Attributes { get; set; }
 
-        public DateTime CreateDate;
-        public uint DataClumpSize;
-        public ulong EncodingsBitmap;
-        public ForkData ExtentsFile;
+        /// <summary>
+        /// Gets or sets information about the location and size of the attributes file.
+        /// </summary>
+        public ForkData AttributesFile { get; set; }
 
-        public uint FileCount;
+        /// <summary>
+        /// Gets or sets the date and time when the volume was last backed up.
+        /// </summary>
+        public DateTime BackupDate { get; set; }
 
-        public uint[] FinderInfo;
-        public uint FolderCount;
-        public uint FreeBlocks;
-        public uint JournalInfoBlock;
-        public uint LastMountedVersion;
-        public DateTime ModifyDate;
+        /// <summary>
+        /// Gets or sets the allocation block size, in bytes.
+        /// </summary>
+        public uint BlockSize { get; set; }
 
-        public uint NextAllocation;
-        public CatalogNodeId NextCatalogId;
-        public uint ResourceClumpSize;
+        /// <summary>
+        /// Gets or sets information about the location and size of the catalog file.
+        /// </summary>
+        public ForkData CatalogFile { get; set; }
 
-        public ushort Signature;
-        public ForkData StartupFile;
-        public uint TotalBlocks;
-        public ushort Version;
+        /// <summary>
+        /// Gets or sets the date and time when the volume was last checked for consistency.
+        /// </summary>
+        public DateTime CheckedDate { get; set; }
 
-        public uint WriteCount;
+        /// <summary>
+        /// Gets or sets the date and time when the volume was created.
+        /// </summary>
+        public DateTime CreateDate { get; set; }
 
+        /// <summary>
+        /// Gets or sets the default clump size for data forks, in bytes.
+        /// </summary>
+        public uint DataClumpSize { get; set; }
+
+        /// <summary>
+        /// Gets or sets the text encodings used in the file and folder names on the volume.
+        /// </summary>
+        public ulong EncodingsBitmap { get; set; }
+
+        /// <summary>
+        /// Gets or sets information about the location and size of the extents file.
+        /// </summary>
+        public ForkData ExtentsFile { get; set; }
+
+        /// <summary>
+        /// Gets or sets the total number of files on the volume.
+        /// </summary>
+        public uint FileCount { get; set; }
+
+        /// <summary>
+        /// Gets or sets an array of 32-bit items contains information used by the Mac OS Finder, and the system software boot process.
+        /// </summary>
+        public uint[] FinderInfo { get; set; }
+
+        /// <summary>
+        /// Gets or sets the total number of folders on the volume.
+        /// </summary>
+        public uint FolderCount { get; set; }
+
+        /// <summary>
+        /// Gets or sets the total number of unused allocation blocks on the disk.
+        /// </summary>
+        public uint FreeBlocks { get; set; }
+
+        /// <summary>
+        /// Gets or sets the allocation block number of the allocation block which contains the JournalInfoBlock for this volume's journal.
+        /// This field is valid only if bit kHFSVolumeJournaledBit is set in the attribute field; otherwise, this field is reserved.
+        /// </summary>
+        public uint JournalInfoBlock { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value which uniquely identifies the implementation that last mounted this volume for writing.
+        /// </summary>
+        public uint LastMountedVersion { get; set; }
+
+        /// <summary>
+        /// Gets or sets the date and time when the volume was last modified.
+        /// </summary>
+        public DateTime ModifyDate { get; set; }
+
+        /// <summary>
+        /// Gets or sets the start of next allocation search.
+        /// </summary>
+        public uint NextAllocation { get; set; }
+
+        /// <summary>
+        /// Gets or sets the next unused catalog ID.
+        /// </summary>
+        public CatalogNodeId NextCatalogId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the default clump size for resource forks, in bytes.
+        /// </summary>
+        public uint ResourceClumpSize { get; set; }
+
+        /// <summary>
+        /// Gets or sets the volume signature.
+        /// </summary>
+        public ushort Signature { get; set; }
+
+        /// <summary>
+        /// Gets or sets information about the location and size of the startup file.
+        /// </summary>
+        public ForkData StartupFile { get; set; }
+
+        /// <summary>
+        /// Gets or sets the total number of allocation blocks on the disk.
+        /// </summary>
+        public uint TotalBlocks { get; set; }
+
+        /// <summary>
+        /// Gets or sets the version of the volume format, which is currently 4 (<c>kHFSPlusVersion</c>)
+        /// for HFS Plus volumes, or 5 (<c>kHFSXVersion</c>) for HFSX volumes.
+        /// </summary>
+        public ushort Version { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value which is incremented every time a volume is mounted.
+        /// </summary>
+        public uint WriteCount { get; set; }
+
+        /// <summary>
+        /// Gets a value indicating whether the volume header is valid.
+        /// </summary>
         public bool IsValid
         {
             get { return this.Signature == HfsPlusSignature; }
@@ -81,7 +190,10 @@ namespace DiscUtils.HfsPlus
         public int ReadFrom(byte[] buffer, int offset)
         {
             this.Signature = EndianUtilities.ToUInt16BigEndian(buffer, offset + 0);
-            if (!this.IsValid) return this.Size;
+            if (!this.IsValid)
+            {
+                return this.Size;
+            }
 
             this.Version = EndianUtilities.ToUInt16BigEndian(buffer, offset + 2);
             this.Attributes = (VolumeAttributes)EndianUtilities.ToUInt32BigEndian(buffer, offset + 4);

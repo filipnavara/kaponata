@@ -28,10 +28,25 @@ using System.IO;
 
 namespace DiscUtils.HfsPlus
 {
+    /// <summary>
+    /// A symbolic link.
+    /// </summary>
     internal class Symlink : File, IVfsSymlink<DirEntry, File>
     {
         private string targetPath;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Symlink"/> class.
+        /// </summary>
+        /// <param name="context">
+        /// The HFS+ context to which the symbolic link is tied.
+        /// </param>
+        /// <param name="nodeId">
+        /// The <see cref="CatalogNodeId"/> of the symblolic link file.
+        /// </param>
+        /// <param name="catalogInfo">
+        /// File metadata.
+        /// </param>
         public Symlink(Context context, CatalogNodeId nodeId, CommonCatalogFileInfo catalogInfo)
             : base(context, nodeId, catalogInfo)
         {

@@ -26,22 +26,81 @@ using System;
 
 namespace DiscUtils.HfsPlus
 {
+    /// <summary>
+    /// The B-tree header record contains general information about the B-tree such as its size, maximum key length, and the location of the first and last leaf nodes.
+    /// </summary>
+    /// <seealso href="https://developer.apple.com/library/archive/technotes/tn/tn1150.html#BTrees"/>
     internal class BTreeHeaderRecord : BTreeNodeRecord
     {
-        public uint Attributes;
-        public uint ClumpSize;
-        public uint FirstLeafNode;
-        public uint FreeNodes;
-        public byte KeyCompareType;
-        public uint LastLeafNode;
-        public ushort MaxKeyLength;
-        public ushort NodeSize;
-        public uint NumLeafRecords;
-        public ushort Res1;
-        public uint RootNode;
-        public uint TotalNodes;
-        public ushort TreeDepth;
-        public byte TreeType;
+        /// <summary>
+        /// Gets or sets a set of bits used to describe various attributes of the B-tree.
+        /// </summary>
+        public uint Attributes { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value which is ignored for HFS Plus B-trees.
+        /// </summary>
+        public uint ClumpSize { get; set; }
+
+        /// <summary>
+        /// Gets or sets the node number of the first leaf node. This may be zero if there are no leaf nodes.
+        /// </summary>
+        public uint FirstLeafNode { get; set; }
+
+        /// <summary>
+        /// Gets or sets the number of unused nodes in the B-tree.
+        /// </summary>
+        public uint FreeNodes { get; set; }
+
+        /// <summary>
+        /// Gets or sets, for HFSX volumes, a value which defines the ordering of the keys (whether the volume is case-sensitive or case-insensitive).
+        /// </summary>
+        public byte KeyCompareType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the node number of the last leaf node. This may be zero if there are no leaf nodes.
+        /// </summary>
+        public uint LastLeafNode { get; set; }
+
+        /// <summary>
+        /// Gets or sets the maximum length of a key in an index or leaf node.
+        /// </summary>
+        public ushort MaxKeyLength { get; set; }
+
+        /// <summary>
+        /// Gets or sets the size, in bytes, of a node. This is a power of two, from 512 through 32,768, inclusive.
+        /// </summary>
+        public ushort NodeSize { get; set; }
+
+        /// <summary>
+        /// Gets or sets the total number of records contained in all of the leaf nodes.
+        /// </summary>
+        public uint NumLeafRecords { get; set; }
+
+        /// <summary>
+        /// Gets or sets the value of the first reserved field.
+        /// </summary>
+        public ushort Res1 { get; set; }
+
+        /// <summary>
+        /// Gets or sets he tnode number of the root node, the index node that acts as the root of the B-tree.
+        /// </summary>
+        public uint RootNode { get; set; }
+
+        /// <summary>
+        /// Gets or sets the total number of nodes (be they free or used) in the B-tree.
+        /// </summary>
+        public uint TotalNodes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the current depth of the B-tree. Always equal to the height field of the root node.
+        /// </summary>
+        public ushort TreeDepth { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value which determines the tree type.
+        /// </summary>
+        public byte TreeType { get; set; }
 
         /// <inheritdoc/>
         public override int Size

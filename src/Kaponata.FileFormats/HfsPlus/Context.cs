@@ -28,15 +28,34 @@ using System.IO;
 
 namespace DiscUtils.HfsPlus
 {
+    /// <summary>
+    /// Contains the basic information of a HFS+ file system.
+    /// </summary>
     internal sealed class Context : VfsContext
     {
+        /// <summary>
+        /// Gets or sets the B-tree which represents the HFS+ Attributes File.
+        /// </summary>
         public BTree<AttributeKey> Attributes { get; set; }
 
+        /// <summary>
+        /// Gets or sets the B-tree which represents the HFS+ Catalog File.
+        /// </summary>
         public BTree<CatalogKey> Catalog { get; set; }
 
+        /// <summary>
+        /// Gets or sets the B-tree which represents the HFS+ Extents Overflow File.
+        /// </summary>
         public BTree<ExtentKey> ExtentsOverflow { get; set; }
 
+        /// <summary>
+        /// Gets or sets the HFS+ volume header.
+        /// </summary>
         public VolumeHeader VolumeHeader { get; set; }
+
+        /// <summary>
+        /// Gets or sets the raw <see cref="Stream"/> which provides access to the HFS+ volume.
+        /// </summary>
         public Stream VolumeStream { get; set; }
     }
 }

@@ -28,17 +28,57 @@ using System;
 
 namespace DiscUtils.HfsPlus
 {
+    /// <summary>
+    /// Common descriptors for file and directory records.
+    /// </summary>
+    /// <seealso href="https://developer.apple.com/library/archive/technotes/tn/tn1150.html#CatalogFile"/>
     internal abstract class CommonCatalogFileInfo : IByteArraySerializable
     {
-        public DateTime AccessTime;
-        public DateTime AttributeModifyTime;
-        public DateTime BackupTime;
-        public DateTime ContentModifyTime;
-        public DateTime CreateTime;
-        public CatalogNodeId FileId;
-        public UnixFileSystemInfo FileSystemInfo;
-        public CatalogRecordType RecordType;
-        public uint UnixSpecialField;
+        /// <summary>
+        /// Gets or sets the date and time the file or folder's contents were last read.
+        /// </summary>
+        public DateTime AccessTime { get; set; }
+
+        /// <summary>
+        /// Gets or sets the last date and time that any field in the folder's catalog record was changed.
+        /// </summary>
+        public DateTime AttributeModifyTime { get; set; }
+
+        /// <summary>
+        /// Gets or sets the date and time the folder was last backed up.
+        /// </summary>
+        public DateTime BackupTime { get; set; }
+
+        /// <summary>
+        /// Gets or sets the date and time the file or folder's contents were last changed.
+        /// </summary>
+        public DateTime ContentModifyTime { get; set; }
+
+        /// <summary>
+        /// Gets or sets the date and time the file or folder was created.
+        /// </summary>
+        public DateTime CreateTime { get; set; }
+
+        /// <summary>
+        /// Gets or sets the <see cref="CatalogNodeId"/> of this file or folder.
+        /// </summary>
+        public CatalogNodeId FileId { get; set; }
+
+        /// <summary>
+        /// Gets or sets a <see cref="UnixFileSystemInfo"/> object which describes common attributes of the
+        /// file or folder.
+        /// </summary>
+        public UnixFileSystemInfo FileSystemInfo { get; set; }
+
+        /// <summary>
+        /// Gets or sets the catalog data record type.
+        /// </summary>
+        public CatalogRecordType RecordType { get; set; }
+
+        /// <summary>
+        /// Gets or sets additional file system information.
+        /// </summary>
+        public uint UnixSpecialField { get; set; }
 
         /// <inheritdoc/>
         public abstract int Size { get; }

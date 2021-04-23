@@ -28,14 +28,29 @@ using System;
 
 namespace DiscUtils.HfsPlus
 {
+    /// <summary>
+    /// Represents the HFS+ Fork Data structure.
+    /// </summary>
+    /// <seealso href="https://developer.apple.com/library/archive/technotes/tn/tn1150.html#ForkDataStructure"/>
     internal sealed class ForkData : IByteArraySerializable
     {
-        public const int StructSize = 80;
-        public uint ClumpSize;
-        public ExtentDescriptor[] Extents;
+        private const int StructSize = 80;
+        private uint clumpSize;
 
-        public ulong LogicalSize;
-        public uint TotalBlocks;
+        /// <summary>
+        /// Gets or sets an array of extent descriptors for the fork.
+        /// </summary>
+        public ExtentDescriptor[] Extents { get; set; }
+
+        /// <summary>
+        /// Gets or sets the size, in bytes, of the valid data in the fork.
+        /// </summary>
+        public ulong LogicalSize { get; set; }
+
+        /// <summary>
+        /// Gets or sets the total number of allocation blocks used by all the extents in this fork.
+        /// </summary>
+        public uint TotalBlocks { get; set; }
 
         /// <inheritdoc/>
         public int Size
@@ -47,7 +62,7 @@ namespace DiscUtils.HfsPlus
         public int ReadFrom(byte[] buffer, int offset)
         {
             this.LogicalSize = EndianUtilities.ToUInt64BigEndian(buffer, offset + 0);
-            this.ClumpSize = EndianUtilities.ToUInt32BigEndian(buffer, offset + 8);
+            this.clumpSize = EndianUtilities.ToUInt32BigEndian(buffer, offset + 8);
             this.TotalBlocks = EndianUtilities.ToUInt32BigEndian(buffer, offset + 12);
 
             this.Extents = new ExtentDescriptor[8];

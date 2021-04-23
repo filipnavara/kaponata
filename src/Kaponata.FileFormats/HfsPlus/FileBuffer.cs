@@ -29,12 +29,27 @@ using Buffer=DiscUtils.Streams.Buffer;
 
 namespace DiscUtils.HfsPlus
 {
+    /// <summary>
+    /// A <see cref="Buffer"/> which provides access to files stored in a HFS+ file system.
+    /// </summary>
     internal sealed class FileBuffer : Buffer
     {
         private readonly ForkData baseData;
         private readonly CatalogNodeId cnid;
         private readonly Context context;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="FileBuffer"/> class.
+        /// </summary>
+        /// <param name="context">
+        /// The global HFS+ context.
+        /// </param>
+        /// <param name="baseData">
+        /// The <see cref="ForkData"/> structure which represents the base file data.
+        /// </param>
+        /// <param name="catalogNodeId">
+        /// The <see cref="CatalogNodeId"/> which uniquely identifies the file.
+        /// </param>
         public FileBuffer(Context context, ForkData baseData, CatalogNodeId catalogNodeId)
         {
             this.context = context;
@@ -78,7 +93,7 @@ namespace DiscUtils.HfsPlus
                 int toRead = (int)Math.Min(limitedCount - totalRead, extentSize - extentOffset);
 
                 // Remaining in extent can create a situation where amount to read is zero, and that appears
-                // to be OK, just need to exit thie while loop to avoid infinite loop.
+                // to be OK, just need to exit the while loop to avoid infinite loop.
                 if (toRead == 0)
                 {
                     break;

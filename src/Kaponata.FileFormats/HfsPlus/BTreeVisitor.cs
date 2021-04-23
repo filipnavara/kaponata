@@ -23,6 +23,21 @@
 
 namespace DiscUtils.HfsPlus
 {
-    internal delegate int BTreeVisitor<Key>(Key key, byte[] data)
-        where Key : BTreeKey;
+    /// <summary>
+    /// A visitor which can visit B-trees.
+    /// </summary>
+    /// <typeparam name="TKey">
+    /// The type of the key used by the B-tree.
+    /// </typeparam>
+    /// <param name="key">
+    /// The key to visit.
+    /// </param>
+    /// <param name="data">
+    /// The data of the node.
+    /// </param>
+    /// <returns>
+    /// A value indictating how the current node compares to the key.
+    /// </returns>
+    internal delegate int BTreeVisitor<TKey>(TKey key, byte[] data)
+        where TKey : BTreeKey;
 }

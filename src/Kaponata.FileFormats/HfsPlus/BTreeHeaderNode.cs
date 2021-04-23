@@ -28,13 +28,29 @@ using System.Collections.Generic;
 
 namespace DiscUtils.HfsPlus
 {
+    /// <summary>
+    /// Represents a header node, which contains essential information about the entire B-tree.
+    /// </summary>
+    /// <seealso href="https://developer.apple.com/library/archive/technotes/tn/tn1150.html#BTrees"/>
     internal class BTreeHeaderNode : BTreeNode
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BTreeHeaderNode"/> class.
+        /// </summary>
+        /// <param name="tree">
+        /// The <see cref="BTree"/> to which this node belongs.
+        /// </param>
+        /// <param name="descriptor">
+        /// The descriptor for this node.
+        /// </param>
         public BTreeHeaderNode(BTree tree, BTreeNodeDescriptor descriptor)
             : base(tree, descriptor)
         {
         }
 
+        /// <summary>
+        /// Gets the header record, which is the first record in this node.
+        /// </summary>
         public BTreeHeaderRecord HeaderRecord
         {
             get { return this.Records[0] as BTreeHeaderRecord; }

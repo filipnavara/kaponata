@@ -29,19 +29,30 @@ using System.Collections.Generic;
 
 namespace DiscUtils.HfsPlus
 {
+    /// <summary>
+    /// Represents a node in a B-tree.
+    /// </summary>
     internal abstract class BTreeNode : IByteArraySerializable
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BTreeNode"/> class.
+        /// </summary>
+        /// <param name="tree">
+        /// The B-tree to which the node belongs.
+        /// </param>
+        /// <param name="descriptor">
+        /// A descriptor for the node.
+        /// </param>
         public BTreeNode(BTree tree, BTreeNodeDescriptor descriptor)
         {
             this.Tree = tree;
             this.Descriptor = descriptor;
         }
 
-        protected BTreeNodeDescriptor Descriptor { get; }
-
+        /// <summary>
+        /// Gets the records embedded in this node.
+        /// </summary>
         public IList<BTreeNodeRecord> Records { get; private set; }
-
-        protected BTree Tree { get; }
 
         /// <inheritdoc/>
         public int Size
@@ -49,20 +60,31 @@ namespace DiscUtils.HfsPlus
             get { return this.Tree.NodeSize; }
         }
 
-        /// <inheritdoc/>
-        public int ReadFrom(byte[] buffer, int offset)
-        {
-            this.Records = this.ReadRecords(buffer, offset);
+        /// <summary>
+        /// Gets the <see cref="BTree"/> to which this node belongs.
+        /// </summary>
+        protected BTree Tree { get; }
 
-            return 0;
-        }
+        /// <summary>
+        /// Gets the descriptor for this node.
+        /// </summary>
+        protected BTreeNodeDescriptor Descriptor { get; }
 
-        /// <inheritdoc/>
-        public void WriteTo(byte[] buffer, int offset)
-        {
-            throw new NotImplementedException();
-        }
-
+        /// <summary>
+        /// Reads a <see cref="BTreeNode"/> from its binary representation.
+        /// </summary>
+        /// <param name="tree">
+        /// The tree to which the node belongs.
+        /// </param>
+        /// <param name="buffer">
+        /// The buffer which contains the node data.
+        /// </param>
+        /// <param name="offset">
+        /// The offset at which to start reading the node data.
+        /// </param>
+        /// <returns>
+        /// A <see cref="BTreeNode"/> which represents the data.
+        /// </returns>
         public static BTreeNode ReadNode(BTree tree, byte[] buffer, int offset)
         {
             BTreeNodeDescriptor descriptor =
@@ -80,6 +102,24 @@ namespace DiscUtils.HfsPlus
             }
         }
 
+        /// <summary>
+        /// Reads a <see cref="BTreeNode"/> from its binary representation.
+        /// </summary>
+        /// <typeparam name="TKey">
+        /// The type of the key of th enode.
+        /// </typeparam>
+        /// <param name="tree">
+        /// The tree to which the node belongs.
+        /// </param>
+        /// <param name="buffer">
+        /// The buffer which contains the node data.
+        /// </param>
+        /// <param name="offset">
+        /// The offset at which to start reading the node data.
+        /// </param>
+        /// <returns>
+        /// A <see cref="BTreeNode"/> which represents the data.
+        /// </returns>
         public static BTreeNode ReadNode<TKey>(BTree tree, byte[] buffer, int offset)
             where TKey : BTreeKey, new()
         {
@@ -99,6 +139,32 @@ namespace DiscUtils.HfsPlus
             }
         }
 
+        /// <inheritdoc/>
+        public int ReadFrom(byte[] buffer, int offset)
+        {
+            this.Records = this.ReadRecords(buffer, offset);
+
+            return 0;
+        }
+
+        /// <inheritdoc/>
+        public void WriteTo(byte[] buffer, int offset)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Reads the records embedded in this node.
+        /// </summary>
+        /// <param name="buffer">
+        /// The buffer which contains the record data.
+        /// </param>
+        /// <param name="offset">
+        /// The offset at which to start reading the record data.
+        /// </param>
+        /// <returns>
+        /// A list of records embedded in this node.
+        /// </returns>
         protected virtual IList<BTreeNodeRecord> ReadRecords(byte[] buffer, int offset)
         {
             throw new NotImplementedException();

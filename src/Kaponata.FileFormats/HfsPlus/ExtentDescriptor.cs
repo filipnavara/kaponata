@@ -26,10 +26,20 @@ using System;
 
 namespace DiscUtils.HfsPlus
 {
+    /// <summary>
+    /// Describes a physical extent in the file system.
+    /// </summary>
     internal sealed class ExtentDescriptor : IByteArraySerializable
     {
-        public uint BlockCount;
-        public uint StartBlock;
+        /// <summary>
+        /// Gets or sets the number of blocks in this extent.
+        /// </summary>
+        public uint BlockCount { get; set; }
+
+        /// <summary>
+        /// Gets or sets the index of the first block in this extent.
+        /// </summary>
+        public uint StartBlock { get; set; }
 
         /// <inheritdoc/>
         public int Size

@@ -28,18 +28,37 @@ using System;
 
 namespace DiscUtils.HfsPlus
 {
+    /// <summary>
+    /// Represents a record in an index node, known as a pointer record.
+    /// </summary>
+    /// <typeparam name="TKey">
+    /// The type of the key of the index node.
+    /// </typeparam>
+    /// <seealso href="https://developer.apple.com/library/archive/technotes/tn/tn1150.html#IndexNodes"/>
     internal sealed class BTreeIndexRecord<TKey> : BTreeNodeRecord
         where TKey : BTreeKey, new()
     {
         private readonly int size;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BTreeIndexRecord{TKey}"/> class.
+        /// </summary>
+        /// <param name="size">
+        /// The size of the record.
+        /// </param>
         public BTreeIndexRecord(int size)
         {
             this.size = size;
         }
 
+        /// <summary>
+        /// Gets the node number of this index record.
+        /// </summary>
         public uint ChildId { get; private set; }
 
+        /// <summary>
+        /// Gets the key of this index record.
+        /// </summary>
         public TKey Key { get; private set; }
 
         /// <inheritdoc/>

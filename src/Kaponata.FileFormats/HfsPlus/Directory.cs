@@ -21,14 +21,31 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
 
+#nullable disable
+
 using DiscUtils.Vfs;
 using System;
 using System.Collections.Generic;
 
 namespace DiscUtils.HfsPlus
 {
+    /// <summary>
+    /// Represeents a directory entry in the HFS+ file system.
+    /// </summary>
     internal sealed class Directory : File, IVfsDirectory<DirEntry, File>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Directory"/> class.
+        /// </summary>
+        /// <param name="context">
+        /// The HFS+ conext.
+        /// </param>
+        /// <param name="nodeId">
+        /// The <see cref="CatalogNodeId"/> of this directory.
+        /// </param>
+        /// <param name="fileInfo">
+        /// Metadata which describes this directory.
+        /// </param>
         public Directory(Context context, CatalogNodeId nodeId, CommonCatalogFileInfo fileInfo)
             : base(context, nodeId, fileInfo)
         {

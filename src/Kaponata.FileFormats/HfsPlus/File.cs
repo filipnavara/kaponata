@@ -24,7 +24,6 @@
 #nullable disable
 
 using DiscUtils.Compression;
-using DiscUtils.Internal;
 using DiscUtils.Streams;
 using DiscUtils.Vfs;
 using System;
@@ -33,12 +32,27 @@ using System.IO.Compression;
 
 namespace DiscUtils.HfsPlus
 {
+    /// <summary>
+    /// Represents a file in a HFS+ file system.
+    /// </summary>
     internal class File : IVfsFileWithStreams
     {
         private const string CompressionAttributeName = "com.apple.decmpfs";
         private readonly CommonCatalogFileInfo catalogInfo;
         private readonly bool hasCompressionAttribute;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="File"/> class.
+        /// </summary>
+        /// <param name="context">
+        /// The HFS+ context to which the file belongs.
+        /// </param>
+        /// <param name="nodeId">
+        /// The <see cref="CatalogNodeId"/> of the file.
+        /// </param>
+        /// <param name="catalogInfo">
+        /// Additional file metadata.
+        /// </param>
         public File(Context context, CatalogNodeId nodeId, CommonCatalogFileInfo catalogInfo)
         {
             this.Context = context;
@@ -47,10 +61,6 @@ namespace DiscUtils.HfsPlus
             this.hasCompressionAttribute =
                 this.Context.Attributes.Find(new AttributeKey(this.NodeId, CompressionAttributeName)) != null;
         }
-
-        protected Context Context { get; }
-
-        protected CatalogNodeId NodeId { get; }
 
         /// <inheritdoc/>
         public DateTime LastAccessTimeUtc
@@ -79,7 +89,7 @@ namespace DiscUtils.HfsPlus
         /// <inheritdoc/>
         public FileAttributes FileAttributes
         {
-            get { return Utilities.FileAttributesFromUnixFileType(this.catalogInfo.FileSystemInfo.FileType); }
+            get { return HfsPlusUtilities.FileAttributesFromUnixFileType(this.catalogInfo.FileSystemInfo.FileType); }
 
             set { throw new NotSupportedException(); }
         }
@@ -98,6 +108,16 @@ namespace DiscUtils.HfsPlus
                 return (long)fileInfo.DataFork.LogicalSize;
             }
         }
+
+        /// <summary>
+        /// Gets the HFS+ context to which the file belongs.
+        /// </summary>
+        protected Context Context { get; }
+
+        /// <summary>
+        /// Gets the <see cref="CatalogNodeId"/> of the file.
+        /// </summary>
+        protected CatalogNodeId NodeId { get; }
 
         /// <inheritdoc/>
         public IBuffer FileContent
@@ -187,7 +207,8 @@ namespace DiscUtils.HfsPlus
                                 // Create a SubBuffer which points to the data window that corresponds to the block.
                                 SubBuffer subBuffer = new SubBuffer(
                                     buffer,
-                                    compressionFork.HeaderSize + blocks[i].Offset + 6, blocks[i].DataSize);
+                                    compressionFork.HeaderSize + blocks[i].Offset + 6,
+                                    blocks[i].DataSize);
 
                                 // ... convert it to a stream
                                 BufferStream stream = new BufferStream(subBuffer, FileAccess.Read);
