@@ -58,7 +58,7 @@ namespace DiscUtils.HfsPlus
             rootThread.ReadFrom(rootThreadData, 0);
             byte[] rootDirEntryData = this.Context.Catalog.Find(new CatalogKey(rootThread.ParentId, rootThread.Name));
             DirEntry rootDirEntry = new DirEntry(rootThread.Name, rootDirEntryData);
-            this.RootDirectory = (Directory)GetFile(rootDirEntry);
+            this.RootDirectory = (Directory)this.GetFile(rootDirEntry);
         }
 
         /// <inheritdoc/>
@@ -89,7 +89,7 @@ namespace DiscUtils.HfsPlus
         /// <inheritdoc/>
         public UnixFileSystemInfo GetUnixFileInfo(string path)
         {
-            DirEntry dirEntry = GetDirectoryEntry(path);
+            DirEntry dirEntry = this.GetDirectoryEntry(path);
             if (dirEntry == null)
             {
                 throw new FileNotFoundException("No such file or directory", path);

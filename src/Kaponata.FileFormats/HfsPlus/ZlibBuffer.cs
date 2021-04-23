@@ -20,55 +20,55 @@
 // DEALINGS IN THE SOFTWARE.
 //
 
+using DiscUtils.Streams;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using DiscUtils.Streams;
 using Buffer=DiscUtils.Streams.Buffer;
 
 namespace DiscUtils.Compression
 {
     internal class ZlibBuffer : Buffer
     {
-        private Ownership _ownership;
-        private readonly Stream _stream;
+        private Ownership ownership;
+        private readonly Stream stream;
         private int position;
 
         public ZlibBuffer(Stream stream, Ownership ownership)
         {
-            _stream = stream;
-            _ownership = ownership;
-            position = 0;
+            this.stream = stream;
+            this.ownership = ownership;
+            this.position = 0;
         }
 
         /// <inheritdoc/>
         public override bool CanRead
         {
-            get { return _stream.CanRead; }
+            get { return this.stream.CanRead; }
         }
 
         /// <inheritdoc/>
         public override bool CanWrite
         {
-            get { return _stream.CanWrite; }
+            get { return this.stream.CanWrite; }
         }
 
         /// <inheritdoc/>
         public override long Capacity
         {
-            get { return _stream.Length; }
+            get { return this.stream.Length; }
         }
 
         /// <inheritdoc/>
         public override int Read(long pos, byte[] buffer, int offset, int count)
         {
-            if (pos != position)
+            if (pos != this.position)
             {
                 throw new NotSupportedException();
             }
 
-            int read = _stream.Read(buffer, offset, count);
-            position += read;
+            int read = this.stream.Read(buffer, offset, count);
+            this.position += read;
             return read;
         }
 
@@ -87,7 +87,7 @@ namespace DiscUtils.Compression
         /// <inheritdoc/>
         public override IEnumerable<StreamExtent> GetExtentsInRange(long start, long count)
         {
-            yield return new StreamExtent(0, _stream.Length);
+            yield return new StreamExtent(0, this.stream.Length);
         }
     }
 }
