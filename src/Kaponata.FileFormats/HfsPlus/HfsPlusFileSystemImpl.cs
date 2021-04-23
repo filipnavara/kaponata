@@ -61,11 +61,13 @@ namespace DiscUtils.HfsPlus
             this.RootDirectory = (Directory)GetFile(rootDirEntry);
         }
 
+        /// <inheritdoc/>
         public override string FriendlyName
         {
             get { return "Apple HFS+"; }
         }
 
+        /// <inheritdoc/>
         public override string VolumeLabel
         {
             get
@@ -78,11 +80,13 @@ namespace DiscUtils.HfsPlus
             }
         }
 
+        /// <inheritdoc/>
         public override bool CanWrite
         {
             get { return false; }
         }
 
+        /// <inheritdoc/>
         public UnixFileSystemInfo GetUnixFileInfo(string path)
         {
             DirEntry dirEntry = GetDirectoryEntry(path);
@@ -94,6 +98,7 @@ namespace DiscUtils.HfsPlus
             return dirEntry.CatalogFileInfo.FileSystemInfo;
         }
 
+        /// <inheritdoc/>
         protected override File ConvertDirEntryToFile(DirEntry dirEntry)
         {
             if (dirEntry.IsDirectory)

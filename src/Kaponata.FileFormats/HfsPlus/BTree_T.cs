@@ -52,6 +52,7 @@ namespace DiscUtils.HfsPlus
             }
         }
 
+        /// <inheritdoc/>
         internal override int NodeSize
         {
             get { return this.header.NodeSize; }

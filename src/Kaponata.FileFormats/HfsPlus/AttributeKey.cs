@@ -43,11 +43,13 @@ namespace DiscUtils.HfsPlus
 
         public string Name { get; private set; }
 
+        /// <inheritdoc/>
         public override int Size
         {
             get { throw new NotImplementedException(); }
         }
 
+        /// <inheritdoc/>
         public override int ReadFrom(byte[] buffer, int offset)
         {
             this.keyLength = EndianUtilities.ToUInt16BigEndian(buffer, offset + 0);
@@ -59,11 +61,13 @@ namespace DiscUtils.HfsPlus
             return this.keyLength + 2;
         }
 
+        /// <inheritdoc/>
         public override void WriteTo(byte[] buffer, int offset)
         {
             throw new NotImplementedException();
         }
 
+        /// <inheritdoc/>
         public override int CompareTo(BTreeKey other)
         {
             return this.CompareTo(other as AttributeKey);
@@ -84,6 +88,7 @@ namespace DiscUtils.HfsPlus
             return HfsPlusUtilities.FastUnicodeCompare(this.Name, other.Name);
         }
 
+        /// <inheritdoc/>
         public override string ToString()
         {
             return this.Name + " (" + this.FileId + ")";

@@ -35,11 +35,13 @@ namespace DiscUtils.HfsPlus
             this.size = size;
         }
 
+        /// <inheritdoc/>
         public override int Size
         {
             get { return this.size; }
         }
 
+        /// <inheritdoc/>
         public override int ReadFrom(byte[] buffer, int offset)
         {
             this.data = new byte[this.size];
@@ -47,6 +49,7 @@ namespace DiscUtils.HfsPlus
             return this.size;
         }
 
+        /// <inheritdoc/>
         public override void WriteTo(byte[] buffer, int offset)
         {
             throw new NotImplementedException();

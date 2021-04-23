@@ -34,6 +34,7 @@ namespace DiscUtils.HfsPlus
         public BTreeIndexNode(BTree tree, BTreeNodeDescriptor descriptor)
             : base(tree, descriptor) {}
 
+        /// <inheritdoc/>
         public override byte[] FindKey(TKey key)
         {
             int nextResult = this.records[0].Key.CompareTo(key);
@@ -71,6 +72,7 @@ namespace DiscUtils.HfsPlus
             return null;
         }
 
+        /// <inheritdoc/>
         public override void VisitRange(BTreeVisitor<TKey> visitor)
         {
             int nextResult = visitor(this.records[0].Key, null);
@@ -106,6 +108,7 @@ namespace DiscUtils.HfsPlus
             }
         }
 
+        /// <inheritdoc/>
         protected override IList<BTreeNodeRecord> ReadRecords(byte[] buffer, int offset)
         {
             int numRecords = this.Descriptor.NumRecords;

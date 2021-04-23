@@ -33,11 +33,13 @@ namespace DiscUtils.HfsPlus
         public FinderFlags FinderFlags;
         public Point Point;
 
+        /// <inheritdoc/>
         public int Size
         {
             get { return 16; }
         }
 
+        /// <inheritdoc/>
         public int ReadFrom(byte[] buffer, int offset)
         {
             this.FileType = EndianUtilities.ToUInt32BigEndian(buffer, offset + 0);
@@ -48,6 +50,7 @@ namespace DiscUtils.HfsPlus
             return 16;
         }
 
+        /// <inheritdoc/>
         public void WriteTo(byte[] buffer, int offset)
         {
             throw new NotImplementedException();

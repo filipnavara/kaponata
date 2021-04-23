@@ -32,11 +32,13 @@ namespace DiscUtils.HfsPlus
         public short Horizontal;
         public short Vertical;
 
+        /// <inheritdoc/>
         public int Size
         {
             get { return 4; }
         }
 
+        /// <inheritdoc/>
         public int ReadFrom(byte[] buffer, int offset)
         {
             this.Vertical = EndianUtilities.ToInt16BigEndian(buffer, offset + 0);
@@ -45,6 +47,7 @@ namespace DiscUtils.HfsPlus
             return 4;
         }
 
+        /// <inheritdoc/>
         public void WriteTo(byte[] buffer, int offset)
         {
             throw new NotImplementedException();

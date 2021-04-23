@@ -32,6 +32,7 @@ namespace DiscUtils.HfsPlus
         public Directory(Context context, CatalogNodeId nodeId, CommonCatalogFileInfo fileInfo)
             : base(context, nodeId, fileInfo) {}
 
+        /// <inheritdoc/>
         public ICollection<DirEntry> AllEntries
         {
             get
@@ -56,6 +57,7 @@ namespace DiscUtils.HfsPlus
             }
         }
 
+        /// <inheritdoc/>
         public DirEntry Self
         {
             get
@@ -71,6 +73,7 @@ namespace DiscUtils.HfsPlus
             }
         }
 
+        /// <inheritdoc/>
         public DirEntry GetEntryByName(string name)
         {
             if (name == null)
@@ -92,6 +95,7 @@ namespace DiscUtils.HfsPlus
             return new DirEntry(name, dirEntryData);
         }
 
+        /// <inheritdoc/>
         public DirEntry CreateNewFile(string name)
         {
             throw new NotSupportedException();

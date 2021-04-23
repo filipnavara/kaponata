@@ -39,33 +39,40 @@ namespace DiscUtils.HfsPlus
 
         public CommonCatalogFileInfo CatalogFileInfo { get; }
 
+        /// <inheritdoc/>
         public override DateTime CreationTimeUtc
         {
             get { return this.CatalogFileInfo.CreateTime; }
         }
 
+        /// <inheritdoc/>
         public override FileAttributes FileAttributes
         {
             get { return Utilities.FileAttributesFromUnixFileType(this.CatalogFileInfo.FileSystemInfo.FileType); }
         }
 
+        /// <inheritdoc/>
         public override string FileName { get; }
 
+        /// <inheritdoc/>
         public override bool HasVfsFileAttributes
         {
             get { return true; }
         }
 
+        /// <inheritdoc/>
         public override bool HasVfsTimeInfo
         {
             get { return true; }
         }
 
+        /// <inheritdoc/>
         public override bool IsDirectory
         {
             get { return this.CatalogFileInfo.RecordType == CatalogRecordType.FolderRecord; }
         }
 
+        /// <inheritdoc/>
         public override bool IsSymlink
         {
             get
@@ -76,11 +83,13 @@ namespace DiscUtils.HfsPlus
             }
         }
 
+        /// <inheritdoc/>
         public override DateTime LastAccessTimeUtc
         {
             get { return this.CatalogFileInfo.AccessTime; }
         }
 
+        /// <inheritdoc/>
         public override DateTime LastWriteTimeUtc
         {
             get { return this.CatalogFileInfo.ContentModifyTime; }
@@ -91,6 +100,7 @@ namespace DiscUtils.HfsPlus
             get { return this.CatalogFileInfo.FileId; }
         }
 
+        /// <inheritdoc/>
         public override long UniqueCacheId
         {
             get { return this.CatalogFileInfo.FileId; }

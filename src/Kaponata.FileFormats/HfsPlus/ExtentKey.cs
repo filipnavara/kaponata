@@ -44,11 +44,13 @@ namespace DiscUtils.HfsPlus
 
         public CatalogNodeId NodeId { get; private set; }
 
+        /// <inheritdoc/>
         public override int Size
         {
             get { return 12; }
         }
 
+        /// <inheritdoc/>
         public int CompareTo(ExtentKey other)
         {
             if (other == null)
@@ -75,6 +77,7 @@ namespace DiscUtils.HfsPlus
             return 0;
         }
 
+        /// <inheritdoc/>
         public override int ReadFrom(byte[] buffer, int offset)
         {
             this.keyLength = EndianUtilities.ToUInt16BigEndian(buffer, offset + 0);
@@ -84,16 +87,19 @@ namespace DiscUtils.HfsPlus
             return this.keyLength + 2;
         }
 
+        /// <inheritdoc/>
         public override void WriteTo(byte[] buffer, int offset)
         {
             throw new NotImplementedException();
         }
 
+        /// <inheritdoc/>
         public override int CompareTo(BTreeKey other)
         {
             return this.CompareTo(other as ExtentKey);
         }
 
+        /// <inheritdoc/>
         public override string ToString()
         {
             return "ExtentKey (" + this.NodeId + " - " + this.startBlock + ")";

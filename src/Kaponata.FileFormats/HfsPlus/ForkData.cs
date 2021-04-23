@@ -35,11 +35,13 @@ namespace DiscUtils.HfsPlus
         public ulong LogicalSize;
         public uint TotalBlocks;
 
+        /// <inheritdoc/>
         public int Size
         {
             get { return StructSize; }
         }
 
+        /// <inheritdoc/>
         public int ReadFrom(byte[] buffer, int offset)
         {
             this.LogicalSize = EndianUtilities.ToUInt64BigEndian(buffer, offset + 0);
@@ -55,6 +57,7 @@ namespace DiscUtils.HfsPlus
             return StructSize;
         }
 
+        /// <inheritdoc/>
         public void WriteTo(byte[] buffer, int offset)
         {
             throw new NotImplementedException();

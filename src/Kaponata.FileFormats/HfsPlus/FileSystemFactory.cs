@@ -29,6 +29,7 @@ namespace DiscUtils.HfsPlus
     [VfsFileSystemFactory]
     internal class FileSystemFactory : VfsFileSystemFactory
     {
+        /// <inheritdoc/>
         public override FileSystemInfo[] Detect(Stream stream, VolumeInfo volume)
         {
             if (HfsPlusFileSystem.Detect(stream))

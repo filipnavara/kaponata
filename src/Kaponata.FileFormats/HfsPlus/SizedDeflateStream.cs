@@ -37,11 +37,13 @@ namespace DiscUtils.Compression
             _length = length;
         }
 
+        /// <inheritdoc/>
         public override long Length
         {
             get { return _length; }
         }
 
+        /// <inheritdoc/>
         public override long Position
         {
             get { return _position; }
@@ -54,6 +56,7 @@ namespace DiscUtils.Compression
             }
         }
 
+        /// <inheritdoc/>
         public override int Read(byte[] array, int offset, int count)
         {
             int read = base.Read(array, offset, count);

@@ -50,6 +50,7 @@ namespace DiscUtils.HfsPlus
 
         protected CatalogNodeId NodeId { get; }
 
+        /// <inheritdoc/>
         public DateTime LastAccessTimeUtc
         {
             get { return this.catalogInfo.AccessTime; }
@@ -57,6 +58,7 @@ namespace DiscUtils.HfsPlus
             set { throw new NotSupportedException(); }
         }
 
+        /// <inheritdoc/>
         public DateTime LastWriteTimeUtc
         {
             get { return this.catalogInfo.ContentModifyTime; }
@@ -64,6 +66,7 @@ namespace DiscUtils.HfsPlus
             set { throw new NotSupportedException(); }
         }
 
+        /// <inheritdoc/>
         public DateTime CreationTimeUtc
         {
             get { return this.catalogInfo.CreateTime; }
@@ -71,6 +74,7 @@ namespace DiscUtils.HfsPlus
             set { throw new NotSupportedException(); }
         }
 
+        /// <inheritdoc/>
         public FileAttributes FileAttributes
         {
             get { return Utilities.FileAttributesFromUnixFileType(this.catalogInfo.FileSystemInfo.FileType); }
@@ -78,6 +82,7 @@ namespace DiscUtils.HfsPlus
             set { throw new NotSupportedException(); }
         }
 
+        /// <inheritdoc/>
         public long FileLength
         {
             get
@@ -92,6 +97,7 @@ namespace DiscUtils.HfsPlus
             }
         }
 
+        /// <inheritdoc/>
         public IBuffer FileContent
         {
             get
@@ -212,11 +218,13 @@ namespace DiscUtils.HfsPlus
             }
         }
 
+        /// <inheritdoc/>
         public SparseStream CreateStream(string name)
         {
             throw new NotSupportedException();
         }
 
+        /// <inheritdoc/>
         public SparseStream OpenExistingStream(string name)
         {
             throw new NotImplementedException();

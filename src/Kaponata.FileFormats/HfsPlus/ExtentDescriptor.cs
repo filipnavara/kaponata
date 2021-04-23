@@ -31,11 +31,13 @@ namespace DiscUtils.HfsPlus
         public uint BlockCount;
         public uint StartBlock;
 
+        /// <inheritdoc/>
         public int Size
         {
             get { return 8; }
         }
 
+        /// <inheritdoc/>
         public int ReadFrom(byte[] buffer, int offset)
         {
             this.StartBlock = EndianUtilities.ToUInt32BigEndian(buffer, offset + 0);
@@ -44,6 +46,7 @@ namespace DiscUtils.HfsPlus
             return 8;
         }
 
+        /// <inheritdoc/>
         public void WriteTo(byte[] buffer, int offset)
         {
             throw new NotImplementedException();

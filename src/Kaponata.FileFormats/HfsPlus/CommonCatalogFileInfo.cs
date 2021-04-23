@@ -38,8 +38,10 @@ namespace DiscUtils.HfsPlus
         public CatalogRecordType RecordType;
         public uint UnixSpecialField;
 
+        /// <inheritdoc/>
         public abstract int Size { get; }
 
+        /// <inheritdoc/>
         public virtual int ReadFrom(byte[] buffer, int offset)
         {
             this.RecordType = (CatalogRecordType)EndianUtilities.ToInt16BigEndian(buffer, offset + 0);
@@ -57,6 +59,7 @@ namespace DiscUtils.HfsPlus
             return 0;
         }
 
+        /// <inheritdoc/>
         public abstract void WriteTo(byte[] buffer, int offset);
     }
 }

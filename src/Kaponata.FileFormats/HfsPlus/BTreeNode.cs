@@ -41,11 +41,13 @@ namespace DiscUtils.HfsPlus
 
         protected BTree Tree { get; }
 
+        /// <inheritdoc/>
         public int Size
         {
             get { return this.Tree.NodeSize; }
         }
 
+        /// <inheritdoc/>
         public int ReadFrom(byte[] buffer, int offset)
         {
             this.Records = this.ReadRecords(buffer, offset);
@@ -53,6 +55,7 @@ namespace DiscUtils.HfsPlus
             return 0;
         }
 
+        /// <inheritdoc/>
         public void WriteTo(byte[] buffer, int offset)
         {
             throw new NotImplementedException();

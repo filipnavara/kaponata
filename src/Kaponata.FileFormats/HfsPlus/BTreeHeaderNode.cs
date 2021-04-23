@@ -36,6 +36,7 @@ namespace DiscUtils.HfsPlus
             get { return this.Records[0] as BTreeHeaderRecord; }
         }
 
+        /// <inheritdoc/>
         protected override IList<BTreeNodeRecord> ReadRecords(byte[] buffer, int offset)
         {
             int totalRecords = this.Descriptor.NumRecords;

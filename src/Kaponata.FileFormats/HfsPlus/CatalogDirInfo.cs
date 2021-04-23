@@ -31,11 +31,13 @@ namespace DiscUtils.HfsPlus
         public ushort Flags;
         public uint Valence;
 
+        /// <inheritdoc/>
         public override int Size
         {
             get { throw new NotImplementedException(); }
         }
 
+        /// <inheritdoc/>
         public override int ReadFrom(byte[] buffer, int offset)
         {
             base.ReadFrom(buffer, offset);
@@ -46,6 +48,7 @@ namespace DiscUtils.HfsPlus
             return 0;
         }
 
+        /// <inheritdoc/>
         public override void WriteTo(byte[] buffer, int offset)
         {
             throw new NotImplementedException();

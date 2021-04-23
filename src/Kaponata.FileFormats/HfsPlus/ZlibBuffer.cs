@@ -41,21 +41,25 @@ namespace DiscUtils.Compression
             position = 0;
         }
 
+        /// <inheritdoc/>
         public override bool CanRead
         {
             get { return _stream.CanRead; }
         }
 
+        /// <inheritdoc/>
         public override bool CanWrite
         {
             get { return _stream.CanWrite; }
         }
 
+        /// <inheritdoc/>
         public override long Capacity
         {
             get { return _stream.Length; }
         }
 
+        /// <inheritdoc/>
         public override int Read(long pos, byte[] buffer, int offset, int count)
         {
             if (pos != position)
@@ -68,16 +72,19 @@ namespace DiscUtils.Compression
             return read;
         }
 
+        /// <inheritdoc/>
         public override void Write(long pos, byte[] buffer, int offset, int count)
         {
             throw new NotImplementedException();
         }
 
+        /// <inheritdoc/>
         public override void SetCapacity(long value)
         {
             throw new NotImplementedException();
         }
 
+        /// <inheritdoc/>
         public override IEnumerable<StreamExtent> GetExtentsInRange(long start, long count)
         {
             yield return new StreamExtent(0, _stream.Length);

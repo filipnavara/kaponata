@@ -32,11 +32,13 @@ namespace DiscUtils.HfsPlus
         public CatalogNodeId ParentId;
         public CatalogRecordType RecordType;
 
+        /// <inheritdoc/>
         public int Size
         {
             get { return 0; }
         }
 
+        /// <inheritdoc/>
         public int ReadFrom(byte[] buffer, int offset)
         {
             this.RecordType = (CatalogRecordType)EndianUtilities.ToInt16BigEndian(buffer, offset + 0);
@@ -46,6 +48,7 @@ namespace DiscUtils.HfsPlus
             return 0;
         }
 
+        /// <inheritdoc/>
         public void WriteTo(byte[] buffer, int offset)
         {
             throw new NotImplementedException();

@@ -56,6 +56,7 @@ namespace DiscUtils.HfsPlus
             return new CatalogNodeId(id);
         }
 
+        /// <inheritdoc/>
         public override string ToString()
         {
             return this.id.ToString(CultureInfo.InvariantCulture);

@@ -27,10 +27,13 @@ namespace DiscUtils.HfsPlus
 {
     internal abstract class BTreeNodeRecord : IByteArraySerializable
     {
+        /// <inheritdoc/>
         public abstract int Size { get; }
 
+        /// <inheritdoc/>
         public abstract int ReadFrom(byte[] buffer, int offset);
 
+        /// <inheritdoc/>
         public abstract void WriteTo(byte[] buffer, int offset);
     }
 }

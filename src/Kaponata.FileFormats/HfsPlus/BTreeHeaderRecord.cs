@@ -43,11 +43,13 @@ namespace DiscUtils.HfsPlus
         public ushort TreeDepth;
         public byte TreeType;
 
+        /// <inheritdoc/>
         public override int Size
         {
             get { return 104; }
         }
 
+        /// <inheritdoc/>
         public override int ReadFrom(byte[] buffer, int offset)
         {
             this.TreeDepth = EndianUtilities.ToUInt16BigEndian(buffer, offset + 0);
@@ -68,6 +70,7 @@ namespace DiscUtils.HfsPlus
             return 104;
         }
 
+        /// <inheritdoc/>
         public override void WriteTo(byte[] buffer, int offset)
         {
             throw new NotImplementedException();

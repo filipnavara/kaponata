@@ -42,21 +42,25 @@ namespace DiscUtils.HfsPlus
             this.cnid = catalogNodeId;
         }
 
+        /// <inheritdoc/>
         public override bool CanRead
         {
             get { return true; }
         }
 
+        /// <inheritdoc/>
         public override bool CanWrite
         {
             get { return false; }
         }
 
+        /// <inheritdoc/>
         public override long Capacity
         {
             get { return (long)this.baseData.LogicalSize; }
         }
 
+        /// <inheritdoc/>
         public override int Read(long pos, byte[] buffer, int offset, int count)
         {
             int totalRead = 0;
@@ -90,16 +94,19 @@ namespace DiscUtils.HfsPlus
             return totalRead;
         }
 
+        /// <inheritdoc/>
         public override void Write(long pos, byte[] buffer, int offset, int count)
         {
             throw new NotSupportedException();
         }
 
+        /// <inheritdoc/>
         public override void SetCapacity(long value)
         {
             throw new NotSupportedException();
         }
 
+        /// <inheritdoc/>
         public override IEnumerable<StreamExtent> GetExtentsInRange(long start, long count)
         {
             return new[] { new StreamExtent(start, Math.Min(start + count, this.Capacity) - start) };

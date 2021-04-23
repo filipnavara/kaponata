@@ -39,11 +39,13 @@ namespace DiscUtils.HfsPlus
 
         public TKey Key { get; private set; }
 
+        /// <inheritdoc/>
         public override int Size
         {
             get { return this.size; }
         }
 
+        /// <inheritdoc/>
         public override int ReadFrom(byte[] buffer, int offset)
         {
             this.Key = new TKey();
@@ -60,11 +62,13 @@ namespace DiscUtils.HfsPlus
             return this.size;
         }
 
+        /// <inheritdoc/>
         public override void WriteTo(byte[] buffer, int offset)
         {
             throw new NotImplementedException();
         }
 
+        /// <inheritdoc/>
         public override string ToString()
         {
             return this.Key + ":" + this.Data;

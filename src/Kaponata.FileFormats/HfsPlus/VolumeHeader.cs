@@ -69,11 +69,13 @@ namespace DiscUtils.HfsPlus
             get { return this.Signature == HfsPlusSignature; }
         }
 
+        /// <inheritdoc/>
         public int Size
         {
             get { return 512; }
         }
 
+        /// <inheritdoc/>
         public int ReadFrom(byte[] buffer, int offset)
         {
             this.Signature = EndianUtilities.ToUInt16BigEndian(buffer, offset + 0);
@@ -119,6 +121,7 @@ namespace DiscUtils.HfsPlus
             return 512;
         }
 
+        /// <inheritdoc/>
         public void WriteTo(byte[] buffer, int offset)
         {
             throw new NotImplementedException();
