@@ -112,7 +112,7 @@ namespace Kaponata.FileFormats.Tests.Lzfse
             byte[] buffer = new byte[1024];
             byte[] compressedBuffer = new byte[1024];
 
-            Assert.Throws<ArgumentOutOfRangeException>(() => LzfseCompressor.Decompress(buffer, offset, length, compressedBuffer, compressedOffset, compressedLength));
+            Assert.Throws<ArgumentOutOfRangeException>(() => LzfseCompressor.Compress(buffer, offset, length, compressedBuffer, compressedOffset, compressedLength));
         }
 
         /// <summary>
