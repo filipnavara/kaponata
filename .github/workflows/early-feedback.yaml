@@ -1,0 +1,79 @@
+name: early-feedback
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  build_container:
+    container:
+      image: mcr.microsoft.com/dotnet/sdk:5.0.202-${{ matrix.container }}
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-20.04
+            container: focal
+
+          - os: ubuntu-20.04
+            container: alpine3.13
+
+          - os: ubuntu-20.04
+            container: buster-slim
+
+          - os: ubuntu-20.04
+            container: focal
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Build operator in release mode
+        run: dotnet build -c Release
+        working-directory: src/
+
+      - name: Test operator
+        run: >
+          dotnet test
+          --results-directory ${{ github.workspace }}/bin/Kaponata.TestResults/
+          --collect:"XPlat Code Coverage"
+          --logger "junit;LogFileName=${{ github.workspace }}/bin/${{ matrix.container }}-{assembly}.TestResults.xml"
+          --logger "trx"
+          --filter "TestCategory!=IntegrationTest"
+          --
+          DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=cobertura
+        working-directory: src/
+
+  build_native:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        include:
+          - os: macos-10.15
+          
+          - os: windows-2019
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Build operator in release mode
+        run: dotnet build -c Release
+        working-directory: src/
+
+      - name: Test operator
+        run: >
+          dotnet test
+          --results-directory ${{ github.workspace }}/bin/Kaponata.TestResults/
+          --collect:"XPlat Code Coverage"
+          --logger "junit;LogFileName=${{ github.workspace }}/bin/${{ matrix.os }}-{assembly}.TestResults.xml"
+          --logger "trx"
+          --filter "TestCategory!=IntegrationTest"
+          --
+          DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=cobertura
+        working-directory: src/
