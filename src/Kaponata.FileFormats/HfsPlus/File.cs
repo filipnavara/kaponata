@@ -176,7 +176,7 @@ namespace DiscUtils.HfsPlus
                                 byte[] blockData = new byte[CompressionResourceBlock.Size];
                                 buffer.Read(
                                     compressionFork.HeaderSize + CompressionResourceBlockHead.Size +
-                                    i * CompressionResourceBlock.Size,
+                                    (i * CompressionResourceBlock.Size),
                                     blockData,
                                     0,
                                     blockData.Length);
@@ -214,6 +214,7 @@ namespace DiscUtils.HfsPlus
                             throw new NotSupportedException($"The HfsPlus compression type {compressionAttribute.CompressionType} is not supported by DiscUtils.HfsPlus");
                     }
                 }
+
                 return new FileBuffer(this.Context, fileInfo.DataFork, fileInfo.FileId);
             }
         }

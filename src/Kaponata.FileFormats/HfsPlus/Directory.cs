@@ -30,7 +30,9 @@ namespace DiscUtils.HfsPlus
     internal sealed class Directory : File, IVfsDirectory<DirEntry, File>
     {
         public Directory(Context context, CatalogNodeId nodeId, CommonCatalogFileInfo fileInfo)
-            : base(context, nodeId, fileInfo) {}
+            : base(context, nodeId, fileInfo)
+        {
+        }
 
         /// <inheritdoc/>
         public ICollection<DirEntry> AllEntries
@@ -50,6 +52,7 @@ namespace DiscUtils.HfsPlus
 
                                return 0;
                            }
+
                            return key.NodeId < this.NodeId ? -1 : 1;
                        });
 

@@ -31,7 +31,9 @@ namespace DiscUtils.HfsPlus
         private ushort pad;
         private uint startBlock;
 
-        public AttributeKey() {}
+        public AttributeKey()
+        {
+        }
 
         public AttributeKey(CatalogNodeId nodeId, string name)
         {

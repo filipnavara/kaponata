@@ -32,7 +32,9 @@ namespace DiscUtils.HfsPlus
         private ushort keyLength;
         private uint startBlock;
 
-        public ExtentKey() {}
+        public ExtentKey()
+        {
+        }
 
         public ExtentKey(CatalogNodeId cnid, uint startBlock, bool resource_fork = false)
         {

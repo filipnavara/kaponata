@@ -109,7 +109,7 @@ namespace DiscUtils.HfsPlus
             this.FinderInfo = new uint[8];
             for (int i = 0; i < 8; ++i)
             {
-                this.FinderInfo[i] = EndianUtilities.ToUInt32BigEndian(buffer, offset + 80 + i * 4);
+                this.FinderInfo[i] = EndianUtilities.ToUInt32BigEndian(buffer, offset + 80 + (i * 4));
             }
 
             this.AllocationFile = EndianUtilities.ToStruct<ForkData>(buffer, offset + 112);

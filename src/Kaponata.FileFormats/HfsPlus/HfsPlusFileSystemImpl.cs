@@ -105,14 +105,17 @@ namespace DiscUtils.HfsPlus
             {
                 return new Directory(this.Context, dirEntry.NodeId, dirEntry.CatalogFileInfo);
             }
+
             if (dirEntry.IsSymlink)
             {
                 return new Symlink(this.Context, dirEntry.NodeId, dirEntry.CatalogFileInfo);
             }
+
             return new File(this.Context, dirEntry.NodeId, dirEntry.CatalogFileInfo);
         }
+
         /// <summary>
-        /// Size of the Filesystem in bytes
+        /// Size of the Filesystem in bytes.
         /// </summary>
         public override long Size
         {
@@ -120,7 +123,7 @@ namespace DiscUtils.HfsPlus
         }
 
         /// <summary>
-        /// Used space of the Filesystem in bytes
+        /// Used space of the Filesystem in bytes.
         /// </summary>
         public override long UsedSpace
         {
@@ -128,7 +131,7 @@ namespace DiscUtils.HfsPlus
         }
 
         /// <summary>
-        /// Available space of the Filesystem in bytes
+        /// Available space of the Filesystem in bytes.
         /// </summary>
         public override long AvailableSpace
         {

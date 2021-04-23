@@ -51,7 +51,7 @@ namespace DiscUtils.HfsPlus
             this.Extents = new ExtentDescriptor[8];
             for (int i = 0; i < 8; ++i)
             {
-                this.Extents[i] = EndianUtilities.ToStruct<ExtentDescriptor>(buffer, offset + 16 + i * 8);
+                this.Extents[i] = EndianUtilities.ToStruct<ExtentDescriptor>(buffer, offset + 16 + (i * 8));
             }
 
             return StructSize;

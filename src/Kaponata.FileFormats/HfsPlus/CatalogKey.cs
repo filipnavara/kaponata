@@ -30,7 +30,9 @@ namespace DiscUtils.HfsPlus
     {
         private ushort keyLength;
 
-        public CatalogKey() {}
+        public CatalogKey()
+        {
+        }
 
         public CatalogKey(CatalogNodeId nodeId, string name)
         {

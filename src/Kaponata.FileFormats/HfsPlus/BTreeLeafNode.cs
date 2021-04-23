@@ -32,7 +32,9 @@ namespace DiscUtils.HfsPlus
         private BTreeLeafRecord<TKey>[] records;
 
         public BTreeLeafNode(BTree tree, BTreeNodeDescriptor descriptor)
-            : base(tree, descriptor) {}
+            : base(tree, descriptor)
+        {
+        }
 
         /// <inheritdoc/>
         public override byte[] FindKey(TKey key)
@@ -79,7 +81,7 @@ namespace DiscUtils.HfsPlus
 
             for (int i = 0; i < numRecords; ++i)
             {
-                int end = EndianUtilities.ToUInt16BigEndian(buffer, offset + nodeSize - (i + 2) * 2);
+                int end = EndianUtilities.ToUInt16BigEndian(buffer, offset + nodeSize - ((i + 2) * 2));
 
                 this.records[i] = new BTreeLeafRecord<TKey>(end - start);
                 this.records[i].ReadFrom(buffer, offset + start);

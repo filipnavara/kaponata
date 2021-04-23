@@ -31,7 +31,9 @@ namespace DiscUtils.HfsPlus
         private string targetPath;
 
         public Symlink(Context context, CatalogNodeId nodeId, CommonCatalogFileInfo catalogInfo)
-            : base(context, nodeId, catalogInfo) {}
+            : base(context, nodeId, catalogInfo)
+        {
+        }
 
         /// <inheritdoc/>
         public string TargetPath
