@@ -56,52 +56,6 @@ jobs:
           DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=cobertura
         working-directory: src/
 
-      - name: Generate Code Coverage Report
-        uses: danielpalme/ReportGenerator-GitHub-Action@4.8.4
-        with:
-          reports: ${{ github.workspace }}/bin/Kaponata.TestResults/**/coverage.cobertura.xml
-          targetdir: ${{ github.workspace }}/bin/Kaponata.coveragereport/${{ github.ref }}/coverage/
-          reporttypes: 'HtmlInline;Cobertura'
-        
-      - name: Publish Operator Coverage Summary
-        uses: 5monkeys/cobertura-action@master
-        if: always()
-        with:
-          path:  ${{ github.workspace }}/bin/Kaponata.coveragereport/${{ github.ref }}/coverage/Cobertura.xml
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          minimum_coverage: 75
-
-      - name: Upload Code Coverage Report
-        uses: actions/upload-artifact@v2
-        with:
-          name: coveragereport
-          path: ${{ github.workspace }}/bin/${{ github.ref }}/Kaponata.coveragereport
-
-      - name: Publish Operator Coverage Summary to CI website
-        uses: bacongobbler/azure-blob-storage-upload@v1.1.1
-        with:
-          source_dir: ${{ github.workspace }}/bin/Kaponata.coveragereport/
-          container_name: '$web'
-          connection_string: ${{ secrets.CiStorageConnectionString }}
-          sync: false
-
-      - name: Find Code Coverage Comment
-        uses: peter-evans/find-comment@v1
-        if: ${{ github.event_name == 'pull_request' }}
-        id: fc
-        with:
-          issue-number: ${{ github.event.pull_request.number }}
-          comment-author: 'github-actions[bot]'
-          body-includes: The code coverage report for this pull request
-
-      - name: Create Code Coverage Comment
-        if: ${{ github.event_name == 'pull_request' && steps.fc.outputs.comment-id == 0 }}
-        uses: peter-evans/create-or-update-comment@v1
-        with:
-          issue-number: ${{ github.event.pull_request.number }}
-          body: |
-            The code coverage report for this pull request [is available online](https://kaponataci.z6.web.core.windows.net/${{ github.ref }}/coverage/index.html)
-
       - name: Package operator
         run: |
           dotnet publish -c Release
