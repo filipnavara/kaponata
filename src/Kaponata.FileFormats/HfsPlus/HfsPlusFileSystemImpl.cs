@@ -45,11 +45,21 @@ namespace DiscUtils.HfsPlus
                 throw new ArgumentNullException(nameof(stream));
             }
 
+            if (stream.Length < 0x600)
+            {
+                throw new InvalidDataException("The stream does not represent a valid HFS+ file system");
+            }
+
             stream.Position = 1024;
 
             byte[] headerBuf = StreamUtilities.ReadExact(stream, 512);
             VolumeHeader hdr = new VolumeHeader();
             hdr.ReadFrom(headerBuf, 0);
+
+            if (!hdr.IsValid)
+            {
+                throw new InvalidDataException("The stream does not represent a valid HFS+ file system");
+            }
 
             this.Context = new Context();
             this.Context.VolumeStream = stream;
