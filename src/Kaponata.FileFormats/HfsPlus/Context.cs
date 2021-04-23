@@ -20,8 +20,8 @@
 // DEALINGS IN THE SOFTWARE.
 //
 
-using System.IO;
 using DiscUtils.Vfs;
+using System.IO;
 
 namespace DiscUtils.HfsPlus
 {

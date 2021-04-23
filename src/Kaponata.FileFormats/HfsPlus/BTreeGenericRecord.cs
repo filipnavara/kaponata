@@ -26,24 +26,24 @@ namespace DiscUtils.HfsPlus
 {
     internal class BTreeGenericRecord : BTreeNodeRecord
     {
-        private byte[] _data;
-        private readonly int _size;
+        private byte[] data;
+        private readonly int size;
 
         public BTreeGenericRecord(int size)
         {
-            _size = size;
+            this.size = size;
         }
 
         public override int Size
         {
-            get { return _size; }
+            get { return this.size; }
         }
 
         public override int ReadFrom(byte[] buffer, int offset)
         {
-            _data = new byte[_size];
-            Array.Copy(buffer, offset, _data, 0, _size);
-            return _size;
+            this.data = new byte[this.size];
+            Array.Copy(buffer, offset, this.data, 0, this.size);
+            return this.size;
         }
 
         public override void WriteTo(byte[] buffer, int offset)

@@ -20,8 +20,8 @@
 // DEALINGS IN THE SOFTWARE.
 //
 
-using System.IO;
 using DiscUtils.Vfs;
+using System.IO;
 
 namespace DiscUtils.HfsPlus
 {
@@ -32,7 +32,7 @@ namespace DiscUtils.HfsPlus
         {
             if (HfsPlusFileSystem.Detect(stream))
             {
-                return new FileSystemInfo[] { new VfsFileSystemInfo("HFS+", "Apple HFS+", Open) };
+                return new FileSystemInfo[] { new VfsFileSystemInfo("HFS+", "Apple HFS+", this.Open) };
             }
 
             return new FileSystemInfo[0];

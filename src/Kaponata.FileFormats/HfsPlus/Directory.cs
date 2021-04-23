@@ -20,9 +20,9 @@
 // DEALINGS IN THE SOFTWARE.
 //
 
+using DiscUtils.Vfs;
 using System;
 using System.Collections.Generic;
-using DiscUtils.Vfs;
 
 namespace DiscUtils.HfsPlus
 {
@@ -37,9 +37,9 @@ namespace DiscUtils.HfsPlus
             {
                 List<DirEntry> results = new List<DirEntry>();
 
-                Context.Catalog.VisitRange((key, data) =>
+                this.Context.Catalog.VisitRange((key, data) =>
                        {
-                           if (key.NodeId == NodeId)
+                           if (key.NodeId == this.NodeId)
                            {
                                if (data != null && !string.IsNullOrEmpty(key.Name) && DirEntry.IsFileOrDirectory(data))
                                {
@@ -48,7 +48,7 @@ namespace DiscUtils.HfsPlus
 
                                return 0;
                            }
-                           return key.NodeId < NodeId ? -1 : 1;
+                           return key.NodeId < this.NodeId ? -1 : 1;
                        });
 
                 return results;
@@ -59,12 +59,12 @@ namespace DiscUtils.HfsPlus
         {
             get
             {
-                byte[] dirThreadData = Context.Catalog.Find(new CatalogKey(NodeId, string.Empty));
+                byte[] dirThreadData = this.Context.Catalog.Find(new CatalogKey(this.NodeId, string.Empty));
 
                 CatalogThread dirThread = new CatalogThread();
                 dirThread.ReadFrom(dirThreadData, 0);
 
-                byte[] dirEntryData = Context.Catalog.Find(new CatalogKey(dirThread.ParentId, dirThread.Name));
+                byte[] dirEntryData = this.Context.Catalog.Find(new CatalogKey(dirThread.ParentId, dirThread.Name));
 
                 return new DirEntry(dirThread.Name, dirEntryData);
             }
@@ -82,7 +82,7 @@ namespace DiscUtils.HfsPlus
                 throw new ArgumentException("Attempt to lookup empty file name", nameof(name));
             }
 
-            byte[] dirEntryData = Context.Catalog.Find(new CatalogKey(NodeId, name));
+            byte[] dirEntryData = this.Context.Catalog.Find(new CatalogKey(this.NodeId, name));
             if (dirEntryData == null)
             {
                 return null;

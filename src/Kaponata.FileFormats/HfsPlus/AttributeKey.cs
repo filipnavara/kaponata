@@ -20,23 +20,23 @@
 // DEALINGS IN THE SOFTWARE.
 //
 
-using System;
 using DiscUtils.Streams;
+using System;
 
 namespace DiscUtils.HfsPlus
 {
     internal class AttributeKey : BTreeKey
     {
-        private ushort _keyLength;
-        private ushort _pad;
-        private uint _startBlock;
+        private ushort keyLength;
+        private ushort pad;
+        private uint startBlock;
 
         public AttributeKey() {}
 
         public AttributeKey(CatalogNodeId nodeId, string name)
         {
-            FileId = nodeId;
-            Name = name;
+            this.FileId = nodeId;
+            this.Name = name;
         }
 
         public CatalogNodeId FileId { get; private set; }
@@ -50,13 +50,13 @@ namespace DiscUtils.HfsPlus
 
         public override int ReadFrom(byte[] buffer, int offset)
         {
-            _keyLength = EndianUtilities.ToUInt16BigEndian(buffer, offset + 0);
-            _pad = EndianUtilities.ToUInt16BigEndian(buffer, offset + 2);
-            FileId = new CatalogNodeId(EndianUtilities.ToUInt32BigEndian(buffer, offset + 4));
-            _startBlock = EndianUtilities.ToUInt32BigEndian(buffer, offset + 8);
-            Name = HfsPlusUtilities.ReadUniStr255(buffer, offset + 12);
+            this.keyLength = EndianUtilities.ToUInt16BigEndian(buffer, offset + 0);
+            this.pad = EndianUtilities.ToUInt16BigEndian(buffer, offset + 2);
+            this.FileId = new CatalogNodeId(EndianUtilities.ToUInt32BigEndian(buffer, offset + 4));
+            this.startBlock = EndianUtilities.ToUInt32BigEndian(buffer, offset + 8);
+            this.Name = HfsPlusUtilities.ReadUniStr255(buffer, offset + 12);
 
-            return _keyLength + 2;
+            return this.keyLength + 2;
         }
 
         public override void WriteTo(byte[] buffer, int offset)
@@ -66,7 +66,7 @@ namespace DiscUtils.HfsPlus
 
         public override int CompareTo(BTreeKey other)
         {
-            return CompareTo(other as AttributeKey);
+            return this.CompareTo(other as AttributeKey);
         }
 
         public int CompareTo(AttributeKey other)
@@ -76,17 +76,17 @@ namespace DiscUtils.HfsPlus
                 throw new ArgumentNullException(nameof(other));
             }
 
-            if (FileId != other.FileId)
+            if (this.FileId != other.FileId)
             {
-                return FileId < other.FileId ? -1 : 1;
+                return this.FileId < other.FileId ? -1 : 1;
             }
 
-            return HfsPlusUtilities.FastUnicodeCompare(Name, other.Name);
+            return HfsPlusUtilities.FastUnicodeCompare(this.Name, other.Name);
         }
 
         public override string ToString()
         {
-            return Name + " (" + FileId + ")";
+            return this.Name + " (" + this.FileId + ")";
         }
     }
 }

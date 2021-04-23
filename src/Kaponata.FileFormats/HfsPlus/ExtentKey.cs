@@ -20,25 +20,25 @@
 // DEALINGS IN THE SOFTWARE.
 //
 
-using System;
 using DiscUtils.Streams;
+using System;
 
 namespace DiscUtils.HfsPlus
 {
     internal sealed class ExtentKey : BTreeKey, IComparable<ExtentKey>
     {
-        private byte _forkType; // 0 is data, 0xff is rsrc
-        private ushort _keyLength;
-        private uint _startBlock;
+        private byte forkType; // 0 is data, 0xff is rsrc
+        private ushort keyLength;
+        private uint startBlock;
 
         public ExtentKey() {}
 
         public ExtentKey(CatalogNodeId cnid, uint startBlock, bool resource_fork = false)
         {
-            _keyLength = 10;
-            NodeId = cnid;
-            _startBlock = startBlock;
-            _forkType = (byte)(resource_fork ? 0xff : 0x00);
+            this.keyLength = 10;
+            this.NodeId = cnid;
+            this.startBlock = startBlock;
+            this.forkType = (byte)(resource_fork ? 0xff : 0x00);
         }
 
         public CatalogNodeId NodeId { get; private set; }
@@ -56,19 +56,19 @@ namespace DiscUtils.HfsPlus
             }
 
             // Sort by file id, fork type, then starting block
-            if (NodeId != other.NodeId)
+            if (this.NodeId != other.NodeId)
             {
-                return NodeId < other.NodeId ? -1 : 1;
+                return this.NodeId < other.NodeId ? -1 : 1;
             }
 
-            if (_forkType != other._forkType)
+            if (this.forkType != other.forkType)
             {
-                return _forkType < other._forkType ? -1 : 1;
+                return this.forkType < other.forkType ? -1 : 1;
             }
 
-            if (_startBlock != other._startBlock)
+            if (this.startBlock != other.startBlock)
             {
-                return _startBlock < other._startBlock ? -1 : 1;
+                return this.startBlock < other.startBlock ? -1 : 1;
             }
 
             return 0;
@@ -76,11 +76,11 @@ namespace DiscUtils.HfsPlus
 
         public override int ReadFrom(byte[] buffer, int offset)
         {
-            _keyLength = EndianUtilities.ToUInt16BigEndian(buffer, offset + 0);
-            _forkType = buffer[offset + 2];
-            NodeId = new CatalogNodeId(EndianUtilities.ToUInt32BigEndian(buffer, offset + 4));
-            _startBlock = EndianUtilities.ToUInt32BigEndian(buffer, offset + 8);
-            return _keyLength + 2;
+            this.keyLength = EndianUtilities.ToUInt16BigEndian(buffer, offset + 0);
+            this.forkType = buffer[offset + 2];
+            this.NodeId = new CatalogNodeId(EndianUtilities.ToUInt32BigEndian(buffer, offset + 4));
+            this.startBlock = EndianUtilities.ToUInt32BigEndian(buffer, offset + 8);
+            return this.keyLength + 2;
         }
 
         public override void WriteTo(byte[] buffer, int offset)
@@ -90,12 +90,12 @@ namespace DiscUtils.HfsPlus
 
         public override int CompareTo(BTreeKey other)
         {
-            return CompareTo(other as ExtentKey);
+            return this.CompareTo(other as ExtentKey);
         }
 
         public override string ToString()
         {
-            return "ExtentKey (" + NodeId + " - " + _startBlock + ")";
+            return "ExtentKey (" + this.NodeId + " - " + this.startBlock + ")";
         }
     }
 }

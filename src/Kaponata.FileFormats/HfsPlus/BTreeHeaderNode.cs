@@ -20,8 +20,8 @@
 // DEALINGS IN THE SOFTWARE.
 //
 
-using System.Collections.Generic;
 using DiscUtils.Streams;
+using System.Collections.Generic;
 
 namespace DiscUtils.HfsPlus
 {
@@ -32,13 +32,13 @@ namespace DiscUtils.HfsPlus
 
         public BTreeHeaderRecord HeaderRecord
         {
-            get { return Records[0] as BTreeHeaderRecord; }
+            get { return this.Records[0] as BTreeHeaderRecord; }
         }
 
         protected override IList<BTreeNodeRecord> ReadRecords(byte[] buffer, int offset)
         {
-            int totalRecords = Descriptor.NumRecords;
-            int nodeSize = Tree.NodeSize;
+            int totalRecords = this.Descriptor.NumRecords;
+            int nodeSize = this.Tree.NodeSize;
 
             int headerRecordOffset = EndianUtilities.ToUInt16BigEndian(buffer, nodeSize - 2);
             int userDataRecordOffset = EndianUtilities.ToUInt16BigEndian(buffer, nodeSize - 4);

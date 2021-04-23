@@ -20,29 +20,29 @@
 // DEALINGS IN THE SOFTWARE.
 //
 
+using DiscUtils.Streams;
 using System;
 using System.Text;
-using DiscUtils.Streams;
 
 namespace DiscUtils.HfsPlus
 {
     internal class CompressionAttribute
     {
         #pragma warning disable CS0169 // Unused fields.
-        private byte _attrData1;
-        private byte _attrData2;
-        private uint _compressionMagic;
-        private uint _recordType;
-        private uint _reserved1;
-        private uint _reserved2;
-        private uint _reserved3;
+        private byte attrData1;
+        private byte attrData2;
+        private uint compressionMagic;
+        private uint recordType;
+        private uint reserved1;
+        private uint reserved2;
+        private uint reserved3;
         #pragma warning restore CS0169
 
         public uint AttrSize { get; private set; }
 
         public string CompressionMagic
         {
-            get { return Encoding.ASCII.GetString(BitConverter.GetBytes(_compressionMagic)); }
+            get { return Encoding.ASCII.GetString(BitConverter.GetBytes(this.compressionMagic)); }
         }
 
         public FileCompressionType CompressionType { get; private set; }
@@ -56,14 +56,14 @@ namespace DiscUtils.HfsPlus
 
         public int ReadFrom(byte[] buffer, int offset)
         {
-            _recordType = EndianUtilities.ToUInt32BigEndian(buffer, offset + 0);
-            _reserved1 = EndianUtilities.ToUInt32BigEndian(buffer, offset + 4);
-            _reserved1 = EndianUtilities.ToUInt32BigEndian(buffer, offset + 8);
-            AttrSize = EndianUtilities.ToUInt32BigEndian(buffer, offset + 12);
-            _compressionMagic = EndianUtilities.ToUInt32BigEndian(buffer, offset + 16);
-            CompressionType = (FileCompressionType)EndianUtilities.ToUInt32LittleEndian(buffer, offset + 20);
-            UncompressedSize = EndianUtilities.ToUInt32LittleEndian(buffer, offset + 24);
-            _reserved3 = EndianUtilities.ToUInt32BigEndian(buffer, offset + 28);
+            this.recordType = EndianUtilities.ToUInt32BigEndian(buffer, offset + 0);
+            this.reserved1 = EndianUtilities.ToUInt32BigEndian(buffer, offset + 4);
+            this.reserved1 = EndianUtilities.ToUInt32BigEndian(buffer, offset + 8);
+            this.AttrSize = EndianUtilities.ToUInt32BigEndian(buffer, offset + 12);
+            this.compressionMagic = EndianUtilities.ToUInt32BigEndian(buffer, offset + 16);
+            this.CompressionType = (FileCompressionType)EndianUtilities.ToUInt32LittleEndian(buffer, offset + 20);
+            this.UncompressedSize = EndianUtilities.ToUInt32LittleEndian(buffer, offset + 24);
+            this.reserved3 = EndianUtilities.ToUInt32BigEndian(buffer, offset + 28);
 
             return Size;
         }

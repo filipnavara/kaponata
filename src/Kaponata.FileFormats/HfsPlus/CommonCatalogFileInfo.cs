@@ -20,8 +20,8 @@
 // DEALINGS IN THE SOFTWARE.
 //
 
-using System;
 using DiscUtils.Streams;
+using System;
 
 namespace DiscUtils.HfsPlus
 {
@@ -41,17 +41,17 @@ namespace DiscUtils.HfsPlus
 
         public virtual int ReadFrom(byte[] buffer, int offset)
         {
-            RecordType = (CatalogRecordType)EndianUtilities.ToInt16BigEndian(buffer, offset + 0);
-            FileId = EndianUtilities.ToUInt32BigEndian(buffer, offset + 8);
-            CreateTime = HfsPlusUtilities.ReadHFSPlusDate(DateTimeKind.Utc, buffer, offset + 12);
-            ContentModifyTime = HfsPlusUtilities.ReadHFSPlusDate(DateTimeKind.Utc, buffer, offset + 16);
-            AttributeModifyTime = HfsPlusUtilities.ReadHFSPlusDate(DateTimeKind.Utc, buffer, offset + 20);
-            AccessTime = HfsPlusUtilities.ReadHFSPlusDate(DateTimeKind.Utc, buffer, offset + 24);
-            BackupTime = HfsPlusUtilities.ReadHFSPlusDate(DateTimeKind.Utc, buffer, offset + 28);
+            this.RecordType = (CatalogRecordType)EndianUtilities.ToInt16BigEndian(buffer, offset + 0);
+            this.FileId = EndianUtilities.ToUInt32BigEndian(buffer, offset + 8);
+            this.CreateTime = HfsPlusUtilities.ReadHFSPlusDate(DateTimeKind.Utc, buffer, offset + 12);
+            this.ContentModifyTime = HfsPlusUtilities.ReadHFSPlusDate(DateTimeKind.Utc, buffer, offset + 16);
+            this.AttributeModifyTime = HfsPlusUtilities.ReadHFSPlusDate(DateTimeKind.Utc, buffer, offset + 20);
+            this.AccessTime = HfsPlusUtilities.ReadHFSPlusDate(DateTimeKind.Utc, buffer, offset + 24);
+            this.BackupTime = HfsPlusUtilities.ReadHFSPlusDate(DateTimeKind.Utc, buffer, offset + 28);
 
             uint special;
-            FileSystemInfo = HfsPlusUtilities.ReadBsdInfo(buffer, offset + 32, out special);
-            UnixSpecialField = special;
+            this.FileSystemInfo = HfsPlusUtilities.ReadBsdInfo(buffer, offset + 32, out special);
+            this.UnixSpecialField = special;
 
             return 0;
         }

@@ -20,9 +20,9 @@
 // DEALINGS IN THE SOFTWARE.
 //
 
+using DiscUtils.Streams;
 using System;
 using System.Text;
-using DiscUtils.Streams;
 
 namespace DiscUtils.HfsPlus
 {
@@ -30,7 +30,7 @@ namespace DiscUtils.HfsPlus
     {
         #region LowerCase Table
 
-        private static readonly ushort[] _lowerCaseTable =
+        private static readonly ushort[] lowerCaseTable =
         {
             /* 0 */ 0x0100, 0x0200, 0x0000, 0x0300, 0x0400, 0x0500, 0x0000, 0x0000,
             0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,
@@ -383,7 +383,7 @@ namespace DiscUtils.HfsPlus
             /* E */ 0xFFE0, 0xFFE1, 0xFFE2, 0xFFE3, 0xFFE4, 0xFFE5, 0xFFE6, 0xFFE7,
             0xFFE8, 0xFFE9, 0xFFEA, 0xFFEB, 0xFFEC, 0xFFED, 0xFFEE, 0xFFEF,
             /* F */ 0xFFF0, 0xFFF1, 0xFFF2, 0xFFF3, 0xFFF4, 0xFFF5, 0xFFF6, 0xFFF7,
-            0xFFF8, 0xFFF9, 0xFFFA, 0xFFFB, 0xFFFC, 0xFFFD, 0xFFFE, 0xFFFF
+            0xFFF8, 0xFFF9, 0xFFFA, 0xFFFB, 0xFFFC, 0xFFFD, 0xFFFE, 0xFFFF,
         };
 
         #endregion
@@ -435,20 +435,20 @@ namespace DiscUtils.HfsPlus
                 while (aPos < a.Length && aChar == '\0')
                 {
                     aChar = a[aPos++];
-                    int temp = _lowerCaseTable[(aChar >> 8) & 0xFF];
+                    int temp = lowerCaseTable[(aChar >> 8) & 0xFF];
                     if (temp != 0)
                     {
-                        aChar = (char)_lowerCaseTable[temp + (aChar & 0xFF)];
+                        aChar = (char)lowerCaseTable[temp + (aChar & 0xFF)];
                     }
                 }
 
                 while (bPos < b.Length && bChar == '\0')
                 {
                     bChar = b[bPos++];
-                    int temp = _lowerCaseTable[(bChar >> 8) & 0xFF];
+                    int temp = lowerCaseTable[(bChar >> 8) & 0xFF];
                     if (temp != 0)
                     {
-                        bChar = (char)_lowerCaseTable[temp + (bChar & 0xFF)];
+                        bChar = (char)lowerCaseTable[temp + (bChar & 0xFF)];
                     }
                 }
 

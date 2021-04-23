@@ -38,16 +38,16 @@ namespace DiscUtils.HfsPlus
         public static readonly CatalogNodeId BogusExtentFileId = new CatalogNodeId(15);
         public static readonly CatalogNodeId FirstUserCatalogNodeId = new CatalogNodeId(16);
 
-        private readonly uint _id;
+        private readonly uint id;
 
         public CatalogNodeId(uint id)
         {
-            _id = id;
+            this.id = id;
         }
 
         public static implicit operator uint(CatalogNodeId nodeId)
         {
-            return nodeId._id;
+            return nodeId.id;
         }
 
         public static implicit operator CatalogNodeId(uint id)
@@ -57,7 +57,7 @@ namespace DiscUtils.HfsPlus
 
         public override string ToString()
         {
-            return _id.ToString(CultureInfo.InvariantCulture);
+            return this.id.ToString(CultureInfo.InvariantCulture);
         }
     }
 }

@@ -27,48 +27,48 @@ namespace DiscUtils.HfsPlus
     internal sealed class BTree<TKey> : BTree
         where TKey : BTreeKey, new()
     {
-        private readonly IBuffer _data;
-        private readonly BTreeHeaderRecord _header;
-        private readonly BTreeKeyedNode<TKey> _rootNode;
+        private readonly IBuffer data;
+        private readonly BTreeHeaderRecord header;
+        private readonly BTreeKeyedNode<TKey> rootNode;
 
         public BTree(IBuffer data)
         {
-            _data = data;
+            this.data = data;
 
-            byte[] headerInfo = StreamUtilities.ReadExact(_data, 0, 114);
+            byte[] headerInfo = StreamUtilities.ReadExact(this.data, 0, 114);
 
-            _header = new BTreeHeaderRecord();
-            _header.ReadFrom(headerInfo, 14);
+            this.header = new BTreeHeaderRecord();
+            this.header.ReadFrom(headerInfo, 14);
 
-            byte[] node0data = StreamUtilities.ReadExact(_data, 0, _header.NodeSize);
+            byte[] node0data = StreamUtilities.ReadExact(this.data, 0, this.header.NodeSize);
 
             BTreeHeaderNode node0 = BTreeNode.ReadNode(this, node0data, 0) as BTreeHeaderNode;
             node0.ReadFrom(node0data, 0);
 
             if (node0.HeaderRecord.RootNode != 0)
             {
-                _rootNode = GetKeyedNode(node0.HeaderRecord.RootNode);
+                this.rootNode = this.GetKeyedNode(node0.HeaderRecord.RootNode);
             }
         }
 
         internal override int NodeSize
         {
-            get { return _header.NodeSize; }
+            get { return this.header.NodeSize; }
         }
 
         public byte[] Find(TKey key)
         {
-            return _rootNode == null ? null : _rootNode.FindKey(key);
+            return this.rootNode == null ? null : this.rootNode.FindKey(key);
         }
 
         public void VisitRange(BTreeVisitor<TKey> visitor)
         {
-            _rootNode.VisitRange(visitor);
+            this.rootNode.VisitRange(visitor);
         }
 
         internal BTreeKeyedNode<TKey> GetKeyedNode(uint nodeId)
         {
-            byte[] nodeData = StreamUtilities.ReadExact(_data, (int)nodeId * _header.NodeSize, _header.NodeSize);
+            byte[] nodeData = StreamUtilities.ReadExact(this.data, (int)nodeId * this.header.NodeSize, this.header.NodeSize);
 
             BTreeKeyedNode<TKey> node = BTreeNode.ReadNode<TKey>(this, nodeData, 0) as BTreeKeyedNode<TKey>;
             node.ReadFrom(nodeData, 0);

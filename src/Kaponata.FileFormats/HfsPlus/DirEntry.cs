@@ -20,11 +20,11 @@
 // DEALINGS IN THE SOFTWARE.
 //
 
-using System;
-using System.IO;
 using DiscUtils.Internal;
 using DiscUtils.Streams;
 using DiscUtils.Vfs;
+using System;
+using System.IO;
 
 namespace DiscUtils.HfsPlus
 {
@@ -32,20 +32,20 @@ namespace DiscUtils.HfsPlus
     {
         public DirEntry(string name, byte[] dirEntryData)
         {
-            FileName = name;
-            CatalogFileInfo = ParseDirEntryData(dirEntryData);
+            this.FileName = name;
+            this.CatalogFileInfo = ParseDirEntryData(dirEntryData);
         }
 
         public CommonCatalogFileInfo CatalogFileInfo { get; }
 
         public override DateTime CreationTimeUtc
         {
-            get { return CatalogFileInfo.CreateTime; }
+            get { return this.CatalogFileInfo.CreateTime; }
         }
 
         public override FileAttributes FileAttributes
         {
-            get { return Utilities.FileAttributesFromUnixFileType(CatalogFileInfo.FileSystemInfo.FileType); }
+            get { return Utilities.FileAttributesFromUnixFileType(this.CatalogFileInfo.FileSystemInfo.FileType); }
         }
 
         public override string FileName { get; }
@@ -62,7 +62,7 @@ namespace DiscUtils.HfsPlus
 
         public override bool IsDirectory
         {
-            get { return CatalogFileInfo.RecordType == CatalogRecordType.FolderRecord; }
+            get { return this.CatalogFileInfo.RecordType == CatalogRecordType.FolderRecord; }
         }
 
         public override bool IsSymlink
@@ -70,29 +70,29 @@ namespace DiscUtils.HfsPlus
             get
             {
                 return
-                    !IsDirectory
-                    && (FileTypeFlags)((CatalogFileInfo)CatalogFileInfo).FileInfo.FileType == FileTypeFlags.SymLinkFileType;
+                    !this.IsDirectory
+                    && (FileTypeFlags)((CatalogFileInfo)this.CatalogFileInfo).FileInfo.FileType == FileTypeFlags.SymLinkFileType;
             }
         }
 
         public override DateTime LastAccessTimeUtc
         {
-            get { return CatalogFileInfo.AccessTime; }
+            get { return this.CatalogFileInfo.AccessTime; }
         }
 
         public override DateTime LastWriteTimeUtc
         {
-            get { return CatalogFileInfo.ContentModifyTime; }
+            get { return this.CatalogFileInfo.ContentModifyTime; }
         }
 
         public CatalogNodeId NodeId
         {
-            get { return CatalogFileInfo.FileId; }
+            get { return this.CatalogFileInfo.FileId; }
         }
 
         public override long UniqueCacheId
         {
-            get { return CatalogFileInfo.FileId; }
+            get { return this.CatalogFileInfo.FileId; }
         }
 
         internal static bool IsFileOrDirectory(byte[] dirEntryData)

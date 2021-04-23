@@ -20,8 +20,8 @@
 // DEALINGS IN THE SOFTWARE.
 //
 
-using System;
 using DiscUtils.Streams;
+using System;
 
 namespace DiscUtils.HfsPlus
 {
@@ -38,9 +38,9 @@ namespace DiscUtils.HfsPlus
 
         public int ReadFrom(byte[] buffer, int offset)
         {
-            RecordType = (CatalogRecordType)EndianUtilities.ToInt16BigEndian(buffer, offset + 0);
-            ParentId = EndianUtilities.ToUInt32BigEndian(buffer, offset + 4);
-            Name = HfsPlusUtilities.ReadUniStr255(buffer, offset + 8);
+            this.RecordType = (CatalogRecordType)EndianUtilities.ToInt16BigEndian(buffer, offset + 0);
+            this.ParentId = EndianUtilities.ToUInt32BigEndian(buffer, offset + 4);
+            this.Name = HfsPlusUtilities.ReadUniStr255(buffer, offset + 8);
 
             return 0;
         }

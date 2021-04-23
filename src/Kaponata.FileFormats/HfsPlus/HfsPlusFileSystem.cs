@@ -20,9 +20,9 @@
 // DEALINGS IN THE SOFTWARE.
 //
 
-using System.IO;
 using DiscUtils.Streams;
 using DiscUtils.Vfs;
+using System.IO;
 
 namespace DiscUtils.HfsPlus
 {
@@ -45,7 +45,7 @@ namespace DiscUtils.HfsPlus
         /// <returns>Unix file information.</returns>
         public UnixFileSystemInfo GetUnixFileInfo(string path)
         {
-            return GetRealFileSystem<HfsPlusFileSystemImpl>().GetUnixFileInfo(path);
+            return this.GetRealFileSystem<HfsPlusFileSystemImpl>().GetUnixFileInfo(path);
         }
 
         internal static bool Detect(Stream stream)

@@ -20,9 +20,9 @@
 // DEALINGS IN THE SOFTWARE.
 //
 
+using DiscUtils.Streams;
 using System;
 using System.Collections.Generic;
-using DiscUtils.Streams;
 
 namespace DiscUtils.HfsPlus
 {
@@ -30,8 +30,8 @@ namespace DiscUtils.HfsPlus
     {
         public BTreeNode(BTree tree, BTreeNodeDescriptor descriptor)
         {
-            Tree = tree;
-            Descriptor = descriptor;
+            this.Tree = tree;
+            this.Descriptor = descriptor;
         }
 
         protected BTreeNodeDescriptor Descriptor { get; }
@@ -42,12 +42,12 @@ namespace DiscUtils.HfsPlus
 
         public int Size
         {
-            get { return Tree.NodeSize; }
+            get { return this.Tree.NodeSize; }
         }
 
         public int ReadFrom(byte[] buffer, int offset)
         {
-            Records = ReadRecords(buffer, offset);
+            this.Records = this.ReadRecords(buffer, offset);
 
             return 0;
         }

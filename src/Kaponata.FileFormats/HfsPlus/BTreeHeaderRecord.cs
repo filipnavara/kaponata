@@ -20,8 +20,8 @@
 // DEALINGS IN THE SOFTWARE.
 //
 
-using System;
 using DiscUtils.Streams;
+using System;
 
 namespace DiscUtils.HfsPlus
 {
@@ -49,20 +49,20 @@ namespace DiscUtils.HfsPlus
 
         public override int ReadFrom(byte[] buffer, int offset)
         {
-            TreeDepth = EndianUtilities.ToUInt16BigEndian(buffer, offset + 0);
-            RootNode = EndianUtilities.ToUInt32BigEndian(buffer, offset + 2);
-            NumLeafRecords = EndianUtilities.ToUInt32BigEndian(buffer, offset + 6);
-            FirstLeafNode = EndianUtilities.ToUInt32BigEndian(buffer, offset + 10);
-            LastLeafNode = EndianUtilities.ToUInt32BigEndian(buffer, offset + 14);
-            NodeSize = EndianUtilities.ToUInt16BigEndian(buffer, offset + 18);
-            MaxKeyLength = EndianUtilities.ToUInt16BigEndian(buffer, offset + 20);
-            TotalNodes = EndianUtilities.ToUInt16BigEndian(buffer, offset + 22);
-            FreeNodes = EndianUtilities.ToUInt32BigEndian(buffer, offset + 24);
-            Res1 = EndianUtilities.ToUInt16BigEndian(buffer, offset + 28);
-            ClumpSize = EndianUtilities.ToUInt32BigEndian(buffer, offset + 30);
-            TreeType = buffer[offset + 34];
-            KeyCompareType = buffer[offset + 35];
-            Attributes = EndianUtilities.ToUInt32BigEndian(buffer, offset + 36);
+            this.TreeDepth = EndianUtilities.ToUInt16BigEndian(buffer, offset + 0);
+            this.RootNode = EndianUtilities.ToUInt32BigEndian(buffer, offset + 2);
+            this.NumLeafRecords = EndianUtilities.ToUInt32BigEndian(buffer, offset + 6);
+            this.FirstLeafNode = EndianUtilities.ToUInt32BigEndian(buffer, offset + 10);
+            this.LastLeafNode = EndianUtilities.ToUInt32BigEndian(buffer, offset + 14);
+            this.NodeSize = EndianUtilities.ToUInt16BigEndian(buffer, offset + 18);
+            this.MaxKeyLength = EndianUtilities.ToUInt16BigEndian(buffer, offset + 20);
+            this.TotalNodes = EndianUtilities.ToUInt16BigEndian(buffer, offset + 22);
+            this.FreeNodes = EndianUtilities.ToUInt32BigEndian(buffer, offset + 24);
+            this.Res1 = EndianUtilities.ToUInt16BigEndian(buffer, offset + 28);
+            this.ClumpSize = EndianUtilities.ToUInt32BigEndian(buffer, offset + 30);
+            this.TreeType = buffer[offset + 34];
+            this.KeyCompareType = buffer[offset + 35];
+            this.Attributes = EndianUtilities.ToUInt32BigEndian(buffer, offset + 36);
 
             return 104;
         }

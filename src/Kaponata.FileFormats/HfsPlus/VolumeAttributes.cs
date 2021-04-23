@@ -35,6 +35,6 @@ namespace DiscUtils.HfsPlus
         BootVolumeInconsistent = 0x00000800,
         CatalogNodeIdsReused = 0x00001000,
         VolumeJournaled = 0x00002000,
-        VolumeSoftwareLock = 0x00008000
+        VolumeSoftwareLock = 0x00008000,
     }
 }

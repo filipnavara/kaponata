@@ -20,31 +20,31 @@
 // DEALINGS IN THE SOFTWARE.
 //
 
-using System.Collections.Generic;
 using DiscUtils.Streams;
+using System.Collections.Generic;
 
 namespace DiscUtils.HfsPlus
 {
     internal class BTreeIndexNode<TKey> : BTreeKeyedNode<TKey>
         where TKey : BTreeKey, new()
     {
-        private BTreeIndexRecord<TKey>[] _records;
+        private BTreeIndexRecord<TKey>[] records;
 
         public BTreeIndexNode(BTree tree, BTreeNodeDescriptor descriptor)
             : base(tree, descriptor) {}
 
         public override byte[] FindKey(TKey key)
         {
-            int nextResult = _records[0].Key.CompareTo(key);
+            int nextResult = this.records[0].Key.CompareTo(key);
 
             int idx = 0;
-            while (idx < _records.Length)
+            while (idx < this.records.Length)
             {
                 int thisResult = nextResult;
 
-                if (idx + 1 < _records.Length)
+                if (idx + 1 < this.records.Length)
                 {
-                    nextResult = _records[idx + 1].Key.CompareTo(key);
+                    nextResult = this.records[idx + 1].Key.CompareTo(key);
                 }
                 else
                 {
@@ -60,7 +60,7 @@ namespace DiscUtils.HfsPlus
                 if (nextResult > 0)
                 {
                     // Next record's key is too big, so worth looking at children
-                    BTreeKeyedNode<TKey> child = ((BTree<TKey>)Tree).GetKeyedNode(_records[idx].ChildId);
+                    BTreeKeyedNode<TKey> child = ((BTree<TKey>)this.Tree).GetKeyedNode(this.records[idx].ChildId);
                     return child.FindKey(key);
                 }
 
@@ -72,16 +72,16 @@ namespace DiscUtils.HfsPlus
 
         public override void VisitRange(BTreeVisitor<TKey> visitor)
         {
-            int nextResult = visitor(_records[0].Key, null);
+            int nextResult = visitor(this.records[0].Key, null);
 
             int idx = 0;
-            while (idx < _records.Length)
+            while (idx < this.records.Length)
             {
                 int thisResult = nextResult;
 
-                if (idx + 1 < _records.Length)
+                if (idx + 1 < this.records.Length)
                 {
-                    nextResult = visitor(_records[idx + 1].Key, null);
+                    nextResult = visitor(this.records[idx + 1].Key, null);
                 }
                 else
                 {
@@ -97,7 +97,7 @@ namespace DiscUtils.HfsPlus
                 if (nextResult >= 0)
                 {
                     // Next record's key isn't too small, so worth looking at children
-                    BTreeKeyedNode<TKey> child = ((BTree<TKey>)Tree).GetKeyedNode(_records[idx].ChildId);
+                    BTreeKeyedNode<TKey> child = ((BTree<TKey>)this.Tree).GetKeyedNode(this.records[idx].ChildId);
                     child.VisitRange(visitor);
                 }
 
@@ -107,10 +107,10 @@ namespace DiscUtils.HfsPlus
 
         protected override IList<BTreeNodeRecord> ReadRecords(byte[] buffer, int offset)
         {
-            int numRecords = Descriptor.NumRecords;
-            int nodeSize = Tree.NodeSize;
+            int numRecords = this.Descriptor.NumRecords;
+            int nodeSize = this.Tree.NodeSize;
 
-            _records = new BTreeIndexRecord<TKey>[numRecords];
+            this.records = new BTreeIndexRecord<TKey>[numRecords];
 
             int start = EndianUtilities.ToUInt16BigEndian(buffer, offset + nodeSize - 2);
 
@@ -118,13 +118,13 @@ namespace DiscUtils.HfsPlus
             {
                 int end = EndianUtilities.ToUInt16BigEndian(buffer, offset + nodeSize - (i + 2) * 2);
 
-                _records[i] = new BTreeIndexRecord<TKey>(end - start);
-                _records[i].ReadFrom(buffer, offset + start);
+                this.records[i] = new BTreeIndexRecord<TKey>(end - start);
+                this.records[i].ReadFrom(buffer, offset + start);
 
                 start = end;
             }
 
-            return _records;
+            return this.records;
         }
     }
 }

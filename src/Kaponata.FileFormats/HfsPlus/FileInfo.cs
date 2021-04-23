@@ -20,8 +20,8 @@
 // DEALINGS IN THE SOFTWARE.
 //
 
-using System;
 using DiscUtils.Streams;
+using System;
 
 namespace DiscUtils.HfsPlus
 {
@@ -39,10 +39,10 @@ namespace DiscUtils.HfsPlus
 
         public int ReadFrom(byte[] buffer, int offset)
         {
-            FileType = EndianUtilities.ToUInt32BigEndian(buffer, offset + 0);
-            FileCreator = EndianUtilities.ToUInt32BigEndian(buffer, offset + 4);
-            FinderFlags = (FinderFlags)EndianUtilities.ToUInt16BigEndian(buffer, offset + 8);
-            Point = EndianUtilities.ToStruct<Point>(buffer, offset + 10);
+            this.FileType = EndianUtilities.ToUInt32BigEndian(buffer, offset + 0);
+            this.FileCreator = EndianUtilities.ToUInt32BigEndian(buffer, offset + 4);
+            this.FinderFlags = (FinderFlags)EndianUtilities.ToUInt16BigEndian(buffer, offset + 8);
+            this.Point = EndianUtilities.ToStruct<Point>(buffer, offset + 10);
 
             return 16;
         }

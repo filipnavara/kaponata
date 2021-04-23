@@ -20,29 +20,29 @@
 // DEALINGS IN THE SOFTWARE.
 //
 
-using System;
-using System.IO;
-using System.IO.Compression;
 using DiscUtils.Compression;
 using DiscUtils.Internal;
 using DiscUtils.Streams;
 using DiscUtils.Vfs;
+using System;
+using System.IO;
+using System.IO.Compression;
 
 namespace DiscUtils.HfsPlus
 {
     internal class File : IVfsFileWithStreams
     {
         private const string CompressionAttributeName = "com.apple.decmpfs";
-        private readonly CommonCatalogFileInfo _catalogInfo;
-        private readonly bool _hasCompressionAttribute;
+        private readonly CommonCatalogFileInfo catalogInfo;
+        private readonly bool hasCompressionAttribute;
 
         public File(Context context, CatalogNodeId nodeId, CommonCatalogFileInfo catalogInfo)
         {
-            Context = context;
-            NodeId = nodeId;
-            _catalogInfo = catalogInfo;
-            _hasCompressionAttribute =
-                Context.Attributes.Find(new AttributeKey(NodeId, CompressionAttributeName)) != null;
+            this.Context = context;
+            this.NodeId = nodeId;
+            this.catalogInfo = catalogInfo;
+            this.hasCompressionAttribute =
+                this.Context.Attributes.Find(new AttributeKey(this.NodeId, CompressionAttributeName)) != null;
         }
 
         protected Context Context { get; }
@@ -51,28 +51,28 @@ namespace DiscUtils.HfsPlus
 
         public DateTime LastAccessTimeUtc
         {
-            get { return _catalogInfo.AccessTime; }
+            get { return this.catalogInfo.AccessTime; }
 
             set { throw new NotSupportedException(); }
         }
 
         public DateTime LastWriteTimeUtc
         {
-            get { return _catalogInfo.ContentModifyTime; }
+            get { return this.catalogInfo.ContentModifyTime; }
 
             set { throw new NotSupportedException(); }
         }
 
         public DateTime CreationTimeUtc
         {
-            get { return _catalogInfo.CreateTime; }
+            get { return this.catalogInfo.CreateTime; }
 
             set { throw new NotSupportedException(); }
         }
 
         public FileAttributes FileAttributes
         {
-            get { return Utilities.FileAttributesFromUnixFileType(_catalogInfo.FileSystemInfo.FileType); }
+            get { return Utilities.FileAttributesFromUnixFileType(this.catalogInfo.FileSystemInfo.FileType); }
 
             set { throw new NotSupportedException(); }
         }
@@ -81,7 +81,7 @@ namespace DiscUtils.HfsPlus
         {
             get
             {
-                CatalogFileInfo fileInfo = _catalogInfo as CatalogFileInfo;
+                CatalogFileInfo fileInfo = this.catalogInfo as CatalogFileInfo;
                 if (fileInfo == null)
                 {
                     throw new InvalidOperationException();
@@ -95,17 +95,17 @@ namespace DiscUtils.HfsPlus
         {
             get
             {
-                CatalogFileInfo fileInfo = _catalogInfo as CatalogFileInfo;
+                CatalogFileInfo fileInfo = this.catalogInfo as CatalogFileInfo;
                 if (fileInfo == null)
                 {
                     throw new InvalidOperationException();
                 }
 
-                if (_hasCompressionAttribute)
+                if (this.hasCompressionAttribute)
                 {
                     // Open the compression attribute
                     byte[] compressionAttributeData =
-                        Context.Attributes.Find(new AttributeKey(_catalogInfo.FileId, "com.apple.decmpfs"));
+                        this.Context.Attributes.Find(new AttributeKey(this.catalogInfo.FileId, "com.apple.decmpfs"));
                     CompressionAttribute compressionAttribute = new CompressionAttribute();
                     compressionAttribute.ReadFrom(compressionAttributeData, 0);
 
@@ -142,7 +142,7 @@ namespace DiscUtils.HfsPlus
 
                         case FileCompressionType.ZlibResource:
                             // The data is stored in the resource fork.
-                            FileBuffer buffer = new FileBuffer(Context, fileInfo.ResourceFork, fileInfo.FileId);
+                            FileBuffer buffer = new FileBuffer(this.Context, fileInfo.ResourceFork, fileInfo.FileId);
                             CompressionResourceHeader compressionFork = new CompressionResourceHeader();
                             byte[] compressionForkData = new byte[CompressionResourceHeader.Size];
                             buffer.Read(0, compressionForkData, 0, CompressionResourceHeader.Size);
@@ -207,7 +207,7 @@ namespace DiscUtils.HfsPlus
                             throw new NotSupportedException($"The HfsPlus compression type {compressionAttribute.CompressionType} is not supported by DiscUtils.HfsPlus");
                     }
                 }
-                return new FileBuffer(Context, fileInfo.DataFork, fileInfo.FileId);
+                return new FileBuffer(this.Context, fileInfo.DataFork, fileInfo.FileId);
             }
         }
 

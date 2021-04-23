@@ -20,8 +20,8 @@
 // DEALINGS IN THE SOFTWARE.
 //
 
-using System;
 using DiscUtils.Streams;
+using System;
 
 namespace DiscUtils.HfsPlus
 {
@@ -41,12 +41,12 @@ namespace DiscUtils.HfsPlus
 
         public int ReadFrom(byte[] buffer, int offset)
         {
-            ForwardLink = EndianUtilities.ToUInt32BigEndian(buffer, offset + 0);
-            BackwardLink = EndianUtilities.ToUInt32BigEndian(buffer, offset + 4);
-            Kind = (BTreeNodeKind)buffer[offset + 8];
-            Height = buffer[offset + 9];
-            NumRecords = EndianUtilities.ToUInt16BigEndian(buffer, offset + 10);
-            Reserved = EndianUtilities.ToUInt16BigEndian(buffer, offset + 12);
+            this.ForwardLink = EndianUtilities.ToUInt32BigEndian(buffer, offset + 0);
+            this.BackwardLink = EndianUtilities.ToUInt32BigEndian(buffer, offset + 4);
+            this.Kind = (BTreeNodeKind)buffer[offset + 8];
+            this.Height = buffer[offset + 9];
+            this.NumRecords = EndianUtilities.ToUInt16BigEndian(buffer, offset + 10);
+            this.Reserved = EndianUtilities.ToUInt16BigEndian(buffer, offset + 12);
 
             return 14;
         }

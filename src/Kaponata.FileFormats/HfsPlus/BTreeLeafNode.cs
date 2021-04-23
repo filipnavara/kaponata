@@ -20,15 +20,15 @@
 // DEALINGS IN THE SOFTWARE.
 //
 
-using System.Collections.Generic;
 using DiscUtils.Streams;
+using System.Collections.Generic;
 
 namespace DiscUtils.HfsPlus
 {
     internal sealed class BTreeLeafNode<TKey> : BTreeKeyedNode<TKey>
         where TKey : BTreeKey, new()
     {
-        private BTreeLeafRecord<TKey>[] _records;
+        private BTreeLeafRecord<TKey>[] records;
 
         public BTreeLeafNode(BTree tree, BTreeNodeDescriptor descriptor)
             : base(tree, descriptor) {}
@@ -36,12 +36,12 @@ namespace DiscUtils.HfsPlus
         public override byte[] FindKey(TKey key)
         {
             int idx = 0;
-            while (idx < _records.Length)
+            while (idx < this.records.Length)
             {
-                int compResult = key.CompareTo(_records[idx].Key);
+                int compResult = key.CompareTo(this.records[idx].Key);
                 if (compResult == 0)
                 {
-                    return _records[idx].Data;
+                    return this.records[idx].Data;
                 }
 
                 if (compResult < 0)
@@ -58,7 +58,7 @@ namespace DiscUtils.HfsPlus
         public override void VisitRange(BTreeVisitor<TKey> visitor)
         {
             int idx = 0;
-            while (idx < _records.Length && visitor(_records[idx].Key, _records[idx].Data) <= 0)
+            while (idx < this.records.Length && visitor(this.records[idx].Key, this.records[idx].Data) <= 0)
             {
                 idx++;
             }
@@ -66,10 +66,10 @@ namespace DiscUtils.HfsPlus
 
         protected override IList<BTreeNodeRecord> ReadRecords(byte[] buffer, int offset)
         {
-            int numRecords = Descriptor.NumRecords;
-            int nodeSize = Tree.NodeSize;
+            int numRecords = this.Descriptor.NumRecords;
+            int nodeSize = this.Tree.NodeSize;
 
-            _records = new BTreeLeafRecord<TKey>[numRecords];
+            this.records = new BTreeLeafRecord<TKey>[numRecords];
 
             int start = EndianUtilities.ToUInt16BigEndian(buffer, offset + nodeSize - 2);
 
@@ -77,13 +77,13 @@ namespace DiscUtils.HfsPlus
             {
                 int end = EndianUtilities.ToUInt16BigEndian(buffer, offset + nodeSize - (i + 2) * 2);
 
-                _records[i] = new BTreeLeafRecord<TKey>(end - start);
-                _records[i].ReadFrom(buffer, offset + start);
+                this.records[i] = new BTreeLeafRecord<TKey>(end - start);
+                this.records[i].ReadFrom(buffer, offset + start);
 
                 start = end;
             }
 
-            return _records;
+            return this.records;
         }
     }
 }

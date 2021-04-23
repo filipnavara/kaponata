@@ -20,8 +20,8 @@
 // DEALINGS IN THE SOFTWARE.
 //
 
-using System;
 using DiscUtils.Streams;
+using System;
 
 namespace DiscUtils.HfsPlus
 {
@@ -39,8 +39,8 @@ namespace DiscUtils.HfsPlus
         {
             base.ReadFrom(buffer, offset);
 
-            Flags = EndianUtilities.ToUInt16BigEndian(buffer, offset + 2);
-            Valence = EndianUtilities.ToUInt32BigEndian(buffer, offset + 4);
+            this.Flags = EndianUtilities.ToUInt16BigEndian(buffer, offset + 2);
+            this.Valence = EndianUtilities.ToUInt32BigEndian(buffer, offset + 4);
 
             return 0;
         }

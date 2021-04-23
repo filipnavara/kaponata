@@ -20,21 +20,21 @@
 // DEALINGS IN THE SOFTWARE.
 //
 
-using System;
 using DiscUtils.Streams;
+using System;
 
 namespace DiscUtils.HfsPlus
 {
     internal sealed class CatalogKey : BTreeKey, IComparable<CatalogKey>
     {
-        private ushort _keyLength;
+        private ushort keyLength;
 
         public CatalogKey() {}
 
         public CatalogKey(CatalogNodeId nodeId, string name)
         {
-            NodeId = nodeId;
-            Name = name;
+            this.NodeId = nodeId;
+            this.Name = name;
         }
 
         public string Name { get; private set; }
@@ -53,21 +53,21 @@ namespace DiscUtils.HfsPlus
                 throw new ArgumentNullException(nameof(other));
             }
 
-            if (NodeId != other.NodeId)
+            if (this.NodeId != other.NodeId)
             {
-                return NodeId < other.NodeId ? -1 : 1;
+                return this.NodeId < other.NodeId ? -1 : 1;
             }
 
-            return HfsPlusUtilities.FastUnicodeCompare(Name, other.Name);
+            return HfsPlusUtilities.FastUnicodeCompare(this.Name, other.Name);
         }
 
         public override int ReadFrom(byte[] buffer, int offset)
         {
-            _keyLength = EndianUtilities.ToUInt16BigEndian(buffer, offset + 0);
-            NodeId = new CatalogNodeId(EndianUtilities.ToUInt32BigEndian(buffer, offset + 2));
-            Name = HfsPlusUtilities.ReadUniStr255(buffer, offset + 6);
+            this.keyLength = EndianUtilities.ToUInt16BigEndian(buffer, offset + 0);
+            this.NodeId = new CatalogNodeId(EndianUtilities.ToUInt32BigEndian(buffer, offset + 2));
+            this.Name = HfsPlusUtilities.ReadUniStr255(buffer, offset + 6);
 
-            return _keyLength + 2;
+            return this.keyLength + 2;
         }
 
         public override void WriteTo(byte[] buffer, int offset)
@@ -77,12 +77,12 @@ namespace DiscUtils.HfsPlus
 
         public override int CompareTo(BTreeKey other)
         {
-            return CompareTo(other as CatalogKey);
+            return this.CompareTo(other as CatalogKey);
         }
 
         public override string ToString()
         {
-            return Name + " (" + NodeId + ")";
+            return this.Name + " (" + this.NodeId + ")";
         }
     }
 }

@@ -20,10 +20,10 @@
 // DEALINGS IN THE SOFTWARE.
 //
 
-using System;
-using System.IO;
 using DiscUtils.Streams;
 using DiscUtils.Vfs;
+using System;
+using System.IO;
 
 namespace DiscUtils.HfsPlus
 {
@@ -38,26 +38,26 @@ namespace DiscUtils.HfsPlus
             VolumeHeader hdr = new VolumeHeader();
             hdr.ReadFrom(headerBuf, 0);
 
-            Context = new Context();
-            Context.VolumeStream = s;
-            Context.VolumeHeader = hdr;
+            this.Context = new Context();
+            this.Context.VolumeStream = s;
+            this.Context.VolumeHeader = hdr;
 
-            FileBuffer catalogBuffer = new FileBuffer(Context, hdr.CatalogFile, CatalogNodeId.CatalogFileId);
-            Context.Catalog = new BTree<CatalogKey>(catalogBuffer);
+            FileBuffer catalogBuffer = new FileBuffer(this.Context, hdr.CatalogFile, CatalogNodeId.CatalogFileId);
+            this.Context.Catalog = new BTree<CatalogKey>(catalogBuffer);
 
-            FileBuffer extentsBuffer = new FileBuffer(Context, hdr.ExtentsFile, CatalogNodeId.ExtentsFileId);
-            Context.ExtentsOverflow = new BTree<ExtentKey>(extentsBuffer);
+            FileBuffer extentsBuffer = new FileBuffer(this.Context, hdr.ExtentsFile, CatalogNodeId.ExtentsFileId);
+            this.Context.ExtentsOverflow = new BTree<ExtentKey>(extentsBuffer);
 
-            FileBuffer attributesBuffer = new FileBuffer(Context, hdr.AttributesFile, CatalogNodeId.AttributesFileId);
-            Context.Attributes = new BTree<AttributeKey>(attributesBuffer);
+            FileBuffer attributesBuffer = new FileBuffer(this.Context, hdr.AttributesFile, CatalogNodeId.AttributesFileId);
+            this.Context.Attributes = new BTree<AttributeKey>(attributesBuffer);
 
             // Establish Root directory
-            byte[] rootThreadData = Context.Catalog.Find(new CatalogKey(CatalogNodeId.RootFolderId, string.Empty));
+            byte[] rootThreadData = this.Context.Catalog.Find(new CatalogKey(CatalogNodeId.RootFolderId, string.Empty));
             CatalogThread rootThread = new CatalogThread();
             rootThread.ReadFrom(rootThreadData, 0);
-            byte[] rootDirEntryData = Context.Catalog.Find(new CatalogKey(rootThread.ParentId, rootThread.Name));
+            byte[] rootDirEntryData = this.Context.Catalog.Find(new CatalogKey(rootThread.ParentId, rootThread.Name));
             DirEntry rootDirEntry = new DirEntry(rootThread.Name, rootDirEntryData);
-            RootDirectory = (Directory)GetFile(rootDirEntry);
+            this.RootDirectory = (Directory)GetFile(rootDirEntry);
         }
 
         public override string FriendlyName
@@ -69,7 +69,7 @@ namespace DiscUtils.HfsPlus
         {
             get
             {
-                byte[] rootThreadData = Context.Catalog.Find(new CatalogKey(CatalogNodeId.RootFolderId, string.Empty));
+                byte[] rootThreadData = this.Context.Catalog.Find(new CatalogKey(CatalogNodeId.RootFolderId, string.Empty));
                 CatalogThread rootThread = new CatalogThread();
                 rootThread.ReadFrom(rootThreadData, 0);
 
@@ -97,13 +97,13 @@ namespace DiscUtils.HfsPlus
         {
             if (dirEntry.IsDirectory)
             {
-                return new Directory(Context, dirEntry.NodeId, dirEntry.CatalogFileInfo);
+                return new Directory(this.Context, dirEntry.NodeId, dirEntry.CatalogFileInfo);
             }
             if (dirEntry.IsSymlink)
             {
-                return new Symlink(Context, dirEntry.NodeId, dirEntry.CatalogFileInfo);
+                return new Symlink(this.Context, dirEntry.NodeId, dirEntry.CatalogFileInfo);
             }
-            return new File(Context, dirEntry.NodeId, dirEntry.CatalogFileInfo);
+            return new File(this.Context, dirEntry.NodeId, dirEntry.CatalogFileInfo);
         }
         /// <summary>
         /// Size of the Filesystem in bytes

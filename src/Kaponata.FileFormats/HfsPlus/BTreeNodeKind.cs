@@ -27,6 +27,6 @@ namespace DiscUtils.HfsPlus
         LeafNode = -1,
         IndexNode = 0,
         HeaderNode = 1,
-        MapNode = 2
+        MapNode = 2,
     }
 }

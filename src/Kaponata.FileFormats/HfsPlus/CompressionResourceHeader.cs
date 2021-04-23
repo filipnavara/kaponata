@@ -41,10 +41,10 @@ namespace DiscUtils.HfsPlus
 
         public int ReadFrom(byte[] buffer, int offset)
         {
-            HeaderSize = EndianUtilities.ToUInt32BigEndian(buffer, offset);
-            TotalSize = EndianUtilities.ToUInt32BigEndian(buffer, offset + 4);
-            DataSize = EndianUtilities.ToUInt32BigEndian(buffer, offset + 8);
-            Flags = EndianUtilities.ToUInt32BigEndian(buffer, offset + 12);
+            this.HeaderSize = EndianUtilities.ToUInt32BigEndian(buffer, offset);
+            this.TotalSize = EndianUtilities.ToUInt32BigEndian(buffer, offset + 4);
+            this.DataSize = EndianUtilities.ToUInt32BigEndian(buffer, offset + 8);
+            this.Flags = EndianUtilities.ToUInt32BigEndian(buffer, offset + 12);
 
             return Size;
         }

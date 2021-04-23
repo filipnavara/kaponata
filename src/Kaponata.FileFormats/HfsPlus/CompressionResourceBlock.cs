@@ -37,8 +37,8 @@ namespace DiscUtils.HfsPlus
 
         public int ReadFrom(byte[] buffer, int offset)
         {
-            Offset = EndianUtilities.ToUInt32LittleEndian(buffer, offset);
-            DataSize = EndianUtilities.ToUInt32LittleEndian(buffer, offset + 4);
+            this.Offset = EndianUtilities.ToUInt32LittleEndian(buffer, offset);
+            this.DataSize = EndianUtilities.ToUInt32LittleEndian(buffer, offset + 4);
 
             return Size;
         }

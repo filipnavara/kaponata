@@ -20,8 +20,8 @@
 // DEALINGS IN THE SOFTWARE.
 //
 
-using System;
 using DiscUtils.Streams;
+using System;
 
 namespace DiscUtils.HfsPlus
 {
@@ -37,8 +37,8 @@ namespace DiscUtils.HfsPlus
 
         public int ReadFrom(byte[] buffer, int offset)
         {
-            StartBlock = EndianUtilities.ToUInt32BigEndian(buffer, offset + 0);
-            BlockCount = EndianUtilities.ToUInt32BigEndian(buffer, offset + 4);
+            this.StartBlock = EndianUtilities.ToUInt32BigEndian(buffer, offset + 0);
+            this.BlockCount = EndianUtilities.ToUInt32BigEndian(buffer, offset + 4);
 
             return 8;
         }
