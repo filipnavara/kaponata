@@ -31,7 +31,7 @@ namespace DiscUtils.HfsPlus
     /// <summary>
     /// Represents a key for a B-tree node.
     /// </summary>
-    internal abstract class BTreeKey : IByteArraySerializable, IComparable<BTreeKey>
+    public abstract class BTreeKey : IByteArraySerializable, IComparable<BTreeKey>
     {
         /// <inheritdoc/>
         public abstract int Size { get; }

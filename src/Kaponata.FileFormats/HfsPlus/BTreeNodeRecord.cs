@@ -28,7 +28,7 @@ namespace DiscUtils.HfsPlus
     /// <summary>
     /// An individual record embedded in a B-tree node.
     /// </summary>
-    internal abstract class BTreeNodeRecord : IByteArraySerializable
+    public abstract class BTreeNodeRecord : IByteArraySerializable
     {
         /// <inheritdoc/>
         public abstract int Size { get; }

@@ -30,7 +30,7 @@ namespace DiscUtils.HfsPlus
     /// catalog node ID (CNID).
     /// </summary>
     /// <seealso href="https://developer.apple.com/library/archive/technotes/tn/tn1150.html#CNID"/>
-    internal struct CatalogNodeId
+    public struct CatalogNodeId
     {
         /// <summary>
         /// Parent ID of the root folder.

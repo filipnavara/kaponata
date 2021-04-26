@@ -31,7 +31,7 @@ namespace DiscUtils.HfsPlus
     /// <summary>
     /// For a given file, folder, or thread record, the catalog file key consists of the parent folder's <see cref="CatalogNodeId"/> and the name of the file or folder.
     /// </summary>
-    internal sealed class CatalogKey : BTreeKey, IComparable<CatalogKey>
+    public sealed class CatalogKey : BTreeKey, IComparable<CatalogKey>
     {
         private ushort keyLength;
 

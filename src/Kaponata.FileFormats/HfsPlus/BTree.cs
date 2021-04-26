@@ -27,7 +27,7 @@ namespace DiscUtils.HfsPlus
     /// Represents a B-tree.
     /// </summary>
     /// <seealso href="https://developer.apple.com/library/archive/technotes/tn/tn1150.html#BTrees"/>
-    internal abstract class BTree
+    public abstract class BTree
     {
         /// <summary>
         /// Gets the size of individual nodes in this B-tree.

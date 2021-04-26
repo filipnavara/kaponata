@@ -30,12 +30,12 @@ namespace DiscUtils.HfsPlus
     /// The B-tree header record contains general information about the B-tree such as its size, maximum key length, and the location of the first and last leaf nodes.
     /// </summary>
     /// <seealso href="https://developer.apple.com/library/archive/technotes/tn/tn1150.html#BTrees"/>
-    internal class BTreeHeaderRecord : BTreeNodeRecord
+    public class BTreeHeaderRecord : BTreeNodeRecord
     {
         /// <summary>
         /// Gets or sets a set of bits used to describe various attributes of the B-tree.
         /// </summary>
-        public uint Attributes { get; set; }
+        public BTreeAttributes Attributes { get; set; }
 
         /// <summary>
         /// Gets or sets a value which is ignored for HFS Plus B-trees.
@@ -55,7 +55,7 @@ namespace DiscUtils.HfsPlus
         /// <summary>
         /// Gets or sets, for HFSX volumes, a value which defines the ordering of the keys (whether the volume is case-sensitive or case-insensitive).
         /// </summary>
-        public byte KeyCompareType { get; set; }
+        public BTreeKeyCompareType KeyCompareType { get; set; }
 
         /// <summary>
         /// Gets or sets the node number of the last leaf node. This may be zero if there are no leaf nodes.
@@ -100,7 +100,7 @@ namespace DiscUtils.HfsPlus
         /// <summary>
         /// Gets or sets a value which determines the tree type.
         /// </summary>
-        public byte TreeType { get; set; }
+        public BTreeType TreeType { get; set; }
 
         /// <inheritdoc/>
         public override int Size
@@ -118,14 +118,15 @@ namespace DiscUtils.HfsPlus
             this.LastLeafNode = EndianUtilities.ToUInt32BigEndian(buffer, offset + 14);
             this.NodeSize = EndianUtilities.ToUInt16BigEndian(buffer, offset + 18);
             this.MaxKeyLength = EndianUtilities.ToUInt16BigEndian(buffer, offset + 20);
-            this.TotalNodes = EndianUtilities.ToUInt16BigEndian(buffer, offset + 22);
-            this.FreeNodes = EndianUtilities.ToUInt32BigEndian(buffer, offset + 24);
-            this.Res1 = EndianUtilities.ToUInt16BigEndian(buffer, offset + 28);
-            this.ClumpSize = EndianUtilities.ToUInt32BigEndian(buffer, offset + 30);
-            this.TreeType = buffer[offset + 34];
-            this.KeyCompareType = buffer[offset + 35];
-            this.Attributes = EndianUtilities.ToUInt32BigEndian(buffer, offset + 36);
+            this.TotalNodes = EndianUtilities.ToUInt32BigEndian(buffer, offset + 22);
+            this.FreeNodes = EndianUtilities.ToUInt32BigEndian(buffer, offset + 26);
+            this.Res1 = EndianUtilities.ToUInt16BigEndian(buffer, offset + 30);
+            this.ClumpSize = EndianUtilities.ToUInt32BigEndian(buffer, offset + 32);
+            this.TreeType = (BTreeType)buffer[offset + 36];
+            this.KeyCompareType = (BTreeKeyCompareType)buffer[offset + 37];
+            this.Attributes = (BTreeAttributes)EndianUtilities.ToUInt32BigEndian(buffer, offset + 38);
 
+            // 16 bytes of reserved data
             return 104;
         }
 

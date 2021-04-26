@@ -35,7 +35,7 @@ namespace DiscUtils.HfsPlus
     /// The type of the key of the index node.
     /// </typeparam>
     /// <seealso href="https://developer.apple.com/library/archive/technotes/tn/tn1150.html#IndexNodes"/>
-    internal class BTreeIndexNode<TKey> : BTreeKeyedNode<TKey>
+    public class BTreeIndexNode<TKey> : BTreeKeyedNode<TKey>
         where TKey : BTreeKey, new()
     {
         private BTreeIndexRecord<TKey>[] records;

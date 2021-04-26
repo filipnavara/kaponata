@@ -30,7 +30,7 @@ namespace DiscUtils.HfsPlus
     /// <summary>
     /// Represents a generic record.
     /// </summary>
-    internal class BTreeGenericRecord : BTreeNodeRecord
+    public class BTreeGenericRecord : BTreeNodeRecord
     {
         private readonly int size;
         private byte[] data;

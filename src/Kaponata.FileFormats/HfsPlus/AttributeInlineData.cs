@@ -42,7 +42,7 @@ namespace DiscUtils.HfsPlus
             }
 
             this.Reserved1 = EndianUtilities.ToUInt32BigEndian(buffer, offset + 4);
-            this.Reserved1 = EndianUtilities.ToUInt32BigEndian(buffer, offset + 8);
+            this.Reserved2 = EndianUtilities.ToUInt32BigEndian(buffer, offset + 8);
             this.LogicalSize = EndianUtilities.ToUInt32BigEndian(buffer, offset + 12);
 
             return this.Size;

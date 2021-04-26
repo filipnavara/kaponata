@@ -30,7 +30,7 @@ namespace DiscUtils.HfsPlus
     /// <summary>
     /// Represents the keys used by the attribute file.
     /// </summary>
-    internal class AttributeKey : BTreeKey
+    public sealed class AttributeKey : BTreeKey
     {
         private ushort keyLength;
         private ushort pad;
@@ -69,10 +69,7 @@ namespace DiscUtils.HfsPlus
         public string Name { get; private set; }
 
         /// <inheritdoc/>
-        public override int Size
-        {
-            get { throw new NotImplementedException(); }
-        }
+        public override int Size => this.keyLength + 2;
 
         /// <inheritdoc/>
         public override int ReadFrom(byte[] buffer, int offset)

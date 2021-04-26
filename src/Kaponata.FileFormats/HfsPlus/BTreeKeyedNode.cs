@@ -30,7 +30,7 @@ namespace DiscUtils.HfsPlus
     /// The type of the key.
     /// </typeparam>
     /// <seealso gref="https://developer.apple.com/library/archive/technotes/tn/tn1150.html#KeyedRecords"/>
-    internal abstract class BTreeKeyedNode<TKey> : BTreeNode
+    public abstract class BTreeKeyedNode<TKey> : BTreeNode
         where TKey : BTreeKey
     {
         /// <summary>

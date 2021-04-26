@@ -38,6 +38,6 @@ namespace DiscUtils.HfsPlus
     /// <returns>
     /// A value indictating how the current node compares to the key.
     /// </returns>
-    internal delegate int BTreeVisitor<TKey>(TKey key, byte[] data)
+    public delegate int BTreeVisitor<TKey>(TKey key, byte[] data)
         where TKey : BTreeKey;
 }

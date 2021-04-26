@@ -29,7 +29,7 @@ namespace DiscUtils.HfsPlus
     /// <summary>
     /// The node descriptor contains basic information about the node as well as forward and backward links to other nodes.
     /// </summary>
-    internal sealed class BTreeNodeDescriptor : IByteArraySerializable
+    public sealed class BTreeNodeDescriptor : IByteArraySerializable
     {
         /// <summary>
         /// Gets or sets the node number of the previous node of this type, or 0 if this is the first node.

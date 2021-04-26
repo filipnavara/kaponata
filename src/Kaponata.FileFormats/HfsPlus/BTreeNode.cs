@@ -32,7 +32,7 @@ namespace DiscUtils.HfsPlus
     /// <summary>
     /// Represents a node in a B-tree.
     /// </summary>
-    internal abstract class BTreeNode : IByteArraySerializable
+    public abstract class BTreeNode : IByteArraySerializable
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="BTreeNode"/> class.

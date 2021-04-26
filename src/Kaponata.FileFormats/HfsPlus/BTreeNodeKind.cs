@@ -26,7 +26,7 @@ namespace DiscUtils.HfsPlus
     /// <summary>
     /// Describes the type of a node, which indicates what kinds of records it contains and, therefore, its purpose in the B-tree hierarchy.
     /// </summary>
-    internal enum BTreeNodeKind : sbyte
+    public enum BTreeNodeKind : sbyte
     {
         /// <summary>
         /// The node is a leaf node. Leaf nodes contain binary data.
