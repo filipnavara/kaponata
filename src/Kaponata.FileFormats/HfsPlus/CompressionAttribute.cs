@@ -22,50 +22,58 @@
 
 using DiscUtils.Streams;
 using System;
-using System.Text;
+using System.IO;
 
 namespace DiscUtils.HfsPlus
 {
-    internal class CompressionAttribute
+    /// <summary>
+    /// Represents the data embedded in the in-line <c>decmpfs</c> HFS+ xattr.
+    /// </summary>
+    internal class CompressionAttribute : IByteArraySerializable
     {
-        #pragma warning disable CS0169 // Unused fields.
-        private byte attrData1;
-        private byte attrData2;
-        private uint compressionMagic;
-        private uint recordType;
-        private uint reserved1;
-        private uint reserved2;
-        private uint reserved3;
-        #pragma warning restore CS0169
+        /// <summary>
+        /// The magic used to identify the attribute.
+        /// </summary>
+        public const uint DecmpfsMagic = 0x66706d63; /* cmpf */
 
-        public static int Size
-        {
-            get { return 32; }
-        }
+        /// <inheritdoc/>
+        public int Size => 16;
 
-        public uint AttrSize { get; private set; }
+        /// <summary>
+        /// Gets or sets the magic of this attribute. Should be <see cref="DecmpfsMagic"/>.
+        /// </summary>
+        public uint CompressionMagic { get; set; }
 
-        public string CompressionMagic
-        {
-            get { return Encoding.ASCII.GetString(BitConverter.GetBytes(this.compressionMagic)); }
-        }
+        /// <summary>
+        /// Gets or sets the type of compression used.
+        /// </summary>
+        public FileCompressionType CompressionType { get; set; }
 
-        public FileCompressionType CompressionType { get; private set; }
+        /// <summary>
+        /// Gets or sets the size of the uncompressed file.
+        /// </summary>
+        public ulong UncompressedSize { get; set; }
 
-        public uint UncompressedSize { get; private set; }
-
+        /// <inheritdoc/>
         public int ReadFrom(byte[] buffer, int offset)
         {
-            this.recordType = EndianUtilities.ToUInt32BigEndian(buffer, offset + 0);
-            this.reserved1 = EndianUtilities.ToUInt32BigEndian(buffer, offset + 4);
-            this.reserved1 = EndianUtilities.ToUInt32BigEndian(buffer, offset + 8);
-            this.AttrSize = EndianUtilities.ToUInt32BigEndian(buffer, offset + 12);
-            this.compressionMagic = EndianUtilities.ToUInt32BigEndian(buffer, offset + 16);
-            this.CompressionType = (FileCompressionType)EndianUtilities.ToUInt32LittleEndian(buffer, offset + 20);
-            this.UncompressedSize = EndianUtilities.ToUInt32LittleEndian(buffer, offset + 24);
-            this.reserved3 = EndianUtilities.ToUInt32BigEndian(buffer, offset + 28);
+            this.CompressionMagic = EndianUtilities.ToUInt32BigEndian(buffer, offset);
 
-            return Size;
+            if (this.CompressionMagic != DecmpfsMagic)
+            {
+                throw new InvalidDataException();
+            }
+
+            this.CompressionType = (FileCompressionType)EndianUtilities.ToUInt32LittleEndian(buffer, offset + 4);
+            this.UncompressedSize = EndianUtilities.ToUInt64LittleEndian(buffer, offset + 8);
+
+            return this.Size;
+        }
+
+        /// <inheritdoc/>
+        public void WriteTo(byte[] buffer, int offset)
+        {
+            throw new NotImplementedException();
         }
     }
 }

@@ -109,16 +109,6 @@ namespace DiscUtils.HfsPlus
             }
         }
 
-        /// <summary>
-        /// Gets the HFS+ context to which the file belongs.
-        /// </summary>
-        protected Context Context { get; }
-
-        /// <summary>
-        /// Gets the <see cref="CatalogNodeId"/> of the file.
-        /// </summary>
-        protected CatalogNodeId NodeId { get; }
-
         /// <inheritdoc/>
         public IBuffer FileContent
         {
@@ -133,23 +123,29 @@ namespace DiscUtils.HfsPlus
                 if (this.hasCompressionAttribute)
                 {
                     // Open the compression attribute
-                    byte[] compressionAttributeData =
+                    byte[] compressionData =
                         this.Context.Attributes.Find(new AttributeKey(this.catalogInfo.FileId, "com.apple.decmpfs"));
-                    CompressionAttribute compressionAttribute = new CompressionAttribute();
-                    compressionAttribute.ReadFrom(compressionAttributeData, 0);
+
+                    var inlineAttributeHeader = new AttributeInlineData();
+                    inlineAttributeHeader.ReadFrom(compressionData, 0);
+
+                    var compressionHeader = new CompressionAttribute();
+                    compressionHeader.ReadFrom(compressionData, inlineAttributeHeader.Size);
+
+                    var compressedDataOffset = inlineAttributeHeader.Size + compressionHeader.Size;
 
                     // There are multiple possibilities, not all of which are supported by DiscUtils.HfsPlus.
                     // See FileCompressionType for a full description of all possibilities.
-                    switch (compressionAttribute.CompressionType)
+                    switch (compressionHeader.CompressionType)
                     {
                         case FileCompressionType.ZlibAttribute:
-                            if (compressionAttribute.UncompressedSize == compressionAttribute.AttrSize - 0x11)
+                            if ((uint)compressionHeader.UncompressedSize == compressedDataOffset - 0x11)
                             {
                                 // Inline, no compression, very small file
                                 MemoryStream stream = new MemoryStream(
-                                    compressionAttributeData,
-                                    CompressionAttribute.Size + 1,
-                                    (int)compressionAttribute.UncompressedSize,
+                                    compressionData,
+                                    compressedDataOffset + 1,
+                                    (int)compressionHeader.UncompressedSize,
                                     false);
 
                                 return new StreamBuffer(stream, Ownership.Dispose);
@@ -158,9 +154,9 @@ namespace DiscUtils.HfsPlus
                             {
                                 // Inline, but we must decompress
                                 MemoryStream stream = new MemoryStream(
-                                    compressionAttributeData,
-                                    CompressionAttribute.Size,
-                                    compressionAttributeData.Length - CompressionAttribute.Size,
+                                    compressionData,
+                                    compressedDataOffset,
+                                    compressionData.Length - compressedDataOffset,
                                     false);
 
                                 // The usage upstream will want to seek or set the position, the ZlibBuffer
@@ -227,20 +223,30 @@ namespace DiscUtils.HfsPlus
                             // Inline, no compression, very small file
                             return new StreamBuffer(
                                 new MemoryStream(
-                                    compressionAttributeData,
-                                    CompressionAttribute.Size,
-                                    (int)compressionAttribute.UncompressedSize,
+                                    compressionData,
+                                    compressedDataOffset + 1,
+                                    (int)compressionHeader.UncompressedSize,
                                     false),
                                 Ownership.Dispose);
 
                         default:
-                            throw new NotSupportedException($"The HfsPlus compression type {compressionAttribute.CompressionType} is not supported by DiscUtils.HfsPlus");
+                            throw new NotSupportedException($"The HfsPlus compression type {compressionHeader.CompressionType} is not supported by DiscUtils.HfsPlus");
                     }
                 }
 
                 return new FileBuffer(this.Context, fileInfo.DataFork, fileInfo.FileId);
             }
         }
+
+        /// <summary>
+        /// Gets the HFS+ context to which the file belongs.
+        /// </summary>
+        protected Context Context { get; }
+
+        /// <summary>
+        /// Gets the <see cref="CatalogNodeId"/> of the file.
+        /// </summary>
+        protected CatalogNodeId NodeId { get; }
 
         /// <inheritdoc/>
         public SparseStream CreateStream(string name)
