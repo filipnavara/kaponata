@@ -25,6 +25,7 @@
 
 using DiscUtils.Compression;
 using DiscUtils.Streams;
+using Kaponata.FileFormats.Lzfse;
 using Kaponata.FileFormats.Lzma;
 using System;
 using System.Collections.Generic;
@@ -349,7 +350,7 @@ namespace DiscUtils.Dmg
                 case RunType.LzfseCompressed:
                     this.stream.Position = run.CompOffset;
                     byte[] lzfseCompressed = StreamUtilities.ReadExact(this.stream, (int)run.CompLength);
-                    if (Lzfse.LzfseCompressor.Decompress(lzfseCompressed, this.decompBuffer) != toCopy)
+                    if (LzfseCompressor.Decompress(lzfseCompressed, this.decompBuffer) != toCopy)
                     {
                         throw new InvalidDataException("Run too short when decompressed");
                     }
