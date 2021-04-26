@@ -21,26 +21,44 @@
 // DEALINGS IN THE SOFTWARE.
 
 using DiscUtils.Streams;
+using System;
 
 namespace DiscUtils.HfsPlus
 {
-    internal class CompressionResourceBlockHead
+    /// <summary>
+    /// The haeder for an individual compression resource block.
+    /// </summary>
+    internal class CompressionResourceBlockHead : IByteArraySerializable
     {
-        public static int Size
+        /// <inheritdoc/>
+        public int Size
         {
             get { return 8; }
         }
 
+        /// <summary>
+        /// Gets the total data size.
+        /// </summary>
         public uint DataSize { get; private set; }
 
+        /// <summary>
+        /// Gets the number of blocks.
+        /// </summary>
         public uint NumBlocks { get; private set; }
 
+        /// <inheritdoc/>
         public int ReadFrom(byte[] buffer, int offset)
         {
             this.DataSize = EndianUtilities.ToUInt32BigEndian(buffer, offset);
             this.NumBlocks = EndianUtilities.ToUInt32LittleEndian(buffer, offset + 4);
 
-            return Size;
+            return this.Size;
+        }
+
+        /// <inheritdoc/>
+        public void WriteTo(byte[] buffer, int offset)
+        {
+            throw new NotImplementedException();
         }
     }
 }

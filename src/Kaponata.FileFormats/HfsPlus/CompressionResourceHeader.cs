@@ -21,24 +21,42 @@
 // DEALINGS IN THE SOFTWARE.
 
 using DiscUtils.Streams;
+using System;
 
 namespace DiscUtils.HfsPlus
 {
-    internal class CompressionResourceHeader
+    /// <summary>
+    /// The header for compression data stored in the catalog file.
+    /// </summary>
+    internal class CompressionResourceHeader : IByteArraySerializable
     {
-        public static int Size
+        /// <inheritdoc/>
+        public int Size
         {
             get { return 16; }
         }
 
+        /// <summary>
+        /// Gets the size of all data blocks.
+        /// </summary>
         public uint DataSize { get; private set; }
 
+        /// <summary>
+        /// Gets additional flags.
+        /// </summary>
         public uint Flags { get; private set; }
 
+        /// <summary>
+        /// Gets the size of the header.
+        /// </summary>
         public uint HeaderSize { get; private set; }
 
+        /// <summary>
+        /// Gets the total size. This is the sum of <see cref="DataSize"/> and <see cref="HeaderSize"/>.
+        /// </summary>
         public uint TotalSize { get; private set; }
 
+        /// <inheritdoc/>
         public int ReadFrom(byte[] buffer, int offset)
         {
             this.HeaderSize = EndianUtilities.ToUInt32BigEndian(buffer, offset);
@@ -46,7 +64,13 @@ namespace DiscUtils.HfsPlus
             this.DataSize = EndianUtilities.ToUInt32BigEndian(buffer, offset + 8);
             this.Flags = EndianUtilities.ToUInt32BigEndian(buffer, offset + 12);
 
-            return Size;
+            return this.Size;
+        }
+
+        /// <inheritdoc/>
+        public void WriteTo(byte[] buffer, int offset)
+        {
+            throw new NotImplementedException();
         }
     }
 }

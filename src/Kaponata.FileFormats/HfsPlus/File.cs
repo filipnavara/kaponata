@@ -169,8 +169,8 @@ namespace DiscUtils.HfsPlus
                             // The data is stored in the resource fork.
                             FileBuffer buffer = new FileBuffer(this.Context, fileInfo.ResourceFork, fileInfo.FileId);
                             CompressionResourceHeader compressionFork = new CompressionResourceHeader();
-                            byte[] compressionForkData = new byte[CompressionResourceHeader.Size];
-                            buffer.Read(0, compressionForkData, 0, CompressionResourceHeader.Size);
+                            byte[] compressionForkData = new byte[compressionFork.Size];
+                            buffer.Read(0, compressionForkData, 0, compressionFork.Size);
                             compressionFork.ReadFrom(compressionForkData, 0);
 
                             // The data is compressed in a number of blocks. Each block originally accounted for
@@ -179,8 +179,8 @@ namespace DiscUtils.HfsPlus
                             // the zlib header but the others don't, so we read them directly as deflate streams.
                             // For each block, we create a separate stream which we later aggregate.
                             CompressionResourceBlockHead blockHeader = new CompressionResourceBlockHead();
-                            byte[] blockHeaderData = new byte[CompressionResourceBlockHead.Size];
-                            buffer.Read(compressionFork.HeaderSize, blockHeaderData, 0, CompressionResourceBlockHead.Size);
+                            byte[] blockHeaderData = new byte[blockHeader.Size];
+                            buffer.Read(compressionFork.HeaderSize, blockHeaderData, 0, blockHeader.Size);
                             blockHeader.ReadFrom(blockHeaderData, 0);
 
                             uint blockCount = blockHeader.NumBlocks;
@@ -191,10 +191,10 @@ namespace DiscUtils.HfsPlus
                             {
                                 // Read the block data, first into a buffer and the into the class.
                                 blocks[i] = new CompressionResourceBlock();
-                                byte[] blockData = new byte[CompressionResourceBlock.Size];
+                                byte[] blockData = new byte[blocks[i].Size];
                                 buffer.Read(
-                                    compressionFork.HeaderSize + CompressionResourceBlockHead.Size +
-                                    (i * CompressionResourceBlock.Size),
+                                    compressionFork.HeaderSize + blockHeader.Size +
+                                    (i * blocks[i].Size),
                                     blockData,
                                     0,
                                     blockData.Length);
