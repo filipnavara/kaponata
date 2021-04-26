@@ -32,7 +32,7 @@ namespace DiscUtils.HfsPlus
     /// Represents the HFS+ Fork Data structure.
     /// </summary>
     /// <seealso href="https://developer.apple.com/library/archive/technotes/tn/tn1150.html#ForkDataStructure"/>
-    internal sealed class ForkData : IByteArraySerializable
+    public sealed class ForkData : IByteArraySerializable
     {
         private const int StructSize = 80;
         private uint clumpSize;

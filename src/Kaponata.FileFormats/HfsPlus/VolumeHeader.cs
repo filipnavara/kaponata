@@ -33,7 +33,7 @@ namespace DiscUtils.HfsPlus
     /// including the location of other key structures in the volume.
     /// </summary>
     /// <seealso href="https://developer.apple.com/library/archive/technotes/tn/tn1150.html#VolumeHeader"/>
-    internal sealed class VolumeHeader : IByteArraySerializable
+    public sealed class VolumeHeader : IByteArraySerializable
     {
         /// <summary>
         /// The signature of the HFS+ volume header.

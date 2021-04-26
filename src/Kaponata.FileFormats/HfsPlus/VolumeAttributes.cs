@@ -29,7 +29,7 @@ namespace DiscUtils.HfsPlus
     /// Additional volume attributes.
     /// </summary>
     [Flags]
-    internal enum VolumeAttributes : uint
+    public enum VolumeAttributes : uint
     {
         /// <summary>
         /// No bits are set.

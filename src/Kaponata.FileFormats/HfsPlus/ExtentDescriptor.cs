@@ -29,7 +29,7 @@ namespace DiscUtils.HfsPlus
     /// <summary>
     /// Describes a physical extent in the file system.
     /// </summary>
-    internal sealed class ExtentDescriptor : IByteArraySerializable
+    public sealed class ExtentDescriptor : IByteArraySerializable
     {
         /// <summary>
         /// Gets or sets the number of blocks in this extent.
