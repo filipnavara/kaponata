@@ -101,11 +101,23 @@ namespace DiscUtils.HfsPlus
             this.id = id;
         }
 
+        /// <summary>
+        /// Converts a <see cref="CatalogNodeId"/> to an <see langword="uint"/>.
+        /// </summary>
+        /// <param name="nodeId">
+        /// The <see cref="CatalogNodeId"/> to convert.
+        /// </param>
         public static implicit operator uint(CatalogNodeId nodeId)
         {
             return nodeId.id;
         }
 
+        /// <summary>
+        /// Converts a <see cref="uint"/> to a <see cref="CatalogNodeId"/>.
+        /// </summary>
+        /// <param name="id">
+        /// The ID of the catalog node.
+        /// </param>
         public static implicit operator CatalogNodeId(uint id)
         {
             return new CatalogNodeId(id);
