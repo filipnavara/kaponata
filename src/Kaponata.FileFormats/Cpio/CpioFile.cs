@@ -80,6 +80,15 @@ namespace Kaponata.FileFormats.Cpio
         {
             if (this.childStream != null)
             {
+                if (!this.stream.CanSeek)
+                {
+                    var buffer = new byte[1024];
+                    while ((await this.childStream.ReadBlockAsync(buffer, cancellationToken).ConfigureAwait(false)) > 0)
+                    {
+                        // Keep seeking
+                    }
+                }
+
                 await this.childStream.DisposeAsync();
             }
 
@@ -109,7 +118,11 @@ namespace Kaponata.FileFormats.Cpio
                     name = Encoding.UTF8.GetString(nameMemory.Slice(0, nameMemory.Length - 1).Span);
                 }
 
-                this.nextHeaderOffset = this.stream.Position + header.Filesize;
+                if (this.stream.CanSeek)
+                {
+                    this.nextHeaderOffset = this.stream.Position + header.Filesize;
+                }
+
                 this.childStream = this.stream.ReadSlice(header.Filesize);
             }
 

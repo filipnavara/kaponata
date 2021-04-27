@@ -166,15 +166,19 @@ namespace Kaponata.FileFormats.Xar
             {
                 return substream;
             }
-
-            // Make sure we're reading gzip-compressed data
-            if (entry.Encoding != "application/x-gzip")
+            else if (entry.Encoding == "application/x-gzip")
+            {
+                // Create a new deflate stream, and return it.
+                return new ZlibStream(substream, CompressionMode.Decompress, leaveOpen: false);
+            }
+            else if (entry.Encoding == "application/x-bzip2")
+            {
+                return new BZip2DecoderStream(substream, Ownership.Dispose);
+            }
+            else
             {
                 throw new InvalidDataException("Only gzip-compressed data is supported");
             }
-
-            // Create a new deflate stream, and return it.
-            return new ZlibStream(substream, CompressionMode.Decompress, leaveOpen: false);
         }
 
         /// <inheritdoc/>
