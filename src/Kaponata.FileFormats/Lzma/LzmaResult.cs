@@ -230,5 +230,27 @@ namespace Kaponata.FileFormats.Lzma
         /// </para>
         /// </remarks>
         ProgError = 11,
+
+        /// <summary>
+        /// Request to change the input file position.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// Some coders can do random access in the input file. The
+        /// initialization functions of these coders take the file size
+        /// as an argument. No other coders can return <see cref="SeekNeeded"/>.
+        /// </para>
+        /// <para>
+        /// When this value is returned, the application must seek to
+        /// the file position given in <see cref="LzmaStream.SeekPos"/>. This value
+        /// is guaranteed to never exceed the file size that was
+        /// specified at the coder initialization.
+        /// </para>
+        /// <para>
+        /// After seeking the application should read new input and
+        /// pass it normally via <see cref="LzmaStream.NextIn"/> and <see cref="LzmaStream.AvailIn"/>.
+        /// </para>
+        /// </remarks>
+        SeekNeeded = 12,
     }
 }

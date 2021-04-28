@@ -2,7 +2,6 @@
 // Copyright (c) Quamotion bv. All rights reserved.
 // </copyright>
 
-using System;
 using System.Runtime.InteropServices;
 
 namespace Kaponata.FileFormats.Lzma
@@ -57,17 +56,17 @@ namespace Kaponata.FileFormats.Lzma
     /// </para>
     /// </remarks>
     [StructLayout(LayoutKind.Sequential)]
-    internal struct LzmaStream
+    public unsafe struct LzmaStream
     {
         /// <summary>
         /// Pointer to the next input byte.
         /// </summary>
-        public IntPtr NextIn;
+        public byte* NextIn;
 
         /// <summary>
         /// Number of available input bytes in next_in.
         /// </summary>
-        public uint AvailIn;
+        public nuint AvailIn;
 
         /// <summary>
         /// Total number of bytes read by liblzma.
@@ -77,12 +76,12 @@ namespace Kaponata.FileFormats.Lzma
         /// <summary>
         /// Pointer to the next output position.
         /// </summary>
-        public IntPtr NextOut;
+        public byte* NextOut;
 
         /// <summary>
         /// Amount of free space in next_out.
         /// </summary>
-        public uint AvailOut;
+        public nuint AvailOut;
 
         /// <summary>
         /// Total number of bytes written by liblzma.
@@ -96,30 +95,62 @@ namespace Kaponata.FileFormats.Lzma
         /// In most cases this is NULL which makes liblzma use
         /// the standard malloc() and free().
         /// </remarks>
-        public IntPtr Allocator;
+        public void* Allocator;
 
         /// <summary>
         /// Internal state is not visible to applications.
         /// </summary>
 #pragma warning disable SA1214 // Readonly fields must appear before non-readonly fields
-        public readonly IntPtr InternalState;
-#pragma warning restore SA1214 // Readonly fields must appear before non-readonly fields
+        public readonly void* InternalState;
 
         /// <summary>
-        /// Reserved space to allow possible future extensions without
-        /// breaking the ABI. Excluding the initialization of this structure,
-        /// you should not touch these, because the names of these variables
-        /// may change.
+        /// This is the first pointer field of the reserved space of the <see cref="LzmaStream"/> struct.
         /// </summary>
-        private readonly IntPtr reservedPtr1;
-        private readonly IntPtr reservedPtr2;
-        private readonly IntPtr reservedPtr3;
-        private readonly IntPtr reservedPtr4;
-        private readonly ulong reservedInt1;
-        private readonly ulong reservedInt2;
-        private readonly uint reservedInt3;
-        private readonly uint reservedInt4;
-        private readonly uint reservedEnum1;
-        private readonly uint reservedEnum2;
+        public readonly void* ReservedPtr1;
+
+        /// <summary>
+        /// This is the second pointer field of the reserved space of the <see cref="LzmaStream"/> struct.
+        /// </summary>
+        public readonly void* ReservedPtr2;
+
+        /// <summary>
+        /// This is the third pointer field of the reserved space of the <see cref="LzmaStream"/> struct.
+        /// </summary>
+        public readonly void* ReservedPtr3;
+
+        /// <summary>
+        /// This is the fourth pointer field of the reserved space of the <see cref="LzmaStream"/> struct.
+        /// </summary>
+        public readonly void* ReservedPtr4;
+
+        /// <summary>
+        /// New seek input position for <see cref="LzmaResult.SeekNeeded"/>.
+        /// </summary>
+        public ulong SeekPos;
+
+        /// <summary>
+        /// This is the second integer field of the reserved space of the <see cref="LzmaStream"/> struct.
+        /// </summary>
+        public readonly ulong ReservedInt2;
+
+        /// <summary>
+        /// This is the third integer field of the reserved space of the <see cref="LzmaStream"/> struct.
+        /// </summary>
+        public readonly nuint ReservedInt3;
+
+        /// <summary>
+        /// This is the fourth integer field of the reserved space of the <see cref="LzmaStream"/> struct.
+        /// </summary>
+        public readonly nuint ReservedInt4;
+
+        /// <summary>
+        /// This is the first enum field of the reserved space of the <see cref="LzmaStream"/> struct.
+        /// </summary>
+        public readonly uint ReservedEnum1;
+
+        /// <summary>
+        /// This is the second enum field of the reserved space of the <see cref="LzmaStream"/> struct.
+        /// </summary>
+        public readonly uint ReservedEnum2;
     }
 }

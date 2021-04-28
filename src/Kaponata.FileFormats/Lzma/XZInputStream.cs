@@ -30,7 +30,7 @@ namespace Kaponata.FileFormats.Lzma
     /// <summary>
     /// Represents a <see cref="Stream"/> which can decompress xz-compressed data.
     /// </summary>
-    public class XZInputStream : Stream
+    public unsafe class XZInputStream : Stream
     {
         /// <summary>
         /// The size of the buffer.
@@ -38,7 +38,6 @@ namespace Kaponata.FileFormats.Lzma
         private const int BufSize = 512;
 
         private readonly Stream innerStream;
-        private readonly Ownership ownership;
 
         private readonly IntPtr inbuf;
         private readonly IntPtr outbuf;
@@ -89,8 +88,8 @@ namespace Kaponata.FileFormats.Lzma
             this.outbuf = Marshal.AllocHGlobal(BufSize);
 
             this.lzmaStream.AvailIn = 0;
-            this.lzmaStream.NextIn = this.inbuf;
-            this.lzmaStream.NextOut = this.outbuf;
+            this.lzmaStream.NextIn = (byte*)this.inbuf;
+            this.lzmaStream.NextOut = (byte*)this.outbuf;
             this.lzmaStream.AvailOut = BufSize;
 
             LzmaException.ThrowOnError(ret);
@@ -233,7 +232,7 @@ namespace Kaponata.FileFormats.Lzma
             this.EnsureNotDisposed();
 
             // Make sure data is available in the output buffer.
-            while (this.lzmaStream.AvailOut == BufSize - this.outbufProcessed)
+            while ((int)this.lzmaStream.AvailOut == BufSize - this.outbufProcessed)
             {
                 LzmaAction action = LzmaAction.Run;
 
@@ -248,7 +247,7 @@ namespace Kaponata.FileFormats.Lzma
                 {
                     Span<byte> inputBuffer = new Span<byte>((void*)this.inbuf, BufSize);
                     this.lzmaStream.AvailIn = (uint)this.innerStream.Read(inputBuffer);
-                    this.lzmaStream.NextIn = this.inbuf;
+                    this.lzmaStream.NextIn = (byte*)this.inbuf;
 
                     if (this.lzmaStream.AvailIn == 0)
                     {
