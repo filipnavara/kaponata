@@ -313,10 +313,10 @@ namespace Kaponata.FileFormats.Lzma
                 LzmaResult ret;
                 fixed (byte* inbuf = &buffer[offset])
                 {
-                    this.lzmaStream.NextIn = (IntPtr)inbuf;
+                    this.lzmaStream.NextIn = inbuf;
                     fixed (byte* outbuf = &this.outbuf[BufSize - this.lzmaStream.AvailOut])
                     {
-                        this.lzmaStream.NextOut = (IntPtr)outbuf;
+                        this.lzmaStream.NextOut = outbuf;
                         ret = NativeMethods.lzma_code(ref this.lzmaStream, LzmaAction.Run);
                     }
 
@@ -342,14 +342,14 @@ namespace Kaponata.FileFormats.Lzma
         protected override void Dispose(bool disposing)
         {
             // finish encoding only if all input has been successfully processed
-            if (this.lzmaStream.InternalState != IntPtr.Zero && this.lzmaStream.AvailIn == 0)
+            if (this.lzmaStream.InternalState != null && this.lzmaStream.AvailIn == 0)
             {
                 LzmaResult ret;
                 do
                 {
                     fixed (byte* outbuf = &this.outbuf[BufSize - (int)this.lzmaStream.AvailOut])
                     {
-                        this.lzmaStream.NextOut = (IntPtr)outbuf;
+                        this.lzmaStream.NextOut = outbuf;
                         ret = NativeMethods.lzma_code(ref this.lzmaStream, LzmaAction.Finish);
                     }
 

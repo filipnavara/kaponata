@@ -22,7 +22,6 @@
 // THE SOFTWARE.
 
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
 
@@ -31,17 +30,19 @@ namespace Kaponata.FileFormats.Lzma
     /// <summary>
     /// Represents a <see cref="Stream"/> which can decompress xz-compressed data.
     /// </summary>
-    public class XZInputStream : Stream
+    public unsafe class XZInputStream : Stream
     {
         /// <summary>
         /// The size of the buffer.
         /// </summary>
         private const int BufSize = 512;
 
-        private readonly List<byte> internalBuffer = new List<byte>();
         private readonly Stream innerStream;
+
         private readonly IntPtr inbuf;
         private readonly IntPtr outbuf;
+        private int outbufProcessed;
+
         private LzmaStream lzmaStream;
         private long length;
         private long position;
@@ -87,7 +88,8 @@ namespace Kaponata.FileFormats.Lzma
             this.outbuf = Marshal.AllocHGlobal(BufSize);
 
             this.lzmaStream.AvailIn = 0;
-            this.lzmaStream.NextOut = this.outbuf;
+            this.lzmaStream.NextIn = (byte*)this.inbuf;
+            this.lzmaStream.NextOut = (byte*)this.outbuf;
             this.lzmaStream.AvailOut = BufSize;
 
             LzmaException.ThrowOnError(ret);
@@ -225,22 +227,27 @@ namespace Kaponata.FileFormats.Lzma
         /// The number of bytes to read.
         /// </param>
         /// <returns>byte read or -1 on end of stream.</returns>
-        public override int Read(byte[] buffer, int offset, int count)
+        public unsafe override int Read(byte[] buffer, int offset, int count)
         {
             this.EnsureNotDisposed();
 
-            var action = LzmaAction.Run;
-
-            var readBuf = new byte[BufSize];
-            var outManagedBuf = new byte[BufSize];
-
-            while (this.internalBuffer.Count < count)
+            // Make sure data is available in the output buffer.
+            while ((int)this.lzmaStream.AvailOut == BufSize - this.outbufProcessed)
             {
+                LzmaAction action = LzmaAction.Run;
+
+                if (this.lzmaStream.AvailOut == 0)
+                {
+                    this.lzmaStream.AvailOut = BufSize;
+                    this.lzmaStream.NextOut = (byte*)this.outbuf;
+                    this.outbufProcessed = 0;
+                }
+
                 if (this.lzmaStream.AvailIn == 0)
                 {
-                    this.lzmaStream.AvailIn = (uint)this.innerStream.Read(readBuf, 0, readBuf.Length);
-                    Marshal.Copy(readBuf, 0, this.inbuf, (int)this.lzmaStream.AvailIn);
-                    this.lzmaStream.NextIn = this.inbuf;
+                    Span<byte> inputBuffer = new Span<byte>((void*)this.inbuf, BufSize);
+                    this.lzmaStream.AvailIn = (uint)this.innerStream.Read(inputBuffer);
+                    this.lzmaStream.NextIn = (byte*)this.inbuf;
 
                     if (this.lzmaStream.AvailIn == 0)
                     {
@@ -248,49 +255,33 @@ namespace Kaponata.FileFormats.Lzma
                     }
                 }
 
+                // Decode the data.
                 var ret = NativeMethods.lzma_code(ref this.lzmaStream, action);
 
-                if (this.lzmaStream.AvailOut == 0 || ret == LzmaResult.StreamEnd)
+                if (ret == LzmaResult.StreamEnd)
                 {
-                    var writeSize = BufSize - (int)this.lzmaStream.AvailOut;
-                    Marshal.Copy(this.outbuf, outManagedBuf, 0, writeSize);
-
-                    this.internalBuffer.AddRange(outManagedBuf);
-                    var tail = outManagedBuf.Length - writeSize;
-                    this.internalBuffer.RemoveRange(this.internalBuffer.Count - tail, tail);
-
-                    this.lzmaStream.NextOut = this.outbuf;
-                    this.lzmaStream.AvailOut = BufSize;
+                    break;
                 }
-
-                if (ret != LzmaResult.OK)
+                else if (ret != LzmaResult.OK)
                 {
-                    if (ret == LzmaResult.StreamEnd)
-                    {
-                        break;
-                    }
-
                     NativeMethods.lzma_end(ref this.lzmaStream);
-
                     LzmaException.ThrowOnError(ret);
                 }
             }
 
-            if (this.internalBuffer.Count >= count)
-            {
-                this.internalBuffer.CopyTo(0, buffer, offset, count);
-                this.internalBuffer.RemoveRange(0, count);
-                this.position += count;
-                return count;
-            }
-            else
-            {
-                var intBufLength = this.internalBuffer.Count;
-                this.internalBuffer.CopyTo(0, buffer, offset, intBufLength);
-                this.internalBuffer.Clear();
-                this.position += intBufLength;
-                return intBufLength;
-            }
+            // Get the amount of data which can be copied
+            var canRead = Math.Min(
+                BufSize - (int)this.lzmaStream.AvailOut - this.outbufProcessed,
+                count);
+
+            var source = new Span<byte>((byte*)this.outbuf + this.outbufProcessed, canRead);
+            var target = new Span<byte>(buffer, offset, canRead);
+            source.CopyTo(target);
+
+            this.outbufProcessed += canRead;
+            this.position += canRead;
+
+            return canRead;
         }
 
         /// <inheritdoc/>
