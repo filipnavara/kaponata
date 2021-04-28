@@ -22,8 +22,8 @@
 // THE SOFTWARE.
 
 using System;
+using System.Buffers;
 using System.IO;
-using System.Runtime.InteropServices;
 
 namespace Kaponata.FileFormats.Lzma
 {
@@ -38,12 +38,16 @@ namespace Kaponata.FileFormats.Lzma
         private const int BufSize = 512;
 
         private readonly Stream innerStream;
+        private readonly XZDecompressor decompressor;
 
-        private readonly IntPtr inbuf;
-        private readonly IntPtr outbuf;
-        private int outbufProcessed;
+        private byte[] inbuf = new byte[BufSize];
+        private int inbufAvailable = 0;
+        private int inbufProcessed = 0;
 
-        private LzmaStream lzmaStream;
+        private byte[] outbuf = new byte[BufSize];
+        private int outbufProcessed = BufSize;
+        private int outbufAvailable = BufSize;
+
         private long length;
         private long position;
         private bool disposed;
@@ -59,40 +63,8 @@ namespace Kaponata.FileFormats.Lzma
         /// </param>
         public XZInputStream(Stream stream, LzmaFormat format = LzmaFormat.Auto)
         {
-            if (stream == null)
-            {
-                throw new ArgumentNullException(nameof(stream));
-            }
-
-            this.innerStream = stream;
-
-            LzmaResult ret;
-
-            switch (format)
-            {
-                case LzmaFormat.Lzma:
-                    ret = NativeMethods.lzma_alone_decoder(ref this.lzmaStream, ulong.MaxValue);
-                    break;
-
-                case LzmaFormat.Xz:
-                    ret = NativeMethods.lzma_stream_decoder(ref this.lzmaStream, ulong.MaxValue, LzmaDecodeFlags.Concatenated);
-                    break;
-
-                default:
-                case LzmaFormat.Auto:
-                    ret = NativeMethods.lzma_auto_decoder(ref this.lzmaStream, ulong.MaxValue, LzmaDecodeFlags.Concatenated);
-                    break;
-            }
-
-            this.inbuf = Marshal.AllocHGlobal(BufSize);
-            this.outbuf = Marshal.AllocHGlobal(BufSize);
-
-            this.lzmaStream.AvailIn = 0;
-            this.lzmaStream.NextIn = (byte*)this.inbuf;
-            this.lzmaStream.NextOut = (byte*)this.outbuf;
-            this.lzmaStream.AvailOut = BufSize;
-
-            LzmaException.ThrowOnError(ret);
+            this.innerStream = stream ?? throw new ArgumentNullException(nameof(stream));
+            this.decompressor = new XZDecompressor(format);
         }
 
         /// <inheritdoc/>
@@ -232,49 +204,40 @@ namespace Kaponata.FileFormats.Lzma
             this.EnsureNotDisposed();
 
             // Make sure data is available in the output buffer.
-            while ((int)this.lzmaStream.AvailOut == BufSize - this.outbufProcessed)
+            while (this.outbufAvailable == this.outbufProcessed)
             {
-                LzmaAction action = LzmaAction.Run;
-
-                if (this.lzmaStream.AvailOut == 0)
+                if (this.outbufAvailable == BufSize)
                 {
-                    this.lzmaStream.AvailOut = BufSize;
-                    this.lzmaStream.NextOut = (byte*)this.outbuf;
+                    this.outbufAvailable = 0;
                     this.outbufProcessed = 0;
                 }
 
-                if (this.lzmaStream.AvailIn == 0)
+                if (this.inbufProcessed == this.inbufAvailable)
                 {
-                    Span<byte> inputBuffer = new Span<byte>((void*)this.inbuf, BufSize);
-                    this.lzmaStream.AvailIn = (uint)this.innerStream.Read(inputBuffer);
-                    this.lzmaStream.NextIn = (byte*)this.inbuf;
-
-                    if (this.lzmaStream.AvailIn == 0)
-                    {
-                        action = LzmaAction.Finish;
-                    }
+                    this.inbufProcessed = 0;
+                    this.inbufAvailable = this.innerStream.Read(this.inbuf, 0, BufSize);
                 }
 
-                // Decode the data.
-                var ret = NativeMethods.lzma_code(ref this.lzmaStream, action);
+                if (this.decompressor.Decompress(
+                    source: new Span<byte>(this.inbuf, this.inbufProcessed, this.inbufAvailable),
+                    destination: new Span<byte>(this.outbuf, this.outbufAvailable, BufSize - this.outbufAvailable),
+                    out int bytesConsumed,
+                    out int bytesWritten) == OperationStatus.Done
+                    && bytesWritten == 0)
+                {
+                    return 0;
+                }
 
-                if (ret == LzmaResult.StreamEnd)
-                {
-                    break;
-                }
-                else if (ret != LzmaResult.OK)
-                {
-                    NativeMethods.lzma_end(ref this.lzmaStream);
-                    LzmaException.ThrowOnError(ret);
-                }
+                this.outbufAvailable += bytesWritten;
+                this.inbufProcessed += bytesConsumed;
             }
 
             // Get the amount of data which can be copied
             var canRead = Math.Min(
-                BufSize - (int)this.lzmaStream.AvailOut - this.outbufProcessed,
+                this.outbufAvailable - this.outbufProcessed,
                 count);
 
-            var source = new Span<byte>((byte*)this.outbuf + this.outbufProcessed, canRead);
+            var source = new Span<byte>(this.outbuf, this.outbufProcessed, canRead);
             var target = new Span<byte>(buffer, offset, canRead);
             source.CopyTo(target);
 
@@ -300,10 +263,7 @@ namespace Kaponata.FileFormats.Lzma
                 return;
             }
 
-            NativeMethods.lzma_end(ref this.lzmaStream);
-
-            Marshal.FreeHGlobal(this.inbuf);
-            Marshal.FreeHGlobal(this.outbuf);
+            this.decompressor.Dispose();
 
             base.Dispose(disposing);
 
