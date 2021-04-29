@@ -78,7 +78,7 @@ namespace Kaponata.FileFormats.Tests.Dmg
             using (var content = file.OpenContent(null, Ownership.None))
             {
                 var md5 = MD5.Create();
-                Assert.Equal("3h2DQaGT4NGHuCdi36jCNg==", Convert.ToBase64String(md5.ComputeHash(content)));
+                Assert.Equal("hrgZiq8vP8ctBpxrMxyDQw==", Convert.ToBase64String(md5.ComputeHash(content)));
             }
         }
 

@@ -21,6 +21,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+using DiscUtils.Streams;
 using System;
 using System.IO;
 using System.Runtime.InteropServices;
@@ -38,6 +39,7 @@ namespace Kaponata.FileFormats.Lzma
         private const int BufSize = 512;
 
         private readonly Stream innerStream;
+        private readonly Ownership ownership;
 
         private readonly IntPtr inbuf;
         private readonly IntPtr outbuf;
@@ -57,14 +59,13 @@ namespace Kaponata.FileFormats.Lzma
         /// <param name="format">
         /// The lzma formats which are supported.
         /// </param>
-        public XZInputStream(Stream stream, LzmaFormat format = LzmaFormat.Auto)
+        /// <param name="ownership">
+        /// Determines whether the underlying stream should be disposed of, or not.
+        /// </param>
+        public XZInputStream(Stream stream, LzmaFormat format = LzmaFormat.Auto, Ownership ownership = Ownership.None)
         {
-            if (stream == null)
-            {
-                throw new ArgumentNullException(nameof(stream));
-            }
-
-            this.innerStream = stream;
+            this.innerStream = stream ?? throw new ArgumentNullException(nameof(stream));
+            this.ownership = ownership;
 
             LzmaResult ret;
 
@@ -306,6 +307,11 @@ namespace Kaponata.FileFormats.Lzma
             Marshal.FreeHGlobal(this.outbuf);
 
             base.Dispose(disposing);
+
+            if (this.ownership == Ownership.Dispose)
+            {
+                this.innerStream.Dispose();
+            }
 
             this.disposed = true;
         }
