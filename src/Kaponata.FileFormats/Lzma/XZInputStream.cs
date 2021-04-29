@@ -22,6 +22,7 @@
 // THE SOFTWARE.
 
 using DiscUtils.Streams;
+using Microsoft;
 using System;
 using System.IO;
 using System.Runtime.InteropServices;
@@ -31,7 +32,7 @@ namespace Kaponata.FileFormats.Lzma
     /// <summary>
     /// Represents a <see cref="Stream"/> which can decompress xz-compressed data.
     /// </summary>
-    public unsafe class XZInputStream : Stream
+    public unsafe class XZInputStream : Stream, IDisposableObservable
     {
         /// <summary>
         /// The size of the buffer.
@@ -48,7 +49,6 @@ namespace Kaponata.FileFormats.Lzma
         private LzmaStream lzmaStream;
         private long length;
         private long position;
-        private bool disposed;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="XZInputStream"/> class.
@@ -97,11 +97,14 @@ namespace Kaponata.FileFormats.Lzma
         }
 
         /// <inheritdoc/>
+        public bool IsDisposed { get; private set; }
+
+        /// <inheritdoc/>
         public override bool CanRead
         {
             get
             {
-                this.EnsureNotDisposed();
+                Verify.NotDisposed(this);
                 return true;
             }
         }
@@ -111,7 +114,7 @@ namespace Kaponata.FileFormats.Lzma
         {
             get
             {
-                this.EnsureNotDisposed();
+                Verify.NotDisposed(this);
                 return false;
             }
         }
@@ -121,7 +124,7 @@ namespace Kaponata.FileFormats.Lzma
         {
             get
             {
-                this.EnsureNotDisposed();
+                Verify.NotDisposed(this);
                 return false;
             }
         }
@@ -131,7 +134,7 @@ namespace Kaponata.FileFormats.Lzma
         {
             get
             {
-                this.EnsureNotDisposed();
+                Verify.NotDisposed(this);
 
                 const int streamFooterSize = 12;
 
@@ -180,13 +183,13 @@ namespace Kaponata.FileFormats.Lzma
         {
             get
             {
-                this.EnsureNotDisposed();
+                Verify.NotDisposed(this);
                 return this.position;
             }
 
             set
             {
-                this.EnsureNotDisposed();
+                Verify.NotDisposed(this);
                 throw new NotSupportedException("XZ Stream does not support setting position");
             }
         }
@@ -194,7 +197,7 @@ namespace Kaponata.FileFormats.Lzma
         /// <inheritdoc/>
         public override void Flush()
         {
-            this.EnsureNotDisposed();
+            Verify.NotDisposed(this);
 
             throw new NotSupportedException("XZ Stream does not support flush");
         }
@@ -202,7 +205,7 @@ namespace Kaponata.FileFormats.Lzma
         /// <inheritdoc/>
         public override long Seek(long offset, SeekOrigin origin)
         {
-            this.EnsureNotDisposed();
+            Verify.NotDisposed(this);
 
             throw new NotSupportedException("XZ Stream does not support seek");
         }
@@ -210,7 +213,7 @@ namespace Kaponata.FileFormats.Lzma
         /// <inheritdoc/>
         public override void SetLength(long value)
         {
-            this.EnsureNotDisposed();
+            Verify.NotDisposed(this);
 
             throw new NotSupportedException("XZ Stream does not support setting length");
         }
@@ -230,7 +233,7 @@ namespace Kaponata.FileFormats.Lzma
         /// <returns>byte read or -1 on end of stream.</returns>
         public unsafe override int Read(byte[] buffer, int offset, int count)
         {
-            this.EnsureNotDisposed();
+            Verify.NotDisposed(this);
 
             // Make sure data is available in the output buffer.
             while ((int)this.lzmaStream.AvailOut == BufSize - this.outbufProcessed)
@@ -288,7 +291,7 @@ namespace Kaponata.FileFormats.Lzma
         /// <inheritdoc/>
         public override void Write(byte[] buffer, int offset, int count)
         {
-            this.EnsureNotDisposed();
+            Verify.NotDisposed(this);
 
             throw new NotSupportedException("XZ Input stream does not support writing");
         }
@@ -296,7 +299,7 @@ namespace Kaponata.FileFormats.Lzma
         /// <inheritdoc/>
         protected override void Dispose(bool disposing)
         {
-            if (this.disposed)
+            if (this.IsDisposed)
             {
                 return;
             }
@@ -313,15 +316,7 @@ namespace Kaponata.FileFormats.Lzma
                 this.innerStream.Dispose();
             }
 
-            this.disposed = true;
-        }
-
-        private void EnsureNotDisposed()
-        {
-            if (this.disposed)
-            {
-                throw new ObjectDisposedException(nameof(XZInputStream));
-            }
+            this.IsDisposed = true;
         }
     }
 }
