@@ -2,6 +2,7 @@
 // Copyright (c) Quamotion bv. All rights reserved.
 // </copyright>
 
+using Microsoft;
 using System;
 using System.Buffers;
 
@@ -10,10 +11,9 @@ namespace Kaponata.FileFormats.Lzma
     /// <summary>
     /// Provides XZ and lzma decompression methods. The methods decompress in a single pass without using a <see cref="XZInputStream"/> instance.
     /// </summary>
-    public class XZDecompressor : IDisposable
+    public class XZDecompressor : IDisposable, IDisposableObservable
     {
         private LzmaStream lzmaStream;
-        private bool disposed;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="XZDecompressor" /> class.
@@ -44,6 +44,9 @@ namespace Kaponata.FileFormats.Lzma
             LzmaException.ThrowOnError(ret);
         }
 
+        /// <inheritdoc/>
+        public bool IsDisposed { get; private set; }
+
         /// <summary>
         /// Decompresses data that was compressed using the xz or lzma algorithm.
         /// </summary>
@@ -64,7 +67,7 @@ namespace Kaponata.FileFormats.Lzma
         /// </returns>
         public unsafe OperationStatus Decompress(ReadOnlySpan<byte> source, Span<byte> destination, out int bytesConsumed, out int bytesWritten)
         {
-            this.EnsureNotDisposed();
+            Verify.NotDisposed(this);
 
             // Make sure data is available in the output buffer.
             fixed (byte* sourcePtr = source)
@@ -104,22 +107,14 @@ namespace Kaponata.FileFormats.Lzma
         /// <inheritdoc/>
         public void Dispose()
         {
-            if (this.disposed)
+            if (this.IsDisposed)
             {
                 return;
             }
 
             NativeMethods.lzma_end(ref this.lzmaStream);
 
-            this.disposed = true;
-        }
-
-        private void EnsureNotDisposed()
-        {
-            if (this.disposed)
-            {
-                throw new ObjectDisposedException(nameof(XZInputStream));
-            }
+            this.IsDisposed = true;
         }
     }
 }
