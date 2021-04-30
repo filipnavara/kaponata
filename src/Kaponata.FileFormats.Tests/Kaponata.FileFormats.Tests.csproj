@@ -4,11 +4,12 @@
     <TargetFramework>net5.0</TargetFramework>
 
     <IsPackable>false</IsPackable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Kaponata.FileFormats\Kaponata.FileFormats.csproj" />
-    <PackageReference Include="Kaponata.FileFormats.TestAssets" Version="0.3.11" />
+    <PackageReference Include="Kaponata.FileFormats.TestAssets" Version="0.3.14" />
     <PackageReference Include="DiscUtils.Fat" Version="0.16.0-alpha0051" />
   </ItemGroup>
 

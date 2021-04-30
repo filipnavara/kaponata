@@ -80,7 +80,7 @@ namespace Kaponata.FileFormats.Tests.Dmg
                 // The file contents will change every time the test assets package is re-generated,
                 // we probably need something more stable here.
                 var md5 = MD5.Create();
-                Assert.Equal("Ae6n3ZQ2kyHWxB3zQ9XTiQ==", Convert.ToBase64String(md5.ComputeHash(content)));
+                Assert.Equal("hrgZiq8vP8ctBpxrMxyDQw==", Convert.ToBase64String(md5.ComputeHash(content)));
             }
         }
 

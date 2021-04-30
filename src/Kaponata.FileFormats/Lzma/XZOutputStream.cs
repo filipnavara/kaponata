@@ -21,6 +21,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+using Microsoft;
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -32,7 +33,7 @@ namespace Kaponata.FileFormats.Lzma
     /// <summary>
     /// A <see cref="Stream"/> which writes XZ (or LZMA)-compressed data.
     /// </summary>
-    public unsafe class XZOutputStream : Stream
+    public unsafe class XZOutputStream : Stream, IDisposableObservable
     {
         /// <summary>
         /// Default compression preset.
@@ -52,7 +53,6 @@ namespace Kaponata.FileFormats.Lzma
         private readonly bool leaveOpen;
         private readonly byte[] outbuf;
         private LzmaStream lzmaStream;
-        private bool disposed;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="XZOutputStream"/> class.
@@ -183,7 +183,7 @@ namespace Kaponata.FileFormats.Lzma
         {
             get
             {
-                this.EnsureNotDisposed();
+                Verify.NotDisposed(this);
                 return false;
             }
         }
@@ -193,7 +193,7 @@ namespace Kaponata.FileFormats.Lzma
         {
             get
             {
-                this.EnsureNotDisposed();
+                Verify.NotDisposed(this);
                 return false;
             }
         }
@@ -203,7 +203,7 @@ namespace Kaponata.FileFormats.Lzma
         {
             get
             {
-                this.EnsureNotDisposed();
+                Verify.NotDisposed(this);
                 return true;
             }
         }
@@ -213,7 +213,7 @@ namespace Kaponata.FileFormats.Lzma
         {
             get
             {
-                this.EnsureNotDisposed();
+                Verify.NotDisposed(this);
                 throw new NotSupportedException();
             }
         }
@@ -223,16 +223,19 @@ namespace Kaponata.FileFormats.Lzma
         {
             get
             {
-                this.EnsureNotDisposed();
+                Verify.NotDisposed(this);
                 throw new NotSupportedException();
             }
 
             set
             {
-                this.EnsureNotDisposed();
+                Verify.NotDisposed(this);
                 throw new NotSupportedException();
             }
         }
+
+        /// <inheritdoc/>
+        public bool IsDisposed { get; private set; }
 
         /// <summary>
         /// Single-call buffer encoding.
@@ -265,35 +268,35 @@ namespace Kaponata.FileFormats.Lzma
         /// <inheritdoc/>
         public override void Flush()
         {
-            this.EnsureNotDisposed();
+            Verify.NotDisposed(this);
             throw new NotSupportedException();
         }
 
         /// <inheritdoc/>
         public override long Seek(long offset, SeekOrigin origin)
         {
-            this.EnsureNotDisposed();
+            Verify.NotDisposed(this);
             throw new NotSupportedException();
         }
 
         /// <inheritdoc/>
         public override void SetLength(long value)
         {
-            this.EnsureNotDisposed();
+            Verify.NotDisposed(this);
             throw new NotSupportedException();
         }
 
         /// <inheritdoc/>
         public override int Read(byte[] buffer, int offset, int count)
         {
-            this.EnsureNotDisposed();
+            Verify.NotDisposed(this);
             throw new NotSupportedException();
         }
 
         /// <inheritdoc/>
         public override void Write(byte[] buffer, int offset, int count)
         {
-            this.EnsureNotDisposed();
+            Verify.NotDisposed(this);
 
             if (count == 0)
             {
@@ -313,10 +316,10 @@ namespace Kaponata.FileFormats.Lzma
                 LzmaResult ret;
                 fixed (byte* inbuf = &buffer[offset])
                 {
-                    this.lzmaStream.NextIn = (IntPtr)inbuf;
+                    this.lzmaStream.NextIn = inbuf;
                     fixed (byte* outbuf = &this.outbuf[BufSize - this.lzmaStream.AvailOut])
                     {
-                        this.lzmaStream.NextOut = (IntPtr)outbuf;
+                        this.lzmaStream.NextOut = outbuf;
                         ret = NativeMethods.lzma_code(ref this.lzmaStream, LzmaAction.Run);
                     }
 
@@ -342,14 +345,14 @@ namespace Kaponata.FileFormats.Lzma
         protected override void Dispose(bool disposing)
         {
             // finish encoding only if all input has been successfully processed
-            if (this.lzmaStream.InternalState != IntPtr.Zero && this.lzmaStream.AvailIn == 0)
+            if (this.lzmaStream.InternalState != null && this.lzmaStream.AvailIn == 0)
             {
                 LzmaResult ret;
                 do
                 {
                     fixed (byte* outbuf = &this.outbuf[BufSize - (int)this.lzmaStream.AvailOut])
                     {
-                        this.lzmaStream.NextOut = (IntPtr)outbuf;
+                        this.lzmaStream.NextOut = outbuf;
                         ret = NativeMethods.lzma_code(ref this.lzmaStream, LzmaAction.Finish);
                     }
 
@@ -378,18 +381,7 @@ namespace Kaponata.FileFormats.Lzma
 
             base.Dispose(disposing);
 
-            this.disposed = true;
-        }
-
-        /// <summary>
-        /// Throws an exception if this stream is disposed of.
-        /// </summary>
-        private void EnsureNotDisposed()
-        {
-            if (this.disposed)
-            {
-                throw new ObjectDisposedException(nameof(XZOutputStream));
-            }
+            this.IsDisposed = true;
         }
     }
 }

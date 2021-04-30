@@ -21,8 +21,9 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+using DiscUtils.Streams;
+using Microsoft;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
 
@@ -31,21 +32,23 @@ namespace Kaponata.FileFormats.Lzma
     /// <summary>
     /// Represents a <see cref="Stream"/> which can decompress xz-compressed data.
     /// </summary>
-    public class XZInputStream : Stream
+    public unsafe class XZInputStream : Stream, IDisposableObservable
     {
         /// <summary>
         /// The size of the buffer.
         /// </summary>
         private const int BufSize = 512;
 
-        private readonly List<byte> internalBuffer = new List<byte>();
         private readonly Stream innerStream;
+        private readonly Ownership ownership;
+
         private readonly IntPtr inbuf;
         private readonly IntPtr outbuf;
+        private int outbufProcessed;
+
         private LzmaStream lzmaStream;
         private long length;
         private long position;
-        private bool disposed;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="XZInputStream"/> class.
@@ -56,14 +59,13 @@ namespace Kaponata.FileFormats.Lzma
         /// <param name="format">
         /// The lzma formats which are supported.
         /// </param>
-        public XZInputStream(Stream stream, LzmaFormat format = LzmaFormat.Auto)
+        /// <param name="ownership">
+        /// Determines whether the underlying stream should be disposed of, or not.
+        /// </param>
+        public XZInputStream(Stream stream, LzmaFormat format = LzmaFormat.Auto, Ownership ownership = Ownership.None)
         {
-            if (stream == null)
-            {
-                throw new ArgumentNullException(nameof(stream));
-            }
-
-            this.innerStream = stream;
+            this.innerStream = stream ?? throw new ArgumentNullException(nameof(stream));
+            this.ownership = ownership;
 
             LzmaResult ret;
 
@@ -87,18 +89,22 @@ namespace Kaponata.FileFormats.Lzma
             this.outbuf = Marshal.AllocHGlobal(BufSize);
 
             this.lzmaStream.AvailIn = 0;
-            this.lzmaStream.NextOut = this.outbuf;
+            this.lzmaStream.NextIn = (byte*)this.inbuf;
+            this.lzmaStream.NextOut = (byte*)this.outbuf;
             this.lzmaStream.AvailOut = BufSize;
 
             LzmaException.ThrowOnError(ret);
         }
 
         /// <inheritdoc/>
+        public bool IsDisposed { get; private set; }
+
+        /// <inheritdoc/>
         public override bool CanRead
         {
             get
             {
-                this.EnsureNotDisposed();
+                Verify.NotDisposed(this);
                 return true;
             }
         }
@@ -108,7 +114,7 @@ namespace Kaponata.FileFormats.Lzma
         {
             get
             {
-                this.EnsureNotDisposed();
+                Verify.NotDisposed(this);
                 return false;
             }
         }
@@ -118,7 +124,7 @@ namespace Kaponata.FileFormats.Lzma
         {
             get
             {
-                this.EnsureNotDisposed();
+                Verify.NotDisposed(this);
                 return false;
             }
         }
@@ -128,7 +134,7 @@ namespace Kaponata.FileFormats.Lzma
         {
             get
             {
-                this.EnsureNotDisposed();
+                Verify.NotDisposed(this);
 
                 const int streamFooterSize = 12;
 
@@ -177,13 +183,13 @@ namespace Kaponata.FileFormats.Lzma
         {
             get
             {
-                this.EnsureNotDisposed();
+                Verify.NotDisposed(this);
                 return this.position;
             }
 
             set
             {
-                this.EnsureNotDisposed();
+                Verify.NotDisposed(this);
                 throw new NotSupportedException("XZ Stream does not support setting position");
             }
         }
@@ -191,7 +197,7 @@ namespace Kaponata.FileFormats.Lzma
         /// <inheritdoc/>
         public override void Flush()
         {
-            this.EnsureNotDisposed();
+            Verify.NotDisposed(this);
 
             throw new NotSupportedException("XZ Stream does not support flush");
         }
@@ -199,7 +205,7 @@ namespace Kaponata.FileFormats.Lzma
         /// <inheritdoc/>
         public override long Seek(long offset, SeekOrigin origin)
         {
-            this.EnsureNotDisposed();
+            Verify.NotDisposed(this);
 
             throw new NotSupportedException("XZ Stream does not support seek");
         }
@@ -207,7 +213,7 @@ namespace Kaponata.FileFormats.Lzma
         /// <inheritdoc/>
         public override void SetLength(long value)
         {
-            this.EnsureNotDisposed();
+            Verify.NotDisposed(this);
 
             throw new NotSupportedException("XZ Stream does not support setting length");
         }
@@ -225,22 +231,27 @@ namespace Kaponata.FileFormats.Lzma
         /// The number of bytes to read.
         /// </param>
         /// <returns>byte read or -1 on end of stream.</returns>
-        public override int Read(byte[] buffer, int offset, int count)
+        public unsafe override int Read(byte[] buffer, int offset, int count)
         {
-            this.EnsureNotDisposed();
+            Verify.NotDisposed(this);
 
-            var action = LzmaAction.Run;
-
-            var readBuf = new byte[BufSize];
-            var outManagedBuf = new byte[BufSize];
-
-            while (this.internalBuffer.Count < count)
+            // Make sure data is available in the output buffer.
+            while ((int)this.lzmaStream.AvailOut == BufSize - this.outbufProcessed)
             {
+                LzmaAction action = LzmaAction.Run;
+
+                if (this.lzmaStream.AvailOut == 0)
+                {
+                    this.lzmaStream.AvailOut = BufSize;
+                    this.lzmaStream.NextOut = (byte*)this.outbuf;
+                    this.outbufProcessed = 0;
+                }
+
                 if (this.lzmaStream.AvailIn == 0)
                 {
-                    this.lzmaStream.AvailIn = (uint)this.innerStream.Read(readBuf, 0, readBuf.Length);
-                    Marshal.Copy(readBuf, 0, this.inbuf, (int)this.lzmaStream.AvailIn);
-                    this.lzmaStream.NextIn = this.inbuf;
+                    Span<byte> inputBuffer = new Span<byte>((void*)this.inbuf, BufSize);
+                    this.lzmaStream.AvailIn = (uint)this.innerStream.Read(inputBuffer);
+                    this.lzmaStream.NextIn = (byte*)this.inbuf;
 
                     if (this.lzmaStream.AvailIn == 0)
                     {
@@ -248,55 +259,39 @@ namespace Kaponata.FileFormats.Lzma
                     }
                 }
 
+                // Decode the data.
                 var ret = NativeMethods.lzma_code(ref this.lzmaStream, action);
 
-                if (this.lzmaStream.AvailOut == 0 || ret == LzmaResult.StreamEnd)
+                if (ret == LzmaResult.StreamEnd)
                 {
-                    var writeSize = BufSize - (int)this.lzmaStream.AvailOut;
-                    Marshal.Copy(this.outbuf, outManagedBuf, 0, writeSize);
-
-                    this.internalBuffer.AddRange(outManagedBuf);
-                    var tail = outManagedBuf.Length - writeSize;
-                    this.internalBuffer.RemoveRange(this.internalBuffer.Count - tail, tail);
-
-                    this.lzmaStream.NextOut = this.outbuf;
-                    this.lzmaStream.AvailOut = BufSize;
+                    break;
                 }
-
-                if (ret != LzmaResult.OK)
+                else if (ret != LzmaResult.OK)
                 {
-                    if (ret == LzmaResult.StreamEnd)
-                    {
-                        break;
-                    }
-
                     NativeMethods.lzma_end(ref this.lzmaStream);
-
                     LzmaException.ThrowOnError(ret);
                 }
             }
 
-            if (this.internalBuffer.Count >= count)
-            {
-                this.internalBuffer.CopyTo(0, buffer, offset, count);
-                this.internalBuffer.RemoveRange(0, count);
-                this.position += count;
-                return count;
-            }
-            else
-            {
-                var intBufLength = this.internalBuffer.Count;
-                this.internalBuffer.CopyTo(0, buffer, offset, intBufLength);
-                this.internalBuffer.Clear();
-                this.position += intBufLength;
-                return intBufLength;
-            }
+            // Get the amount of data which can be copied
+            var canRead = Math.Min(
+                BufSize - (int)this.lzmaStream.AvailOut - this.outbufProcessed,
+                count);
+
+            var source = new Span<byte>((byte*)this.outbuf + this.outbufProcessed, canRead);
+            var target = new Span<byte>(buffer, offset, canRead);
+            source.CopyTo(target);
+
+            this.outbufProcessed += canRead;
+            this.position += canRead;
+
+            return canRead;
         }
 
         /// <inheritdoc/>
         public override void Write(byte[] buffer, int offset, int count)
         {
-            this.EnsureNotDisposed();
+            Verify.NotDisposed(this);
 
             throw new NotSupportedException("XZ Input stream does not support writing");
         }
@@ -304,7 +299,7 @@ namespace Kaponata.FileFormats.Lzma
         /// <inheritdoc/>
         protected override void Dispose(bool disposing)
         {
-            if (this.disposed)
+            if (this.IsDisposed)
             {
                 return;
             }
@@ -316,15 +311,12 @@ namespace Kaponata.FileFormats.Lzma
 
             base.Dispose(disposing);
 
-            this.disposed = true;
-        }
-
-        private void EnsureNotDisposed()
-        {
-            if (this.disposed)
+            if (this.ownership == Ownership.Dispose)
             {
-                throw new ObjectDisposedException(nameof(XZInputStream));
+                this.innerStream.Dispose();
             }
+
+            this.IsDisposed = true;
         }
     }
 }
