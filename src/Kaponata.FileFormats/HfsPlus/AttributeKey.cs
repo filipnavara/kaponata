@@ -108,6 +108,19 @@ namespace DiscUtils.HfsPlus
         }
 
         /// <inheritdoc/>
+        public override bool Equals(object obj)
+        {
+            var other = obj as AttributeKey;
+
+            if (other == null)
+            {
+                return false;
+            }
+
+            return this.CompareTo(other) == 0;
+        }
+
+        /// <inheritdoc/>
         public override string ToString()
         {
             return this.Name + " (" + this.FileId + ")";

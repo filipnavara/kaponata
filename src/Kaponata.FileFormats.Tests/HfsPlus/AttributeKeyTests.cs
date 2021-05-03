@@ -69,5 +69,22 @@ namespace Kaponata.FileFormats.Tests.HfsPlus
             Assert.Equal(1, key.CompareTo(other));
             Assert.Equal(-1, other.CompareTo(key));
         }
+
+        /// <summary>
+        /// <see cref="AttributeKey.Equals(object)"/> returns the correct values.
+        /// </summary>
+        [Fact]
+        public void Equal_Works()
+        {
+            var key = new AttributeKey();
+            key.ReadFrom(Convert.FromBase64String("AC4AAAAAABcAAAAAABEAYwBvAG0ALgBhAHAAcABsAGUALgBkAGUAYwBtAHAAZgBz"), 0);
+
+            var other = new AttributeKey();
+            key.ReadFrom(Convert.FromBase64String("AC4AAAAAABcAAAAAABEAYwBvAG0ALgBhAHAAcABsAGUALgBkAGUAYwBtAHAAZgBz"), 0);
+
+            Assert.True(key.Equals(key));
+            Assert.False(other.Equals(key));
+            Assert.False(key.Equals(other));
+        }
     }
 }
