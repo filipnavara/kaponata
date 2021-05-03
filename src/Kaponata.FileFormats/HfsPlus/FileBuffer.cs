@@ -25,14 +25,14 @@ using DiscUtils.Streams;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using Buffer=DiscUtils.Streams.Buffer;
+using Buffer = DiscUtils.Streams.Buffer;
 
 namespace DiscUtils.HfsPlus
 {
     /// <summary>
     /// A <see cref="Buffer"/> which provides access to files stored in a HFS+ file system.
     /// </summary>
-    internal sealed class FileBuffer : Buffer
+    public sealed class FileBuffer : Buffer
     {
         private readonly ForkData baseData;
         private readonly CatalogNodeId cnid;
@@ -104,6 +104,11 @@ namespace DiscUtils.HfsPlus
                 int numRead = volStream.Read(buffer, offset + totalRead, toRead);
 
                 totalRead += numRead;
+
+                if (numRead == 0)
+                {
+                    break;
+                }
             }
 
             return totalRead;
