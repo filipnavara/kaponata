@@ -31,7 +31,7 @@ namespace DiscUtils.HfsPlus
     /// <summary>
     /// Contains the basic information of a HFS+ file system.
     /// </summary>
-    internal sealed class Context : VfsContext
+    public sealed class Context : VfsContext
     {
         /// <summary>
         /// Gets or sets the B-tree which represents the HFS+ Attributes File.

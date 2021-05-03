@@ -1,4 +1,4 @@
-﻿// <copyright file="FileInfoTests.cs" company="Quamotion bv">
+﻿// <copyright file="FinderFileInfoTests.cs" company="Quamotion bv">
 // Copyright (c) Quamotion bv. All rights reserved.
 // </copyright>
 
