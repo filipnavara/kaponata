@@ -86,5 +86,25 @@ namespace Kaponata.FileFormats.Tests.HfsPlus
             Assert.False(other.Equals(key));
             Assert.False(key.Equals(other));
         }
+
+        /// <summary>
+        /// <see cref="AttributeKey.GetHashCode"/> returns the correct values.
+        /// </summary>
+        [Fact]
+        public void HashCode_Works()
+        {
+            var key = new AttributeKey();
+            key.ReadFrom(Convert.FromBase64String("AC4AAAAAABcAAAAAABEAYwBvAG0ALgBhAHAAcABsAGUALgBkAGUAYwBtAHAAZgBz"), 0);
+
+            var clone = new AttributeKey();
+            clone.ReadFrom(Convert.FromBase64String("AC4AAAAAABcAAAAAABEAYwBvAG0ALgBhAHAAcABsAGUALgBkAGUAYwBtAHAAZgBz"), 0);
+
+            var other = new AttributeKey();
+            key.ReadFrom(Convert.FromBase64String("AC4AAAAAABcAAAAAABEAYwBvAG0ALgBhAHAAcABsAGUALgBkAGUAYwBtAHAAZgBz"), 0);
+
+            Assert.Equal(key.GetHashCode(), key.GetHashCode());
+            Assert.Equal(key.GetHashCode(), clone.GetHashCode());
+            Assert.NotEqual(other.GetHashCode(), key.GetHashCode());
+        }
     }
 }

@@ -121,6 +121,12 @@ namespace DiscUtils.HfsPlus
         }
 
         /// <inheritdoc/>
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(this.FileId);
+        }
+
+        /// <inheritdoc/>
         public override string ToString()
         {
             return this.Name + " (" + this.FileId + ")";
