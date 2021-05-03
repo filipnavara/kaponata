@@ -25,6 +25,7 @@
 
 using DiscUtils.Streams;
 using System;
+using System.Text;
 
 namespace DiscUtils.HfsPlus
 {
@@ -32,7 +33,7 @@ namespace DiscUtils.HfsPlus
     /// The catalog thread record is used in the catalog B-tree file to link a <see cref="CatalogNodeId"/> to the file or folder record using that CNID.
     /// </summary>
     /// <seealso href="https://developer.apple.com/library/archive/technotes/tn/tn1150.html#CatalogThreadRecord"/>
-    internal sealed class CatalogThread : IByteArraySerializable
+    public sealed class CatalogThread : IByteArraySerializable
     {
         /// <summary>
         /// Gets or sets the name of the file or folder referenced by this thread record.
@@ -50,10 +51,7 @@ namespace DiscUtils.HfsPlus
         public CatalogRecordType RecordType { get; set; }
 
         /// <inheritdoc/>
-        public int Size
-        {
-            get { return 0; }
-        }
+        public int Size => 10 + Encoding.BigEndianUnicode.GetByteCount(this.Name);
 
         /// <inheritdoc/>
         public int ReadFrom(byte[] buffer, int offset)
@@ -62,7 +60,7 @@ namespace DiscUtils.HfsPlus
             this.ParentId = EndianUtilities.ToUInt32BigEndian(buffer, offset + 4);
             this.Name = HfsPlusUtilities.ReadUniStr255(buffer, offset + 8);
 
-            return 0;
+            return this.Size;
         }
 
         /// <inheritdoc/>

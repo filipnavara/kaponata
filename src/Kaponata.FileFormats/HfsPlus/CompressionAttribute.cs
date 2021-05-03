@@ -29,7 +29,7 @@ namespace DiscUtils.HfsPlus
     /// <summary>
     /// Represents the data embedded in the in-line <c>decmpfs</c> HFS+ xattr.
     /// </summary>
-    internal class CompressionAttribute : IByteArraySerializable
+    public class CompressionAttribute : IByteArraySerializable
     {
         /// <summary>
         /// The magic used to identify the attribute.

@@ -30,7 +30,7 @@ namespace DiscUtils.HfsPlus
     /// A descriptor for a directory record.
     /// </summary>
     /// <seealso href="https://developer.apple.com/library/archive/technotes/tn/tn1150.html#CatalogFile"/>
-    internal sealed class CatalogDirInfo : CommonCatalogFileInfo
+    public sealed class CatalogDirInfo : CommonCatalogFileInfo
     {
         /// <summary>
         /// Gets or sets bit flags about the folder. No bits are currently defined for folder records.
@@ -43,20 +43,17 @@ namespace DiscUtils.HfsPlus
         public uint Valence { get; set; }
 
         /// <inheritdoc/>
-        public override int Size
-        {
-            get { throw new NotImplementedException(); }
-        }
+        public override int Size => 52;
 
         /// <inheritdoc/>
         public override int ReadFrom(byte[] buffer, int offset)
         {
-            base.ReadFrom(buffer, offset);
+            int read = base.ReadFrom(buffer, offset);
 
             this.Flags = EndianUtilities.ToUInt16BigEndian(buffer, offset + 2);
             this.Valence = EndianUtilities.ToUInt32BigEndian(buffer, offset + 4);
 
-            return 0;
+            return read + 6;
         }
 
         /// <inheritdoc/>

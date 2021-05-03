@@ -28,7 +28,7 @@ namespace DiscUtils.HfsPlus
     /// <summary>
     /// The header for compression data stored in the catalog file.
     /// </summary>
-    internal class CompressionResourceHeader : IByteArraySerializable
+    public class CompressionResourceHeader : IByteArraySerializable
     {
         /// <inheritdoc/>
         public int Size

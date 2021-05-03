@@ -25,6 +25,7 @@
 
 using DiscUtils.Streams;
 using System;
+using System.Text;
 
 namespace DiscUtils.HfsPlus
 {
@@ -55,6 +56,7 @@ namespace DiscUtils.HfsPlus
         {
             this.NodeId = nodeId;
             this.Name = name;
+            this.keyLength = (ushort)(2 /* keyLength */ + 4 /*nodeId */ + Encoding.BigEndianUnicode.GetByteCount(this.Name));
         }
 
         /// <summary>
@@ -76,10 +78,7 @@ namespace DiscUtils.HfsPlus
         public CatalogNodeId NodeId { get; private set; }
 
         /// <inheritdoc/>
-        public override int Size
-        {
-            get { throw new NotImplementedException(); }
-        }
+        public override int Size => this.keyLength + 2;
 
         /// <inheritdoc/>
         public int CompareTo(CatalogKey other)

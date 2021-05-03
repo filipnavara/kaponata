@@ -30,7 +30,7 @@ namespace DiscUtils.HfsPlus
     /// Describes a file's location in the folder. For use by Finder only.
     /// </summary>
     /// <seealso href="https://developer.apple.com/library/archive/technotes/tn/tn1150.html#FinderInfo"/>
-    internal sealed class Point : IByteArraySerializable
+    public sealed class Point : IByteArraySerializable
     {
         /// <summary>
         /// Gets or sets the horizontal location.

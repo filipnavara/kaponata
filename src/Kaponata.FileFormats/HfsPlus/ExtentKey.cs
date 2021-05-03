@@ -31,7 +31,7 @@ namespace DiscUtils.HfsPlus
     /// <summary>
     /// The key for an extent node.
     /// </summary>
-    internal sealed class ExtentKey : BTreeKey, IComparable<ExtentKey>
+    public sealed class ExtentKey : BTreeKey, IComparable<ExtentKey>
     {
         private byte forkType; // 0 is data, 0xff is rsrc
         private ushort keyLength;

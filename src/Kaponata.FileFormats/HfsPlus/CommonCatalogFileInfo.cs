@@ -32,7 +32,7 @@ namespace DiscUtils.HfsPlus
     /// Common descriptors for file and directory records.
     /// </summary>
     /// <seealso href="https://developer.apple.com/library/archive/technotes/tn/tn1150.html#CatalogFile"/>
-    internal abstract class CommonCatalogFileInfo : IByteArraySerializable
+    public abstract class CommonCatalogFileInfo : IByteArraySerializable
     {
         /// <summary>
         /// Gets or sets the date and time the file or folder's contents were last read.
@@ -98,7 +98,7 @@ namespace DiscUtils.HfsPlus
             this.FileSystemInfo = HfsPlusUtilities.ReadBsdInfo(buffer, offset + 32, out special);
             this.UnixSpecialField = special;
 
-            return 0;
+            return 46;
         }
 
         /// <inheritdoc/>

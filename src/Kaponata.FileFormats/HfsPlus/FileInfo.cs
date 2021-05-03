@@ -32,7 +32,7 @@ namespace DiscUtils.HfsPlus
     /// Describes additional file metadata, as used by Finder.
     /// </summary>
     /// <seealso href="https://developer.apple.com/library/archive/technotes/tn/tn1150.html#FinderInfo"/>
-    internal class FileInfo : IByteArraySerializable
+    public class FileInfo : IByteArraySerializable
     {
         /// <summary>
         /// Gets or sets the file's creator.

@@ -26,7 +26,7 @@ namespace DiscUtils.HfsPlus
     /// <summary>
     /// describes the type of catalog data record.
     /// </summary>
-    internal enum CatalogRecordType : short
+    public enum CatalogRecordType : short
     {
         /// <summary>
         /// The type is unknown.

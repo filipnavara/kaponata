@@ -32,7 +32,7 @@ namespace DiscUtils.HfsPlus
     /// A descriptor for a file record.
     /// </summary>
     /// <seealso href="https://developer.apple.com/library/archive/technotes/tn/tn1150.html#CatalogFile"/>
-    internal sealed class CatalogFileInfo : CommonCatalogFileInfo
+    public sealed class CatalogFileInfo : CommonCatalogFileInfo
     {
         /// <summary>
         /// Gets or sets information about the location and size of the data fork.
@@ -55,10 +55,7 @@ namespace DiscUtils.HfsPlus
         public ForkData ResourceFork { get; set; }
 
         /// <inheritdoc/>
-        public override int Size
-        {
-            get { throw new NotImplementedException(); }
-        }
+        public override int Size => 248;
 
         /// <inheritdoc/>
         public override int ReadFrom(byte[] buffer, int offset)
@@ -71,7 +68,7 @@ namespace DiscUtils.HfsPlus
             this.DataFork = EndianUtilities.ToStruct<ForkData>(buffer, offset + 88);
             this.ResourceFork = EndianUtilities.ToStruct<ForkData>(buffer, offset + 168);
 
-            return 0;
+            return this.Size;
         }
 
         /// <inheritdoc/>

@@ -29,7 +29,7 @@ namespace DiscUtils.HfsPlus
     /// File flags used by Finder.
     /// </summary>
     [Flags]
-    internal enum FinderFlags : ushort
+    public enum FinderFlags : ushort
     {
         /// <summary>
         /// No flags are set.

@@ -22,6 +22,7 @@ namespace Kaponata.FileFormats.Tests.HfsPlus
             byte[] data = new byte[] { 1, 2, 3, 4 };
             var record = new BTreeGenericRecord(2);
             Assert.Equal(2, record.ReadFrom(data, 1));
+            Assert.Equal(2, record.Size);
         }
 
         /// <summary>

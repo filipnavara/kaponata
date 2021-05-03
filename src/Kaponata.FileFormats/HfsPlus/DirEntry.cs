@@ -33,7 +33,7 @@ namespace DiscUtils.HfsPlus
     /// <summary>
     /// An entry in a directory.
     /// </summary>
-    internal sealed class DirEntry : VfsDirEntry
+    public sealed class DirEntry : VfsDirEntry
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="DirEntry"/> class.
@@ -125,9 +125,6 @@ namespace DiscUtils.HfsPlus
             get { return this.CatalogFileInfo.FileId; }
         }
 
-        /// <inheritdoc/>
-        public override string ToString() => this.FileName;
-
         /// <summary>
         /// Gets a value indicating whether this entry is a file or a directory.
         /// </summary>
@@ -138,11 +135,14 @@ namespace DiscUtils.HfsPlus
         /// <see langword="true"/> if this entry is a file or a directory; othwerise,
         /// <see langword="false"/>.
         /// </returns>
-        internal static bool IsFileOrDirectory(byte[] dirEntryData)
+        public static bool IsFileOrDirectory(byte[] dirEntryData)
         {
             CatalogRecordType type = (CatalogRecordType)EndianUtilities.ToInt16BigEndian(dirEntryData, 0);
             return type == CatalogRecordType.FolderRecord || type == CatalogRecordType.FileRecord;
         }
+
+        /// <inheritdoc/>
+        public override string ToString() => this.FileName;
 
         private static CommonCatalogFileInfo ParseDirEntryData(byte[] dirEntryData)
         {

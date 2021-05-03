@@ -68,15 +68,15 @@ namespace Kaponata.FileFormats.Tests.HfsPlus
                 var fileInfo = hfs.GetFileInfo("hello.txt");
 
                 Assert.Equal((FileAttributes)0, fileInfo.Attributes);
-                Assert.Equal(new DateTime(2021, 04, 23, 12, 22, 10, DateTimeKind.Utc), fileInfo.CreationTimeUtc);
+                Assert.True(fileInfo.CreationTimeUtc > new DateTime(2021, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc));
                 Assert.Equal("\\", fileInfo.DirectoryName);
                 Assert.True(fileInfo.Exists);
                 Assert.Equal("txt", fileInfo.Extension);
                 Assert.Same(hfs, fileInfo.FileSystem);
                 Assert.Equal("hello.txt", fileInfo.FullName);
                 Assert.False(fileInfo.IsReadOnly);
-                Assert.Equal(new DateTime(2021, 04, 23, 12, 22, 30, DateTimeKind.Utc), fileInfo.LastAccessTimeUtc);
-                Assert.Equal(new DateTime(2021, 04, 23, 12, 22, 10, DateTimeKind.Utc), fileInfo.LastWriteTimeUtc);
+                Assert.True(fileInfo.LastAccessTimeUtc > new DateTime(2021, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc));
+                Assert.True(fileInfo.LastWriteTimeUtc > new DateTime(2021, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc));
                 Assert.Equal(0xe, fileInfo.Length);
                 Assert.Equal("hello.txt", fileInfo.Name);
                 Assert.NotNull(fileInfo.Parent);

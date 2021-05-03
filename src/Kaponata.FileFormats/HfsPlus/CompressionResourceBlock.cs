@@ -28,7 +28,7 @@ namespace DiscUtils.HfsPlus
     /// <summary>
     /// An individual block for a compression resouce.
     /// </summary>
-    internal class CompressionResourceBlock : IByteArraySerializable
+    public class CompressionResourceBlock : IByteArraySerializable
     {
         /// <summary>
         /// Gets the size of this data block.
