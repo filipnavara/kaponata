@@ -120,5 +120,8 @@ namespace DiscUtils.HfsPlus
         {
             throw new NotSupportedException();
         }
+
+        /// <inheritdoc/>
+        public override string ToString() => this.Self.FileName;
     }
 }

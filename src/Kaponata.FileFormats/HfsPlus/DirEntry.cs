@@ -125,6 +125,9 @@ namespace DiscUtils.HfsPlus
             get { return this.CatalogFileInfo.FileId; }
         }
 
+        /// <inheritdoc/>
+        public override string ToString() => this.FileName;
+
         /// <summary>
         /// Gets a value indicating whether this entry is a file or a directory.
         /// </summary>
