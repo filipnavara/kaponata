@@ -85,6 +85,7 @@ namespace Kaponata.FileFormats.Tests.HfsPlus
             Assert.True(key.Equals(key));
             Assert.False(other.Equals(key));
             Assert.False(key.Equals(other));
+            Assert.False(key.Equals(null));
         }
 
         /// <summary>
