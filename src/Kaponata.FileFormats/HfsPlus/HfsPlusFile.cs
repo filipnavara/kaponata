@@ -27,6 +27,7 @@ using DiscUtils.Compression;
 using DiscUtils.Streams;
 using DiscUtils.Vfs;
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 
@@ -139,7 +140,7 @@ namespace DiscUtils.HfsPlus
                     switch (compressionHeader.CompressionType)
                     {
                         case FileCompressionType.ZlibAttribute:
-                            if ((uint)compressionHeader.UncompressedSize == compressedDataOffset - 0x11)
+                            if (compressionData[compressedDataOffset] == 0xff)
                             {
                                 // Inline, no compression, very small file
                                 MemoryStream stream = new MemoryStream(
@@ -161,7 +162,7 @@ namespace DiscUtils.HfsPlus
 
                                 // The usage upstream will want to seek or set the position, the ZlibBuffer
                                 // wraps around a zlibstream and allows for this (in a limited fashion).
-                                ZlibStream compressedStream = new ZlibStream(stream, CompressionMode.Decompress, (long)compressionHeader.UncompressedSize, false);
+                                ZlibStream compressedStream = new ZlibStream(stream, CompressionMode.Decompress, false);
                                 return new ZlibBuffer(compressedStream, Ownership.Dispose);
                             }
 

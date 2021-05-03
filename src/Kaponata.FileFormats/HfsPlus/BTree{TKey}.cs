@@ -33,7 +33,7 @@ namespace DiscUtils.HfsPlus
     /// <typeparam name="TKey">
     /// The type of the key used by this B-tree.
     /// </typeparam>
-    public sealed class BTree<TKey> : BTree
+    public class BTree<TKey> : BTree
         where TKey : BTreeKey, new()
     {
         private readonly IBuffer data;
@@ -66,6 +66,13 @@ namespace DiscUtils.HfsPlus
             }
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BTree{TKey}"/> class. Intended for mocking purposes only.
+        /// </summary>
+        protected BTree()
+        {
+        }
+
         /// <inheritdoc/>
         internal override int NodeSize
         {
@@ -81,7 +88,7 @@ namespace DiscUtils.HfsPlus
         /// <returns>
         /// If found, the requested node. Otherwise, <see langword="null"/>.
         /// </returns>
-        public byte[] Find(TKey key)
+        public virtual byte[] Find(TKey key)
         {
             return this.rootNode == null ? null : this.rootNode.FindKey(key);
         }
@@ -92,7 +99,7 @@ namespace DiscUtils.HfsPlus
         /// <param name="visitor">
         /// The node visitor.
         /// </param>
-        public void VisitRange(BTreeVisitor<TKey> visitor)
+        public virtual void VisitRange(BTreeVisitor<TKey> visitor)
         {
             this.rootNode.VisitRange(visitor);
         }
