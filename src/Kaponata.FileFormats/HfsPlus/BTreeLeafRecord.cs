@@ -33,7 +33,7 @@ namespace DiscUtils.HfsPlus
     /// <typeparam name="TKey">
     /// The key of the node.
     /// </typeparam>
-    internal sealed class BTreeLeafRecord<TKey> : BTreeNodeRecord
+    public sealed class BTreeLeafRecord<TKey> : BTreeNodeRecord
         where TKey : BTreeKey, new()
     {
         private readonly int size;
