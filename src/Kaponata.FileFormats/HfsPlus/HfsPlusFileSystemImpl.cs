@@ -31,7 +31,7 @@ namespace DiscUtils.HfsPlus
     /// <summary>
     /// An implementation of the HFS+ file system.
     /// </summary>
-    internal sealed class HfsPlusFileSystemImpl : VfsFileSystem<DirEntry, File, Directory, Context>, IUnixFileSystem
+    internal sealed class HfsPlusFileSystemImpl : VfsFileSystem<DirEntry, HfsPlusFile, HfsPlusDirectory, Context>, IUnixFileSystem
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="HfsPlusFileSystemImpl"/> class.
@@ -80,7 +80,7 @@ namespace DiscUtils.HfsPlus
             rootThread.ReadFrom(rootThreadData, 0);
             byte[] rootDirEntryData = this.Context.Catalog.Find(new CatalogKey(rootThread.ParentId, rootThread.Name));
             DirEntry rootDirEntry = new DirEntry(rootThread.Name, rootDirEntryData);
-            this.RootDirectory = (Directory)this.GetFile(rootDirEntry);
+            this.RootDirectory = (HfsPlusDirectory)this.GetFile(rootDirEntry);
         }
 
         /// <inheritdoc/>
@@ -139,11 +139,11 @@ namespace DiscUtils.HfsPlus
         }
 
         /// <inheritdoc/>
-        protected override File ConvertDirEntryToFile(DirEntry dirEntry)
+        protected override HfsPlusFile ConvertDirEntryToFile(DirEntry dirEntry)
         {
             if (dirEntry.IsDirectory)
             {
-                return new Directory(this.Context, dirEntry.NodeId, dirEntry.CatalogFileInfo);
+                return new HfsPlusDirectory(this.Context, dirEntry.NodeId, dirEntry.CatalogFileInfo);
             }
 
             if (dirEntry.IsSymlink)
@@ -151,7 +151,7 @@ namespace DiscUtils.HfsPlus
                 return new Symlink(this.Context, dirEntry.NodeId, dirEntry.CatalogFileInfo);
             }
 
-            return new File(this.Context, dirEntry.NodeId, dirEntry.CatalogFileInfo);
+            return new HfsPlusFile(this.Context, dirEntry.NodeId, dirEntry.CatalogFileInfo);
         }
     }
 }

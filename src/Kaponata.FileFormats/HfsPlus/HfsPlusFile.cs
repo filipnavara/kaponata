@@ -1,4 +1,4 @@
-﻿// <copyright file="File.cs" company="Kenneth Bell, Quamotion bv">
+﻿// <copyright file="HfsPlusFile.cs" company="Kenneth Bell, Quamotion bv">
 // Copyright (c) 2008-2011, Kenneth Bell
 // Copyright (c) Quamotion bv. All rights reserved.
 // </copyright>
@@ -35,14 +35,14 @@ namespace DiscUtils.HfsPlus
     /// <summary>
     /// Represents a file in a HFS+ file system.
     /// </summary>
-    internal class File : IVfsFileWithStreams
+    public class HfsPlusFile : IVfsFileWithStreams
     {
         private const string CompressionAttributeName = "com.apple.decmpfs";
         private readonly CommonCatalogFileInfo catalogInfo;
         private readonly bool hasCompressionAttribute;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="File"/> class.
+        /// Initializes a new instance of the <see cref="HfsPlusFile"/> class.
         /// </summary>
         /// <param name="context">
         /// The HFS+ context to which the file belongs.
@@ -53,7 +53,7 @@ namespace DiscUtils.HfsPlus
         /// <param name="catalogInfo">
         /// Additional file metadata.
         /// </param>
-        public File(Context context, CatalogNodeId nodeId, CommonCatalogFileInfo catalogInfo)
+        public HfsPlusFile(Context context, CatalogNodeId nodeId, CommonCatalogFileInfo catalogInfo)
         {
             this.Context = context;
             this.NodeId = nodeId;
@@ -161,7 +161,7 @@ namespace DiscUtils.HfsPlus
 
                                 // The usage upstream will want to seek or set the position, the ZlibBuffer
                                 // wraps around a zlibstream and allows for this (in a limited fashion).
-                                ZlibStream compressedStream = new ZlibStream(stream, CompressionMode.Decompress, false);
+                                ZlibStream compressedStream = new ZlibStream(stream, CompressionMode.Decompress, (long)compressionHeader.UncompressedSize, false);
                                 return new ZlibBuffer(compressedStream, Ownership.Dispose);
                             }
 
@@ -220,7 +220,7 @@ namespace DiscUtils.HfsPlus
                             return new ZlibBuffer(concatStream, Ownership.Dispose);
 
                         case FileCompressionType.RawAttribute:
-                            // Inline, no compression, very small file
+                            // Inline, no compression
                             return new StreamBuffer(
                                 new MemoryStream(
                                     compressionData,

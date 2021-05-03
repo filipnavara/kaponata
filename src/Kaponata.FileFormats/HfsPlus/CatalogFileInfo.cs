@@ -42,7 +42,7 @@ namespace DiscUtils.HfsPlus
         /// <summary>
         /// Gets or sets file information.
         /// </summary>
-        public FileInfo FileInfo { get; set; }
+        public FinderFileInfo FileInfo { get; set; }
 
         /// <summary>
         /// Gets or sets bit flags about the file.
@@ -63,7 +63,7 @@ namespace DiscUtils.HfsPlus
             base.ReadFrom(buffer, offset);
 
             this.Flags = EndianUtilities.ToUInt16BigEndian(buffer, offset + 2);
-            this.FileInfo = EndianUtilities.ToStruct<FileInfo>(buffer, offset + 48);
+            this.FileInfo = EndianUtilities.ToStruct<FinderFileInfo>(buffer, offset + 48);
 
             this.DataFork = EndianUtilities.ToStruct<ForkData>(buffer, offset + 88);
             this.ResourceFork = EndianUtilities.ToStruct<ForkData>(buffer, offset + 168);

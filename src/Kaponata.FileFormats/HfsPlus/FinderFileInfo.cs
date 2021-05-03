@@ -1,4 +1,4 @@
-﻿// <copyright file="FileInfo.cs" company="Kenneth Bell, Quamotion bv">
+﻿// <copyright file="FinderFileInfo.cs" company="Kenneth Bell, Quamotion bv">
 // Copyright (c) 2008-2011, Kenneth Bell
 // Copyright (c) Quamotion bv. All rights reserved.
 // </copyright>
@@ -32,7 +32,7 @@ namespace DiscUtils.HfsPlus
     /// Describes additional file metadata, as used by Finder.
     /// </summary>
     /// <seealso href="https://developer.apple.com/library/archive/technotes/tn/tn1150.html#FinderInfo"/>
-    public class FileInfo : IByteArraySerializable
+    public class FinderFileInfo : IByteArraySerializable
     {
         /// <summary>
         /// Gets or sets the file's creator.

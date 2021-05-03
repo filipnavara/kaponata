@@ -1,4 +1,4 @@
-﻿// <copyright file="Directory.cs" company="Kenneth Bell, Quamotion bv">
+﻿// <copyright file="HfsPlusDirectory.cs" company="Kenneth Bell, Quamotion bv">
 // Copyright (c) 2008-2011, Kenneth Bell
 // Copyright (c) Quamotion bv. All rights reserved.
 // </copyright>
@@ -32,10 +32,10 @@ namespace DiscUtils.HfsPlus
     /// <summary>
     /// Represeents a directory entry in the HFS+ file system.
     /// </summary>
-    internal sealed class Directory : File, IVfsDirectory<DirEntry, File>
+    public sealed class HfsPlusDirectory : HfsPlusFile, IVfsDirectory<DirEntry, HfsPlusFile>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="Directory"/> class.
+        /// Initializes a new instance of the <see cref="HfsPlusDirectory"/> class.
         /// </summary>
         /// <param name="context">
         /// The HFS+ conext.
@@ -46,7 +46,7 @@ namespace DiscUtils.HfsPlus
         /// <param name="fileInfo">
         /// Metadata which describes this directory.
         /// </param>
-        public Directory(Context context, CatalogNodeId nodeId, CommonCatalogFileInfo fileInfo)
+        public HfsPlusDirectory(Context context, CatalogNodeId nodeId, CommonCatalogFileInfo fileInfo)
             : base(context, nodeId, fileInfo)
         {
         }

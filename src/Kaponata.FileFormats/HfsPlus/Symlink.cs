@@ -31,7 +31,7 @@ namespace DiscUtils.HfsPlus
     /// <summary>
     /// A symbolic link.
     /// </summary>
-    internal class Symlink : File, IVfsSymlink<DirEntry, File>
+    internal class Symlink : HfsPlusFile, IVfsSymlink<DirEntry, HfsPlusFile>
     {
         private string targetPath;
 
