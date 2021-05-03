@@ -33,7 +33,7 @@ namespace DiscUtils.HfsPlus
     /// <typeparam name="TKey">
     /// The type of the key used by this B-tree.
     /// </typeparam>
-    internal sealed class BTree<TKey> : BTree
+    public sealed class BTree<TKey> : BTree
         where TKey : BTreeKey, new()
     {
         private readonly IBuffer data;
