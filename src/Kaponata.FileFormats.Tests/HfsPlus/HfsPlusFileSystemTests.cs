@@ -3,6 +3,7 @@
 // </copyright>
 
 using DiscUtils.HfsPlus;
+using DiscUtils.Streams;
 using System;
 using System.IO;
 using Xunit;
@@ -80,6 +81,27 @@ namespace Kaponata.FileFormats.Tests.HfsPlus
                 Assert.Equal(0xe, fileInfo.Length);
                 Assert.Equal("hello.txt", fileInfo.Name);
                 Assert.NotNull(fileInfo.Parent);
+            }
+        }
+
+        /// <summary>
+        /// The <see cref="HfsPlusFileSystem"/> constructor throws when passed an empty stream.
+        /// </summary>
+        [Fact]
+        public void Constructor_InsufficientData_Throws()
+        {
+            Assert.Throws<InvalidDataException>(() => new HfsPlusFileSystem(new MemoryStream()));
+        }
+
+        /// <summary>
+        /// The <see cref="HfsPlusFileSystem"/> constructor throws when passed an empty stream.
+        /// </summary>
+        [Fact]
+        public void Constructor_InvalidData_Throws()
+        {
+            using (Stream stream = new ZeroStream(0x1000))
+            {
+                Assert.Throws<InvalidDataException>(() => new HfsPlusFileSystem(stream));
             }
         }
     }
