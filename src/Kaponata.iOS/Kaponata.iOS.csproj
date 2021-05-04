@@ -11,4 +11,8 @@
     <PackageReference Include="plist-cil" Version="2.1.0" />
     <PackageReference Include="System.Security.Cryptography.Pkcs" Version="5.0.1" />
   </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Kaponata.FileFormats\Kaponata.FileFormats.csproj" />
+  </ItemGroup>
 </Project>
