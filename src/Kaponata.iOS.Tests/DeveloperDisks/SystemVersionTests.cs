@@ -49,5 +49,29 @@ namespace Kaponata.iOS.Tests.DeveloperDisks
             Assert.Equal("iPhone OS", version.ProductName);
             Assert.Equal(new Version("13.4"), version.ProductVersion);
         }
+
+        /// <summary>
+        /// <see cref="SystemVersion.FromDictionary(NSDictionary)"/> correctly parses data.
+        /// </summary>
+        [Fact]
+        public void FromDictionary_NoBuildId_Works()
+        {
+            // Create a dict with sample data seen in e.g.
+            // https://github.com/WebKit/WebKit/blob/master/Tools/CISupport/ews-build/steps_unittest.py#L3783-L3789
+            var dict = new NSDictionary();
+            dict.Add("ProductBuildVersion", "17E255");
+            dict.Add("ProductCopyright", "1983-2020 Apple Inc.");
+            dict.Add("ProductName", "iPhone OS");
+            dict.Add("ProductVersion", "13.4");
+
+            var version = new SystemVersion();
+            version.FromDictionary(dict);
+
+            Assert.Equal(Guid.Empty, version.BuildID);
+            Assert.Equal(AppleVersion.Parse("17E255"), version.ProductBuildVersion);
+            Assert.Equal("1983-2020 Apple Inc.", version.ProductCopyright);
+            Assert.Equal("iPhone OS", version.ProductName);
+            Assert.Equal(new Version("13.4"), version.ProductVersion);
+        }
     }
 }

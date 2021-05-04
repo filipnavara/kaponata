@@ -46,7 +46,11 @@ namespace Kaponata.iOS.DeveloperDisks
                 throw new ArgumentNullException(nameof(dictionary));
             }
 
-            this.BuildID = new Guid(dictionary.GetString(nameof(this.BuildID)));
+            if (dictionary.ContainsKey(nameof(this.BuildID)))
+            {
+                this.BuildID = new Guid(dictionary.GetString(nameof(this.BuildID)));
+            }
+
             this.ProductBuildVersion = AppleVersion.Parse(dictionary.GetString(nameof(this.ProductBuildVersion)));
             this.ProductCopyright = dictionary.GetString(nameof(this.ProductCopyright));
             this.ProductName = dictionary.GetString(nameof(this.ProductName));
