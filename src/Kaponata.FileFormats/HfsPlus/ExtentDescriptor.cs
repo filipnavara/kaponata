@@ -59,7 +59,8 @@ namespace DiscUtils.HfsPlus
         /// <inheritdoc/>
         public void WriteTo(byte[] buffer, int offset)
         {
-            throw new NotImplementedException();
+            EndianUtilities.WriteBytesBigEndian(this.StartBlock, buffer, offset + 0);
+            EndianUtilities.WriteBytesBigEndian(this.BlockCount, buffer, offset + 4);
         }
     }
 }
