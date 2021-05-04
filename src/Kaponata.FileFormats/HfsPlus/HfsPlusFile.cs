@@ -162,7 +162,16 @@ namespace DiscUtils.HfsPlus
 
                                 // The usage upstream will want to seek or set the position, the ZlibBuffer
                                 // wraps around a zlibstream and allows for this (in a limited fashion).
-                                ZlibStream compressedStream = new ZlibStream(stream, CompressionMode.Decompress, false);
+                                var compressedStream =
+                                    new PositionWrappingStream(
+                                        new LengthWrappingStream(
+                                            SparseStream.FromStream(
+                                                new ZlibStream(stream, CompressionMode.Decompress, false),
+                                                Ownership.Dispose),
+                                            (long)compressionHeader.UncompressedSize,
+                                            Ownership.Dispose),
+                                        0,
+                                        Ownership.Dispose);
                                 return new ZlibBuffer(compressedStream, Ownership.Dispose);
                             }
 
@@ -212,8 +221,19 @@ namespace DiscUtils.HfsPlus
 
                                 // ... and create a deflate stream. Because we will concatenate the streams, the streams
                                 // must report on their size. We know the size (0x10000) so we pass it as a parameter.
-                                DeflateStream s = new SizedDeflateStream(stream, CompressionMode.Decompress, false, 0x10000);
-                                streams[i] = SparseStream.FromStream(s, Ownership.Dispose);
+                                streams[i] =
+                                    new PositionWrappingStream(
+                                        new LengthWrappingStream(
+                                            SparseStream.FromStream(
+                                                new DeflateStream(
+                                                    stream,
+                                                    CompressionMode.Decompress,
+                                                    false),
+                                                Ownership.Dispose),
+                                            length: 0x10000,
+                                            Ownership.Dispose),
+                                        0,
+                                        Ownership.Dispose);
                             }
 
                             // Finally, concatenate the streams together and that's about it.
