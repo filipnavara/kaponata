@@ -91,7 +91,7 @@ namespace DiscUtils.HfsPlus
         /// <inheritdoc/>
         public override string ToString()
         {
-            return this.Key + ":" + this.Data;
+            return $"{this.Key}: {this.Data.Length} bytes";
         }
     }
 }

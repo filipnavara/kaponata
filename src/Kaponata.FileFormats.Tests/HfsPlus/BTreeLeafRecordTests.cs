@@ -23,6 +23,8 @@ namespace Kaponata.FileFormats.Tests.HfsPlus
             Assert.Equal(20, record.ReadFrom(Convert.FromBase64String("AAYAAAACAAAAAwAAAAAAAQAFAFgAYwBvAGQAZQ=="), 0));
             Assert.Equal(new CatalogNodeId(2), record.Key.NodeId);
             Assert.Equal(20, record.Size);
+
+            Assert.Equal(" (2): 12 bytes", record.ToString());
         }
 
         /// <summary>
