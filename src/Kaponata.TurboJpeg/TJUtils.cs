@@ -4,42 +4,22 @@
 // </copyright>
 
 using System;
-using System.Drawing.Imaging;
-using System.IO;
 using System.Runtime.InteropServices;
 
 namespace TurboJpegWrapper
 {
+    /// <summary>
+    /// Helper method for TurboJpeg code.
+    /// </summary>
     internal static class TJUtils
     {
-        ///<summary>
+        /// <summary>
         /// Retrieves last error from underlying turbo-jpeg library and throws exception.</summary>
         /// <exception cref="TJException"> Throws if low level turbo jpeg function fails. </exception>
         public static void GetErrorAndThrow()
         {
             var error = Marshal.PtrToStringAnsi(TurboJpegImport.TjGetErrorStr());
-            throw new TJException(error);
-        }
-
-        /// <summary>
-        /// Converts pixel format from <see cref="PixelFormat"/> to <see cref="TJPixelFormat"/>.
-        /// </summary>
-        /// <param name="pixelFormat">Pixel format to convert.</param>
-        /// <returns>Converted value of pixel format or exception if convertion is impossible.</returns>
-        /// <exception cref="NotSupportedException">Convertion can not be performed.</exception>
-        public static TJPixelFormat ConvertPixelFormat(PixelFormat pixelFormat)
-        {
-            switch (pixelFormat)
-            {
-                case PixelFormat.Format32bppArgb:
-                    return TJPixelFormat.BGRA;
-                case PixelFormat.Format24bppRgb:
-                    return TJPixelFormat.BGR;
-                case PixelFormat.Format8bppIndexed:
-                    return TJPixelFormat.Gray;
-                default:
-                    throw new NotSupportedException($"Provided pixel format \"{pixelFormat}\" is not supported");
-            }
+            throw new TJException(error!);
         }
 
         /// <summary>
@@ -54,9 +34,15 @@ namespace TurboJpegWrapper
         /// <summary>
         /// Converts array of managed structures to the unmanaged pointer.
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="structArray"></param>
-        /// <returns></returns>
+        /// <typeparam name="T">
+        /// The type of struct to convert.
+        /// </typeparam>
+        /// <param name="structArray">
+        /// An arrey of structs of type <typeparamref name="T"/>.
+        /// </param>
+        /// <returns>
+        /// A <see cref="IntPtr"/> which points to an unmanaged copy of the structs.
+        /// </returns>
         public static IntPtr StructArrayToIntPtr<T>(T[] structArray)
         {
             var structSize = Marshal.SizeOf(typeof(T));
@@ -65,7 +51,7 @@ namespace TurboJpegWrapper
             foreach (var s in structArray)
             {
                 var structPtr = new IntPtr(longPtr);
-                Marshal.StructureToPtr(s, structPtr, false); // You do not need to erase struct in this case
+                Marshal.StructureToPtr(s!, structPtr, false); // You do not need to erase struct in this case
                 longPtr += structSize;
             }
 
@@ -77,7 +63,9 @@ namespace TurboJpegWrapper
         /// </summary>
         /// <param name="data">Byte array for copy.</param>
         /// <param name="useComAllocation">If set to <c>true</c>, Com allocator will be used to allocate memory.</param>
-        /// <returns></returns>
+        /// <returns>
+        /// A <see cref="IntPtr"/> which represents the unmanaged copy of the data.
+        /// </returns>
         public static IntPtr CopyDataToPointer(byte[] data, bool useComAllocation = false)
         {
             var res = useComAllocation ? Marshal.AllocCoTaskMem(data.Length) : Marshal.AllocHGlobal(data.Length);
@@ -103,7 +91,9 @@ namespace TurboJpegWrapper
         /// <summary>
         /// Frees unmanaged pointer using allocator.
         /// </summary>
-        /// <param name="ptr"></param>
+        /// <param name="ptr">
+        /// A pointer to the memory to free.
+        /// </param>
         /// <param name="isComAllocated">If set to <c>true</c>, Com allocator will be used to free memory.</param>
         public static void FreePtr(IntPtr ptr, bool isComAllocated = false)
         {

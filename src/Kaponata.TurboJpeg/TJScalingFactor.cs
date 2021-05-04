@@ -1,4 +1,4 @@
-﻿// <copyright file="TjScalingFactor.cs" company="Autonomic Systems, Quamotion">
+﻿// <copyright file="TJScalingFactor.cs" company="Autonomic Systems, Quamotion">
 // Copyright (c) Autonomic Systems. All rights reserved.
 // Copyright (c) Quamotion. All rights reserved.
 // </copyright>

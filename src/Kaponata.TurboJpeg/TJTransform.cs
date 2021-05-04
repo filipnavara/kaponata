@@ -1,4 +1,4 @@
-﻿// <copyright file="TjTransform.cs" company="Autonomic Systems, Quamotion">
+﻿// <copyright file="TJTransform.cs" company="Autonomic Systems, Quamotion">
 // Copyright (c) Autonomic Systems. All rights reserved.
 // Copyright (c) Quamotion. All rights reserved.
 // </copyright>
@@ -12,7 +12,7 @@ namespace TurboJpegWrapper
     /// Lossless transform.
     /// </summary>
     [StructLayout(LayoutKind.Sequential)]
-    public struct TjTransform
+    public struct TJTransform
     {
         /// <summary>
         /// Gets or sets the cropping region.
@@ -20,7 +20,7 @@ namespace TurboJpegWrapper
         public TJRegion R { get; set; }
 
         /// <summary>
-        /// Gets or sets one of the <see cref="TJTransformOperations"/> "transform operations".
+        /// Gets or sets one of the <see cref="TJTransformOperation"/> "transform operations".
         /// </summary>
         public int Op { get; set; }
 

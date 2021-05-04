@@ -9,15 +9,19 @@ using System.Runtime.InteropServices;
 
 namespace TurboJpegWrapper
 {
+    /// <summary>
+    /// Provides helper methods for resolving the native libraries.
+    /// </summary>
     internal static class LibraryResolver
     {
         static LibraryResolver()
         {
-#if !NETCOREAPP2_0 && !NETSTANDARD2_0 && !NETSTANDARD2_1 && !NET45
-            NativeLibrary.SetDllImportResolver(Assembly.GetExecutingAssembly(), DllImportResolver);
-#endif
+            NativeLibrary.SetDllImportResolver(typeof(LibraryResolver).Assembly, DllImportResolver);
         }
 
+        /// <summary>
+        /// Ensures the library resolver is registered. This is a dummy method used to trigger the static constructor.
+        /// </summary>
         public static void EnsureRegistered()
         {
             // Dummy call to trigger the static constructor

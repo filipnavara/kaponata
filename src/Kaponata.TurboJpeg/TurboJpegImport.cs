@@ -5,10 +5,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Drawing;
-using System.IO;
-using System.Reflection;
 using System.Runtime.InteropServices;
 
 namespace TurboJpegWrapper
@@ -18,6 +15,11 @@ namespace TurboJpegWrapper
     /// </summary>
     internal static class TurboJpegImport
     {
+        /// <summary>
+        /// The name of the unmanaged library.
+        /// </summary>
+        public const string UnmanagedLibrary = "turbojpeg";
+
         /// <summary>
         /// Pixel size (in bytes) for a given pixel format.
         /// </summary>
@@ -58,110 +60,10 @@ namespace TurboJpegWrapper
             { TJSubsamplingOption.Chrominance411, new Size(32, 8) },
         };
 
-        public const string UnmanagedLibrary = "turbojpeg";
-
-#if NET45
-        static TurboJpegImport()
-        {
-            Load();
-        }
-#endif
-
-#if !NET45 && !NETSTANDARD2_0
         static TurboJpegImport()
         {
             LibraryResolver.EnsureRegistered();
         }
-#endif
-
-        /// <summary>
-        /// Gets a value indicating whether the turbojpeg native library could be found.
-        /// </summary>
-        public static bool LibraryFound
-        {
-            get;
-            private set;
-        }
-#if !NET45
-        = true;
-#endif
-
-#if NET45
-        /// <summary>
-        /// Attempts to load the native library.
-        /// </summary>
-        public static void Load()
-        {
-            Load(AppDomain.CurrentDomain.SetupInformation.ApplicationBase);
-        }
-
-        /// <summary>
-        /// Attempst to load the native library.
-        /// </summary>
-        /// <param name="directory">
-        /// The path to the directory in which the native library is located.
-        /// </param>
-        public static void Load(string directory)
-        {
-            if (directory == null)
-            {
-                throw new ArgumentNullException(nameof(directory));
-            }
-
-            if (!Directory.Exists(directory))
-            {
-                throw new ArgumentOutOfRangeException(nameof(directory), $"The directory '{directory}' does not exist.");
-            }
-
-            // When the library is first called, call LoadLibrary with the full path to the
-            // path of the various libaries, to make sure they are loaded from the exact
-            // path we specify.
-
-            // Any load errors would also be caught by us here, making it easier to troubleshoot.
-            if (Environment.OSVersion.Platform == PlatformID.Win32NT)
-            {
-                string nativeLibrariesDirectory;
-
-                if (Environment.Is64BitProcess)
-                {
-                    nativeLibrariesDirectory = Path.Combine(directory, "win7-x64");
-                }
-                else
-                {
-                    nativeLibrariesDirectory = Path.Combine(directory, "win7-x86");
-                }
-
-                if (!Directory.Exists(nativeLibrariesDirectory))
-                {
-                    throw new ArgumentOutOfRangeException(nameof(directory), $"The directory '{directory}' does not contain a subdirectory for the current architecture. The directory '{nativeLibrariesDirectory}' does not exist.");
-                }
-
-                string path = Path.Combine(nativeLibrariesDirectory, $"{UnmanagedLibrary}.dll");
-
-                if (!File.Exists(path))
-                {
-                    throw new FileNotFoundException($"Could not load libturbojpeg from {path}", path);
-                }
-
-                // Attempt to load the libraries. If they are not found, throw an error.
-                // See also http://blogs.msdn.com/b/adam_nathan/archive/2003/04/25/56643.aspx for
-                // more information about GetLastWin32Error
-                IntPtr result = NativeMethods.LoadLibrary(path);
-                if (result == IntPtr.Zero)
-                {
-                    var lastError = Marshal.GetLastWin32Error();
-                    var error = new Win32Exception(lastError);
-                    throw error;
-                }
-
-                LibraryFound = true;
-            }
-            else
-            {
-                throw new NotSupportedException("Quamotion.TurboJpegWrapper is supported on Windows (.NET FX, .NET Core), Linux (.NET Core) and OS X (.NET Core)");
-            }
-        }
-#endif
 
         /// <summary>
         /// This is port of TJPAD macros from turbojpeg.h
@@ -236,11 +138,11 @@ namespace TurboJpegWrapper
         /// </item>
         /// <item>
         /// <description>pre-allocate the buffer to a "worst case" size determined by calling <see cref="TjBufSize"/>.
-        /// This should ensure that the buffer never has to be re-allocated (setting <see cref="TJFlags.NOREALLOC"/> guarantees this.).</description>
+        /// This should ensure that the buffer never has to be re-allocated (setting <see cref="TJFlags.NoRealloc"/> guarantees this.).</description>
         /// </item>
         /// </list>
         /// If you choose option 1, <paramref name="jpegSize"/> should be set to the size of your pre-allocated buffer.
-        /// In any case, unless you have set <see cref="TJFlags.NOREALLOC"/>,
+        /// In any case, unless you have set <see cref="TJFlags.NoRealloc"/>,
         /// you should always check <paramref name="jpegBuf"/> upon return from this function, as it may have changed.
         /// </param>
         ///
@@ -355,6 +257,65 @@ namespace TurboJpegWrapper
         [DllImport(UnmanagedLibrary, CallingConvention = CallingConvention.Cdecl, EntryPoint = "tjGetScalingFactors")]
         public static extern IntPtr TjGetScalingFactors(out int numscalingfactors);
 
+        /// <summary>
+        /// Decode a set of Y, U (Cb), and V (Cr) image planes into an RGB or grayscale
+        /// image.  This function uses the accelerated color conversion routines in the
+        /// underlying codec but does not execute any of the other steps in the JPEG
+        /// decompression process.
+        /// </summary>
+        /// <param name="handle">
+        /// A handle to a TurboJPEG decompressor or transformer instance.
+        /// </param>
+        /// <param name="srcPlanes">
+        /// An array of pointers to Y, U (Cb), and V (Cr) image planes
+        /// (or just a Y plane, if decoding a grayscale image) that contain a YUV image
+        /// to be decoded.  These planes can be contiguous or non-contiguous in memory.
+        /// The size of each plane should match the value returned by <c>tjPlaneSizeYUV()</c>
+        /// for the given image width, height, strides, and level of chrominance
+        /// subsampling.
+        /// </param>
+        /// <param name="strides">
+        /// An array of integers, each specifying the number of bytes per
+        /// line in the corresponding plane of the YUV source image.  Setting the stride
+        /// for any plane to 0 is the same as setting it to the plane width.
+        /// If <paramref name="strides"/> is <see langword="null"/>, then
+        /// the strides for all planes will be set to their respective plane widths.
+        /// You can adjust the strides in order to specify an arbitrary amount of line
+        /// padding in each plane or to decode a subregion of a larger YUV planar image.
+        /// </param>
+        /// <param name="subsamp">
+        /// The level of chrominance subsampling used in the YUV source image.
+        /// </param>
+        /// <param name="dstBuf">
+        /// Pointer to an image buffer that will receive the decoded
+        /// image.  This buffer should normally be <paramref name="pitch"/>
+        /// * <paramref name="height"/> bytes in size, but the <paramref name="dstBuf"/>
+        /// pointer can also be used to decode into a specific region of a larger buffer.
+        /// </param>
+        /// <param name="width">
+        /// Width (in pixels) of the source and destination images.
+        /// </param>
+        /// <param name="pitch">
+        /// Bytes per line in the destination image.  Normally, this should be
+        /// <paramref name="width"/> * <c>tjPixelSize[pixelFormat]</c> if the destination image is
+        /// unpadded, or <c>TJPAD(width * tjPixelSize[pixelFormat]</c> if each line
+        /// of the destination image should be padded to the nearest 32-bit boundary, as
+        /// is the case for Windows bitmaps.  You can also be clever and use the pitch
+        /// parameter to skip lines, etc.  Setting this parameter to 0 is the equivalent
+        /// of setting it to <paramref name="width"/> * <c>tjPixelSize[pixelFormat]</c>.
+        /// </param>
+        /// <param name="height">
+        /// Height (in pixels) of the source and destination images.
+        /// </param>
+        /// <param name="pixelFormat">
+        /// Pixel format of the destination image.
+        /// </param>
+        /// <param name="flags">
+        /// The bitwise OR of one or more of the <see cref="TJFlags"/> flags.
+        /// </param>
+        /// <returns>
+        /// 0 if successful, or -1 if an error occurred.
+        /// </returns>
         [DllImport(UnmanagedLibrary, CallingConvention = CallingConvention.Cdecl, EntryPoint = "tjDecodeYUVPlanes")]
         public static unsafe extern int TjDecodeYUVPlanes(
             IntPtr handle,
@@ -427,7 +388,7 @@ namespace TurboJpegWrapper
         /// Allocate an image buffer for use with TurboJPEG.  You should always use
         /// this function to allocate the JPEG destination buffer(s) for <see cref="TjCompress2"/>
         /// and <see cref="TjTransform"/> unless you are disabling automatic buffer
-        /// (re)allocation (by setting <see cref="TJFlags.NOREALLOC"/>.)
+        /// (re)allocation (by setting <see cref="TJFlags.NoRealloc"/>.)
         /// </summary>
         /// <param name="bytes">The number of bytes to allocate.</param>
         /// <returns>A pointer to a newly-allocated buffer with the specified number of bytes.</returns>
@@ -485,11 +446,11 @@ namespace TurboJpegWrapper
         /// </item>
         /// <item>
         /// <description>pre-allocate the buffer to a "worst case" size determined by calling <see cref="TjBufSize"/>.
-        /// This should ensure that the buffer never has to be re-allocated (setting <see cref="TJFlags.NOREALLOC"/> guarantees this.).</description>
+        /// This should ensure that the buffer never has to be re-allocated (setting <see cref="TJFlags.NoRealloc"/> guarantees this.).</description>
         /// </item>
         /// </list>
         /// If you choose option 1, <paramref name="dstSizes"/>[i] should be set to the size of your pre-allocated buffer.
-        /// In any case, unless you have set <see cref="TJFlags.NOREALLOC"/>,
+        /// In any case, unless you have set <see cref="TJFlags.NoRealloc"/>,
         /// you should always check <paramref name="dstBufs"/>[i] upon return from this function, as it may have changed.
         /// </param>
         /// <param name="dstSizes">
@@ -500,7 +461,7 @@ namespace TurboJpegWrapper
         /// Upon return, <paramref name="dstSizes"/>[i] will contain the size of the JPEG image (in bytes.)
         /// </param>
         /// <param name="transforms">
-        /// Pointer to an array of <see cref="TurboJpegWrapper.TjTransform"/> structures, each of
+        /// Pointer to an array of <see cref="TurboJpegWrapper.TJTransform"/> structures, each of
         /// which specifies the transform parameters and/or cropping region for the
         /// corresponding transformed output image.
         /// </param>
@@ -541,6 +502,113 @@ namespace TurboJpegWrapper
             }
 
             return result;
+        }
+
+        /// <summary>
+        /// Compress a set of Y, U (Cb), and V (Cr) image planes into a JPEG image.
+        /// </summary>
+        /// <param name="handle">
+        /// A handle to a TurboJPEG compressor or transformer instance.
+        /// </param>
+        /// <param name="srcPlanes">
+        /// an array of pointers to Y, U (Cb), and V (Cr) image planes
+        /// (or just a Y plane, if compressing a grayscale image) that contain a YUV
+        /// image to be compressed.  These planes can be contiguous or non-contiguous in
+        /// memory.  The size of each plane should match the value returned by
+        /// <c>tjPlaneSizeYUV()</c> for the given image width, height, strides, and level of
+        /// chrominance subsampling.
+        /// </param>
+        /// <param name="width">
+        /// Width (in pixels) of the source image.  If the width is not an
+        /// even multiple of the MCU block width, then an intermediate
+        /// buffer copy will be performed within TurboJPEG.
+        /// </param>
+        /// <param name="strides">
+        /// An array of integers, each specifying the number of bytes per
+        /// line in the corresponding plane of the YUV source image.  Setting the stride
+        /// for any plane to 0 is the same as setting it to the plane width.
+        /// If <paramref name="strides"/> is <see langword="null"/>, then
+        /// the strides for all planes will be set to their respective plane widths.
+        /// You can adjust the strides in order to specify an arbitrary amount of line
+        /// padding in each plane or to create a JPEG image from a subregion of a larger
+        /// YUV planar image.
+        /// </param>
+        /// <param name="height">
+        /// Height (in pixels) of the source image.  If the height is not
+        /// an even multiple of the MCU block height (see <c>tjMCUHeight</c>), then an
+        /// intermediate buffer copy will be performed within TurboJPEG.
+        /// </param>
+        /// <param name="subsamp">
+        /// The level of chrominance subsampling used in the source image.
+        /// </param>
+        /// <param name="jpegBuf">
+        /// address of a pointer to an image buffer that will receive the
+        /// JPEG image.  TurboJPEG has the ability to reallocate the JPEG buffer to
+        /// accommodate the size of the JPEG image.  Thus, you can choose to:
+        /// <list type="number">
+        ///   <item>
+        ///     pre-allocate the JPEG buffer with an arbitrary size using <see cref="TjAlloc(int)"/> and
+        ///     let TurboJPEG grow the buffer as needed,
+        ///   </item>
+        ///   <item>
+        ///     set <paramref name="jpegBuf"/> to <see langword="null"/> to tell TurboJPEG
+        ///     to allocate the buffer for you, or
+        ///   </item>
+        ///   <item>
+        ///     pre-allocate the buffer to a "worst case" size determined by calling
+        ///     <see cref="TjBufSize(int, int, int)"/>.   This should ensure that the buffer never has to be
+        ///     re-allocated (setting <see cref="TJFlags.NoRealloc"/> guarantees that it won't be.)
+        ///   </item>
+        /// </list>
+        /// If you choose option 1, <paramref name="jpegSize"/> should be set to the size of your
+        /// pre-allocated buffer.  In any case, unless you have set <see cref="TJFlags.NoRealloc"/>,
+        /// you should always check <tt>*jpegBuf</tt> upon return from this function, as
+        /// it may have changed.
+        /// </param>
+        /// <param name="jpegSize">
+        /// pointer to an unsigned long variable that holds the size of
+        /// the JPEG image buffer.  If <paramref name="jpegBuf"/> points to a pre-allocated
+        /// buffer, then <paramref name="jpegSize"/> should be set to the size of the buffer.
+        /// Upon return, <paramref name="jpegSize"/> will contain the size of the JPEG image (in
+        /// bytes.)  If <paramref name="jpegBuf"/> points to a JPEG image buffer that is being
+        /// reused from a previous call to one of the JPEG compression functions, then
+        /// <paramref name="jpegSize"/> is ignored.
+        /// </param>
+        /// <param name="jpegQual">
+        /// the image quality of the generated JPEG image (1 = worst, 100 = best).
+        /// </param>
+        /// <param name="flags">
+        /// the bitwise OR of one or more of the <see cref="TJFlags"/> flags.
+        /// </param>
+        /// <returns>
+        /// 0 if successful, or -1 if an error occurred.
+        /// </returns>
+        public static unsafe int TjCompressFromYUVPlanes(
+            IntPtr handle,
+            byte** srcPlanes,
+            int width,
+            int* strides,
+            int height,
+            int subsamp,
+            ref IntPtr jpegBuf,
+            ref uint jpegSize,
+            int jpegQual,
+            int flags)
+        {
+            switch (IntPtr.Size)
+            {
+                case 4:
+                    return TjCompressFromYUVPlanes_x86(handle, srcPlanes, width, strides, height, subsamp, ref jpegBuf, ref jpegSize, jpegQual, flags);
+
+                case 8:
+                    ulong s = (ulong)jpegSize;
+                    int ret = TjCompressFromYUVPlanes_x64(handle, srcPlanes, width, strides, height, subsamp, ref jpegBuf, ref s, jpegQual, flags);
+                    jpegSize = (uint)s;
+                    return ret;
+
+                default:
+                    throw new InvalidOperationException("Invalid platform. Can not find proper function");
+            }
         }
 
         /// <summary>
@@ -591,34 +659,6 @@ namespace TurboJpegWrapper
             uint[] dstSizes,
             IntPtr transforms,
             int flags);
-
-        public static unsafe int TjCompressFromYUVPlanes(
-            IntPtr handle,
-            byte** srcPlanes,
-            int width,
-            int* strides,
-            int height,
-            int subsamp,
-            ref IntPtr jpegBuf,
-            ref uint jpegSize,
-            int jpegQual,
-            int flags)
-        {
-            switch (IntPtr.Size)
-            {
-                case 4:
-                    return TjCompressFromYUVPlanes_x86(handle, srcPlanes, width, strides, height, subsamp, ref jpegBuf, ref jpegSize, jpegQual, flags);
-
-                case 8:
-                    ulong s = (ulong)jpegSize;
-                    int ret = TjCompressFromYUVPlanes_x64(handle, srcPlanes, width, strides, height, subsamp, ref jpegBuf, ref s, jpegQual, flags);
-                    jpegSize = (uint)s;
-                    return ret;
-
-                default:
-                    throw new InvalidOperationException("Invalid platform. Can not find proper function");
-            }
-        }
 
         [DllImport(UnmanagedLibrary, CallingConvention = CallingConvention.Cdecl, EntryPoint = "tjCompressFromYUVPlanes")]
         private static unsafe extern int TjCompressFromYUVPlanes_x86(

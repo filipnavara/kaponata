@@ -93,7 +93,7 @@ namespace TurboJpegWrapper
                 throw new TJException("Unable to read Subsampling Options from jpeg header");
             }
 
-            var tjTransforms = new TjTransform[count];
+            var tjTransforms = new TJTransform[count];
             for (var i = 0; i < count; i++)
             {
                 var x = CorrectRegionCoordinate(transforms[i].Region.X, mcuSize.Width);
@@ -101,7 +101,7 @@ namespace TurboJpegWrapper
                 var w = CorrectRegionSize(transforms[i].Region.X, x, transforms[i].Region.W, width);
                 var h = CorrectRegionSize(transforms[i].Region.Y, y, transforms[i].Region.H, height);
 
-                tjTransforms[i] = new TjTransform
+                tjTransforms[i] = new TJTransform
                 {
                     Op = (int)transforms[i].Operation,
                     Options = (int)transforms[i].Options,

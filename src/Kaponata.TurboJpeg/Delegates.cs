@@ -42,7 +42,7 @@ namespace TurboJpegWrapper
     /// in the "transforms" array that was passed to <see cref="TurboJpegImport.TjTransform"/>.
     /// </param>
     /// <param name="transform">
-    /// A pointer to a <see cref="TjTransform"/> structure that specifies the
+    /// A pointer to a <see cref="TJTransform"/> structure that specifies the
     /// parameters and/or cropping region for this transform.
     /// </param>
     /// <returns>0 if the callback was successful, or -1 if an error occurred.</returns>
