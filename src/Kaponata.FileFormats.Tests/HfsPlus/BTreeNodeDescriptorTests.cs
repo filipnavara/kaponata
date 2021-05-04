@@ -32,13 +32,25 @@ namespace Kaponata.FileFormats.Tests.HfsPlus
         }
 
         /// <summary>
-        /// <see cref="BTreeNodeDescriptor.WriteTo(byte[], int)"/> always throws.
+        /// <see cref="BTreeNodeDescriptor.WriteTo(byte[], int)"/> works correctly.
         /// </summary>
         [Fact]
         public void WriteTo_Throws()
         {
-            BTreeNodeDescriptor descriptor = new BTreeNodeDescriptor();
-            Assert.Throws<NotImplementedException>(() => descriptor.WriteTo(Array.Empty<byte>(), 0));
+            BTreeNodeDescriptor descriptor = new BTreeNodeDescriptor()
+            {
+                BackwardLink = 0,
+                ForwardLink = 2,
+                Height = 1,
+                Kind = BTreeNodeKind.LeafNode,
+                NumRecords = 0x15,
+                Reserved = 0,
+            };
+
+            byte[] data = new byte[descriptor.Size];
+            descriptor.WriteTo(data, 0);
+
+            Assert.Equal("AAAAAgAAAAD/AQAVAAA=", Convert.ToBase64String(data));
         }
     }
 }
