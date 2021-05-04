@@ -25,10 +25,7 @@ namespace TurboJpegWrapper.Tests
 
         public static IEnumerable<Bitmap> GetTestImages(string searchPattern)
         {
-            var path = Assembly.GetExecutingAssembly().Location;
-            var imagesDir = Path.Combine(Path.GetDirectoryName(path), "images");
-
-            foreach (var file in Directory.EnumerateFiles(imagesDir, searchPattern))
+            foreach (var file in Directory.EnumerateFiles("TestAssets", searchPattern))
             {
                 Bitmap bmp;
                 try
@@ -51,9 +48,7 @@ namespace TurboJpegWrapper.Tests
 
         public static IEnumerable<Tuple<string, byte[]>> GetTestImagesData(string searchPattern)
         {
-            var imagesDir = Path.Combine(BinPath, "images");
-
-            foreach (var file in Directory.EnumerateFiles(imagesDir, searchPattern))
+            foreach (var file in Directory.EnumerateFiles("TestAssets", searchPattern))
             {
                 Debug.WriteLine($"Input file is {file}");
                 yield return new Tuple<string, byte[]>(file, File.ReadAllBytes(file));

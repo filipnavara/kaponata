@@ -38,43 +38,6 @@ namespace TurboJpegWrapper.Tests
 
         [Theory]
         [CombinatorialData]
-        public void DecompressByteArray(
-            [CombinatorialValues(
-            PixelFormat.Format32bppArgb,
-            PixelFormat.Format24bppRgb,
-            PixelFormat.Format8bppIndexed)]
-            PixelFormat format)
-        {
-            foreach (var data in TestUtils.GetTestImagesData("*.jpg"))
-            {
-                var result = this.decompressor.Decompress(data.Item2, format, TJFlags.None);
-                Assert.NotNull(result);
-
-                var file = Path.Combine(this.OutDirectory, $"{Path.GetFileNameWithoutExtension(data.Item1)}_{format}.bmp");
-                result.Save(file);
-            }
-        }
-
-        [Theory]
-        [CombinatorialData]
-        public void DecompressIntPtr(
-            [CombinatorialValues(
-            PixelFormat.Format32bppArgb,
-            PixelFormat.Format24bppRgb,
-            PixelFormat.Format8bppIndexed)]
-            PixelFormat format)
-        {
-            foreach (var data in TestUtils.GetTestImagesData("*.jpg"))
-            {
-                var dataPtr = TJUtils.CopyDataToPointer(data.Item2);
-                var result = this.decompressor.Decompress(dataPtr, (ulong)data.Item2.Length, format, TJFlags.None);
-                Assert.NotNull(result);
-                TJUtils.FreePtr(dataPtr);
-            }
-        }
-
-        [Theory]
-        [CombinatorialData]
         public void DecompressSpan(
             [CombinatorialValues(
             TJPixelFormat.ABGR,

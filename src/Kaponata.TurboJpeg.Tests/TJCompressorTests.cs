@@ -40,43 +40,6 @@ namespace TurboJpegWrapper.Tests
 
         [Theory]
         [CombinatorialData]
-        public void CompressBitmap(
-            [CombinatorialValues(
-            TJSubsamplingOption.Gray,
-            TJSubsamplingOption.Chrominance411,
-            TJSubsamplingOption.Chrominance420,
-            TJSubsamplingOption.Chrominance440,
-            TJSubsamplingOption.Chrominance422,
-            TJSubsamplingOption.Chrominance444)]
-            TJSubsamplingOption options,
-            [CombinatorialValues(1, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100)]
-            int quality)
-        {
-            var imageidx = 0;
-            foreach (var bitmap in TestUtils.GetTestImages("*.bmp"))
-            {
-                try
-                {
-                    Trace.WriteLine($"Options: {options}; Quality: {quality}");
-
-                    var result = this.compressor.Compress(bitmap, options, quality, TJFlags.None);
-
-                    Assert.NotNull(result);
-
-                    var file = Path.Combine(this.OutDirectory, $"{imageidx}_{quality}_{options}.jpg");
-                    File.WriteAllBytes(file, result);
-                }
-                finally
-                {
-                    bitmap.Dispose();
-                }
-
-                imageidx++;
-            }
-        }
-
-        [Theory]
-        [CombinatorialData]
         public void CompressIntPtr(
             [CombinatorialValues(
             TJSubsamplingOption.Gray,
@@ -99,8 +62,10 @@ namespace TurboJpegWrapper.Tests
                         ImageLockMode.ReadOnly,
                         bitmap.PixelFormat);
 
+                    Assert.Equal(PixelFormat.Format24bppRgb, bitmap.PixelFormat);
+
                     Trace.WriteLine($"Options: {options}; Quality: {quality}");
-                    var result = this.compressor.Compress(data.Scan0, data.Stride, data.Width, data.Height, data.PixelFormat, options, quality, TJFlags.None);
+                    var result = this.compressor.Compress(data.Scan0, data.Stride, data.Width, data.Height, TJPixelFormat.RGB, options, quality, TJFlags.None);
                     Assert.NotNull(result);
                 }
                 finally
@@ -118,7 +83,7 @@ namespace TurboJpegWrapper.Tests
         [Fact]
         public void CompressInvalidIntPtr()
         {
-            Assert.Throws<TJException>(() => this.compressor.Compress(IntPtr.Zero, 0, 0, 0, PixelFormat.Format32bppArgb, TJSubsamplingOption.Gray, 0, TJFlags.None));
+            Assert.Throws<TJException>(() => this.compressor.Compress(IntPtr.Zero, 0, 0, 0, TJPixelFormat.ARGB, TJSubsamplingOption.Gray, 0, TJFlags.None));
         }
 
         [Theory]
@@ -148,13 +113,14 @@ namespace TurboJpegWrapper.Tests
                     var width = data.Width;
                     var height = data.Height;
                     var pixelFormat = data.PixelFormat;
+                    Assert.Equal(PixelFormat.Format24bppRgb, pixelFormat);
 
                     var buf = new byte[stride * height];
                     Marshal.Copy(data.Scan0, buf, 0, buf.Length);
                     bitmap.UnlockBits(data);
 
                     Trace.WriteLine($"Options: {options}; Quality: {quality}");
-                    var result = this.compressor.Compress(buf, stride, width, height, pixelFormat, options, quality, TJFlags.None);
+                    var result = this.compressor.Compress(buf, stride, width, height, TJPixelFormat.RGB, options, quality, TJFlags.None);
                     Assert.NotNull(result);
                 }
                 finally
@@ -191,6 +157,7 @@ namespace TurboJpegWrapper.Tests
                     var width = data.Width;
                     var height = data.Height;
                     var pixelFormat = data.PixelFormat;
+                    Assert.Equal(PixelFormat.Format24bppRgb, pixelFormat);
 
                     var buf = new byte[stride * height];
                     Marshal.Copy(data.Scan0, buf, 0, buf.Length);
@@ -199,7 +166,7 @@ namespace TurboJpegWrapper.Tests
                     Trace.WriteLine($"Options: {options}; Quality: {quality}");
                     byte[] target = new byte[this.compressor.GetBufferSize(width, height, options)];
 
-                    this.compressor.Compress(buf, target, stride, width, height, pixelFormat, options, quality, TJFlags.None);
+                    this.compressor.Compress(buf, target, stride, width, height, TJPixelFormat.RGB, options, quality, TJFlags.None);
                 }
                 finally
                 {
@@ -235,6 +202,7 @@ namespace TurboJpegWrapper.Tests
                     var width = data.Width;
                     var height = data.Height;
                     var pixelFormat = data.PixelFormat;
+                    Assert.Equal(PixelFormat.Format24bppRgb, pixelFormat);
 
                     Span<byte> buf = new Span<byte>((byte*)data.Scan0, stride * height);
                     bitmap.UnlockBits(data);
@@ -242,7 +210,7 @@ namespace TurboJpegWrapper.Tests
                     Trace.WriteLine($"Options: {options}; Quality: {quality}");
                     Span<byte> target = new byte[this.compressor.GetBufferSize(width, height, options)];
 
-                    this.compressor.Compress(buf, target, stride, width, height, pixelFormat, options, quality, TJFlags.None);
+                    this.compressor.Compress(buf, target, stride, width, height, TJPixelFormat.RGB, options, quality, TJFlags.None);
                 }
                 finally
                 {
