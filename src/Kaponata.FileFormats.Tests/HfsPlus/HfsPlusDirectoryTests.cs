@@ -40,6 +40,11 @@ namespace Kaponata.FileFormats.Tests.HfsPlus
                     },
                     e =>
                     {
+                        var file = Assert.IsType<DiscFileSystemInfo>(e);
+                        Assert.Equal("System", file.Name);
+                    },
+                    e =>
+                    {
                         var dir = Assert.IsType<DiscFileSystemInfo>(e);
                         Assert.Equal("\0\0\0\0HFS+ Private Data", dir.Name);
                     });

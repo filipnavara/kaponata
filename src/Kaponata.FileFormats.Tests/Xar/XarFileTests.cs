@@ -99,8 +99,12 @@ namespace Kaponata.FileFormats.Tests.Xar
 
                 Assert.Collection(
                     xar.EntryNames,
-                    e => Assert.Equal("dmg", e),
-                    e => Assert.Equal("dmg/hello.txt", e));
+                    f => Assert.Equal("dmg", f),
+                    f => Assert.Equal("dmg/System", f),
+                    f => Assert.Equal("dmg/System/Library", f),
+                    f => Assert.Equal("dmg/System/Library/CoreServices", f),
+                    f => Assert.Equal("dmg/System/Library/CoreServices/SystemVersion.plist", f),
+                    f => Assert.Equal("dmg/hello.txt", f));
             }
         }
 
@@ -130,10 +134,15 @@ namespace Kaponata.FileFormats.Tests.Xar
                 Assert.Equal("dmg", dmg.Name);
                 Assert.Equal("dmg", dmg.ToString());
 
-                var hello = Assert.Single(dmg.Files);
+                Assert.Collection(
+                    dmg.Files,
+                    f => Assert.Equal("System", f.Name),
+                    f => Assert.Equal("hello.txt", f.Name));
+
+                var hello = dmg.Files[1];
 
                 Assert.Equal(22, hello.DataLength);
-                Assert.Equal(20, hello.DataOffset);
+                Assert.Equal(303, hello.DataOffset);
                 Assert.Equal(14, hello.DataSize);
                 Assert.Equal("application/x-gzip", hello.Encoding);
                 Assert.Equal("sha1", hello.ExtractedChecksumStyle);

@@ -55,10 +55,14 @@ namespace Kaponata.FileFormats.Tests.Xip
                     fileNames,
                     f => Assert.Equal(".", f),
                     f => Assert.Equal("./dmg", f),
+                    f => Assert.Equal("./dmg/System", f),
+                    f => Assert.Equal("./dmg/System/Library", f),
+                    f => Assert.Equal("./dmg/System/Library/CoreServices", f),
+                    f => Assert.Equal("./dmg/System/Library/CoreServices/SystemVersion.plist", f),
                     f => Assert.Equal("./dmg/hello.txt", f));
 
                 Assert.Null(xip.Metadata.FileSystemCompressionFormat);
-                Assert.Equal(14, xip.Metadata.UncompressedSize);
+                Assert.Equal(0x1f8, xip.Metadata.UncompressedSize);
                 Assert.Equal(1, xip.Metadata.Version);
             }
         }
