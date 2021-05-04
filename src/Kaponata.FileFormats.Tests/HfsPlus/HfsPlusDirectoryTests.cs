@@ -4,6 +4,7 @@
 
 using DiscUtils;
 using DiscUtils.HfsPlus;
+using System;
 using System.IO;
 using Xunit;
 
@@ -57,6 +58,29 @@ namespace Kaponata.FileFormats.Tests.HfsPlus
                 var file = hfs.GetFileInfo("\\hello.txt");
                 Assert.Equal(14, file.Length);
             }
+        }
+
+        /// <summary>
+        /// <see cref="HfsPlusDirectory.GetEntryByName(string)"/> throws when passed invalid arguments.
+        /// </summary>
+        [Fact]
+        public void GetEntryByName_InvalidName_Throws()
+        {
+            var dir = new HfsPlusDirectory(new Context(), new CatalogNodeId(0), new CatalogFileInfo());
+
+            Assert.Throws<ArgumentNullException>(() => dir.GetEntryByName(null));
+            Assert.Throws<ArgumentException>(() => dir.GetEntryByName(string.Empty));
+        }
+
+        /// <summary>
+        /// <see cref="HfsPlusDirectory.CreateNewFile(string)"/> always throws.
+        /// </summary>
+        [Fact]
+        public void CreateNewFile_Throws()
+        {
+            var dir = new HfsPlusDirectory(new Context(), new CatalogNodeId(0), new CatalogFileInfo());
+
+            Assert.Throws<NotSupportedException>(() => dir.CreateNewFile(null));
         }
     }
 }
