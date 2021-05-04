@@ -257,5 +257,49 @@ namespace Kaponata.FileFormats.Tests.HfsPlus
             byte[] data = new byte[0x10];
             Assert.Throws<InvalidOperationException>(() => buffer.Read(0, data, 0, data.Length));
         }
+
+        /// <summary>
+        /// <see cref="FileBuffer.GetExtentsInRange(long, long)"/> returns the correct values.
+        /// </summary>
+        [Fact]
+        public void GetExtentsInRange_Works()
+        {
+            var cnid = new CatalogNodeId(1);
+
+            var extentsOverflow = new Mock<BTree<ExtentKey>>(MockBehavior.Strict);
+            extentsOverflow
+                .Setup(e => e.Find(new ExtentKey(cnid, 0, false)))
+                .Returns((byte[])null);
+
+            var buffer = new FileBuffer(
+                new Context()
+                {
+                    VolumeStream = Stream.Null,
+                    VolumeHeader = new VolumeHeader()
+                    {
+                        BlockSize = 8,
+                    },
+                    ExtentsOverflow = extentsOverflow.Object,
+                },
+                new ForkData()
+                {
+                    LogicalSize = 0x10,
+                    Extents = Array.Empty<ExtentDescriptor>(),
+                    TotalBlocks = 0,
+                },
+                cnid);
+
+            var extent = Assert.Single(buffer.GetExtentsInRange(8, 8));
+            Assert.Equal(8, extent.Start);
+            Assert.Equal(8, extent.Length);
+
+            extent = Assert.Single(buffer.GetExtentsInRange(8, 16));
+            Assert.Equal(8, extent.Start);
+            Assert.Equal(8, extent.Length);
+
+            extent = Assert.Single(buffer.GetExtentsInRange(16, 16));
+            Assert.Equal(16, extent.Start);
+            Assert.Equal(0, extent.Length);
+        }
     }
 }
