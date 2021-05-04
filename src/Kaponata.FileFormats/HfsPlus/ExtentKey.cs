@@ -103,6 +103,25 @@ namespace DiscUtils.HfsPlus
         }
 
         /// <inheritdoc/>
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(this.NodeId, this.forkType, this.startBlock);
+        }
+
+        /// <inheritdoc/>
+        public override bool Equals(object obj)
+        {
+            var other = obj as ExtentKey;
+
+            if (other == null)
+            {
+                return false;
+            }
+
+            return this.CompareTo(other) == 0;
+        }
+
+        /// <inheritdoc/>
         public override int ReadFrom(byte[] buffer, int offset)
         {
             this.keyLength = EndianUtilities.ToUInt16BigEndian(buffer, offset + 0);

@@ -90,5 +90,26 @@ namespace Kaponata.FileFormats.Tests.HfsPlus
             Assert.Throws<ArgumentNullException>(() => key.CompareTo((BTreeKey)null));
             Assert.Throws<ArgumentNullException>(() => key.CompareTo((ExtentKey)null));
         }
+
+        /// <summary>
+        /// The <see cref="ExtentKey.Equals(object)"/> and <see cref="ExtentKey.GetHashCode"/>
+        /// methods work.
+        /// </summary>
+        [Fact]
+        public void Equals_Works()
+        {
+            var a1 = new ExtentKey(new CatalogNodeId(1u), 0u, true);
+            var a2 = new ExtentKey(new CatalogNodeId(1u), 0u, true);
+            var b = new ExtentKey(new CatalogNodeId(2u), 0u, true);
+
+            Assert.True(a1.Equals(a2));
+            Assert.Equal(a1.GetHashCode(), a2.GetHashCode());
+
+            Assert.True(a2.Equals(a1));
+            Assert.False(a1.Equals(b));
+            Assert.NotEqual(a1.GetHashCode(), b.GetHashCode());
+
+            Assert.False(a1.Equals(null));
+        }
     }
 }
