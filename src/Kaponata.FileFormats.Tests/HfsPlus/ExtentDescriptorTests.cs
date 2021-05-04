@@ -4,6 +4,7 @@
 
 using DiscUtils.HfsPlus;
 using System;
+using System.Buffers.Binary;
 using Xunit;
 
 namespace Kaponata.FileFormats.Tests.HfsPlus
@@ -31,10 +32,19 @@ namespace Kaponata.FileFormats.Tests.HfsPlus
         /// <see cref="ExtentDescriptor.WriteTo(byte[], int)"/> always throws.
         /// </summary>
         [Fact]
-        public void WriteTo_Throws()
+        public void WriteTo_Works()
         {
-            var descriptor = new ExtentDescriptor();
-            Assert.Throws<NotImplementedException>(() => descriptor.WriteTo(Array.Empty<byte>(), 0));
+            var descriptor = new ExtentDescriptor()
+            {
+                StartBlock = 2,
+                BlockCount = 1,
+            };
+
+            byte[] bytes = new byte[8];
+            descriptor.WriteTo(bytes, 0);
+
+            Assert.Equal(2, BinaryPrimitives.ReadInt32BigEndian(bytes.AsSpan(0, 4)));
+            Assert.Equal(1, BinaryPrimitives.ReadInt32BigEndian(bytes.AsSpan(4, 4)));
         }
     }
 }

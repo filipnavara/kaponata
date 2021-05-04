@@ -2,6 +2,7 @@
 // Copyright (c) Quamotion bv. All rights reserved.
 // </copyright>
 
+using DiscUtils;
 using DiscUtils.HfsPlus;
 using Moq;
 using System;
@@ -179,6 +180,87 @@ namespace Kaponata.FileFormats.Tests.HfsPlus
 
             Assert.Equal(8, file.FileContent.Read(0, buffer, 0, buffer.Length));
             Assert.Equal("APPL????", Encoding.UTF8.GetString(buffer, 0, 8));
+        }
+
+        /// <summary>
+        /// The default <see cref="HfsPlusFile"/> properties work correctly.
+        /// </summary>
+        [Fact]
+        public void Properties_Work()
+        {
+            var accessTime = new DateTime(2000, 1, 1);
+            var writeTime = new DateTime(2000, 1, 2);
+            var creationTime = new DateTime(2000, 1, 3);
+
+            var nodeId = new CatalogNodeId(1);
+            var file = new HfsPlusFile(
+                new Context()
+                {
+                    Attributes = Mock.Of<BTree<AttributeKey>>(),
+                },
+                nodeId,
+                new CatalogFileInfo()
+                {
+                    AccessTime = accessTime,
+                    ContentModifyTime = writeTime,
+                    CreateTime = creationTime,
+                    DataFork = new ForkData()
+                    {
+                        LogicalSize = 42,
+                    },
+                    FileSystemInfo = new UnixFileSystemInfo()
+                    {
+                        FileType = UnixFileType.Regular,
+                    },
+                });
+
+            Assert.Equal(accessTime, file.LastAccessTimeUtc);
+            Assert.Throws<NotSupportedException>(() => file.LastAccessTimeUtc = DateTime.Now);
+
+            Assert.Equal(writeTime, file.LastWriteTimeUtc);
+            Assert.Throws<NotSupportedException>(() => file.LastWriteTimeUtc = DateTime.Now);
+
+            Assert.Equal(creationTime, file.CreationTimeUtc);
+            Assert.Throws<NotSupportedException>(() => file.CreationTimeUtc = DateTime.Now);
+
+            Assert.Equal(FileAttributes.Normal, file.FileAttributes);
+            Assert.Throws<NotSupportedException>(() => file.FileAttributes = FileAttributes.Hidden);
+
+            Assert.Equal(42, file.FileLength);
+        }
+
+        /// <summary>
+        /// <see cref="HfsPlusFile.CreateStream(string)"/> always throws.
+        /// </summary>
+        [Fact]
+        public void CreateStream_Throws()
+        {
+            var file = new HfsPlusFile(
+                new Context()
+                {
+                    Attributes = Mock.Of<BTree<AttributeKey>>(),
+                },
+                new CatalogNodeId(0u),
+                new CatalogFileInfo());
+
+            Assert.Throws<NotSupportedException>(() => file.CreateStream("test"));
+        }
+
+        /// <summary>
+        /// <see cref="HfsPlusFile.OpenExistingStream(string)"/> always throws.
+        /// </summary>
+        [Fact]
+        public void OpenExistingStream_Throws()
+        {
+            var file = new HfsPlusFile(
+                new Context()
+                {
+                    Attributes = Mock.Of<BTree<AttributeKey>>(),
+                },
+                new CatalogNodeId(0u),
+                new CatalogFileInfo());
+
+            Assert.Throws<NotImplementedException>(() => file.OpenExistingStream("test"));
         }
     }
 }
