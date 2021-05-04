@@ -165,9 +165,6 @@ namespace DiscUtils.HfsPlus
         /// <returns>
         /// A list of records embedded in this node.
         /// </returns>
-        protected virtual IList<BTreeNodeRecord> ReadRecords(byte[] buffer, int offset)
-        {
-            throw new NotImplementedException();
-        }
+        protected abstract IList<BTreeNodeRecord> ReadRecords(byte[] buffer, int offset);
     }
 }

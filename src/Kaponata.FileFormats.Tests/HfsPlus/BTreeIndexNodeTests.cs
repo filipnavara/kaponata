@@ -46,6 +46,17 @@ namespace Kaponata.FileFormats.Tests.HfsPlus
         /// <see cref="BTreeIndexNode{TKey}.FindKey(TKey)"/> returns <see langword="null"/> if the requested key was not found.
         /// </summary>
         [Fact]
+        public void Size_ReturnsValue()
+        {
+            var tree = new BTree<ExtentKey>(this.buffer);
+            var indexNode = new BTreeIndexNode<ExtentKey>(tree, new BTreeNodeDescriptor() { NumRecords = 3 });
+            Assert.Equal(0x1000, indexNode.Size);
+        }
+
+        /// <summary>
+        /// <see cref="BTreeIndexNode{TKey}.FindKey(TKey)"/> returns <see langword="null"/> if the requested key was not found.
+        /// </summary>
+        [Fact]
         public void FindKey_NotFound_ReturnsNull()
         {
             var tree = new BTree<ExtentKey>(this.buffer);
@@ -67,6 +78,18 @@ namespace Kaponata.FileFormats.Tests.HfsPlus
             indexNode.ReadFrom(this.nodeData, 0);
 
             indexNode.VisitRange((key, data) => { return 1; });
+        }
+
+        /// <summary>
+        /// <see cref="BTreeNode.WriteTo(byte[], int)"/> always throws.
+        /// </summary>
+        [Fact]
+        public void WriteTo_Throws()
+        {
+            var tree = new BTree<ExtentKey>(this.buffer);
+            var indexNode = new BTreeIndexNode<ExtentKey>(tree, new BTreeNodeDescriptor() { NumRecords = 3 });
+
+            Assert.Throws<NotImplementedException>(() => indexNode.WriteTo(Array.Empty<byte>(), 0));
         }
     }
 }
