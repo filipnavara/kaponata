@@ -4,6 +4,7 @@
 // </copyright>
 
 using System;
+using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
 
@@ -27,7 +28,6 @@ namespace TurboJpegWrapper
             // Dummy call to trigger the static constructor
         }
 
-#if !NETCOREAPP2_0 && !NETSTANDARD2_0 && !NETSTANDARD2_1 && !NET45
         private static IntPtr DllImportResolver(string libraryName, Assembly assembly, DllImportSearchPath? searchPath)
         {
             if (libraryName != TurboJpegImport.UnmanagedLibrary)
@@ -35,12 +35,8 @@ namespace TurboJpegWrapper
                 return IntPtr.Zero;
             }
 
-            // We ship "turbojpeg.dll" and "libturbojpeg.dylib" as part of the NuGet package,
-            // so there's nothing left to do for Windows and macOS.
-            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-            {
-                return IntPtr.Zero;
-            }
+            IntPtr lib;
+            string nativeLibraryName;
 
             // On Debian & Ubuntu, there are two out-of-the-box packages:
             // - libjpeg-turbo8 is the libjpeg-turbo, masquerading as the
@@ -55,15 +51,46 @@ namespace TurboJpegWrapper
             // libturbojpeg.so.0
             //
             // Require the specialized version.
-            IntPtr lib = IntPtr.Zero;
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                nativeLibraryName = "turbojpeg.dll";
+            }
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            {
+                nativeLibraryName = "libturbojpeg.so.0";
+            }
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                nativeLibraryName = "libturbojpeg.0.dylib";
+            }
+            else
+            {
+                return IntPtr.Zero;
+            }
 
-            if (NativeLibrary.TryLoad("libturbojpeg.so.0", out lib))
+            // First, attempt to load the native library from the NuGet packages
+            var nativeSearchDirectories = AppContext.GetData("NATIVE_DLL_SEARCH_DIRECTORIES") as string;
+            var delimiter = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? ";" : ":";
+
+            if (nativeSearchDirectories != null)
+            {
+                foreach (var directory in nativeSearchDirectories.Split(delimiter))
+                {
+                    var path = Path.Combine(directory, nativeLibraryName);
+                    if (NativeLibrary.TryLoad(path, out lib))
+                    {
+                        return lib;
+                    }
+                }
+            }
+
+            // Next, try to load any OS-provided version of the library
+            if (NativeLibrary.TryLoad(nativeLibraryName, out lib))
             {
                 return lib;
             }
 
             return IntPtr.Zero;
         }
-#endif
     }
 }
