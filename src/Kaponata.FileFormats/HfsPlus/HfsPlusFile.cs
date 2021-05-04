@@ -172,7 +172,7 @@ namespace DiscUtils.HfsPlus
                                             Ownership.Dispose),
                                         0,
                                         Ownership.Dispose);
-                                return new ZlibBuffer(compressedStream, Ownership.Dispose);
+                                return new StreamBuffer(compressedStream, Ownership.Dispose);
                             }
 
                         case FileCompressionType.ZlibResource:
@@ -237,8 +237,12 @@ namespace DiscUtils.HfsPlus
                             }
 
                             // Finally, concatenate the streams together and that's about it.
-                            ConcatStream concatStream = new ConcatStream(Ownership.Dispose, streams);
-                            return new ZlibBuffer(concatStream, Ownership.Dispose);
+                            var concatStream =
+                                    new PositionWrappingStream(
+                                        new ConcatStream(Ownership.Dispose, streams),
+                                        0,
+                                        Ownership.Dispose);
+                            return new StreamBuffer(concatStream, Ownership.Dispose);
 
                         case FileCompressionType.RawAttribute:
                             // Inline, no compression
