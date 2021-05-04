@@ -60,7 +60,7 @@ namespace DiscUtils.HfsPlus
             this.NodeId = nodeId;
             this.catalogInfo = catalogInfo;
             this.hasCompressionAttribute =
-                this.Context.Attributes.Find(new AttributeKey(this.NodeId, CompressionAttributeName)) != null;
+                this.Context.Attributes?.Find(new AttributeKey(this.NodeId, CompressionAttributeName)) != null;
         }
 
         /// <inheritdoc/>
@@ -111,7 +111,7 @@ namespace DiscUtils.HfsPlus
         }
 
         /// <inheritdoc/>
-        public IBuffer FileContent
+        public virtual IBuffer FileContent
         {
             get
             {
