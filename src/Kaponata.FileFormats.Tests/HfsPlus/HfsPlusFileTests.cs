@@ -230,6 +230,25 @@ namespace Kaponata.FileFormats.Tests.HfsPlus
         }
 
         /// <summary>
+        /// <see cref="HfsPlusFile.FileContent"/> and <see cref="HfsPlusFile.FileContent"/> throw
+        /// when the catalog info does not represent a file.
+        /// </summary>
+        [Fact]
+        public void FileProperties_NotAFile_Throw()
+        {
+            var file = new HfsPlusFile(
+                new Context()
+                {
+                    Attributes = Mock.Of<BTree<AttributeKey>>(),
+                },
+                new CatalogNodeId(0),
+                new CatalogDirInfo());
+
+            Assert.Throws<InvalidOperationException>(() => file.FileLength);
+            Assert.Throws<InvalidOperationException>(() => file.FileContent);
+        }
+
+        /// <summary>
         /// <see cref="HfsPlusFile.CreateStream(string)"/> always throws.
         /// </summary>
         [Fact]
