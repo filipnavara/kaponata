@@ -4,6 +4,7 @@
 // </copyright>
 
 using System;
+using System.Buffers.Binary;
 using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
@@ -281,6 +282,44 @@ namespace Kaponata.TurboJpeg.Tests
 
             Assert.Throws<ObjectDisposedException>(() => this.compressor.CompressFromYUVPlanes(Span<byte>.Empty, Span<byte>.Empty, Span<byte>.Empty, 0, Array.Empty<int>(), 0, TJSubsamplingOption.Gray, Span<byte>.Empty, 0, TJFlags.None));
             Assert.Throws<ObjectDisposedException>(() => this.compressor.GetBufferSize(0, 0, TJSubsamplingOption.Gray));
+        }
+
+        /// <summary>
+        /// <see cref="TJCompressor.CompressFromYUVPlanes(Span{byte}, Span{byte}, Span{byte}, int, int[], int, TJSubsamplingOption, Span{byte}, int, TJFlags)"/> can correctly handle
+        /// a color image.
+        /// </summary>
+        [Fact]
+        public void CompressFromYUVPlanes_ColorImage()
+        {
+            const int width = 2;
+            const int height = 2;
+
+            byte[] yPlane = new byte[this.compressor.PlaneSizeYUV(TJPlane.Y, width, stride: 0, height, 4)];
+            byte[] uPlane = new byte[this.compressor.PlaneSizeYUV(TJPlane.U, width, stride: 0, height, 4)];
+            byte[] vPlane = new byte[this.compressor.PlaneSizeYUV(TJPlane.V, width, stride: 0, height, 4)];
+
+            var result = this.compressor.CompressFromYUVPlanes(yPlane, uPlane, vPlane, width, new int[] { 0, 0, 0 }, height, TJSubsamplingOption.Chrominance444, null, 100, TJFlags.None);
+
+            // Compressed images starts with the JPEG magic.
+            Assert.Equal(0xffd8ffe0, BinaryPrimitives.ReadUInt32BigEndian(result.Slice(0, 4)));
+        }
+
+        /// <summary>
+        /// <see cref="TJCompressor.CompressFromYUVPlanes(Span{byte}, Span{byte}, Span{byte}, int, int[], int, TJSubsamplingOption, Span{byte}, int, TJFlags)"/> can correctly handle
+        /// a grayscale image.
+        /// </summary>
+        [Fact]
+        public void CompressFromYUVPlanes_GrayImage()
+        {
+            const int width = 2;
+            const int height = 2;
+
+            byte[] yPlane = new byte[this.compressor.PlaneSizeYUV(TJPlane.Y, width, stride: 0, height, 4)];
+
+            var result = this.compressor.CompressFromYUVPlanes(yPlane, null, null, width, new int[] { 0, }, height, TJSubsamplingOption.Gray, null, 100, TJFlags.None);
+
+            // Compressed images starts with the JPEG magic.
+            Assert.Equal(0xffd8ffe0, BinaryPrimitives.ReadUInt32BigEndian(result.Slice(0, 4)));
         }
     }
 }

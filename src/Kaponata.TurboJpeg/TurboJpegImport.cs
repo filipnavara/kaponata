@@ -415,7 +415,6 @@ namespace Kaponata.TurboJpeg
         /// </param>
         /// <param name="flags">flags the bitwise OR of one or more of the <see cref="TJFlags"/> "flags".</param>
         /// <returns>0 if successful, or -1 if an error occurred (see <see cref="TjGetErrorStr"/>).</returns>
-
         [DllImport(UnmanagedLibrary, CallingConvention = CallingConvention.Cdecl, EntryPoint = "tjTransform")]
         public static extern int TjTransform(
             IntPtr handle,
@@ -506,7 +505,6 @@ namespace Kaponata.TurboJpeg
         /// <returns>
         /// 0 if successful, or -1 if an error occurred.
         /// </returns>
-
         [DllImport(UnmanagedLibrary, CallingConvention = CallingConvention.Cdecl, EntryPoint = "tjCompressFromYUVPlanes")]
         public static unsafe extern int TjCompressFromYUVPlanes(
             IntPtr handle,
@@ -534,5 +532,72 @@ namespace Kaponata.TurboJpeg
         /// <returns>A descriptive error message explaining why the last command failed.</returns>
         [DllImport(UnmanagedLibrary, CallingConvention = CallingConvention.Cdecl, EntryPoint = "tjGetErrorStr")]
         public static extern IntPtr TjGetErrorStr();
+
+        /// <summary>
+        /// The size of the buffer (in bytes) required to hold a YUV image plane with
+        /// the given parameters.
+        /// </summary>
+        /// <param name="componentID">
+        /// ID number of the image plane (0 = Y, 1 = U/Cb, 2 = V/Cr).
+        /// </param>
+        /// <param name="width">
+        /// width (in pixels) of the YUV image.  NOTE: this is the width of
+        /// the whole image, not the plane width.
+        /// </param>
+        /// <param name="stride">
+        /// bytes per line in the image plane.  Setting this to 0 is the
+        /// equivalent of setting it to the plane width.
+        /// </param>
+        /// <param name="height">
+        /// height (in pixels) of the YUV image.  NOTE: this is the height
+        /// of the whole image, not the plane height.
+        /// </param>
+        /// <param name="subsamp">
+        /// level of chrominance subsampling in the image.
+        /// </param>
+        /// <returns>
+        /// the size of the buffer (in bytes) required to hold the YUV image
+        /// plane, or -1 if the arguments are out of bounds.
+        /// </returns>
+        [DllImport(UnmanagedLibrary, CallingConvention = CallingConvention.Cdecl, EntryPoint = "tjPlaneSizeYUV")]
+        public static extern nuint TjPlaneSizeYUV(TJPlane componentID, int width, int stride, int height, int subsamp);
+
+        /// <summary>
+        /// The plane width of a YUV image plane with the given parameters.
+        /// </summary>
+        /// <param name="componentID">
+        /// ID number of the image plane (0 = Y, 1 = U/Cb, 2 = V/Cr).
+        /// </param>
+        /// <param name="width">
+        /// width (in pixels) of the YUV image.
+        /// </param>
+        /// <param name="subsamp">
+        /// level of chrominance subsampling in the image.
+        /// </param>
+        /// <returns>
+        /// The plane width of a YUV image plane with the given parameters, or
+        /// -1 if the arguments are out of bounds.
+        /// </returns>
+        [DllImport(UnmanagedLibrary, CallingConvention = CallingConvention.Cdecl, EntryPoint = "tjPlaneWidth")]
+        public static extern int TjPlaneWidth(TJPlane componentID, int width, int subsamp);
+
+        /// <summary>
+        /// The plane height of a YUV image plane with the given parameters.
+        /// </summary>
+        /// <param name="componentID">
+        /// ID number of the image plane (0 = Y, 1 = U/Cb, 2 = V/Cr).
+        /// </param>
+        /// <param name="height">
+        /// Height (in pixels) of the YUV image.
+        /// </param>
+        /// <param name="subsamp">
+        /// Level of chrominance subsampling in the image.
+        /// </param>
+        /// <returns>
+        /// The plane height of a YUV image plane with the given parameters, or
+        /// -1 if the arguments are out of bounds.
+        /// </returns>
+        [DllImport(UnmanagedLibrary, CallingConvention = CallingConvention.Cdecl, EntryPoint = "tjPlaneHeight")]
+        public static extern int TjPlaneHeight(TJPlane componentID, int height, int subsamp);
     }
 }

@@ -264,19 +264,83 @@ namespace Kaponata.TurboJpeg
         }
 
         /// <summary>
+        /// The size of the buffer (in bytes) required to hold a YUV image plane with
+        /// the given parameters.
+        /// </summary>
+        /// <param name="componentID">
+        /// ID number of the image plane (0 = Y, 1 = U/Cb, 2 = V/Cr).
+        /// </param>
+        /// <param name="width">
+        /// width (in pixels) of the YUV image.  NOTE: this is the width of
+        /// the whole image, not the plane width.
+        /// </param>
+        /// <param name="stride">
+        /// bytes per line in the image plane.  Setting this to 0 is the
+        /// equivalent of setting it to the plane width.
+        /// </param>
+        /// <param name="height">
+        /// height (in pixels) of the YUV image.  NOTE: this is the height
+        /// of the whole image, not the plane height.
+        /// </param>
+        /// <param name="subsamp">
+        /// level of chrominance subsampling in the image.
+        /// </param>
+        /// <returns>
+        /// the size of the buffer (in bytes) required to hold the YUV image
+        /// plane, or -1 if the arguments are out of bounds.
+        /// </returns>
+        public nuint PlaneSizeYUV(TJPlane componentID, int width, int stride, int height, int subsamp) => TurboJpegImport.TjPlaneSizeYUV(componentID, width, stride, height, subsamp);
+
+        /// <summary>
+        /// The plane width of a YUV image plane with the given parameters.
+        /// </summary>
+        /// <param name="componentID">
+        /// ID number of the image plane (0 = Y, 1 = U/Cb, 2 = V/Cr).
+        /// </param>
+        /// <param name="width">
+        /// width (in pixels) of the YUV image.
+        /// </param>
+        /// <param name="subsamp">
+        /// level of chrominance subsampling in the image.
+        /// </param>
+        /// <returns>
+        /// The plane width of a YUV image plane with the given parameters, or
+        /// -1 if the arguments are out of bounds.
+        /// </returns>
+        public int PlaneWidth(TJPlane componentID, int width, int subsamp) => TurboJpegImport.TjPlaneWidth(componentID, width, subsamp);
+
+        /// <summary>
+        /// The plane height of a YUV image plane with the given parameters.
+        /// </summary>
+        /// <param name="componentID">
+        /// ID number of the image plane (0 = Y, 1 = U/Cb, 2 = V/Cr).
+        /// </param>
+        /// <param name="height">
+        /// Height (in pixels) of the YUV image.
+        /// </param>
+        /// <param name="subsamp">
+        /// Level of chrominance subsampling in the image.
+        /// </param>
+        /// <returns>
+        /// The plane height of a YUV image plane with the given parameters, or
+        /// -1 if the arguments are out of bounds.
+        /// </returns>
+        public int PlaneHeight(TJPlane componentID, int height, int subsamp) => TurboJpegImport.TjPlaneHeight(componentID, height, subsamp);
+
+        /// <summary>
         /// Compress a set of Y, U (Cb), and V (Cr) image planes into a JPEG image.
         /// </summary>
         /// <param name="yPlane">
         /// A pointer to the Y image planes of the YUV image to be decoded.
-        /// The size of the plane should match the value returned by tjPlaneSizeYUV() for the given image width, height, strides, and level of chrominance subsampling.
+        /// The size of the plane should match the value returned by <see cref="PlaneSizeYUV"/> for the given image width, height, strides, and level of chrominance subsampling.
         /// </param>
         /// <param name="uPlane">
         /// A pointer to the U (Cb) image plane (or just <see langword="null"/>, if decoding a grayscale image) of the YUV image to be decoded.
-        /// The size of the plane should match the value returned by tjPlaneSizeYUV() for the given image width, height, strides, and level of chrominance subsampling.
+        /// The size of the plane should match the value returned by <see cref="PlaneSizeYUV"/> for the given image width, height, strides, and level of chrominance subsampling.
         /// </param>
         /// <param name="vPlane">
         /// A pointer to the V (Cr)image plane (or just <see langword="null"/>, if decoding a grayscale image) of the YUV image to be decoded.
-        /// The size of the plane should match the value returned by tjPlaneSizeYUV() for the given image width, height, strides, and level of chrominance subsampling.
+        /// The size of the plane should match the value returned by <see cref="PlaneSizeYUV"/> for the given image width, height, strides, and level of chrominance subsampling.
         /// </param>
         /// <param name="width">
         /// The width (in pixels) of the source image. If the width is not an even multiple of the MCU block width (see tjMCUWidth), then an intermediate buffer copy will be performed within TurboJPEG.
