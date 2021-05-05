@@ -331,7 +331,7 @@ namespace Kaponata.TurboJpeg
         {
             Verify.NotDisposed(this);
 
-            uint destBufSize = (uint)jpegBuf.Length;
+            nuint destBufSize = (nuint)jpegBuf.Length;
             IntPtr jpegBufPtr2 = IntPtr.Zero;
 
             fixed (byte* yPlanePtr = yPlane)

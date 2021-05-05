@@ -214,40 +214,8 @@ namespace Kaponata.TurboJpeg
         /// <param name="jpegColorspace">Pointer to an integer variable that will receive one of the JPEG colorspace constants,
         /// indicating the colorspace of the JPEG image(see <see cref="TJColorSpace"/> "JPEG colorspaces".)</param>
         /// <returns>0 if successful, or -1 if an error occurred (see <see cref="TjGetErrorStr"/>).</returns>
-        public static int TjDecompressHeader(
-            IntPtr handle,
-            byte* jpegBuf,
-            ulong jpegSize,
-            out int width,
-            out int height,
-            out int jpegSubsamp,
-            out int jpegColorspace)
-        {
-            switch (IntPtr.Size)
-            {
-                case 4:
-                    return TjDecompressHeader3_x86(
-                        handle,
-                        jpegBuf,
-                        (uint)jpegSize,
-                        out width,
-                        out height,
-                        out jpegSubsamp,
-                        out jpegColorspace);
-                case 8:
-                    return TjDecompressHeader3_x64(
-                        handle,
-                        jpegBuf,
-                        jpegSize,
-                        out width,
-                        out height,
-                        out jpegSubsamp,
-                        out jpegColorspace);
-
-                default:
-                    throw new InvalidOperationException("Invalid platform. Can not find proper function");
-            }
-        }
+        [DllImport(UnmanagedLibrary, CallingConvention = CallingConvention.Cdecl, EntryPoint = "tjDecompressHeader3")]
+        public static extern int TjDecompressHeader(IntPtr handle, byte* jpegBuf, nuint jpegSize, out int width, out int height, out int jpegSubsamp, out int jpegColorspace);
 
         /// <summary>
         /// Returns a list of fractional scaling factors that the JPEG decompressor in this implementation of TurboJPEG supports.
@@ -361,28 +329,8 @@ namespace Kaponata.TurboJpeg
         /// <param name="pixelFormat">Pixel format of the destination image (see <see cref="TJPixelFormat"/> "Pixel formats".)</param>
         /// <param name="flags">The bitwise OR of one or more of the <see cref="TJFlags"/> "flags".</param>
         /// <returns>0 if successful, or -1 if an error occurred (see <see cref="TjGetErrorStr"/>).</returns>
-        public static int TjDecompress(
-            IntPtr handle,
-            byte* jpegBuf,
-            ulong jpegSize,
-            byte* dstBuf,
-            int width,
-            int pitch,
-            int height,
-            int pixelFormat,
-            int flags)
-        {
-            switch (IntPtr.Size)
-            {
-                case 4:
-                    return TjDecompress2_x86(handle, jpegBuf, (uint)jpegSize, dstBuf, width, pitch, height, pixelFormat, flags);
-                case 8:
-                    return TjDecompress2_x64(handle, jpegBuf, jpegSize, dstBuf, width, pitch, height, pixelFormat, flags);
-
-                default:
-                    throw new InvalidOperationException("Invalid platform. Can not find proper function");
-            }
-        }
+        [DllImport(UnmanagedLibrary, CallingConvention = CallingConvention.Cdecl, EntryPoint = "tjDecompress2")]
+        public static extern int TjDecompress(IntPtr handle, byte* jpegBuf, nuint jpegSize, byte* dstBuf, int width, int pitch, int height, int pixelFormat, int flags);
 
         /// <summary>
         /// Allocate an image buffer for use with TurboJPEG.  You should always use
@@ -467,42 +415,17 @@ namespace Kaponata.TurboJpeg
         /// </param>
         /// <param name="flags">flags the bitwise OR of one or more of the <see cref="TJFlags"/> "flags".</param>
         /// <returns>0 if successful, or -1 if an error occurred (see <see cref="TjGetErrorStr"/>).</returns>
-        public static int TjTransform(
+
+        [DllImport(UnmanagedLibrary, CallingConvention = CallingConvention.Cdecl, EntryPoint = "tjTransform")]
+        public static extern int TjTransform(
             IntPtr handle,
             byte* jpegBuf,
-            ulong jpegSize,
+            nuint jpegSize,
             int n,
             IntPtr[] dstBufs,
-            ulong[] dstSizes,
+            uint[] dstSizes,
             IntPtr transforms,
-            int flags)
-        {
-            var intSizes = new uint[dstSizes.Length];
-            for (var i = 0; i < dstSizes.Length; i++)
-            {
-                intSizes[i] = (uint)dstSizes[i];
-            }
-
-            int result;
-            switch (IntPtr.Size)
-            {
-                case 4:
-                    result = TjTransform_x86(handle, jpegBuf, (uint)jpegSize, n, dstBufs, intSizes, transforms, flags);
-                    break;
-                case 8:
-                    result = TjTransform_x64(handle, jpegBuf, jpegSize, n, dstBufs, intSizes, transforms, flags);
-                    break;
-                default:
-                    throw new InvalidOperationException("Invalid platform. Can not find proper function");
-            }
-
-            for (var i = 0; i < dstSizes.Length; i++)
-            {
-                dstSizes[i] = intSizes[i];
-            }
-
-            return result;
-        }
+            int flags);
 
         /// <summary>
         /// Compress a set of Y, U (Cb), and V (Cr) image planes into a JPEG image.
@@ -583,7 +506,9 @@ namespace Kaponata.TurboJpeg
         /// <returns>
         /// 0 if successful, or -1 if an error occurred.
         /// </returns>
-        public static unsafe int TjCompressFromYUVPlanes(
+
+        [DllImport(UnmanagedLibrary, CallingConvention = CallingConvention.Cdecl, EntryPoint = "tjCompressFromYUVPlanes")]
+        public static unsafe extern int TjCompressFromYUVPlanes(
             IntPtr handle,
             byte** srcPlanes,
             int width,
@@ -591,25 +516,9 @@ namespace Kaponata.TurboJpeg
             int height,
             int subsamp,
             ref IntPtr jpegBuf,
-            ref uint jpegSize,
+            ref nuint jpegSize,
             int jpegQual,
-            int flags)
-        {
-            switch (IntPtr.Size)
-            {
-                case 4:
-                    return TjCompressFromYUVPlanes_x86(handle, srcPlanes, width, strides, height, subsamp, ref jpegBuf, ref jpegSize, jpegQual, flags);
-
-                case 8:
-                    ulong s = (ulong)jpegSize;
-                    int ret = TjCompressFromYUVPlanes_x64(handle, srcPlanes, width, strides, height, subsamp, ref jpegBuf, ref s, jpegQual, flags);
-                    jpegSize = (uint)s;
-                    return ret;
-
-                default:
-                    throw new InvalidOperationException("Invalid platform. Can not find proper function");
-            }
-        }
+            int flags);
 
         /// <summary>
         /// Destroy a TurboJPEG compressor, decompressor, or transformer instance.
@@ -625,65 +534,5 @@ namespace Kaponata.TurboJpeg
         /// <returns>A descriptive error message explaining why the last command failed.</returns>
         [DllImport(UnmanagedLibrary, CallingConvention = CallingConvention.Cdecl, EntryPoint = "tjGetErrorStr")]
         public static extern IntPtr TjGetErrorStr();
-
-        [DllImport(UnmanagedLibrary, CallingConvention = CallingConvention.Cdecl, EntryPoint = "tjDecompressHeader3")]
-        private static extern int TjDecompressHeader3_x86(IntPtr handle, byte* jpegBuf, uint jpegSize, out int width, out int height, out int jpegSubsamp, out int jpegColorspace);
-
-        [DllImport(UnmanagedLibrary, CallingConvention = CallingConvention.Cdecl, EntryPoint = "tjDecompressHeader3")]
-        private static extern int TjDecompressHeader3_x64(IntPtr handle, byte* jpegBuf, ulong jpegSize, out int width, out int height, out int jpegSubsamp, out int jpegColorspace);
-
-        [DllImport(UnmanagedLibrary, CallingConvention = CallingConvention.Cdecl, EntryPoint = "tjDecompress2")]
-        private static extern int TjDecompress2_x86(IntPtr handle, byte* jpegBuf, uint jpegSize, byte* dstBuf, int width, int pitch, int height, int pixelFormat, int flags);
-
-        [DllImport(UnmanagedLibrary, CallingConvention = CallingConvention.Cdecl, EntryPoint = "tjDecompress2")]
-        private static extern int TjDecompress2_x64(IntPtr handle, byte* jpegBuf, ulong jpegSize, byte* dstBuf, int width, int pitch, int height, int pixelFormat, int flags);
-
-        [DllImport(UnmanagedLibrary, CallingConvention = CallingConvention.Cdecl, EntryPoint = "tjTransform")]
-        private static extern int TjTransform_x86(
-            IntPtr handle,
-            byte* jpegBuf,
-            uint jpegSize,
-            int n,
-            IntPtr[] dstBufs,
-            uint[] dstSizes,
-            IntPtr transforms,
-            int flags);
-
-        [DllImport(UnmanagedLibrary, CallingConvention = CallingConvention.Cdecl, EntryPoint = "tjTransform")]
-        private static extern int TjTransform_x64(
-            IntPtr handle,
-            byte* jpegBuf,
-            ulong jpegSize,
-            int n,
-            IntPtr[] dstBufs,
-            uint[] dstSizes,
-            IntPtr transforms,
-            int flags);
-
-        [DllImport(UnmanagedLibrary, CallingConvention = CallingConvention.Cdecl, EntryPoint = "tjCompressFromYUVPlanes")]
-        private static unsafe extern int TjCompressFromYUVPlanes_x86(
-            IntPtr handle,
-            byte** srcPlanes,
-            int width,
-            int* strides,
-            int height,
-            int subsamp,
-            ref IntPtr jpegBuf,
-            ref uint jpegSize,
-            int jpegQual,
-            int flags);
-
-        [DllImport(UnmanagedLibrary, CallingConvention = CallingConvention.Cdecl, EntryPoint = "tjCompressFromYUVPlanes")]
-        private static unsafe extern int TjCompressFromYUVPlanes_x64(
-            IntPtr handle,
-            byte** srcPlanes,
-            int width,
-            int* strides,
-            int height,
-            int subsamp,
-            ref IntPtr jpegBuf,
-            ref ulong jpegSize,
-            int jpegQual,
-            int flags);
     }
 }

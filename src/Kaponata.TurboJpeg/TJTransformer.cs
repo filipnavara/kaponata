@@ -63,7 +63,7 @@ namespace Kaponata.TurboJpeg
             {
                 var count = transforms.Length;
                 var destBufs = new IntPtr[count];
-                var destSizes = new ulong[count];
+                var destSizes = new uint[count];
 
                 int subsampl;
                 int colorspace;
@@ -72,7 +72,7 @@ namespace Kaponata.TurboJpeg
                 var funcResult = TurboJpegImport.TjDecompressHeader(
                     this.transformHandle,
                     jpegBufPtr,
-                    (ulong)jpegBuf.Length,
+                    (nuint)jpegBuf.Length,
                     out width,
                     out height,
                     out subsampl,
@@ -119,7 +119,7 @@ namespace Kaponata.TurboJpeg
                     funcResult = TurboJpegImport.TjTransform(
                         this.transformHandle,
                         jpegBufPtr,
-                        (ulong)jpegBuf.Length,
+                        (nuint)jpegBuf.Length,
                         count,
                         destBufs,
                         destSizes,

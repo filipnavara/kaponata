@@ -56,7 +56,7 @@ namespace Kaponata.TurboJpeg
                 var funcResult = TurboJpegImport.TjDecompressHeader(
                     this.decompressorHandle,
                     jpegBufPtr,
-                    (ulong)jpegBuf.Length,
+                    (nuint)jpegBuf.Length,
                     out width,
                     out height,
                     out subsampl,
@@ -79,7 +79,7 @@ namespace Kaponata.TurboJpeg
                 funcResult = TurboJpegImport.TjDecompress(
                     this.decompressorHandle,
                     jpegBufPtr,
-                    (ulong)jpegBuf.Length,
+                    (nuint)jpegBuf.Length,
                     outBufPtr,
                     width,
                     stride,
@@ -226,7 +226,7 @@ namespace Kaponata.TurboJpeg
                 var funcResult = TurboJpegImport.TjDecompressHeader(
                     this.decompressorHandle,
                     jpegBufPtr,
-                    (ulong)jpegBuf.Length,
+                    (nuint)jpegBuf.Length,
                     out width,
                     out height,
                     out subsampl,
