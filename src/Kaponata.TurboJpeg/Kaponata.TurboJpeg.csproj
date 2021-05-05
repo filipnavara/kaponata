@@ -13,5 +13,6 @@
 
   <ItemGroup>
     <PackageReference Include="Kaponata.TurboJpeg.NativeDependencies" Version="0.3.15" />
+    <PackageReference Include="Microsoft.VisualStudio.Validation" Version="16.9.32" />
   </ItemGroup>
 </Project>

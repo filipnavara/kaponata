@@ -3,6 +3,7 @@
 // Copyright (c) Quamotion. All rights reserved.
 // </copyright>
 
+using Microsoft;
 using System;
 
 namespace Kaponata.TurboJpeg
@@ -10,11 +11,9 @@ namespace Kaponata.TurboJpeg
     /// <summary>
     /// Implements compression of RGB, CMYK, grayscale images to the jpeg format.
     /// </summary>
-    public unsafe class TJDecompressor : IDisposable
+    public unsafe class TJDecompressor : IDisposableObservable
     {
-        private readonly object @lock = new object();
         private IntPtr decompressorHandle = IntPtr.Zero;
-        private bool isDisposed;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="TJDecompressor"/> class.
@@ -32,13 +31,8 @@ namespace Kaponata.TurboJpeg
             }
         }
 
-        /// <summary>
-        /// Finalizes an instance of the <see cref="TJDecompressor"/> class.
-        /// </summary>
-        ~TJDecompressor()
-        {
-            this.Dispose(false);
-        }
+        /// <inheritdoc/>
+        public bool IsDisposed { get; private set; }
 
         /// <summary>
         /// Decompress a JPEG image to an RGB, grayscale, or CMYK image.
@@ -52,10 +46,7 @@ namespace Kaponata.TurboJpeg
         /// <param name="stride">Bytes per line in the destination image.</param>
         public unsafe void Decompress(Span<byte> jpegBuf, Span<byte> outBuf, TJPixelFormat destPixelFormat, TJFlags flags, out int width, out int height, out int stride)
         {
-            if (this.isDisposed)
-            {
-                throw new ObjectDisposedException("this");
-            }
+            Verify.NotDisposed(this);
 
             fixed (byte* jpegBufPtr = jpegBuf)
             fixed (byte* outBufPtr = outBuf)
@@ -172,10 +163,7 @@ namespace Kaponata.TurboJpeg
             TJPixelFormat pixelFormat,
             TJFlags flags)
         {
-            if (this.isDisposed)
-            {
-                throw new ObjectDisposedException(nameof(TJDecompressor));
-            }
+            Verify.NotDisposed(this);
 
             fixed (byte* yPlanePtr = yPlane)
             fixed (byte* uPlanePtr = uPlane)
@@ -228,6 +216,8 @@ namespace Kaponata.TurboJpeg
         /// </param>
         public void GetImageInfo(Span<byte> jpegBuf, TJPixelFormat destPixelFormat, out int width, out int height, out int stride, out int bufSize)
         {
+            Verify.NotDisposed(this);
+
             int subsampl;
             int colorspace;
 
@@ -264,6 +254,8 @@ namespace Kaponata.TurboJpeg
         /// </returns>
         public int GetBufferSize(int height, int width, TJPixelFormat destPixelFormat)
         {
+            Verify.NotDisposed(this);
+
             int stride = TurboJpegImport.TJPAD(width * TurboJpegImport.PixelSizes[destPixelFormat]);
             return stride * height;
         }
@@ -271,30 +263,6 @@ namespace Kaponata.TurboJpeg
         /// <inheritdoc/>
         public void Dispose()
         {
-            if (this.isDisposed)
-            {
-                return;
-            }
-
-            lock (this.@lock)
-            {
-                if (this.isDisposed)
-                {
-                    return;
-                }
-
-                this.Dispose(true);
-                GC.SuppressFinalize(this);
-            }
-        }
-
-        private void Dispose(bool callFromUserCode)
-        {
-            if (callFromUserCode)
-            {
-                this.isDisposed = true;
-            }
-
             // If for whathever reason, the handle was not initialized correctly (e.g. an exception
             // in the constructor), we shouldn't free it either.
             if (this.decompressorHandle != IntPtr.Zero)
@@ -305,6 +273,8 @@ namespace Kaponata.TurboJpeg
                 // (i.e. make calling Dispose twice a safe thing to do).
                 this.decompressorHandle = IntPtr.Zero;
             }
+
+            this.IsDisposed = true;
         }
     }
 }

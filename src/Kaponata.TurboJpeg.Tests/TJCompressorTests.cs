@@ -159,7 +159,7 @@ namespace Kaponata.TurboJpeg.Tests
         }
 
         /// <summary>
-        /// Tests the <see cref="TJCompressor.Compress(byte[], byte[], int, int, int, TJPixelFormat, TJSubsamplingOption, int, TJFlags)"/> method.
+        /// Tests the <see cref="TJCompressor.Compress(Span{byte}, Span{byte}, int, int, int, TJPixelFormat, TJSubsamplingOption, int, TJFlags)"/> method.
         /// </summary>
         /// <param name="options">
         /// Options to pass to the compressor.
@@ -263,6 +263,24 @@ namespace Kaponata.TurboJpeg.Tests
                     bitmap.Dispose();
                 }
             }
+        }
+
+        /// <summary>
+        /// <see cref="TJCompressor"/> methods throw when disposed.
+        /// </summary>
+        [Fact]
+        public void Methods_ThrowWhenDisposed()
+        {
+            this.compressor.Dispose();
+
+            Assert.True(this.compressor.IsDisposed);
+
+            Assert.Throws<ObjectDisposedException>(() => this.compressor.Compress(Array.Empty<byte>(), 0, 0, 0, TJPixelFormat.RGB, TJSubsamplingOption.Gray, 0, TJFlags.None));
+            Assert.Throws<ObjectDisposedException>(() => this.compressor.Compress(IntPtr.Zero, 0, 0, 0, TJPixelFormat.RGB, TJSubsamplingOption.Gray, 0, TJFlags.None));
+            Assert.Throws<ObjectDisposedException>(() => this.compressor.Compress(Span<byte>.Empty, Span<byte>.Empty, 0, 0, 0, TJPixelFormat.RGB, TJSubsamplingOption.Gray, 0, TJFlags.None));
+
+            Assert.Throws<ObjectDisposedException>(() => this.compressor.CompressFromYUVPlanes(Span<byte>.Empty, Span<byte>.Empty, Span<byte>.Empty, 0, Array.Empty<int>(), 0, TJSubsamplingOption.Gray, Span<byte>.Empty, 0, TJFlags.None));
+            Assert.Throws<ObjectDisposedException>(() => this.compressor.GetBufferSize(0, 0, TJSubsamplingOption.Gray));
         }
     }
 }

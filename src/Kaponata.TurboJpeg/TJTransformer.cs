@@ -3,6 +3,7 @@
 // Copyright (c) Quamotion. All rights reserved.
 // </copyright>
 
+using Microsoft;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -13,11 +14,9 @@ namespace Kaponata.TurboJpeg
     /// <summary>
     /// Class for loseless transform jpeg images.
     /// </summary>
-    public unsafe class TJTransformer : IDisposable
+    public unsafe class TJTransformer : IDisposableObservable
     {
-        private readonly object @lock = new object();
         private IntPtr transformHandle;
-        private bool isDisposed;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="TJTransformer"/> class.
@@ -35,13 +34,8 @@ namespace Kaponata.TurboJpeg
             }
         }
 
-        /// <summary>
-        /// Finalizes an instance of the <see cref="TJTransformer"/> class.
-        /// </summary>
-        ~TJTransformer()
-        {
-            this.Dispose(false);
-        }
+        /// <inheritdoc/>
+        public bool IsDisposed { get; private set; }
 
         /// <summary>Transforms input image into one or several destinations.</summary>
         /// <param name="jpegBuf">Pointer to a buffer containing the JPEG image to decompress. This buffer is not modified.</param>
@@ -53,6 +47,8 @@ namespace Kaponata.TurboJpeg
         /// <exception cref="TJException"> Throws if low level turbo jpeg function fails. </exception>
         public byte[][] Transform(Span<byte> jpegBuf, TJTransformDescription[] transforms, TJFlags flags)
         {
+            Verify.NotDisposed(this);
+
             if (transforms == null)
             {
                 throw new ArgumentNullException(nameof(transforms));
@@ -156,24 +152,21 @@ namespace Kaponata.TurboJpeg
             }
         }
 
-        /// <inhertdoc/>
+        /// <inheritdoc/>
         public void Dispose()
         {
-            if (this.isDisposed)
+            // If for whathever reason, the handle was not initialized correctly (e.g. an exception
+            // in the constructor), we shouldn't free it either.
+            if (this.transformHandle != IntPtr.Zero)
             {
-                return;
+                TurboJpegImport.TjDestroy(this.transformHandle);
+
+                // Set the handle to IntPtr.Zero, to prevent double execution of this method
+                // (i.e. make calling Dispose twice a safe thing to do).
+                this.transformHandle = IntPtr.Zero;
             }
 
-            lock (this.@lock)
-            {
-                if (this.isDisposed)
-                {
-                    return;
-                }
-
-                this.Dispose(true);
-                GC.SuppressFinalize(this);
-            }
+            this.IsDisposed = true;
         }
 
         /// <summary>
@@ -218,25 +211,6 @@ namespace Kaponata.TurboJpeg
                 {
                     return imageSize - realCoordinate;
                 }
-            }
-        }
-
-        private void Dispose(bool callFromUserCode)
-        {
-            if (callFromUserCode)
-            {
-                this.isDisposed = true;
-            }
-
-            // If for whathever reason, the handle was not initialized correctly (e.g. an exception
-            // in the constructor), we shouldn't free it either.
-            if (this.transformHandle != IntPtr.Zero)
-            {
-                TurboJpegImport.TjDestroy(this.transformHandle);
-
-                // Set the handle to IntPtr.Zero, to prevent double execution of this method
-                // (i.e. make calling Dispose twice a safe thing to do).
-                this.transformHandle = IntPtr.Zero;
             }
         }
     }

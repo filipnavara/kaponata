@@ -117,5 +117,21 @@ namespace Kaponata.TurboJpeg.Tests
         {
             Assert.Equal(400, this.decompressor.GetBufferSize(10, 10, TJPixelFormat.RGBA));
         }
+
+        /// <summary>
+        /// <see cref="TJDecompressor"/> methods throw when disposed.
+        /// </summary>
+        [Fact]
+        public void Methods_ThrowWhenDisposed()
+        {
+            this.decompressor.Dispose();
+
+            Assert.True(this.decompressor.IsDisposed);
+
+            Assert.Throws<ObjectDisposedException>(() => this.decompressor.DecodeYUVPlanes(Span<byte>.Empty, Span<byte>.Empty, Span<byte>.Empty, Array.Empty<int>(), TJSubsamplingOption.Gray, Span<byte>.Empty, 0, 0, 0, TJPixelFormat.Gray, TJFlags.None));
+            Assert.Throws<ObjectDisposedException>(() => this.decompressor.Decompress(Span<byte>.Empty, Span<byte>.Empty, TJPixelFormat.Gray, TJFlags.None, out int _, out int _, out int _));
+            Assert.Throws<ObjectDisposedException>(() => this.decompressor.GetBufferSize(0, 0, TJPixelFormat.Gray));
+            Assert.Throws<ObjectDisposedException>(() => this.decompressor.GetImageInfo(Span<byte>.Empty, TJPixelFormat.ABGR, out int _, out int _, out int _, out int _));
+        }
     }
 }

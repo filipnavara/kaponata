@@ -151,5 +151,16 @@ namespace Kaponata.TurboJpeg.Tests
                 }
             }
         }
+
+        /// <summary>
+        /// <see cref="TJDecompressor"/> methods throw when disposed.
+        /// </summary>
+        [Fact]
+        public void Methods_ThrowWhenDisposed()
+        {
+            this.transformer.Dispose();
+
+            Assert.Throws<ObjectDisposedException>(() => this.transformer.Transform(Span<byte>.Empty, Array.Empty<TJTransformDescription>(), TJFlags.None));
+        }
     }
 }
