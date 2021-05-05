@@ -132,6 +132,10 @@ jobs:
         run: dotnet pack -c Release -o ${{ github.workspace }}/bin/nuget --include-source --include-symbols
         working-directory: src/Kaponata.Android/
 
+      - name: Package Kaponata.TurboJpeg NuGet packages
+        run: dotnet pack -c Release -o ${{ github.workspace }}/bin/nuget --include-source --include-symbols
+        working-directory: src/Kaponata.TurboJpeg/
+
       - name: Package UI
         run: |
           export PATH="$PATH:/usr/local/lib/npm/bin/"
@@ -317,7 +321,8 @@ jobs:
       - name: Publish to NuGet
         if: github.ref == 'refs/heads/main'
         run: |
-          dotnet nuget push Kaponata.FileFormats.*.nupkg -k "${{ secrets.NUGET_TOKEN }}" -s https://api.nuget.org/v3/index.json
           dotnet nuget push Kaponata.iOS.*.nupkg -k "${{ secrets.NUGET_TOKEN }}" -s https://api.nuget.org/v3/index.json
           dotnet nuget push Kaponata.Android.*.nupkg -k "${{ secrets.NUGET_TOKEN }}" -s https://api.nuget.org/v3/index.json
+          dotnet nuget push Kaponata.TurboJpeg.*.nupkg -k "${{ secrets.NUGET_TOKEN }}" -s https://api.nuget.org/v3/index.json
+          dotnet nuget push Kaponata.FileFormats.*.nupkg -k "${{ secrets.NUGET_TOKEN }}" -s https://api.nuget.org/v3/index.json
         working-directory: ${{ github.workspace }}/bin/nuget/
