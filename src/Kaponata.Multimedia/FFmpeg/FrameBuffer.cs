@@ -2,10 +2,10 @@
 // Copyright (c) Quamotion bv. All rights reserved.
 // </copyright>
 
+using Kaponata.TurboJpeg;
 using System;
 using System.Buffers;
 using System.Threading;
-using TurboJpegWrapper;
 
 namespace Kaponata.Multimedia.FFmpeg
 {
