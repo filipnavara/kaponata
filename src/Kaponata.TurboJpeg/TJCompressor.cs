@@ -209,7 +209,7 @@ namespace Kaponata.TurboJpeg
         /// A pointer to an image buffer that will receive the JPEG image. TurboJPEG has the ability to reallocate the JPEG buffer to accommodate the size of the JPEG image. Thus, you can choose to:
         /// <list type="number">
         ///   <item>
-        ///      pre-allocate the JPEG buffer with an arbitrary size using <see cref="TJUtils.Alloc"/> and let TurboJPEG grow the buffer as needed,
+        ///      pre-allocate the JPEG buffer with an arbitrary size using <see cref="TurboJpegImport.TjAlloc"/> and let TurboJPEG grow the buffer as needed,
         ///   </item>
         ///   <item>
         ///     set* jpegBuf to NULL to tell TurboJPEG to allocate the buffer for you, or

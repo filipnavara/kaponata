@@ -77,20 +77,6 @@ namespace Kaponata.TurboJpeg
         }
 
         /// <summary>
-        /// This is port of TJSCALED macros from turbojpeg.h
-        /// Compute the scaled value of <paramref name="dimension"/> using the given scaling factor.
-        /// </summary>
-        /// <param name="dimension">Dimension to scale.</param>
-        /// <param name="scalingFactor">Scaling factor.</param>
-        /// <returns>
-        /// The scaled value of <paramref name="dimension"/> using the given scaling factor.
-        /// </returns>
-        public static int TJSCALED(int dimension, TjScalingFactor scalingFactor)
-        {
-            return ((dimension * scalingFactor.Num) + scalingFactor.Denom - 1) / scalingFactor.Denom;
-        }
-
-        /// <summary>
         /// Create a TurboJPEG compressor instance.
         /// </summary>
         /// <returns>
@@ -306,7 +292,7 @@ namespace Kaponata.TurboJpeg
         /// <param name="dstBuf">
         /// Pointer to an image buffer that will receive the decompressed image.
         /// This buffer should normally be <c> pitch * scaledHeight</c> bytes in size,
-        /// where <c>scaledHeight</c> can be determined by calling <see cref="TJSCALED"/> with the JPEG image height and one of the scaling factors returned by <see cref="TjGetScalingFactors"/>.
+        /// where <c>scaledHeight</c> can be determined by calling <c>TJSCALED</c> with the JPEG image height and one of the scaling factors returned by <see cref="TjGetScalingFactors"/>.
         /// The <paramref name="dstBuf"/> pointer may also be used to decompress into a specific region of a larger buffer.
         /// </param>
         /// <param name="width">
@@ -316,7 +302,7 @@ namespace Kaponata.TurboJpeg
         /// </param>
         /// <param name="pitch">
         /// Bytes per line in the destination image.  Normally, this is <c>scaledWidth* tjPixelSize[pixelFormat]</c> if the decompressed image is unpadded, else <c>TJPAD(scaledWidth * tjPixelSize[pixelFormat])</c> if each line of the decompressed image is padded to the nearest 32-bit boundary, as is the case for Windows bitmaps.
-        /// <remarks>Note: <c>scaledWidth</c> can be determined by calling <see cref="TJSCALED"/> with the JPEG image width and one of the scaling factors returned by <see cref="TjGetScalingFactors"/>
+        /// <remarks>Note: <c>scaledWidth</c> can be determined by calling <c>TJSCALED</c> with the JPEG image width and one of the scaling factors returned by <see cref="TjGetScalingFactors"/>
         /// </remarks>
         /// You can also be clever and use the pitch parameter to skip lines, etc.
         /// Setting this parameter to 0 is the equivalent of setting it to <c>scaledWidth* tjPixelSize[pixelFormat]</c>.
