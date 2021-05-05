@@ -29,6 +29,8 @@ jobs:
         xmldocmd ./Kaponata.Kubernetes/bin/Release/net5.0/publish/Kaponata.Kubernetes.dll ../website/docs/class/
         xmldocmd ./Kaponata.Multimedia/bin/Release/net5.0/publish/Kaponata.Multimedia.dll ../website/docs/class/
         xmldocmd ./Kaponata.iOS/bin/Release/net5.0/publish/Kaponata.iOS.dll ../website/docs/class/
+        xmldocmd ./Kaponata.FileFormats/bin/Release/net5.0/publish/Kaponata.FileFormats.dll ../website/docs/class/
+        xmldocmd ./Kaponata.TurboJpeg/bin/Release/net5.0/publish/Kaponata.TurboJpeg.dll ../website/docs/class/
       working-directory: src/
 
     - name: Compile Website
