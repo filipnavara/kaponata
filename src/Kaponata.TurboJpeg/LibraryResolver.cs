@@ -8,7 +8,7 @@ using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
 
-namespace TurboJpegWrapper
+namespace Kaponata.TurboJpeg
 {
     /// <summary>
     /// Provides helper methods for resolving the native libraries.

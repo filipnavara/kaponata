@@ -5,7 +5,7 @@
 
 using System;
 
-namespace TurboJpegWrapper
+namespace Kaponata.TurboJpeg
 {
     /// <summary>
     /// Flags for turbo jpeg.

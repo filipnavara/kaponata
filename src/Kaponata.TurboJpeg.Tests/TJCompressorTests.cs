@@ -11,7 +11,7 @@ using System.IO;
 using System.Runtime.InteropServices;
 using Xunit;
 
-namespace TurboJpegWrapper.Tests
+namespace Kaponata.TurboJpeg.Tests
 {
     /// <summary>
     /// Tests the <see cref="TJCompressor"/> class.

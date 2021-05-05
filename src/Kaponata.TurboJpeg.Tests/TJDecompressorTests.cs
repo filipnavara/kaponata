@@ -5,11 +5,10 @@
 
 using System;
 using System.Buffers;
-using System.Drawing.Imaging;
 using System.IO;
 using Xunit;
 
-namespace TurboJpegWrapper.Tests
+namespace Kaponata.TurboJpeg.Tests
 {
     /// <summary>
     /// Tests the <see cref="TJDecompressor"/> class.

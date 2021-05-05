@@ -5,7 +5,7 @@
 
 using System;
 
-namespace TurboJpegWrapper
+namespace Kaponata.TurboJpeg
 {
     /// <summary>
     /// Structure describing transformation of source image.

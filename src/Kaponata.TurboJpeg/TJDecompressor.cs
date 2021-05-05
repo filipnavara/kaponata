@@ -4,10 +4,8 @@
 // </copyright>
 
 using System;
-using System.Drawing;
-using System.Drawing.Imaging;
 
-namespace TurboJpegWrapper
+namespace Kaponata.TurboJpeg
 {
     /// <summary>
     /// Implements compression of RGB, CMYK, grayscale images to the jpeg format.

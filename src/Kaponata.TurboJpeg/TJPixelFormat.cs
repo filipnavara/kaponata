@@ -3,7 +3,7 @@
 // Copyright (c) Quamotion. All rights reserved.
 // </copyright>
 
-namespace TurboJpegWrapper
+namespace Kaponata.TurboJpeg
 {
     /// <summary>
     /// Pixel formats.

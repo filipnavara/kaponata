@@ -8,7 +8,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Runtime.InteropServices;
 
-namespace TurboJpegWrapper
+namespace Kaponata.TurboJpeg
 {
     /// <summary>
     /// P/Invoke declarations for turbojpeg.
@@ -461,7 +461,7 @@ namespace TurboJpegWrapper
         /// Upon return, <paramref name="dstSizes"/>[i] will contain the size of the JPEG image (in bytes.)
         /// </param>
         /// <param name="transforms">
-        /// Pointer to an array of <see cref="TurboJpegWrapper.TJTransform"/> structures, each of
+        /// Pointer to an array of <see cref="Kaponata.TurboJpeg.TJTransform"/> structures, each of
         /// which specifies the transform parameters and/or cropping region for the
         /// corresponding transformed output image.
         /// </param>

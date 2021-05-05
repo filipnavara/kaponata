@@ -4,12 +4,9 @@
 // </copyright>
 
 using System;
-using System.Diagnostics.CodeAnalysis;
-using System.Drawing;
-using System.Drawing.Imaging;
 using System.Runtime.InteropServices;
 
-namespace TurboJpegWrapper
+namespace Kaponata.TurboJpeg
 {
     // ReSharper disable once InconsistentNaming
 

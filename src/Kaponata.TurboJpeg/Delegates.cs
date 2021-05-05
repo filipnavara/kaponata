@@ -4,9 +4,8 @@
 // </copyright>
 
 using System;
-using System.Runtime.InteropServices;
 
-namespace TurboJpegWrapper
+namespace Kaponata.TurboJpeg
 {
     /// <summary>
     /// A callback function that can be used to modify the DCT coefficients

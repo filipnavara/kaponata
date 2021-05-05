@@ -10,7 +10,7 @@ using System.Drawing;
 using System.IO;
 using System.Reflection;
 
-namespace TurboJpegWrapper.Tests
+namespace Kaponata.TurboJpeg.Tests
 {
     /// <summary>
     /// Helper methods for the tests.
