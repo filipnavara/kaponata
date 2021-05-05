@@ -186,6 +186,49 @@ namespace Kaponata.TurboJpeg.Tests
         }
 
         /// <summary>
+        /// <see cref="TJTransformer.Transform(Span{byte}, TJTransformDescription[], TJFlags)"/> can crop multiple images at once.
+        /// </summary>
+        /// <param name="x">
+        /// The left boundary of the cropping region.
+        /// </param>
+        /// <param name="y">
+        /// The upper boundary of the cropping region.
+        /// </param>
+        /// <param name="width">
+        /// The width of the cropping region.
+        /// </param>
+        /// <param name="height">
+        /// The height of the cropping region.
+        /// </param>
+        [InlineData(0, 0, 500, 500)]
+        [InlineData(50, 50, 100, 100)]
+        [Theory]
+        public void Transform_CorrectsSize(int x, int y, int width, int height)
+        {
+            var data = File.ReadAllBytes("TestAssets/testorig.jpg");
+
+            var transforms = new[]
+            {
+                new TJTransformDescription
+                {
+                    Operation = TJTransformOperation.None,
+                    Options = TJTransformOptions.Crop,
+                    Region = new TJRegion
+                    {
+                        X = x,
+                        Y = y,
+                        W = width,
+                        H = height,
+                    },
+                },
+            };
+
+            var result = this.transformer.Transform(data, transforms, TJFlags.None);
+            Assert.NotNull(result);
+            Assert.NotEmpty(result);
+        }
+
+        /// <summary>
         /// <see cref="TJDecompressor"/> methods throw when disposed.
         /// </summary>
         [Fact]
