@@ -268,10 +268,7 @@ namespace Kaponata.TurboJpeg
             return stride * height;
         }
 
-        /// <summary>
-        /// Releases resources.
-        /// </summary>
-        /// <filterpriority>2.</filterpriority>
+        /// <inheritdoc/>
         public void Dispose()
         {
             if (this.isDisposed)

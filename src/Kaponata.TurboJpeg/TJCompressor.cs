@@ -8,8 +8,6 @@ using System.Runtime.InteropServices;
 
 namespace Kaponata.TurboJpeg
 {
-    // ReSharper disable once InconsistentNaming
-
     /// <summary>
     /// Implements compression of RGB, CMYK, grayscale images to the jpeg format.
     /// </summary>
@@ -459,10 +457,7 @@ namespace Kaponata.TurboJpeg
             return (int)TurboJpegImport.TjBufSize(width, height, (int)subSamp);
         }
 
-        /// <summary>
-        /// Releases resources.
-        /// </summary>
-        /// <filterpriority>2.</filterpriority>
+        /// <inheritdoc/>
         public void Dispose()
         {
             if (this.isDisposed)

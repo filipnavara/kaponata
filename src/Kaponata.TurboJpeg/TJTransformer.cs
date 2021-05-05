@@ -65,7 +65,6 @@ namespace Kaponata.TurboJpeg
 
             fixed (byte* jpegBufPtr = jpegBuf)
             {
-                // ReSharper disable once ExceptionNotDocumented
                 var count = transforms.Length;
                 var destBufs = new IntPtr[count];
                 var destSizes = new ulong[count];
@@ -157,10 +156,7 @@ namespace Kaponata.TurboJpeg
             }
         }
 
-        /// <summary>
-        /// Releases resources.
-        /// </summary>
-        /// <filterpriority>2.</filterpriority>
+        /// <inhertdoc/>
         public void Dispose()
         {
             if (this.isDisposed)
