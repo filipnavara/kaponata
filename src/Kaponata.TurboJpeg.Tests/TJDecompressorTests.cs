@@ -11,10 +11,16 @@ using Xunit;
 
 namespace TurboJpegWrapper.Tests
 {
+    /// <summary>
+    /// Tests the <see cref="TJDecompressor"/> class.
+    /// </summary>
     public class TJDecompressorTests : IDisposable
     {
         private TJDecompressor decompressor;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TJDecompressorTests"/> class.
+        /// </summary>
         public TJDecompressorTests()
         {
             this.decompressor = new TJDecompressor();
@@ -31,11 +37,18 @@ namespace TurboJpegWrapper.Tests
             get { return Path.Combine(TestUtils.BinPath, "decompress_images_out"); }
         }
 
+        /// <inheritdoc/>
         public void Dispose()
         {
             this.decompressor.Dispose();
         }
 
+        /// <summary>
+        /// <see cref="TJDecompressor.Decompress(Span{byte}, Span{byte}, TJPixelFormat, TJFlags, out int, out int, out int)"/> works correctly.
+        /// </summary>
+        /// <param name="format">
+        /// The format of the destination image.
+        /// </param>
         [Theory]
         [CombinatorialData]
         public void DecompressSpan(
@@ -56,6 +69,12 @@ namespace TurboJpegWrapper.Tests
             ArrayPool<byte>.Shared.Return(outBuf);
         }
 
+        /// <summary>
+        /// <see cref="TJDecompressor.Decompress(byte[], TJPixelFormat, TJFlags, out int, out int, out int)"/> works correctly.
+        /// </summary>
+        /// <param name="format">
+        /// The format of the destination image.
+        /// </param>
         [Theory]
         [CombinatorialData]
         public void DecompressArray(

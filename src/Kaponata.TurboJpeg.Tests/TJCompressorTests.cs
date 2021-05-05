@@ -13,10 +13,16 @@ using Xunit;
 
 namespace TurboJpegWrapper.Tests
 {
+    /// <summary>
+    /// Tests the <see cref="TJCompressor"/> class.
+    /// </summary>
     public class TJCompressorTests : IDisposable
     {
         private TJCompressor compressor;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TJCompressorTests"/> class.
+        /// </summary>
         public TJCompressorTests()
         {
             this.compressor = new TJCompressor();
@@ -33,11 +39,21 @@ namespace TurboJpegWrapper.Tests
             get { return Path.Combine(TestUtils.BinPath, "compress_images_out"); }
         }
 
+        /// <inheritdoc/>
         public void Dispose()
         {
             this.compressor.Dispose();
         }
 
+        /// <summary>
+        /// Tests the <see cref="TJCompressor.Compress(IntPtr, int, int, int, TJPixelFormat, TJSubsamplingOption, int, TJFlags)"/> method.
+        /// </summary>
+        /// <param name="options">
+        /// Options to pass to the compressor.
+        /// </param>
+        /// <param name="quality">
+        /// The compression quality to use.
+        /// </param>
         [Theory]
         [CombinatorialData]
         public void CompressIntPtr(
@@ -80,12 +96,24 @@ namespace TurboJpegWrapper.Tests
             }
         }
 
+        /// <summary>
+        /// <see cref="TJCompressor.Compress(IntPtr, int, int, int, TJPixelFormat, TJSubsamplingOption, int, TJFlags)"/> throws when passed an invalid <see cref="IntPtr"/> value.
+        /// </summary>
         [Fact]
         public void CompressInvalidIntPtr()
         {
             Assert.Throws<TJException>(() => this.compressor.Compress(IntPtr.Zero, 0, 0, 0, TJPixelFormat.ARGB, TJSubsamplingOption.Gray, 0, TJFlags.None));
         }
 
+        /// <summary>
+        /// Tests the <see cref="TJCompressor.Compress(byte[], int, int, int, TJPixelFormat, TJSubsamplingOption, int, TJFlags)"/> method.
+        /// </summary>
+        /// <param name="options">
+        /// Options to pass to the compressor.
+        /// </param>
+        /// <param name="quality">
+        /// The compression quality to use.
+        /// </param>
         [Theory]
         [CombinatorialData]
         public void CompressByteArray(
@@ -130,6 +158,15 @@ namespace TurboJpegWrapper.Tests
             }
         }
 
+        /// <summary>
+        /// Tests the <see cref="TJCompressor.Compress(byte[], byte[], int, int, int, TJPixelFormat, TJSubsamplingOption, int, TJFlags)"/> method.
+        /// </summary>
+        /// <param name="options">
+        /// Options to pass to the compressor.
+        /// </param>
+        /// <param name="quality">
+        /// The compression quality to use.
+        /// </param>
         [Theory]
         [CombinatorialData]
         public void CompressByteArrayToByteArray(
@@ -175,6 +212,15 @@ namespace TurboJpegWrapper.Tests
             }
         }
 
+        /// <summary>
+        /// Tests the <see cref="TJCompressor.Compress(Span{byte}, Span{byte}, int, int, int, TJPixelFormat, TJSubsamplingOption, int, TJFlags)"/> method.
+        /// </summary>
+        /// <param name="options">
+        /// Options to pass to the compressor.
+        /// </param>
+        /// <param name="quality">
+        /// The compression quality to use.
+        /// </param>
         [Theory]
         [CombinatorialData]
         public unsafe void CompressSpanToSpan(

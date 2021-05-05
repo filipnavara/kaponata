@@ -9,10 +9,16 @@ using Xunit;
 
 namespace TurboJpegWrapper.Tests
 {
+    /// <summary>
+    /// Tests the <see cref="TJTransformer"/> class.
+    /// </summary>
     public class TJTransformerTests : IDisposable
     {
         private TJTransformer transformer;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TJTransformerTests"/> class.
+        /// </summary>
         public TJTransformerTests()
         {
             this.transformer = new TJTransformer();
@@ -29,11 +35,15 @@ namespace TurboJpegWrapper.Tests
             get { return Path.Combine(TestUtils.BinPath, "transform_images_out"); }
         }
 
+        /// <inheritdoc/>
         public void Dispose()
         {
             this.transformer.Dispose();
         }
 
+        /// <summary>
+        /// <see cref="TJTransformer.Transform(byte[], TJTransformDescription[], TJFlags)"/> can transform images to grayscale.
+        /// </summary>
         [Fact]
         public void TransformToGrayscaleFromArray()
         {
@@ -58,6 +68,9 @@ namespace TurboJpegWrapper.Tests
             }
         }
 
+        /// <summary>
+        /// <see cref="TJTransformer.Transform(byte[], TJTransformDescription[], TJFlags)"/> can crop a single impage.
+        /// </summary>
         [Fact]
         public void TransformToCroppedSingleImageFromArray()
         {
@@ -91,6 +104,9 @@ namespace TurboJpegWrapper.Tests
             }
         }
 
+        /// <summary>
+        /// <see cref="TJTransformer.Transform(byte[], TJTransformDescription[], TJFlags)"/> can crop multiple images at once.
+        /// </summary>
         [Fact]
         public void TransformToCroppedMultiplyImagesFromArray()
         {
