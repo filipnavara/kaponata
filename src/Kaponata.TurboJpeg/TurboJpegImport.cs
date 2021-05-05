@@ -13,7 +13,7 @@ namespace Kaponata.TurboJpeg
     /// <summary>
     /// P/Invoke declarations for turbojpeg.
     /// </summary>
-    internal static class TurboJpegImport
+    internal static unsafe class TurboJpegImport
     {
         /// <summary>
         /// The name of the unmanaged library.
@@ -216,7 +216,7 @@ namespace Kaponata.TurboJpeg
         /// <returns>0 if successful, or -1 if an error occurred (see <see cref="TjGetErrorStr"/>).</returns>
         public static int TjDecompressHeader(
             IntPtr handle,
-            IntPtr jpegBuf,
+            byte* jpegBuf,
             ulong jpegSize,
             out int width,
             out int height,
@@ -363,9 +363,9 @@ namespace Kaponata.TurboJpeg
         /// <returns>0 if successful, or -1 if an error occurred (see <see cref="TjGetErrorStr"/>).</returns>
         public static int TjDecompress(
             IntPtr handle,
-            IntPtr jpegBuf,
+            byte* jpegBuf,
             ulong jpegSize,
-            IntPtr dstBuf,
+            byte* dstBuf,
             int width,
             int pitch,
             int height,
@@ -469,7 +469,7 @@ namespace Kaponata.TurboJpeg
         /// <returns>0 if successful, or -1 if an error occurred (see <see cref="TjGetErrorStr"/>).</returns>
         public static int TjTransform(
             IntPtr handle,
-            IntPtr jpegBuf,
+            byte* jpegBuf,
             ulong jpegSize,
             int n,
             IntPtr[] dstBufs,
@@ -627,21 +627,21 @@ namespace Kaponata.TurboJpeg
         public static extern IntPtr TjGetErrorStr();
 
         [DllImport(UnmanagedLibrary, CallingConvention = CallingConvention.Cdecl, EntryPoint = "tjDecompressHeader3")]
-        private static extern int TjDecompressHeader3_x86(IntPtr handle, IntPtr jpegBuf, uint jpegSize, out int width, out int height, out int jpegSubsamp, out int jpegColorspace);
+        private static extern int TjDecompressHeader3_x86(IntPtr handle, byte* jpegBuf, uint jpegSize, out int width, out int height, out int jpegSubsamp, out int jpegColorspace);
 
         [DllImport(UnmanagedLibrary, CallingConvention = CallingConvention.Cdecl, EntryPoint = "tjDecompressHeader3")]
-        private static extern int TjDecompressHeader3_x64(IntPtr handle, IntPtr jpegBuf, ulong jpegSize, out int width, out int height, out int jpegSubsamp, out int jpegColorspace);
+        private static extern int TjDecompressHeader3_x64(IntPtr handle, byte* jpegBuf, ulong jpegSize, out int width, out int height, out int jpegSubsamp, out int jpegColorspace);
 
         [DllImport(UnmanagedLibrary, CallingConvention = CallingConvention.Cdecl, EntryPoint = "tjDecompress2")]
-        private static extern int TjDecompress2_x86(IntPtr handle, IntPtr jpegBuf, uint jpegSize, IntPtr dstBuf, int width, int pitch, int height, int pixelFormat, int flags);
+        private static extern int TjDecompress2_x86(IntPtr handle, byte* jpegBuf, uint jpegSize, byte* dstBuf, int width, int pitch, int height, int pixelFormat, int flags);
 
         [DllImport(UnmanagedLibrary, CallingConvention = CallingConvention.Cdecl, EntryPoint = "tjDecompress2")]
-        private static extern int TjDecompress2_x64(IntPtr handle, IntPtr jpegBuf, ulong jpegSize, IntPtr dstBuf, int width, int pitch, int height, int pixelFormat, int flags);
+        private static extern int TjDecompress2_x64(IntPtr handle, byte* jpegBuf, ulong jpegSize, byte* dstBuf, int width, int pitch, int height, int pixelFormat, int flags);
 
         [DllImport(UnmanagedLibrary, CallingConvention = CallingConvention.Cdecl, EntryPoint = "tjTransform")]
         private static extern int TjTransform_x86(
             IntPtr handle,
-            IntPtr jpegBuf,
+            byte* jpegBuf,
             uint jpegSize,
             int n,
             IntPtr[] dstBufs,
@@ -652,7 +652,7 @@ namespace Kaponata.TurboJpeg
         [DllImport(UnmanagedLibrary, CallingConvention = CallingConvention.Cdecl, EntryPoint = "tjTransform")]
         private static extern int TjTransform_x64(
             IntPtr handle,
-            IntPtr jpegBuf,
+            byte* jpegBuf,
             ulong jpegSize,
             int n,
             IntPtr[] dstBufs,

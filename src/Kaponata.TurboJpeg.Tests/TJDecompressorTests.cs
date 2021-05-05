@@ -69,7 +69,7 @@ namespace Kaponata.TurboJpeg.Tests
         }
 
         /// <summary>
-        /// <see cref="TJDecompressor.Decompress(byte[], TJPixelFormat, TJFlags, out int, out int, out int)"/> works correctly.
+        /// <see cref="TJDecompressor.Decompress(Span{byte}, Span{byte}, TJPixelFormat, TJFlags, out int, out int, out int)"/> works correctly.
         /// </summary>
         /// <param name="format">
         /// The format of the destination image.
@@ -91,6 +91,31 @@ namespace Kaponata.TurboJpeg.Tests
             }
 
             ArrayPool<byte>.Shared.Return(outBuf);
+        }
+
+        /// <summary>
+        /// <see cref="TJDecompressor.GetImageInfo(Span{byte}, TJPixelFormat, out int, out int, out int, out int)"/> works correctly.
+        /// </summary>
+        [Fact]
+        public void GetImageInfo_Works()
+        {
+            byte[] image = File.ReadAllBytes("TestAssets/testorig.jpg");
+
+            this.decompressor.GetImageInfo(image, TJPixelFormat.ABGR, out int width, out int height, out int stride, out int bufSize);
+
+            Assert.Equal(0xe3, width);
+            Assert.Equal(0x95, height);
+            Assert.Equal(0x38c, stride);
+            Assert.Equal(0x2107c, bufSize);
+        }
+
+        /// <summary>
+        /// <see cref="TJDecompressor.GetBufferSize(int, int, TJPixelFormat)"/> returns the correct value.
+        /// </summary>
+        [Fact]
+        public void GetBufferSize_Works()
+        {
+            Assert.Equal(400, this.decompressor.GetBufferSize(10, 10, TJPixelFormat.RGBA));
         }
     }
 }

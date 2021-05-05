@@ -42,7 +42,7 @@ namespace Kaponata.TurboJpeg.Tests
         }
 
         /// <summary>
-        /// <see cref="TJTransformer.Transform(byte[], TJTransformDescription[], TJFlags)"/> can transform images to grayscale.
+        /// <see cref="TJTransformer.Transform(Span{byte}, TJTransformDescription[], TJFlags)"/> can transform images to grayscale.
         /// </summary>
         [Fact]
         public void TransformToGrayscaleFromArray()
@@ -69,7 +69,7 @@ namespace Kaponata.TurboJpeg.Tests
         }
 
         /// <summary>
-        /// <see cref="TJTransformer.Transform(byte[], TJTransformDescription[], TJFlags)"/> can crop a single impage.
+        /// <see cref="TJTransformer.Transform(Span{byte}, TJTransformDescription[], TJFlags)"/> can crop a single impage.
         /// </summary>
         [Fact]
         public void TransformToCroppedSingleImageFromArray()
@@ -105,7 +105,7 @@ namespace Kaponata.TurboJpeg.Tests
         }
 
         /// <summary>
-        /// <see cref="TJTransformer.Transform(byte[], TJTransformDescription[], TJFlags)"/> can crop multiple images at once.
+        /// <see cref="TJTransformer.Transform(Span{byte}, TJTransformDescription[], TJFlags)"/> can crop multiple images at once.
         /// </summary>
         [Fact]
         public void TransformToCroppedMultiplyImagesFromArray()

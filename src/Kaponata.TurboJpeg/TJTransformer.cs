@@ -13,7 +13,7 @@ namespace Kaponata.TurboJpeg
     /// <summary>
     /// Class for loseless transform jpeg images.
     /// </summary>
-    public class TJTransformer : IDisposable
+    public unsafe class TJTransformer : IDisposable
     {
         private readonly object @lock = new object();
         private IntPtr transformHandle;
@@ -45,14 +45,13 @@ namespace Kaponata.TurboJpeg
 
         /// <summary>Transforms input image into one or several destinations.</summary>
         /// <param name="jpegBuf">Pointer to a buffer containing the JPEG image to decompress. This buffer is not modified.</param>
-        /// <param name="jpegBufSize">Size of the JPEG image (in bytes).</param>
         /// <param name="transforms">Array of transform descriptions to be applied to the source image. </param>
         /// <param name="flags">The bitwise OR of one or more of the <see cref="TJFlags"/> "flags".</param>
         /// <returns>Array of transformed jpeg images.</returns>
         /// <exception cref="ArgumentNullException"><paramref name="transforms"/> is <see langword="null" />.</exception>
         /// <exception cref="ArgumentException">Transforms can not be empty.</exception>
         /// <exception cref="TJException"> Throws if low level turbo jpeg function fails. </exception>
-        public byte[][] Transform(IntPtr jpegBuf, ulong jpegBufSize, TJTransformDescription[] transforms, TJFlags flags)
+        public byte[][] Transform(Span<byte> jpegBuf, TJTransformDescription[] transforms, TJFlags flags)
         {
             if (transforms == null)
             {
@@ -64,120 +63,97 @@ namespace Kaponata.TurboJpeg
                 throw new ArgumentException("Transforms can not be empty", nameof(transforms));
             }
 
-            // ReSharper disable once ExceptionNotDocumented
-            var count = transforms.Length;
-            var destBufs = new IntPtr[count];
-            var destSizes = new ulong[count];
-
-            int subsampl;
-            int colorspace;
-            int width;
-            int height;
-            var funcResult = TurboJpegImport.TjDecompressHeader(
-                this.transformHandle,
-                jpegBuf,
-                jpegBufSize,
-                out width,
-                out height,
-                out subsampl,
-                out colorspace);
-
-            if (funcResult == -1)
+            fixed (byte* jpegBufPtr = jpegBuf)
             {
-                TJUtils.GetErrorAndThrow();
-            }
+                // ReSharper disable once ExceptionNotDocumented
+                var count = transforms.Length;
+                var destBufs = new IntPtr[count];
+                var destSizes = new ulong[count];
 
-            Size mcuSize;
-            if (!TurboJpegImport.MCUSizes.TryGetValue((TJSubsamplingOption)subsampl, out mcuSize))
-            {
-                throw new TJException("Unable to read Subsampling Options from jpeg header");
-            }
-
-            var tjTransforms = new TJTransform[count];
-            for (var i = 0; i < count; i++)
-            {
-                var x = CorrectRegionCoordinate(transforms[i].Region.X, mcuSize.Width);
-                var y = CorrectRegionCoordinate(transforms[i].Region.Y, mcuSize.Height);
-                var w = CorrectRegionSize(transforms[i].Region.X, x, transforms[i].Region.W, width);
-                var h = CorrectRegionSize(transforms[i].Region.Y, y, transforms[i].Region.H, height);
-
-                tjTransforms[i] = new TJTransform
-                {
-                    Op = (int)transforms[i].Operation,
-                    Options = (int)transforms[i].Options,
-                    R = new TJRegion
-                    {
-                        X = x,
-                        Y = y,
-                        W = w,
-                        H = h,
-                    },
-                    Data = transforms[i].CallbackData,
-                    CustomFilter = transforms[i].CustomFilter,
-                };
-            }
-
-            var transformsPtr = TJUtils.StructArrayToIntPtr(tjTransforms);
-            try
-            {
-                funcResult = TurboJpegImport.TjTransform(
+                int subsampl;
+                int colorspace;
+                int width;
+                int height;
+                var funcResult = TurboJpegImport.TjDecompressHeader(
                     this.transformHandle,
-                    jpegBuf,
-                    jpegBufSize,
-                    count,
-                    destBufs,
-                    destSizes,
-                    transformsPtr,
-                    (int)flags);
+                    jpegBufPtr,
+                    (ulong)jpegBuf.Length,
+                    out width,
+                    out height,
+                    out subsampl,
+                    out colorspace);
 
                 if (funcResult == -1)
                 {
                     TJUtils.GetErrorAndThrow();
                 }
 
-                var result = new List<byte[]>();
-                for (var i = 0; i < destBufs.Length; i++)
+                Size mcuSize;
+                if (!TurboJpegImport.MCUSizes.TryGetValue((TJSubsamplingOption)subsampl, out mcuSize))
                 {
-                    var ptr = destBufs[i];
-                    var size = destSizes[i];
-                    var item = new byte[size];
-                    Marshal.Copy(ptr, item, 0, (int)size);
-                    result.Add(item);
-
-                    TurboJpegImport.TjFree(ptr);
+                    throw new TJException("Unable to read Subsampling Options from jpeg header");
                 }
 
-                return result.ToArray();
-            }
-            finally
-            {
-                TJUtils.FreePtr(transformsPtr);
-            }
-        }
+                var tjTransforms = new TJTransform[count];
+                for (var i = 0; i < count; i++)
+                {
+                    var x = CorrectRegionCoordinate(transforms[i].Region.X, mcuSize.Width);
+                    var y = CorrectRegionCoordinate(transforms[i].Region.Y, mcuSize.Height);
+                    var w = CorrectRegionSize(transforms[i].Region.X, x, transforms[i].Region.W, width);
+                    var h = CorrectRegionSize(transforms[i].Region.Y, y, transforms[i].Region.H, height);
 
-        /// <summary>Transforms input image into one or several destinations.</summary>
-        /// <param name="jpegBuf">A buffer containing the JPEG image to decompress. This buffer is not modified.</param>
-        /// <param name="transforms">Array of transform descriptions to be applied to the source image. </param>
-        /// <param name="flags">The bitwise OR of one or more of the <see cref="TJFlags"/> "flags".</param>
-        /// <returns>Array of transformed jpeg images.</returns>
-        /// <exception cref="ArgumentNullException"><paramref name="transforms"/> is <see langword="null" />.</exception>
-        /// <exception cref="ArgumentException">Transforms can not be empty.</exception>
-        /// <exception cref="TJException"> Throws if low level turbo jpeg function fails. </exception>
-        public unsafe byte[][] Transform(byte[] jpegBuf, TJTransformDescription[] transforms, TJFlags flags)
-        {
-            if (transforms == null)
-            {
-                throw new ArgumentNullException(nameof(transforms));
-            }
+                    tjTransforms[i] = new TJTransform
+                    {
+                        Op = (int)transforms[i].Operation,
+                        Options = (int)transforms[i].Options,
+                        R = new TJRegion
+                        {
+                            X = x,
+                            Y = y,
+                            W = w,
+                            H = h,
+                        },
+                        Data = transforms[i].CallbackData,
+                        CustomFilter = transforms[i].CustomFilter,
+                    };
+                }
 
-            if (transforms.Length == 0)
-            {
-                throw new ArgumentException("Transforms can not be empty", nameof(transforms));
-            }
+                var transformsPtr = TJUtils.StructArrayToIntPtr(tjTransforms);
+                try
+                {
+                    funcResult = TurboJpegImport.TjTransform(
+                        this.transformHandle,
+                        jpegBufPtr,
+                        (ulong)jpegBuf.Length,
+                        count,
+                        destBufs,
+                        destSizes,
+                        transformsPtr,
+                        (int)flags);
 
-            fixed (byte* jpegPtr = jpegBuf)
-            {
-                return this.Transform((IntPtr)jpegPtr, (ulong)jpegBuf.Length, transforms, flags);
+                    if (funcResult == -1)
+                    {
+                        TJUtils.GetErrorAndThrow();
+                    }
+
+                    var result = new List<byte[]>();
+                    for (var i = 0; i < destBufs.Length; i++)
+                    {
+                        var ptr = destBufs[i];
+                        var size = destSizes[i];
+                        var item = new byte[size];
+                        Marshal.Copy(ptr, item, 0, (int)size);
+                        result.Add(item);
+
+                        TurboJpegImport.TjFree(ptr);
+                    }
+
+                    return result.ToArray();
+                }
+                finally
+                {
+                    TJUtils.FreePtr(transformsPtr);
+                }
             }
         }
 
