@@ -234,5 +234,15 @@ namespace Kaponata.TurboJpeg.Tests
             // Compressed images starts with the JPEG magic.
             Assert.Equal(0xffd8ffe0, BinaryPrimitives.ReadUInt32BigEndian(result.Slice(0, 4)));
         }
+
+        /// <summary>
+        /// <see cref="TJCompressor.CompressFromYUVPlanes(Span{byte}, Span{byte}, Span{byte}, int, int[], int, TJSubsamplingOption, Span{byte}, int, TJFlags)"/>
+        /// throws on an error.
+        /// </summary>
+        [Fact]
+        public void CompressFromYUVPlanes_ThrowsOnError()
+        {
+            Assert.Throws<TJException>(() => this.compressor.CompressFromYUVPlanes(null, null, null, 0, Array.Empty<int>(), 0, TJSubsamplingOption.Gray, null, 0, TJFlags.None));
+        }
     }
 }
