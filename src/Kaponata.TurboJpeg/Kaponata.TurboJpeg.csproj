@@ -4,7 +4,9 @@
     <TargetFramework>net5.0</TargetFramework>
     <Copyright>Autonomic Systems, Quamotion bv</Copyright>
     <Authors>Autonomic Systems, Sergey Terekhin, Quamotion bv</Authors>
-
+    <Description>libjpeg-turbo is a JPEG image codec that uses processor instructions to accelerate JPEG compression and decompression.</Description>
+    <PackageTags>jpeg;turbojpeg;libjpeg-turbo</PackageTags>
+    
     <Nullable>enable</Nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
