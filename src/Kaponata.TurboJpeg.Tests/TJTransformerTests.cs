@@ -42,6 +42,39 @@ namespace Kaponata.TurboJpeg.Tests
         }
 
         /// <summary>
+        /// <see cref="TJTransformer.Transform(Span{byte}, TJTransformDescription[], TJFlags)"/> throws when the transforms
+        /// list is null or empty.
+        /// </summary>
+        [Fact]
+        public void Transform_ValidatesTransforms()
+        {
+            Assert.Throws<ArgumentNullException>(() => this.transformer.Transform(Span<byte>.Empty, null, TJFlags.None));
+            Assert.Throws<ArgumentException>(() => this.transformer.Transform(Span<byte>.Empty, Array.Empty<TJTransformDescription>(), TJFlags.None));
+        }
+
+        /// <summary>
+        /// <see cref="TJTransformer.Transform(Span{byte}, TJTransformDescription[], TJFlags)"/> throws when the source image
+        /// is null.
+        /// </summary>
+        [Fact]
+        public void Transform_InvalidImage_Throws()
+        {
+            Assert.Throws<TJException>(() => this.transformer.Transform(Span<byte>.Empty, new TJTransformDescription[] { default }, TJFlags.None));
+        }
+
+        /// <summary>
+        /// <see cref="TJTransformer.Transform(Span{byte}, TJTransformDescription[], TJFlags)"/> throws when the transforms
+        /// list is null or empty.
+        /// </summary>
+        [Fact]
+        public void Transform_InvalidTransform_Throws()
+        {
+            var data = File.ReadAllBytes("TestAssets/testorig.jpg");
+
+            Assert.Throws<TJException>(() => this.transformer.Transform(data, new TJTransformDescription[] { default }, (TJFlags)(-1)));
+        }
+
+        /// <summary>
         /// <see cref="TJTransformer.Transform(Span{byte}, TJTransformDescription[], TJFlags)"/> can transform images to grayscale.
         /// </summary>
         [Fact]

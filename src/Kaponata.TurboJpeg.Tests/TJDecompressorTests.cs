@@ -94,6 +94,81 @@ namespace Kaponata.TurboJpeg.Tests
         }
 
         /// <summary>
+        /// <see cref="TJDecompressor.Decompress(Span{byte}, Span{byte}, TJPixelFormat, TJFlags, out int, out int, out int)"/> throws when an invalid argument is specified.
+        /// </summary>
+        [Fact]
+        public void Decompress_InvalidArguments_ThrowsOnError()
+        {
+            Assert.Throws<TJException>(() => this.decompressor.Decompress(Span<byte>.Empty, Span<byte>.Empty, TJPixelFormat.Gray, TJFlags.None, out int _, out int _, out int _));
+        }
+
+        /// <summary>
+        /// <see cref="TJDecompressor.Decompress(Span{byte}, Span{byte}, TJPixelFormat, TJFlags, out int, out int, out int)"/> throws when the output buffer is too smal.
+        /// </summary>
+        [Fact]
+        public void Decompress_BufferTooSmall_ThrowsOnError()
+        {
+            byte[] source = File.ReadAllBytes("TestAssets/testorig.jpg");
+
+            Assert.Throws<ArgumentOutOfRangeException>(() => this.decompressor.Decompress(source, Span<byte>.Empty, TJPixelFormat.Gray, TJFlags.None, out int _, out int _, out int _));
+        }
+
+        /// <summary>
+        /// <see cref="TJDecompressor.Decompress(Span{byte}, Span{byte}, TJPixelFormat, TJFlags, out int, out int, out int)"/> throws when the JPEG image is truncated.
+        /// </summary>
+        [Fact]
+        public void Decompress_Error_ThrowsOnError()
+        {
+            byte[] source = File.ReadAllBytes("TestAssets/testorig.jpg");
+
+            using (var memoryOwner = MemoryPool<byte>.Shared.Rent(250 * 250 * 4))
+            {
+                // Premature end of file
+                Assert.Throws<TJException>(() => this.decompressor.Decompress(source.AsSpan(0, source.Length - 1), memoryOwner.Memory.Span, TJPixelFormat.ABGR, TJFlags.None, out int _, out int _, out int _));
+            }
+        }
+
+        /// <summary>
+        /// <see cref="TJDecompressor.DecodeYUVPlanes(Span{byte}, Span{byte}, Span{byte}, int[], TJSubsamplingOption, Span{byte}, int, int, int, TJPixelFormat, TJFlags)"/> throws
+        /// when invalid arguments are passed.
+        /// </summary>
+        [Fact]
+        public void DecodeYUVPlanes_ThrowsOnError()
+        {
+            Assert.Throws<TJException>(() => this.decompressor.DecodeYUVPlanes(Span<byte>.Empty, Span<byte>.Empty, Span<byte>.Empty, new int[] { 0, 0, 0 }, TJSubsamplingOption.Chrominance444, Span<byte>.Empty, 0, 0, 0, TJPixelFormat.CMYK, TJFlags.None));
+        }
+
+        /// <summary>
+        /// <see cref="TJDecompressor.DecodeYUVPlanes(Span{byte}, Span{byte}, Span{byte}, int[], TJSubsamplingOption, Span{byte}, int, int, int, TJPixelFormat, TJFlags)"/>
+        /// can decode YUV planes.
+        /// </summary>
+        [Fact]
+        public void DecodeYUVPlanes_Works()
+        {
+            var yPlane = new byte[100];
+            var uPlane = new byte[100];
+            var vPlane = new byte[100];
+
+            byte[] destination = new byte[400];
+
+            this.decompressor.DecodeYUVPlanes(yPlane, uPlane, vPlane, new int[] { 10, 10, 10 }, TJSubsamplingOption.Chrominance444, destination, 10, 10, 10, TJPixelFormat.RGB, TJFlags.None);
+        }
+
+        /// <summary>
+        /// <see cref="TJDecompressor.DecodeYUVPlanes(Span{byte}, Span{byte}, Span{byte}, int[], TJSubsamplingOption, Span{byte}, int, int, int, TJPixelFormat, TJFlags)"/>
+        /// can decode grayscale images.
+        /// </summary>
+        [Fact]
+        public void DecodeGrayscale_Works()
+        {
+            var yPlane = new byte[100];
+
+            byte[] destination = new byte[400];
+
+            this.decompressor.DecodeYUVPlanes(yPlane, Span<byte>.Empty, Span<byte>.Empty, new int[] { 10, 0, 0 }, TJSubsamplingOption.Gray, destination, 10, 10, 10, TJPixelFormat.Gray, TJFlags.None);
+        }
+
+        /// <summary>
         /// <see cref="TJDecompressor.GetImageInfo(Span{byte}, TJPixelFormat, out int, out int, out int, out int)"/> works correctly.
         /// </summary>
         [Fact]

@@ -154,6 +154,16 @@ namespace Kaponata.TurboJpeg.Tests
         }
 
         /// <summary>
+        /// <see cref="TJCompressor.Compress(Span{byte}, Span{byte}, int, int, int, TJPixelFormat, TJSubsamplingOption, int, TJFlags)"/> throws on errors.
+        /// </summary>
+        [Fact]
+        public void Compress_ThrowsOnError()
+        {
+            Assert.Throws<TJException>(() => this.compressor.Compress(Span<byte>.Empty, Span<byte>.Empty, 0, 0, 0, TJPixelFormat.RGB, TJSubsamplingOption.Gray, 0, TJFlags.None));
+            Assert.Throws<NotSupportedException>(() => this.compressor.Compress(Span<byte>.Empty, Span<byte>.Empty, 0, 0, 0, TJPixelFormat.Gray, TJSubsamplingOption.Chrominance444, 0, TJFlags.None));
+        }
+
+        /// <summary>
         /// <see cref="TJCompressor"/> methods throw when disposed.
         /// </summary>
         [Fact]
@@ -167,6 +177,24 @@ namespace Kaponata.TurboJpeg.Tests
 
             Assert.Throws<ObjectDisposedException>(() => this.compressor.CompressFromYUVPlanes(Span<byte>.Empty, Span<byte>.Empty, Span<byte>.Empty, 0, Array.Empty<int>(), 0, TJSubsamplingOption.Gray, Span<byte>.Empty, 0, TJFlags.None));
             Assert.Throws<ObjectDisposedException>(() => this.compressor.GetBufferSize(0, 0, TJSubsamplingOption.Gray));
+        }
+
+        /// <summary>
+        /// <see cref="TJCompressor.PlaneWidth(TJPlane, int, int)"/> returns correct values.
+        /// </summary>
+        [Fact]
+        public void PlaneWidth_Works()
+        {
+            Assert.Equal(10, this.compressor.PlaneWidth(TJPlane.U, 10, 4));
+        }
+
+        /// <summary>
+        /// <see cref="TJCompressor.PlaneHeight(TJPlane, int, int)"/> returns correct values.
+        /// </summary>
+        [Fact]
+        public void PlaneHeight_Works()
+        {
+            Assert.Equal(5, this.compressor.PlaneHeight(TJPlane.U, 10, 4));
         }
 
         /// <summary>
