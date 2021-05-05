@@ -24,11 +24,7 @@ namespace Kaponata.TurboJpeg
         public TJDecompressor()
         {
             this.decompressorHandle = TurboJpegImport.TjInitDecompress();
-
-            if (this.decompressorHandle == IntPtr.Zero)
-            {
-                TJUtils.GetErrorAndThrow();
-            }
+            TJUtils.ThrowOnError(this.decompressorHandle);
         }
 
         /// <inheritdoc/>
@@ -62,10 +58,7 @@ namespace Kaponata.TurboJpeg
                     out subsampl,
                     out colorspace);
 
-                if (funcResult == -1)
-                {
-                    TJUtils.GetErrorAndThrow();
-                }
+                TJUtils.ThrowOnError(funcResult);
 
                 var targetFormat = destPixelFormat;
                 stride = TurboJpegImport.TJPAD(width * TurboJpegImport.PixelSizes[targetFormat]);
@@ -87,10 +80,7 @@ namespace Kaponata.TurboJpeg
                     (int)targetFormat,
                     (int)flags);
 
-                if (funcResult == -1)
-                {
-                    TJUtils.GetErrorAndThrow();
-                }
+                TJUtils.ThrowOnError(funcResult);
             }
         }
 
@@ -175,7 +165,8 @@ namespace Kaponata.TurboJpeg
                 fixed (byte** planesPtr = planes)
                 fixed (byte* dstBufPtr = dstBuf)
                 {
-                    if (TurboJpegImport.TjDecodeYUVPlanes(
+                    TJUtils.ThrowOnError(
+                        TurboJpegImport.TjDecodeYUVPlanes(
                         this.decompressorHandle,
                         planesPtr,
                         stridesPtr,
@@ -185,10 +176,7 @@ namespace Kaponata.TurboJpeg
                         pitch,
                         height,
                         (int)pixelFormat,
-                        (int)flags) == -1)
-                    {
-                        TJUtils.GetErrorAndThrow();
-                    }
+                        (int)flags));
                 }
             }
         }

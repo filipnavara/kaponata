@@ -25,11 +25,7 @@ namespace Kaponata.TurboJpeg
         public TJCompressor()
         {
             this.compressorHandle = TurboJpegImport.TjInitCompress();
-
-            if (this.compressorHandle == IntPtr.Zero)
-            {
-                TJUtils.GetErrorAndThrow();
-            }
+            TJUtils.ThrowOnError(this.compressorHandle);
         }
 
         /// <inheritdoc/>
@@ -102,10 +98,7 @@ namespace Kaponata.TurboJpeg
                     quality,
                     (int)flags);
 
-                if (result == -1)
-                {
-                    TJUtils.GetErrorAndThrow();
-                }
+                TJUtils.ThrowOnError(result);
             }
 
             return destBuf.Slice(0, (int)destBufSize);
@@ -270,10 +263,7 @@ namespace Kaponata.TurboJpeg
                         jpegQual,
                         (int)flags);
 
-                    if (result == -1)
-                    {
-                        TJUtils.GetErrorAndThrow();
-                    }
+                    TJUtils.ThrowOnError(result);
                 }
             }
 

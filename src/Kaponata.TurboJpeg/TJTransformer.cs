@@ -27,11 +27,7 @@ namespace Kaponata.TurboJpeg
         public TJTransformer()
         {
             this.transformHandle = TurboJpegImport.TjInitTransform();
-
-            if (this.transformHandle == IntPtr.Zero)
-            {
-                TJUtils.GetErrorAndThrow();
-            }
+            TJUtils.ThrowOnError(this.transformHandle);
         }
 
         /// <inheritdoc/>
@@ -78,10 +74,7 @@ namespace Kaponata.TurboJpeg
                     out subsampl,
                     out colorspace);
 
-                if (funcResult == -1)
-                {
-                    TJUtils.GetErrorAndThrow();
-                }
+                TJUtils.ThrowOnError(funcResult);
 
                 Size mcuSize;
                 if (!TurboJpegImport.MCUSizes.TryGetValue((TJSubsamplingOption)subsampl, out mcuSize))
@@ -126,10 +119,7 @@ namespace Kaponata.TurboJpeg
                         transformsPtr,
                         (int)flags);
 
-                    if (funcResult == -1)
-                    {
-                        TJUtils.GetErrorAndThrow();
-                    }
+                    TJUtils.ThrowOnError(funcResult);
 
                     var result = new List<byte[]>();
                     for (var i = 0; i < destBufs.Length; i++)

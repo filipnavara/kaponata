@@ -14,6 +14,34 @@ namespace Kaponata.TurboJpeg
     internal static class TJUtils
     {
         /// <summary>
+        /// Throw an exception if <paramref name="ret"/> is <see cref="IntPtr.Zero"/>.
+        /// </summary>
+        /// <param name="ret">
+        /// The return value of a previous operation.
+        /// </param>
+        public static void ThrowOnError(IntPtr ret)
+        {
+            if (ret == IntPtr.Zero)
+            {
+                GetErrorAndThrow();
+            }
+        }
+
+        /// <summary>
+        /// Throw an exception if <paramref name="ret"/> is -1.
+        /// </summary>
+        /// <param name="ret">
+        /// The return value of a previous operation.
+        /// </param>
+        public static void ThrowOnError(int ret)
+        {
+            if (ret == -1)
+            {
+                GetErrorAndThrow();
+            }
+        }
+
+        /// <summary>
         /// Retrieves last error from underlying turbo-jpeg library and throws exception.</summary>
         /// <exception cref="TJException"> Throws if low level turbo jpeg function fails. </exception>
         public static void GetErrorAndThrow()
