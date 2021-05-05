@@ -23,15 +23,6 @@ namespace Kaponata.TurboJpeg
         }
 
         /// <summary>
-        /// Returns actual platform name depending on pointer size.
-        /// </summary>
-        /// <returns>"x86" for 32 bit processes and "x64" for 64 bit processes.</returns>
-        public static string GetPlatformName()
-        {
-            return IntPtr.Size == sizeof(int) ? "x86" : "x64";
-        }
-
-        /// <summary>
         /// Converts array of managed structures to the unmanaged pointer.
         /// </summary>
         /// <typeparam name="T">
@@ -59,21 +50,6 @@ namespace Kaponata.TurboJpeg
         }
 
         /// <summary>
-        /// Copies data from array to unmanaged pointer.
-        /// </summary>
-        /// <param name="data">Byte array for copy.</param>
-        /// <param name="useComAllocation">If set to <c>true</c>, Com allocator will be used to allocate memory.</param>
-        /// <returns>
-        /// A <see cref="IntPtr"/> which represents the unmanaged copy of the data.
-        /// </returns>
-        public static IntPtr CopyDataToPointer(byte[] data, bool useComAllocation = false)
-        {
-            var res = useComAllocation ? Marshal.AllocCoTaskMem(data.Length) : Marshal.AllocHGlobal(data.Length);
-            Marshal.Copy(data, 0, res, data.Length);
-            return res;
-        }
-
-        /// <summary>
         /// Allocate an image buffer for use with TurboJPEG.
         /// </summary>
         /// <param name="bytes">The number of bytes to allocate.</param>
@@ -94,22 +70,14 @@ namespace Kaponata.TurboJpeg
         /// <param name="ptr">
         /// A pointer to the memory to free.
         /// </param>
-        /// <param name="isComAllocated">If set to <c>true</c>, Com allocator will be used to free memory.</param>
-        public static void FreePtr(IntPtr ptr, bool isComAllocated = false)
+        public static void FreePtr(IntPtr ptr)
         {
             if (ptr == IntPtr.Zero)
             {
                 return;
             }
 
-            if (isComAllocated)
-            {
-                Marshal.FreeCoTaskMem(ptr);
-            }
-            else
-            {
-                Marshal.FreeHGlobal(ptr);
-            }
+            Marshal.FreeHGlobal(ptr);
         }
     }
 }
