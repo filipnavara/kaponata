@@ -73,5 +73,90 @@ namespace Kaponata.iOS.Tests.DeveloperDisks
             Assert.Equal("iPhone OS", version.ProductName);
             Assert.Equal(new Version("13.4"), version.ProductVersion);
         }
+
+        /// <summary>
+        /// <see cref="SystemVersion.ToDictionary"/> works when <see cref="SystemVersion.BuildID"/>
+        /// is not set.
+        /// </summary>
+        [Fact]
+        public void ToDictionary_NoBuildIDs_Works()
+        {
+            var version = new SystemVersion()
+            {
+                ProductBuildVersion = AppleVersion.Parse("17E255"),
+                ProductCopyright = "1983-2020 Apple Inc.",
+                ProductName = "iPhone OS",
+                ProductVersion = new Version(13, 4),
+            };
+
+            var dict = version.ToDictionary();
+            Assert.Collection(
+                dict,
+                e =>
+                {
+                    Assert.Equal("ProductBuildVersion", e.Key);
+                    Assert.Equal("17E255", e.Value.ToObject());
+                },
+                e =>
+                {
+                    Assert.Equal("ProductCopyright", e.Key);
+                    Assert.Equal("1983-2020 Apple Inc.", e.Value.ToObject());
+                },
+                e =>
+                {
+                    Assert.Equal("ProductName", e.Key);
+                    Assert.Equal("iPhone OS", e.Value.ToObject());
+                },
+                e =>
+                {
+                    Assert.Equal("ProductVersion", e.Key);
+                    Assert.Equal("13.4", e.Value.ToObject());
+                });
+        }
+
+        /// <summary>
+        /// <see cref="SystemVersion.ToDictionary"/> works.
+        /// </summary>
+        [Fact]
+        public void ToDictionary_Works()
+        {
+            var version = new SystemVersion()
+            {
+                BuildID = new Guid("BB4C82AE-5F8A-11EA-A1A5-838AD03DDE06"),
+                ProductBuildVersion = AppleVersion.Parse("17E255"),
+                ProductCopyright = "1983-2020 Apple Inc.",
+                ProductName = "iPhone OS",
+                ProductVersion = new Version(13, 4),
+            };
+
+            var dict = version.ToDictionary();
+            Assert.Collection(
+                dict,
+                e =>
+                {
+                    Assert.Equal("BuildID", e.Key);
+                    Assert.Equal("BB4C82AE-5F8A-11EA-A1A5-838AD03DDE06", e.Value.ToObject());
+                },
+                e =>
+                {
+                    Assert.Equal("ProductBuildVersion", e.Key);
+                    Assert.Equal("17E255", e.Value.ToObject());
+                },
+                e =>
+                {
+                    Assert.Equal("ProductCopyright", e.Key);
+                    Assert.Equal("1983-2020 Apple Inc.", e.Value.ToObject());
+                },
+                e =>
+                {
+                    Assert.Equal("ProductName", e.Key);
+                    Assert.Equal("iPhone OS", e.Value.ToObject());
+                },
+                e =>
+                {
+                    Assert.Equal("ProductVersion", e.Key);
+                    Assert.Equal("13.4", e.Value.ToObject());
+                });
+        }
     }
 }
