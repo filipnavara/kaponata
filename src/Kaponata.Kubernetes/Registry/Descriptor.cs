@@ -2,8 +2,13 @@
 // Copyright (c) Quamotion bv. All rights reserved.
 // </copyright>
 
+using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Security.Cryptography;
 using System.Text.Json.Serialization;
+using System.Threading;
+using System.Threading.Tasks;
 
 #pragma warning disable SA1011 // Closing square brackets should be spaced correctly
 
@@ -58,5 +63,43 @@ namespace Kaponata.Kubernetes.Registry
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
         [JsonPropertyName("platform")]
         public Platform? Platform { get; set; }
+
+        /// <summary>
+        /// Asynchronously creates a <see cref="Descriptor"/> for a <see cref="Stream"/>.
+        /// </summary>
+        /// <param name="content">
+        /// The <see cref="Stream"/> for which to create the descriptor.
+        /// </param>
+        /// <param name="mediaType">
+        /// The media type of the object the descriptor refers to.
+        /// </param>
+        /// <param name="cancellationToken">
+        /// A <see cref="CancellationToken"/> which can be used to cancel the asynchronous operation.
+        /// </param>
+        /// <returns>
+        /// A <see cref="Task"/> which represents the asynchronous operation and, when completed, returns the descriptor.
+        /// </returns>
+        public static async Task<Descriptor> CreateAsync(Stream content, string mediaType, CancellationToken cancellationToken)
+        {
+            if (content == null)
+            {
+                throw new ArgumentNullException(nameof(content));
+            }
+
+            content.Seek(0, SeekOrigin.Begin);
+
+            Descriptor descriptor = new Descriptor();
+
+            using (var sha256 = SHA256.Create())
+            {
+                var hash = await sha256.ComputeHashAsync(content, cancellationToken).ConfigureAwait(false);
+                descriptor.Digest = $"sha256:{Convert.ToHexString(hash).ToLowerInvariant()}";
+                descriptor.Size = content.Length;
+            }
+
+            descriptor.MediaType = mediaType;
+
+            return descriptor;
+        }
     }
 }
