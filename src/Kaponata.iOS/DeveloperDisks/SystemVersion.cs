@@ -11,7 +11,7 @@ namespace Kaponata.iOS.DeveloperDisks
     /// <summary>
     /// Represents the version of an operating system or a SDK.
     /// </summary>
-    public class SystemVersion : IPropertyListDeserializable
+    public class SystemVersion : IPropertyListDeserializable, IPropertyList
     {
         /// <summary>
         /// Gets or sets a <see cref="Guid"/> which uniquely identifies the product build.
@@ -55,6 +55,24 @@ namespace Kaponata.iOS.DeveloperDisks
             this.ProductCopyright = dictionary.GetString(nameof(this.ProductCopyright));
             this.ProductName = dictionary.GetString(nameof(this.ProductName));
             this.ProductVersion = new Version(dictionary.GetString(nameof(this.ProductVersion)));
+        }
+
+        /// <inheritdoc/>
+        public NSDictionary ToDictionary()
+        {
+            var dict = new NSDictionary();
+
+            if (this.BuildID != Guid.Empty)
+            {
+                dict.Add(nameof(this.BuildID), this.BuildID.ToString().ToUpper());
+            }
+
+            dict.Add(nameof(this.ProductBuildVersion), this.ProductBuildVersion.ToString());
+            dict.Add(nameof(this.ProductCopyright), this.ProductCopyright);
+            dict.Add(nameof(this.ProductName), this.ProductName);
+            dict.Add(nameof(this.ProductVersion), this.ProductVersion.ToString());
+
+            return dict;
         }
     }
 }
