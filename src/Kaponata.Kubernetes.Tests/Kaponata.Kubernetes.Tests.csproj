@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Kaponata.Kubernetes\Kaponata.Kubernetes.csproj" />
+    <PackageReference Include="RichardSzalay.MockHttp" Version="6.0.0" />
   </ItemGroup>
 
   <ItemGroup>
