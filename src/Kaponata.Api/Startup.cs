@@ -46,6 +46,13 @@ namespace Kaponata.Api
                 app.UseDeveloperExceptionPage();
             }
 
+            #if DEBUG
+            app.UseCors(o =>
+            {
+                o.AllowAnyOrigin();
+            });
+            #endif
+
             app.Use((context, next) =>
             {
                 context.Response.Headers["X-Kaponata-Version"] = ThisAssembly.AssemblyInformationalVersion;

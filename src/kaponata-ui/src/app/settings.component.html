@@ -1,0 +1,41 @@
+<h1>Settings</h1>
+<h4>iOS Provisioning Profiles</h4>
+
+<table class="table table-condensed">
+  <thead>
+    <tr>
+      <th >Profile</th>
+      <th>Entitlements</th>
+      <th>Devices</th>
+      <th >Developers</th>
+      <th >Expires</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let profile of provisioningProfiles">
+      <td>
+        {{profile.name}}
+      </td>
+      <td>
+        <dl>
+          <dt>{{profile.entitlements?.applicationIdentifier}}</dt>
+        </dl>
+      </td>
+      <td>
+        <ng-template #devicesContent>
+          <dl><dd *ngFor="let device of profile.provisionedDevices">{{device}}</dd></dl>
+        </ng-template>
+        <a href="javascript:void(0)" [ngbPopover]="devicesContent" placement="bottom" container="body">{{profile.provisionedDevices.length}} devices</a>
+      </td>
+      <td>
+        <ng-template #developersContent>
+          <dl><dd ngbDropdownItem *ngFor="let certificate of profile.developerCertificates">{{certificate.name}} ({{certificate.type}})</dd></dl>
+        </ng-template>
+        <a href="javascript:void(0)" [ngbPopover]="developersContent" placement="bottom" container="body">{{profile.developerCertificates.length}} identities</a>
+      </td>
+      <td>
+        {{profile.expirationDate | date: "MMM dd, yyyy": "GMT" }}
+      </td>
+    </tr>
+  </tbody>
+</table>
