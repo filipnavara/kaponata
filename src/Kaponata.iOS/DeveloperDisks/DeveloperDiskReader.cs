@@ -7,6 +7,7 @@ using DiscUtils;
 using DiscUtils.Dmg;
 using DiscUtils.HfsPlus;
 using DiscUtils.Streams;
+using System;
 using System.IO;
 
 namespace Kaponata.iOS.DeveloperDisks
@@ -33,7 +34,7 @@ namespace Kaponata.iOS.DeveloperDisks
         /// A <see cref="SystemVersion"/> object with additional information about the developer
         /// disk image.
         /// </returns>
-        public static SystemVersion GetVersionInformation(Stream developerDiskImageStream)
+        public static (SystemVersion, DateTimeOffset) GetVersionInformation(Stream developerDiskImageStream)
         {
             using (var disk = new Disk(developerDiskImageStream, Ownership.None))
             {
@@ -61,7 +62,7 @@ namespace Kaponata.iOS.DeveloperDisks
                                 throw new InvalidDataException("The developer disk does not target iOS");
                             }
 
-                            return plist;
+                            return (plist, hfs.Root.CreationTimeUtc);
                         }
                     }
                 }

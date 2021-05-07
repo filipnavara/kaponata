@@ -99,6 +99,8 @@ namespace Kaponata.Kubernetes.Registry
 
             descriptor.MediaType = mediaType;
 
+            content.Seek(0, SeekOrigin.Begin);
+
             return descriptor;
         }
     }

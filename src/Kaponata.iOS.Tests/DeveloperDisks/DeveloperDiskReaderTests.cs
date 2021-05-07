@@ -47,9 +47,10 @@ namespace Kaponata.iOS.Tests.DeveloperDisks
         {
             using (Stream stream = File.OpenRead(path))
             {
-                var version = DeveloperDiskReader.GetVersionInformation(stream);
+                (var version, var creationTime) = DeveloperDiskReader.GetVersionInformation(stream);
 
                 Assert.Equal("iPhone OS", version.ProductName);
+                Assert.True(new DateTimeOffset(2010, 1, 1, 0, 0, 0, TimeSpan.Zero) < creationTime);
             }
         }
     }
