@@ -41,6 +41,9 @@ namespace Kaponata.Kubernetes.Tests.Registry
                 Assert.Equal("sha256:dffd6021bb2bd5b0af676290809ec3a53191dd81c7f70a4b28688a362182986f", descriptor.Digest);
                 Assert.Equal("text/plain", descriptor.MediaType);
                 Assert.Equal(13, descriptor.Size);
+
+                // The CreateAsync method will rewind the stream when done.
+                Assert.Equal(0, stream.Position);
             }
         }
     }
