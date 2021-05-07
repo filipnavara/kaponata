@@ -35,6 +35,15 @@ namespace Kaponata.Kubernetes.Registry
             this.httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/vnd.oci.image.manifest.v1+json"));
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ImageRegistryClient"/> class. Intended for mocking purposes only.
+        /// </summary>
+#nullable disable
+        protected ImageRegistryClient()
+        {
+        }
+#nullable restore
+
         /// <inheritdoc/>
         public bool IsDisposed { get; private set; }
 
@@ -56,7 +65,7 @@ namespace Kaponata.Kubernetes.Registry
         /// <returns>
         /// A <see cref="Task"/> which represents the asynchronous operation, and, when completed returns the URL at which the blob can be
         /// retrieved.</returns>
-        public async Task<Uri> PushBlobAsync(string repository, Stream blob, string digest, CancellationToken cancellationToken)
+        public async virtual Task<Uri> PushBlobAsync(string repository, Stream blob, string digest, CancellationToken cancellationToken)
         {
             Verify.NotDisposed(this);
 
@@ -123,7 +132,7 @@ namespace Kaponata.Kubernetes.Registry
         /// </param>
         /// <returns>
         /// A <see cref="Task"/> which represens the asynchronous operation, and, when completed, returns the URL at which the manifest can be retreived.</returns>
-        public async Task<Uri> PushManifestAsync(string repository, string reference, Stream manifest, CancellationToken cancellationToken)
+        public async virtual Task<Uri> PushManifestAsync(string repository, string reference, Stream manifest, CancellationToken cancellationToken)
         {
             Verify.NotDisposed(this);
 
@@ -170,7 +179,7 @@ namespace Kaponata.Kubernetes.Registry
         /// <returns>
         /// A <see cref="Task"/> which represents the asynchronous operation, and, when completed, returns a list of all tags.
         /// </returns>
-        public async Task<List<string>> ListTagsAsync(string repository, CancellationToken cancellationToken)
+        public async virtual Task<List<string>> ListTagsAsync(string repository, CancellationToken cancellationToken)
         {
             Verify.NotDisposed(this);
 
@@ -206,7 +215,7 @@ namespace Kaponata.Kubernetes.Registry
         /// A <see cref="Task"/> which represents the asynchronous operation and, when completed, returns
         /// the requested reference.
         /// </returns>
-        public async Task<Manifest?> GetManifestAsync(string repository, string reference, CancellationToken cancellationToken)
+        public async virtual Task<Manifest?> GetManifestAsync(string repository, string reference, CancellationToken cancellationToken)
         {
             Verify.NotDisposed(this);
 
@@ -247,7 +256,7 @@ namespace Kaponata.Kubernetes.Registry
         /// A <see cref="Task"/> which represents the asynchronous operation and, when completed, returns the
         /// requested blob.
         /// </returns>
-        public async Task<Stream> GetBlobAsync(string repository, string digest, CancellationToken cancellationToken)
+        public async virtual Task<Stream> GetBlobAsync(string repository, string digest, CancellationToken cancellationToken)
         {
             Verify.NotDisposed(this);
 
@@ -287,7 +296,7 @@ namespace Kaponata.Kubernetes.Registry
         /// <returns>
         /// A <see cref="Task"/> which represents the asynchronous operation.
         /// </returns>
-        public async Task DeleteManifestAsync(string repository, string reference, CancellationToken cancellationToken)
+        public async virtual Task DeleteManifestAsync(string repository, string reference, CancellationToken cancellationToken)
         {
             Verify.NotDisposed(this);
 
@@ -324,7 +333,7 @@ namespace Kaponata.Kubernetes.Registry
         /// <returns>
         /// A <see cref="Task"/> which represents the asynchronous operation.
         /// </returns>
-        public async Task DeleteBlobAsync(string repository, string digest, CancellationToken cancellationToken)
+        public async virtual Task DeleteBlobAsync(string repository, string digest, CancellationToken cancellationToken)
         {
             Verify.NotDisposed(this);
 
