@@ -35,6 +35,11 @@ namespace Kaponata.iOS.DeveloperDisks
         public byte[] Signature { get; set; }
 
         /// <summary>
+        /// Gets or sets the date and time at which the developer disk image was created.
+        /// </summary>
+        public DateTimeOffset CreationTime { get; set; }
+
+        /// <summary>
         /// Creates a <see cref="DeveloperDisk"/> object based on a file.
         /// </summary>
         /// <param name="image">
@@ -62,7 +67,7 @@ namespace Kaponata.iOS.DeveloperDisks
                 throw new ArgumentNullException(nameof(signature));
             }
 
-            var version = DeveloperDiskReader.GetVersionInformation(image);
+            (var version, var creationTime) = DeveloperDiskReader.GetVersionInformation(image);
             image.Seek(0, SeekOrigin.Begin);
 
             byte[] signatureBytes = new byte[signature.Length];
@@ -74,6 +79,7 @@ namespace Kaponata.iOS.DeveloperDisks
                 Image = image,
                 Signature = signatureBytes,
                 Version = version,
+                CreationTime = creationTime,
             };
         }
 
