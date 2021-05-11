@@ -44,6 +44,11 @@ namespace Kaponata.Kubernetes.Registry
         }
 #nullable restore
 
+        /// <summary>
+        /// Gets the <see cref="HttpClient"/> which is used to connect to the image registry.
+        /// </summary>
+        public HttpClient HttpClient => this.httpClient;
+
         /// <inheritdoc/>
         public bool IsDisposed { get; private set; }
 
@@ -358,7 +363,7 @@ namespace Kaponata.Kubernetes.Registry
         /// <inheritdoc/>
         public void Dispose()
         {
-            this.httpClient.Dispose();
+            this.httpClient?.Dispose();
             this.IsDisposed = true;
         }
     }

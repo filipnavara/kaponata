@@ -22,6 +22,17 @@ namespace Kaponata.Kubernetes.Registry
         /// <summary>
         /// Initializes a new instance of the <see cref="ImageRegistryException"/> class.
         /// </summary>
+        /// <param name="message">
+        /// A message which describes the error.
+        /// </param>
+        public ImageRegistryException(string message)
+            : base(message)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ImageRegistryException"/> class.
+        /// </summary>
         /// <param name="statusCode">
         /// The HTTP status code returned by the remote server.
         /// </param>

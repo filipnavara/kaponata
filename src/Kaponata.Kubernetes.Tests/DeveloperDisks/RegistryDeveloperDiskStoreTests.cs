@@ -25,7 +25,7 @@ namespace Kaponata.Kubernetes.Tests.DeveloperDisks
     public class RegistryDeveloperDiskStoreTests
     {
         /// <summary>
-        /// The <see cref="RegistryDeveloperDiskStore.RegistryDeveloperDiskStore(ImageRegistryClient)"/> constructor validates its arguments.
+        /// The <see cref="RegistryDeveloperDiskStore.RegistryDeveloperDiskStore(ImageRegistryClientFactory)"/> constructor validates its arguments.
         /// </summary>
         [Fact]
         public void Constructor_ValidatesArguments()
@@ -40,7 +40,7 @@ namespace Kaponata.Kubernetes.Tests.DeveloperDisks
         [Fact]
         public async Task AddAsync_ValidatesArguments_Async()
         {
-            var store = new RegistryDeveloperDiskStore(Mock.Of<ImageRegistryClient>());
+            var store = new RegistryDeveloperDiskStore(Mock.Of<ImageRegistryClientFactory>());
             await Assert.ThrowsAsync<ArgumentNullException>(() => store.AddAsync(null, default)).ConfigureAwait(false);
         }
 
@@ -82,7 +82,10 @@ namespace Kaponata.Kubernetes.Tests.DeveloperDisks
                 .Returns(Task.FromResult(new Uri("http://localhost:5000/v2/devimg/manifests/1.0")))
                 .Verifiable();
 
-            var store = new RegistryDeveloperDiskStore(registryClient.Object);
+            var factory = new Mock<ImageRegistryClientFactory>(MockBehavior.Strict);
+            factory.Setup(f => f.CreateAsync(default)).ReturnsAsync(registryClient.Object);
+
+            var store = new RegistryDeveloperDiskStore(factory.Object);
 
             await store.AddAsync(disk, default).ConfigureAwait(false);
 
@@ -97,8 +100,10 @@ namespace Kaponata.Kubernetes.Tests.DeveloperDisks
         public async Task ListAsync_Works_Async()
         {
             var registryClient = new Mock<ImageRegistryClient>(MockBehavior.Strict);
+            var factory = new Mock<ImageRegistryClientFactory>(MockBehavior.Strict);
+            factory.Setup(f => f.CreateAsync(default)).ReturnsAsync(registryClient.Object);
             registryClient.Setup(r => r.ListTagsAsync("devimg", default)).ReturnsAsync(new List<string>() { "1.0" });
-            var store = new RegistryDeveloperDiskStore(registryClient.Object);
+            var store = new RegistryDeveloperDiskStore(factory.Object);
 
             Assert.Equal(new Version(1, 0), Assert.Single(await store.ListAsync(default)));
 
@@ -113,7 +118,9 @@ namespace Kaponata.Kubernetes.Tests.DeveloperDisks
         public async Task GetAsync_ValidatesArguments_Async()
         {
             var registryClient = new Mock<ImageRegistryClient>(MockBehavior.Strict);
-            var store = new RegistryDeveloperDiskStore(registryClient.Object);
+            var factory = new Mock<ImageRegistryClientFactory>(MockBehavior.Strict);
+            factory.Setup(f => f.CreateAsync(default)).ReturnsAsync(registryClient.Object);
+            var store = new RegistryDeveloperDiskStore(factory.Object);
 
             await Assert.ThrowsAsync<ArgumentNullException>(() => store.GetAsync(null, default)).ConfigureAwait(false);
         }
@@ -127,9 +134,11 @@ namespace Kaponata.Kubernetes.Tests.DeveloperDisks
         public async Task GetAsync_NotFound_ReturnsNull_Async()
         {
             var registryClient = new Mock<ImageRegistryClient>(MockBehavior.Strict);
+            var factory = new Mock<ImageRegistryClientFactory>(MockBehavior.Strict);
+            factory.Setup(f => f.CreateAsync(default)).ReturnsAsync(registryClient.Object);
             registryClient.Setup(r => r.GetManifestAsync("devimg", "1.0", default)).Returns(Task.FromResult<Manifest>(null)).Verifiable();
 
-            var store = new RegistryDeveloperDiskStore(registryClient.Object);
+            var store = new RegistryDeveloperDiskStore(factory.Object);
 
             Assert.Null(await store.GetAsync(new Version(1, 0), default).ConfigureAwait(false));
 
@@ -164,10 +173,12 @@ namespace Kaponata.Kubernetes.Tests.DeveloperDisks
             stream.Position = 0;
 
             var registryClient = new Mock<ImageRegistryClient>(MockBehavior.Strict);
+            var factory = new Mock<ImageRegistryClientFactory>(MockBehavior.Strict);
+            factory.Setup(f => f.CreateAsync(default)).ReturnsAsync(registryClient.Object);
             registryClient.Setup(r => r.GetManifestAsync("devimg", "1.0", default)).Returns(Task.FromResult(manifest)).Verifiable();
             registryClient.Setup(r => r.GetBlobAsync("devimg", "sha256:2", default)).ReturnsAsync(stream).Verifiable();
 
-            var store = new RegistryDeveloperDiskStore(registryClient.Object);
+            var store = new RegistryDeveloperDiskStore(factory.Object);
             var disk = await store.GetAsync(new Version(1, 0), default).ConfigureAwait(false);
 
             Assert.Equal(new byte[] { 1 }, ((MemoryStream)disk.Image).ToArray());
@@ -186,7 +197,9 @@ namespace Kaponata.Kubernetes.Tests.DeveloperDisks
         public async Task DeleteAsync_ValidatesArguments_Async()
         {
             var registryClient = new Mock<ImageRegistryClient>(MockBehavior.Strict);
-            var store = new RegistryDeveloperDiskStore(registryClient.Object);
+            var factory = new Mock<ImageRegistryClientFactory>(MockBehavior.Strict);
+            factory.Setup(f => f.CreateAsync(default)).ReturnsAsync(registryClient.Object);
+            var store = new RegistryDeveloperDiskStore(factory.Object);
             await Assert.ThrowsAsync<ArgumentNullException>(() => store.DeleteAsync(null, default)).ConfigureAwait(false);
         }
 
@@ -199,9 +212,11 @@ namespace Kaponata.Kubernetes.Tests.DeveloperDisks
         public async Task DeleteAsync_DoesNotExist_Returns_Async()
         {
             var registryClient = new Mock<ImageRegistryClient>(MockBehavior.Strict);
+            var factory = new Mock<ImageRegistryClientFactory>(MockBehavior.Strict);
+            factory.Setup(f => f.CreateAsync(default)).ReturnsAsync(registryClient.Object);
             registryClient.Setup(r => r.GetManifestAsync("devimg", "1.0", default)).Returns(Task.FromResult<Manifest>(null)).Verifiable();
 
-            var store = new RegistryDeveloperDiskStore(registryClient.Object);
+            var store = new RegistryDeveloperDiskStore(factory.Object);
 
             await store.DeleteAsync(new Version(1, 0), default).ConfigureAwait(false);
 
@@ -216,6 +231,8 @@ namespace Kaponata.Kubernetes.Tests.DeveloperDisks
         public async Task DeleteAsync_Works_Async()
         {
             var registryClient = new Mock<ImageRegistryClient>(MockBehavior.Strict);
+            var factory = new Mock<ImageRegistryClientFactory>(MockBehavior.Strict);
+            factory.Setup(f => f.CreateAsync(default)).ReturnsAsync(registryClient.Object);
             var manifest = new Manifest()
             {
                 Config = new Descriptor()
@@ -236,7 +253,7 @@ namespace Kaponata.Kubernetes.Tests.DeveloperDisks
             registryClient.Setup(r => r.DeleteBlobAsync("devimg", "sha256:2", default)).Returns(Task.CompletedTask).Verifiable();
             registryClient.Setup(r => r.DeleteManifestAsync("devimg", "1.0", default)).Returns(Task.CompletedTask).Verifiable();
 
-            var store = new RegistryDeveloperDiskStore(registryClient.Object);
+            var store = new RegistryDeveloperDiskStore(factory.Object);
 
             await store.DeleteAsync(new Version(1, 0), default).ConfigureAwait(false);
 
