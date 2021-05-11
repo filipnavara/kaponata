@@ -176,7 +176,7 @@ namespace Kaponata.Kubernetes.Tests
         }
 
         /// <summary>
-        /// <see cref="LabelSelector.Create(Dictionary{string, string})"/> validates its arguments.
+        /// <see cref="LabelSelector.Create(IDictionary{string, string})"/> validates its arguments.
         /// </summary>
         [Fact]
         public void FromDictionary_ValidatesArgument()
@@ -185,7 +185,7 @@ namespace Kaponata.Kubernetes.Tests
         }
 
         /// <summary>
-        /// <see cref="LabelSelector.Create(Dictionary{string, string})"/> returns an empty selector when passed
+        /// <see cref="LabelSelector.Create(IDictionary{string, string})"/> returns an empty selector when passed
         /// an empty dictionary.
         /// </summary>
         [Fact]
@@ -195,7 +195,7 @@ namespace Kaponata.Kubernetes.Tests
         }
 
         /// <summary>
-        /// <see cref="LabelSelector.Create(Dictionary{string, string})"/> returns a valid selector when passed
+        /// <see cref="LabelSelector.Create(IDictionary{string, string})"/> returns a valid selector when passed
         /// a single key/value pair.
         /// </summary>
         [Fact]
@@ -211,7 +211,7 @@ namespace Kaponata.Kubernetes.Tests
         }
 
         /// <summary>
-        /// <see cref="LabelSelector.Create(Dictionary{string, string})"/> returns a valid selector when passed
+        /// <see cref="LabelSelector.Create(IDictionary{string, string})"/> returns a valid selector when passed
         /// two key/value pairs.
         /// </summary>
         [Fact]
