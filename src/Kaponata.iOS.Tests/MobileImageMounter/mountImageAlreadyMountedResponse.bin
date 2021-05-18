@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>DetailedError</key>
+	<string>Error Domain=com.apple.MobileStorage.ErrorDomain Code=-2 "Failed to mount /private/var/run/mobile_image_mounter/938128FB29448B9A5126C7EF07BACDA5E4F4B539199E5B240A9B59629A731D7B48CE48C913CA7FB9185521868B766FBCE32D64B243E4C0A6C6F40117FCA95694/9064295B20BD20B5570A559356E2E1DA142ACB335836FF453C06C8F7460DFEEC6C480DD2C785781A04B0A85C330DEC5FDDB69365DC80DFAB96CC2209EF15DFD4/UyDcHL.dmg." UserInfo={NSLocalizedDescription=Failed to mount /private/var/run/mobile_image_mounter/938128FB29448B9A5126C7EF07BACDA5E4F4B539199E5B240A9B59629A731D7B48CE48C913CA7FB9185521868B766FBCE32D64B243E4C0A6C6F40117FCA95694/9064295B20BD20B5570A559356E2E1DA142ACB335836FF453C06C8F7460DFEEC6C480DD2C785781A04B0A85C330DEC5FDDB69365DC80DFAB96CC2209EF15DFD4/UyDcHL.dmg., NSUnderlyingError=0x104609f90 {Error Domain=com.apple.MobileStorage.ErrorDomain Code=-2 "Invalid value for MountPath: Error Domain=com.apple.MobileStorage.ErrorDomain Code=-3 "A disk image of type Developer/(null) is already mounted at /Developer." UserInfo={NSLocalizedDescription=A disk image of type Developer/(null) is already mounted at /Developer.}" UserInfo={NSLocalizedDescription=Invalid value for MountPath: Error Domain=com.apple.MobileStorage.ErrorDomain Code=-3 "A disk image of type Developer/(null) is already mounted at /Developer." UserInfo={NSLocalizedDescription=A disk image of type Developer/(null) is already mounted at /Developer.}}}}</string>
+	<key>Error</key>
+	<string>ImageMountFailed</string>
+</dict>
+</plist>

@@ -47,6 +47,7 @@ namespace Kaponata.iOS.Tests.Lockdown
                 .ReturnsAsync(dict);
 
             protocol.Setup(p => p.ReadMessageAsync<LockdownResponse<string>>(default)).CallBase();
+            protocol.Setup(p => p.DisposeAsync()).Returns(ValueTask.CompletedTask);
 
             await using (var client = new LockdownClient(protocol.Object, NullLogger<LockdownClient>.Instance))
             {
@@ -85,6 +86,7 @@ namespace Kaponata.iOS.Tests.Lockdown
                 .ReturnsAsync(dict);
 
             protocol.Setup(p => p.ReadMessageAsync<LockdownResponse<string>>(default)).CallBase();
+            protocol.Setup(p => p.DisposeAsync()).Returns(ValueTask.CompletedTask);
 
             await using (var client = new LockdownClient(protocol.Object, NullLogger<LockdownClient>.Instance))
             {
@@ -124,6 +126,7 @@ namespace Kaponata.iOS.Tests.Lockdown
                 .ReturnsAsync(dict);
 
             protocol.Setup(p => p.ReadMessageAsync<LockdownResponse<string>>(default)).CallBase();
+            protocol.Setup(p => p.DisposeAsync()).Returns(ValueTask.CompletedTask);
 
             await using (var client = new LockdownClient(protocol.Object, NullLogger<LockdownClient>.Instance))
             {
@@ -167,6 +170,7 @@ namespace Kaponata.iOS.Tests.Lockdown
                 .ReturnsAsync(dict);
 
             protocol.Setup(p => p.ReadMessageAsync<LockdownResponse<byte[]>>(default)).CallBase();
+            protocol.Setup(p => p.DisposeAsync()).Returns(ValueTask.CompletedTask);
 
             await using (var client = new LockdownClient(protocol.Object, NullLogger<LockdownClient>.Instance))
             {
@@ -204,6 +208,7 @@ namespace Kaponata.iOS.Tests.Lockdown
                 .ReturnsAsync(dict);
 
             protocol.Setup(p => p.ReadMessageAsync<LockdownResponse<string>>(default)).CallBase();
+            protocol.Setup(p => p.DisposeAsync()).Returns(ValueTask.CompletedTask);
 
             await using (var client = new LockdownClient(protocol.Object, NullLogger<LockdownClient>.Instance))
             {

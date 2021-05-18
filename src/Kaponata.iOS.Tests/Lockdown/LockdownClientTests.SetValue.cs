@@ -49,6 +49,7 @@ namespace Kaponata.iOS.Tests.Lockdown
                 .Verifiable();
 
             protocol.Setup(p => p.ReadMessageAsync<LockdownResponse<string>>(default)).CallBase();
+            protocol.Setup(p => p.DisposeAsync()).Returns(ValueTask.CompletedTask);
 
             await using (var client = new LockdownClient(protocol.Object, NullLogger<LockdownClient>.Instance))
             {
