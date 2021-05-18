@@ -10,7 +10,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Kaponata.FileFormats\Kaponata.FileFormats.csproj" />
     <PackageReference Include="Kaponata.FileFormats.TestAssets" Version="0.3.15" />
-    <PackageReference Include="DiscUtils.Fat" Version="0.16.0-alpha0051" />
+    <PackageReference Include="DiscUtils.Fat" Version="0.16.6" />
   </ItemGroup>
 
   <ItemGroup>
