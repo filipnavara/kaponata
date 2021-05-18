@@ -46,6 +46,8 @@ namespace Kaponata.iOS.Tests.Lockdown
                 .Setup(p => p.ReadMessageAsync(default))
                 .ReturnsAsync(dict);
 
+            protocol.Setup(p => p.ReadMessageAsync<LockdownResponse<string>>(default)).CallBase();
+
             await using (var client = new LockdownClient(protocol.Object, NullLogger<LockdownClient>.Instance))
             {
                 var value = await client.GetValueAsync("my-key", default).ConfigureAwait(false);
@@ -81,6 +83,8 @@ namespace Kaponata.iOS.Tests.Lockdown
             protocol
                 .Setup(p => p.ReadMessageAsync(default))
                 .ReturnsAsync(dict);
+
+            protocol.Setup(p => p.ReadMessageAsync<LockdownResponse<string>>(default)).CallBase();
 
             await using (var client = new LockdownClient(protocol.Object, NullLogger<LockdownClient>.Instance))
             {
@@ -118,6 +122,8 @@ namespace Kaponata.iOS.Tests.Lockdown
             protocol
                 .Setup(p => p.ReadMessageAsync(default))
                 .ReturnsAsync(dict);
+
+            protocol.Setup(p => p.ReadMessageAsync<LockdownResponse<string>>(default)).CallBase();
 
             await using (var client = new LockdownClient(protocol.Object, NullLogger<LockdownClient>.Instance))
             {
@@ -160,6 +166,8 @@ namespace Kaponata.iOS.Tests.Lockdown
                 .Setup(p => p.ReadMessageAsync(default))
                 .ReturnsAsync(dict);
 
+            protocol.Setup(p => p.ReadMessageAsync<LockdownResponse<byte[]>>(default)).CallBase();
+
             await using (var client = new LockdownClient(protocol.Object, NullLogger<LockdownClient>.Instance))
             {
                 var result = await client.GetPublicKeyAsync(default).ConfigureAwait(false);
@@ -194,6 +202,8 @@ namespace Kaponata.iOS.Tests.Lockdown
             protocol
                 .Setup(p => p.ReadMessageAsync(default))
                 .ReturnsAsync(dict);
+
+            protocol.Setup(p => p.ReadMessageAsync<LockdownResponse<string>>(default)).CallBase();
 
             await using (var client = new LockdownClient(protocol.Object, NullLogger<LockdownClient>.Instance))
             {

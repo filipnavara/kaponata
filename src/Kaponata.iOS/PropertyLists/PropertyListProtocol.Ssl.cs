@@ -3,6 +3,7 @@
 // </copyright>
 
 using Kaponata.iOS.Lockdown;
+using Microsoft;
 using System;
 using System.Diagnostics;
 using System.Net.Security;
@@ -37,6 +38,8 @@ namespace Kaponata.iOS.PropertyLists
         /// </returns>
         public virtual async Task EnableSslAsync(PairingRecord pairingRecord, CancellationToken cancellationToken)
         {
+            Verify.NotDisposed(this);
+
             if (pairingRecord == null)
             {
                 throw new ArgumentNullException(nameof(pairingRecord));
@@ -96,6 +99,8 @@ namespace Kaponata.iOS.PropertyLists
         /// </returns>
         public virtual async Task DisableSslAsync(CancellationToken cancellationToken)
         {
+            Verify.NotDisposed(this);
+
             var sslStream = this.stream as SslStream;
 
             if (sslStream == null)

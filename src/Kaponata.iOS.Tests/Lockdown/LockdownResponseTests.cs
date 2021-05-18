@@ -15,16 +15,17 @@ namespace Kaponata.iOS.Tests.Lockdown
     public class LockdownResponseTests
     {
         /// <summary>
-        /// <see cref="LockdownResponse{T}.Read(NSDictionary)"/> validates its arguments.
+        /// <see cref="LockdownResponse{T}.FromDictionary(NSDictionary)"/> validates its arguments.
         /// </summary>
         [Fact]
         public void Read_ValidatesArguments()
         {
-            Assert.Throws<ArgumentNullException>(() => LockdownResponse<string>.Read(null));
+            var response = new LockdownResponse<string>();
+            Assert.Throws<ArgumentNullException>(() => response.FromDictionary(null));
         }
 
         /// <summary>
-        /// Tests the <see cref="LockdownResponse{T}.Read(NSDictionary)"/> method.
+        /// Tests the <see cref="LockdownResponse{T}.FromDictionary(NSDictionary)"/> method.
         /// </summary>
         [Fact]
         public void Read_Works()
@@ -34,7 +35,8 @@ namespace Kaponata.iOS.Tests.Lockdown
             dict.Add("Result", "Success");
             dict.Add("Type", "com.apple.mobile.lockdown");
 
-            var response = LockdownResponse<string>.Read(dict);
+            var response = new LockdownResponse<string>();
+            response.FromDictionary(dict);
 
             Assert.Equal("QueryType", response.Request);
             Assert.Equal("Success", response.Result);

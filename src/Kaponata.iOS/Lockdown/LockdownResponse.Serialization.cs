@@ -3,7 +3,7 @@
 // </copyright>
 
 using Claunia.PropertyList;
-using System;
+using Microsoft;
 
 namespace Kaponata.iOS.Lockdown
 {
@@ -18,32 +18,22 @@ namespace Kaponata.iOS.Lockdown
         /// <param name="data">
         /// The message data.
         /// </param>
-        /// <returns>
-        /// A <see cref="LockdownResponse{T}"/> object.
-        /// </returns>
-        public static LockdownResponse<T> Read(NSDictionary data)
+        public void FromDictionary(NSDictionary data)
         {
-            if (data == null)
+            Requires.NotNull(data, nameof(data));
+
+            this.Domain = data.GetString(nameof(this.Domain));
+            this.Key = data.GetString(nameof(this.Key));
+            this.Request = data.GetString(nameof(this.Request));
+            this.Result = data.GetString(nameof(this.Result));
+            this.Type = data.GetString(nameof(this.Type));
+
+            if (data.ContainsKey(nameof(this.Value)))
             {
-                throw new ArgumentNullException(nameof(data));
+                this.Value = (T)data.Get(nameof(this.Value)).ToObject();
             }
 
-            LockdownResponse<T> value = new LockdownResponse<T>();
-
-            value.Domain = data.GetString(nameof(Domain));
-            value.Key = data.GetString(nameof(Key));
-            value.Request = data.GetString(nameof(Request));
-            value.Result = data.GetString(nameof(Result));
-            value.Type = data.GetString(nameof(Type));
-
-            if (data.ContainsKey(nameof(Value)))
-            {
-                value.Value = (T)data.Get(nameof(Value)).ToObject();
-            }
-
-            value.Error = data.GetString(nameof(Error));
-
-            return value;
+            this.Error = data.GetString(nameof(this.Error));
         }
     }
 }

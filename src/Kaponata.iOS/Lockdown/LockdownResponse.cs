@@ -2,6 +2,8 @@
 // Copyright (c) Quamotion bv. All rights reserved.
 // </copyright>
 
+using Kaponata.iOS.PropertyLists;
+
 namespace Kaponata.iOS.Lockdown
 {
     /// <summary>
@@ -11,7 +13,7 @@ namespace Kaponata.iOS.Lockdown
     /// <typeparam name="T">
     /// The type of the value.
     /// </typeparam>
-    public partial class LockdownResponse<T>
+    public partial class LockdownResponse<T> : IPropertyListDeserializable
     {
         /// <summary>
         /// Gets or sets the name of the domain of the value which is being returned.
