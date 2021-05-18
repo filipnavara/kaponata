@@ -187,6 +187,8 @@ namespace Kaponata.iOS.Tests.Lockdown
                 .Setup(p => p.ReadMessageAsync(default))
                 .ReturnsAsync(response);
 
+            protocol.Setup(p => p.ReadMessageAsync<LockdownResponse<string>>(default)).CallBase();
+
             await using (var client = new LockdownClient(protocol.Object, NullLogger<LockdownClient>.Instance))
             {
                 await Assert.ThrowsAsync<LockdownException>(
@@ -222,6 +224,8 @@ namespace Kaponata.iOS.Tests.Lockdown
             protocol
                 .Setup(p => p.ReadMessageAsync(default))
                 .ReturnsAsync(response);
+
+            protocol.Setup(p => p.ReadMessageAsync<LockdownResponse<string>>(default)).CallBase();
 
             await using (var client = new LockdownClient(protocol.Object, NullLogger<LockdownClient>.Instance))
             {

@@ -269,6 +269,8 @@ namespace Kaponata.iOS.Tests.Lockdown
                 .Setup(p => p.ReadMessageAsync(default))
                 .ReturnsAsync(dict);
 
+            protocol.Setup(p => p.ReadMessageAsync<LockdownResponse<string>>(default)).CallBase();
+
             await using (var lockdown = new LockdownClient(protocol.Object, NullLogger<LockdownClient>.Instance))
             {
                 var result = await lockdown.ValidatePairAsync(pairingRecord, default).ConfigureAwait(false);

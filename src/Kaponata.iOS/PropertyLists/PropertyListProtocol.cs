@@ -3,6 +3,7 @@
 // </copyright>
 
 using Claunia.PropertyList;
+using Microsoft;
 using Microsoft.Extensions.Logging;
 using Nerdbank.Streams;
 using System;
@@ -18,7 +19,7 @@ namespace Kaponata.iOS.PropertyLists
     /// <summary>
     /// The <see cref="PropertyListProtocol"/> supports reading and writing messages in property list format.
     /// </summary>
-    public partial class PropertyListProtocol : IAsyncDisposable
+    public partial class PropertyListProtocol : IAsyncDisposable, IDisposableObservable
     {
         private readonly Stream rawStream;
         private readonly bool ownsStream;
@@ -55,6 +56,9 @@ namespace Kaponata.iOS.PropertyLists
         {
         }
 
+        /// <inheritdoc/>
+        public bool IsDisposed { get; private set; }
+
         /// <summary>
         /// Gets the <see cref="Stream"/> which is used to communicate with the device.
         /// </summary>
@@ -74,6 +78,8 @@ namespace Kaponata.iOS.PropertyLists
         /// </returns>
         public virtual Task WriteMessageAsync(IPropertyList message, CancellationToken cancellationToken)
         {
+            Verify.NotDisposed(this);
+
             if (message == null)
             {
                 throw new ArgumentNullException(nameof(message));
@@ -96,6 +102,8 @@ namespace Kaponata.iOS.PropertyLists
         /// </returns>
         public virtual async Task WriteMessageAsync(NSDictionary message, CancellationToken cancellationToken)
         {
+            Verify.NotDisposed(this);
+
             if (message == null)
             {
                 throw new ArgumentNullException(nameof(message));
@@ -140,6 +148,8 @@ namespace Kaponata.iOS.PropertyLists
         /// </returns>
         public virtual async Task<NSDictionary> ReadMessageAsync(CancellationToken cancellationToken)
         {
+            Verify.NotDisposed(this);
+
             int length;
 
             using (var lengthBuffer = this.memoryPool.Rent(4))
@@ -170,6 +180,36 @@ namespace Kaponata.iOS.PropertyLists
             }
         }
 
+        /// <summary>
+        /// Asynchronously reads a message.
+        /// </summary>
+        /// <typeparam name="T">
+        /// The type of message to read.
+        /// </typeparam>
+        /// <param name="cancellationToken">
+        /// A <see cref="CancellationToken"/> which can be used to cancel the asynchronous operation.
+        /// </param>
+        /// <returns>
+        /// A <see cref="Task"/> which represents the asynchronous operation, and returns the message
+        /// when completed.
+        /// </returns>
+        public virtual async Task<T> ReadMessageAsync<T>(CancellationToken cancellationToken)
+            where T : class, IPropertyListDeserializable, new()
+        {
+            Verify.NotDisposed(this);
+
+            var dict = await this.ReadMessageAsync(cancellationToken);
+
+            if (dict == null)
+            {
+                return null;
+            }
+
+            var value = new T();
+            value.FromDictionary(dict);
+            return value;
+        }
+
         /// <inheritdoc/>
         public async ValueTask DisposeAsync()
         {
@@ -182,6 +222,24 @@ namespace Kaponata.iOS.PropertyLists
             {
                 await this.rawStream.DisposeAsync().ConfigureAwait(false);
             }
+
+            this.IsDisposed = true;
+        }
+
+        /// <inheritdoc/>
+        public void Dispose()
+        {
+            if (this.stream != this.rawStream)
+            {
+                this.stream.Dispose();
+            }
+
+            if (this.stream != null)
+            {
+                this.rawStream.Dispose();
+            }
+
+            this.IsDisposed = true;
         }
     }
 }

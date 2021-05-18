@@ -48,6 +48,8 @@ namespace Kaponata.iOS.Tests.Lockdown
                 .ReturnsAsync(dict)
                 .Verifiable();
 
+            protocol.Setup(p => p.ReadMessageAsync<LockdownResponse<string>>(default)).CallBase();
+
             await using (var client = new LockdownClient(protocol.Object, NullLogger<LockdownClient>.Instance))
             {
                 await client.SetValueAsync(domain: "my-domain", key: "my-key", value: "my-value", default).ConfigureAwait(false);

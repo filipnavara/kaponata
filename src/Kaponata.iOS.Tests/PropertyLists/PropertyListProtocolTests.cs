@@ -4,10 +4,12 @@
 
 using Claunia.PropertyList;
 using Divergic.Logging.Xunit;
+using Kaponata.iOS.Lockdown;
 using Kaponata.iOS.PropertyLists;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -111,6 +113,56 @@ namespace Kaponata.iOS.Tests.PropertyLists
         /// </summary>
         /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
         [Fact]
+        public async Task ReadMessage_PartialRead_ReturnsNull_Async()
+        {
+            await using (var stream = new MemoryStream(File.ReadAllBytes("PropertyLists/message.bin")))
+            await using (var protocol = new PropertyListProtocol(stream, false, NullLogger<PropertyListProtocol>.Instance))
+            {
+                // Let's pretend the last 4 bytes are missing.
+                stream.SetLength(stream.Length - 4);
+
+                Assert.Null(await protocol.ReadMessageAsync<LockdownResponse<object>>(default));
+            }
+        }
+
+        /// <summary>
+        /// <see cref="PropertyListProtocol.ReadMessageAsync(CancellationToken)"/> returns <see langword="null"/>
+        /// when the end of stream is reached.
+        /// </summary>
+        /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
+        [Fact]
+        public async Task ReadMessage_EndOfStream_ReturnsNull_Async()
+        {
+            await using (var protocol = new PropertyListProtocol(Stream.Null, false, NullLogger<PropertyListProtocol>.Instance))
+            {
+                Assert.Null(await protocol.ReadMessageAsync<LockdownResponse<object>>(default).ConfigureAwait(false));
+            }
+        }
+
+        /// <summary>
+        /// <see cref="PropertyListProtocol.ReadMessageAsync(CancellationToken)"/> correctly deserializes the
+        /// underlying message.
+        /// </summary>
+        /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
+        [Fact]
+        public async Task ReadMessage_Works_Async()
+        {
+            await using (Stream stream = File.OpenRead("PropertyLists/message.bin"))
+            await using (var protocol = new PropertyListProtocol(stream, false, NullLogger<PropertyListProtocol>.Instance))
+            {
+                var message = await protocol.ReadMessageAsync<LockdownResponse<object>>(default);
+
+                Assert.NotNull(message);
+                Assert.Equal("QueryType", message.Request);
+            }
+        }
+
+        /// <summary>
+        /// <see cref="PropertyListProtocol.ReadMessageAsync(CancellationToken)"/> returns <see langword="null"/>
+        /// if the stream was unexpectedly closed.
+        /// </summary>
+        /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
+        [Fact]
         public async Task Read_PartialRead_ReturnsNull_Async()
         {
             await using (var stream = new MemoryStream(File.ReadAllBytes("PropertyLists/message.bin")))
@@ -179,6 +231,51 @@ namespace Kaponata.iOS.Tests.PropertyLists
                 entry.Message,
                 ignoreLineEndingDifferences: true,
                 ignoreWhiteSpaceDifferences: true);
+        }
+
+        /// <summary>
+        /// The methods on <see cref="PropertyListProtocol"/> throw when the protocol has been disposed of.
+        /// </summary>
+        /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
+        [Fact]
+        public async Task Methods_ThrowWhenAsyncDisposed_Async()
+        {
+            var protocol = new PropertyListProtocol(Stream.Null, true, NullLogger.Instance);
+
+            Assert.False(protocol.IsDisposed);
+            await protocol.DisposeAsync();
+
+            Assert.True(protocol.IsDisposed);
+
+            await Assert.ThrowsAsync<ObjectDisposedException>(() => protocol.DisableSslAsync(default)).ConfigureAwait(false);
+            await Assert.ThrowsAsync<ObjectDisposedException>(() => protocol.EnableSslAsync(null, default)).ConfigureAwait(false);
+            await Assert.ThrowsAsync<ObjectDisposedException>(() => protocol.ReadMessageAsync(default)).ConfigureAwait(false);
+            await Assert.ThrowsAsync<ObjectDisposedException>(() => protocol.ReadMessageAsync<LockdownResponse<string>>(default)).ConfigureAwait(false);
+            await Assert.ThrowsAsync<ObjectDisposedException>(() => protocol.WriteMessageAsync((IPropertyList)null, default)).ConfigureAwait(false);
+            await Assert.ThrowsAsync<ObjectDisposedException>(() => protocol.WriteMessageAsync((NSDictionary)null, default)).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// The methods on <see cref="PropertyListProtocol"/> throw when the protocol has been disposed of.
+        /// </summary>
+        /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
+        [Fact]
+        [SuppressMessage("Usage", "VSTHRD103:Call async methods when in an async method", Justification = "Testing the .Dispose method")]
+        public async Task Methods_ThrowWhenDisposed_Async()
+        {
+            var protocol = new PropertyListProtocol(Stream.Null, true, NullLogger.Instance);
+
+            Assert.False(protocol.IsDisposed);
+            protocol.Dispose();
+
+            Assert.True(protocol.IsDisposed);
+
+            await Assert.ThrowsAsync<ObjectDisposedException>(() => protocol.DisableSslAsync(default)).ConfigureAwait(false);
+            await Assert.ThrowsAsync<ObjectDisposedException>(() => protocol.EnableSslAsync(null, default)).ConfigureAwait(false);
+            await Assert.ThrowsAsync<ObjectDisposedException>(() => protocol.ReadMessageAsync(default)).ConfigureAwait(false);
+            await Assert.ThrowsAsync<ObjectDisposedException>(() => protocol.ReadMessageAsync<LockdownResponse<string>>(default)).ConfigureAwait(false);
+            await Assert.ThrowsAsync<ObjectDisposedException>(() => protocol.WriteMessageAsync((IPropertyList)null, default)).ConfigureAwait(false);
+            await Assert.ThrowsAsync<ObjectDisposedException>(() => protocol.WriteMessageAsync((NSDictionary)null, default)).ConfigureAwait(false);
         }
     }
 }
