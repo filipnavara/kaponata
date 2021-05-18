@@ -4,6 +4,7 @@
 
 using Claunia.PropertyList;
 using System;
+using System.Collections.Generic;
 using Xunit;
 
 namespace Kaponata.iOS.Tests
@@ -117,6 +118,30 @@ namespace Kaponata.iOS.Tests
             dict.Add("key", new NSNumber(true));
 
             Assert.True(dict.GetNullableBoolean("key"));
+        }
+
+        /// <summary>
+        /// <see cref="NSDictionaryExtensions.GetBoolean(NSDictionary, string)"/> throws an excpetion
+        /// if the key is not present in the dictionary.
+        /// </summary>
+        [Fact]
+        public void GetBoolean_MissingKey_Throws()
+        {
+            var dict = new NSDictionary();
+            Assert.Throws<KeyNotFoundException>(() => dict.GetBoolean("missing"));
+        }
+
+        /// <summary>
+        /// <see cref="NSDictionaryExtensions.GetBoolean(NSDictionary, string)"/> returns the correct value
+        /// if the entry is a single <see cref="NSNumber"/> object.
+        /// </summary>
+        [Fact]
+        public void GetBoolean_ReturnsValue()
+        {
+            var dict = new NSDictionary();
+            dict.Add("key", new NSNumber(true));
+
+            Assert.True(dict.GetBoolean("key"));
         }
 
         /// <summary>

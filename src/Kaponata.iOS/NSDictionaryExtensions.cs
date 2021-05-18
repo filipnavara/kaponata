@@ -101,6 +101,23 @@ namespace Kaponata.iOS
         }
 
         /// <summary>
+        /// Gets the value associated with the specified <paramref name="key"/>, as a <see langword="bool"/> value.
+        /// </summary>
+        /// <param name="dict">
+        /// The dictionary in which to search for the value associated with the specified <paramref name="key"/>.
+        /// </param>
+        /// <param name="key">
+        /// The key of the value to get.
+        /// </param>
+        /// <returns>
+        /// The value associated with the specified key.
+        /// </returns>
+        public static bool GetBoolean(this NSDictionary dict, string key)
+        {
+            return ((NSNumber)dict[key]).ToBool();
+        }
+
+        /// <summary>
         /// Gets the value associated with the specified <paramref name="key"/>, as a <see cref="DateTime"/> value.
         /// </summary>
         /// <param name="dict">

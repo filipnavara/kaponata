@@ -141,6 +141,8 @@ namespace Kaponata.iOS.Tests.Lockdown
                 .Returns(Task.CompletedTask)
                 .Verifiable();
 
+            protocol.Setup(p => p.DisposeAsync()).Returns(ValueTask.CompletedTask);
+
             await using (var client = new LockdownClient(protocol.Object, NullLogger<LockdownClient>.Instance))
             {
                 await client.StartSessionAsync(pairingRecord, default).ConfigureAwait(false);
@@ -226,6 +228,7 @@ namespace Kaponata.iOS.Tests.Lockdown
                 .ReturnsAsync(response);
 
             protocol.Setup(p => p.ReadMessageAsync<LockdownResponse<string>>(default)).CallBase();
+            protocol.Setup(p => p.DisposeAsync()).Returns(ValueTask.CompletedTask);
 
             await using (var client = new LockdownClient(protocol.Object, NullLogger<LockdownClient>.Instance))
             {

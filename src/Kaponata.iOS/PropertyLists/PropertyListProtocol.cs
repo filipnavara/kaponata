@@ -62,7 +62,7 @@ namespace Kaponata.iOS.PropertyLists
         /// <summary>
         /// Gets the <see cref="Stream"/> which is used to communicate with the device.
         /// </summary>
-        public Stream Stream => this.stream;
+        public virtual Stream Stream => this.stream;
 
         /// <summary>
         /// Asynchronously sends a message to the remote lockdown client.
@@ -211,7 +211,7 @@ namespace Kaponata.iOS.PropertyLists
         }
 
         /// <inheritdoc/>
-        public async ValueTask DisposeAsync()
+        public virtual async ValueTask DisposeAsync()
         {
             if (this.stream != this.rawStream)
             {
@@ -227,7 +227,7 @@ namespace Kaponata.iOS.PropertyLists
         }
 
         /// <inheritdoc/>
-        public void Dispose()
+        public virtual void Dispose()
         {
             if (this.stream != this.rawStream)
             {
