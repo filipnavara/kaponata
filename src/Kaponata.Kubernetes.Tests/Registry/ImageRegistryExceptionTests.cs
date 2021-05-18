@@ -68,5 +68,15 @@ namespace Kaponata.Kubernetes.Tests.Registry
             Assert.Single(exception.Errors);
             Assert.Equal(HttpStatusCode.BadRequest, exception.StatusCode);
         }
+
+        /// <summary>
+        /// The <see cref="ImageRegistryException.ImageRegistryException(string)"/> constructor works correctly.
+        /// </summary>
+        [Fact]
+        public void WithMessage_Works()
+        {
+            var ex = new ImageRegistryException("this is a test");
+            Assert.Equal("this is a test", ex.Message);
+        }
     }
 }

@@ -52,7 +52,7 @@ namespace Kaponata.Kubernetes
         /// <returns>
         /// A <see cref="string"/> which represents the label selector.
         /// </returns>
-        public static string Create(Dictionary<string, string> values)
+        public static string Create(IDictionary<string, string> values)
         {
             if (values == null)
             {

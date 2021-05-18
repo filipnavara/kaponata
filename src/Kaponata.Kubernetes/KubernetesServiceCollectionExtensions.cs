@@ -3,8 +3,11 @@
 // </copyright>
 
 using k8s;
+using Kaponata.iOS.DeveloperDisks;
+using Kaponata.Kubernetes.DeveloperDisks;
 using Kaponata.Kubernetes.DeveloperProfiles;
 using Kaponata.Kubernetes.Polyfill;
+using Kaponata.Kubernetes.Registry;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 
@@ -44,6 +47,10 @@ namespace Kaponata.Kubernetes
             services.AddSingleton<KubernetesClient>();
 
             services.AddScoped<KubernetesDeveloperProfile>();
+            services.AddSingleton(new ImageRegistryClientConfiguration("kaponata-registry", 5000));
+            services.AddScoped<ImageRegistryClientFactory>();
+            services.AddSingleton<DeveloperDiskFactory>();
+            services.AddScoped<DeveloperDiskStore, RegistryDeveloperDiskStore>();
 
             services.AddOptions<KubernetesOptions>().Configure(c => c.Namespace = @namespace);
             return services;

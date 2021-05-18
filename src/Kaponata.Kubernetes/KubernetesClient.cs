@@ -104,6 +104,11 @@ namespace Kaponata.Kubernetes
             where T : IKubernetesObject<V1ObjectMeta>;
 
         /// <summary>
+        /// Gets a value indicating whether the code is currently running inside a pod hosted in a Kubernetes cluster.
+        /// </summary>
+        public virtual bool RunningInCluster => !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("KUBERNETES_SERVICE_HOST"));
+
+        /// <summary>
         /// Gets the <see cref="KubernetesOptions"/> which configure this <see cref="KubernetesClient"/>.
         /// </summary>
         public KubernetesOptions Options => this.options.Value;
