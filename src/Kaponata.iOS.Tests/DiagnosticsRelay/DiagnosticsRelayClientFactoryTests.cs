@@ -5,6 +5,7 @@
 using Kaponata.iOS.DiagnosticsRelay;
 using Kaponata.iOS.Lockdown;
 using Kaponata.iOS.Muxer;
+using Kaponata.iOS.PropertyLists;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using System;
@@ -26,10 +27,11 @@ namespace Kaponata.iOS.Tests.DiagnosticsRelay
         [Fact]
         public void Constructor_ValidatesArguments()
         {
-            Assert.Throws<ArgumentNullException>(() => new DiagnosticsRelayClientFactory(null, new DeviceContext(), Mock.Of<LockdownClientFactory>(), NullLogger<DiagnosticsRelayClient>.Instance));
-            Assert.Throws<ArgumentNullException>(() => new DiagnosticsRelayClientFactory(Mock.Of<MuxerClient>(), null, Mock.Of<LockdownClientFactory>(), NullLogger<DiagnosticsRelayClient>.Instance));
-            Assert.Throws<ArgumentNullException>(() => new DiagnosticsRelayClientFactory(Mock.Of<MuxerClient>(), new DeviceContext(), null, NullLogger<DiagnosticsRelayClient>.Instance));
-            Assert.Throws<ArgumentNullException>(() => new DiagnosticsRelayClientFactory(Mock.Of<MuxerClient>(), new DeviceContext(), Mock.Of<LockdownClientFactory>(), null));
+            Assert.Throws<ArgumentNullException>(() => new DiagnosticsRelayClientFactory(null, new DeviceContext(), new PropertyListProtocolFactory(), Mock.Of<LockdownClientFactory>(), NullLogger<DiagnosticsRelayClient>.Instance));
+            Assert.Throws<ArgumentNullException>(() => new DiagnosticsRelayClientFactory(Mock.Of<MuxerClient>(), null, new PropertyListProtocolFactory(), Mock.Of<LockdownClientFactory>(), NullLogger<DiagnosticsRelayClient>.Instance));
+            Assert.Throws<ArgumentNullException>(() => new DiagnosticsRelayClientFactory(Mock.Of<MuxerClient>(), new DeviceContext(), null, Mock.Of<LockdownClientFactory>(), NullLogger<DiagnosticsRelayClient>.Instance));
+            Assert.Throws<ArgumentNullException>(() => new DiagnosticsRelayClientFactory(Mock.Of<MuxerClient>(), new DeviceContext(), new PropertyListProtocolFactory(), null, NullLogger<DiagnosticsRelayClient>.Instance));
+            Assert.Throws<ArgumentNullException>(() => new DiagnosticsRelayClientFactory(Mock.Of<MuxerClient>(), new DeviceContext(), new PropertyListProtocolFactory(), Mock.Of<LockdownClientFactory>(), null));
         }
 
         /// <summary>
@@ -40,9 +42,11 @@ namespace Kaponata.iOS.Tests.DiagnosticsRelay
         [Fact]
         public async Task CreateAsync_Works_Async()
         {
+            var pairingRecord = new PairingRecord();
+            var sessionResponse = new StartSessionResponse() { SessionID = "1234" };
             var lockdownClientFactory = new Mock<LockdownClientFactory>(MockBehavior.Strict);
             var muxerClient = new Mock<MuxerClient>(MockBehavior.Strict);
-            var context = new DeviceContext() { Device = new MuxerDevice() };
+            var context = new DeviceContext() { Device = new MuxerDevice(), PairingRecord = pairingRecord };
 
             var lockdownClient = new Mock<LockdownClient>(MockBehavior.Strict);
             lockdownClientFactory
@@ -51,16 +55,24 @@ namespace Kaponata.iOS.Tests.DiagnosticsRelay
                 .Verifiable();
 
             lockdownClient
+                .Setup(l => l.StartSessionAsync(pairingRecord, default))
+                .ReturnsAsync(sessionResponse);
+
+            lockdownClient
                 .Setup(l => l.StartServiceAsync(DiagnosticsRelayClient.ServiceName, default))
                 .ReturnsAsync(new ServiceDescriptor() { Port = 1234 })
                 .Verifiable();
+
+            lockdownClient
+                .Setup(l => l.StopSessionAsync(sessionResponse.SessionID, default))
+                .Returns(Task.CompletedTask);
 
             muxerClient
                 .Setup(m => m.ConnectAsync(context.Device, 1234, default))
                 .ReturnsAsync(Stream.Null)
                 .Verifiable();
 
-            var factory = new DiagnosticsRelayClientFactory(muxerClient.Object, context, lockdownClientFactory.Object, NullLogger<DiagnosticsRelayClient>.Instance);
+            var factory = new DiagnosticsRelayClientFactory(muxerClient.Object, context, new PropertyListProtocolFactory(), lockdownClientFactory.Object, NullLogger<DiagnosticsRelayClient>.Instance);
 
             await using (var client = await factory.CreateAsync(default).ConfigureAwait(false))
             {

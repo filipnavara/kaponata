@@ -64,7 +64,7 @@ namespace Kaponata.iOS.Lockdown
         /// <returns>
         /// The response to the request to start a new session.
         /// </returns>
-        public async Task<StartSessionResponse> StartSessionAsync(PairingRecord pairingRecord, CancellationToken cancellationToken)
+        public virtual async Task<StartSessionResponse> StartSessionAsync(PairingRecord pairingRecord, CancellationToken cancellationToken)
         {
             var message = await this.TryStartSessionAsync(pairingRecord, cancellationToken).ConfigureAwait(false);
 

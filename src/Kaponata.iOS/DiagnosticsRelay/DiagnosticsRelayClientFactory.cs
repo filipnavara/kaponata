@@ -4,6 +4,7 @@
 
 using Kaponata.iOS.Lockdown;
 using Kaponata.iOS.Muxer;
+using Kaponata.iOS.PropertyLists;
 using Microsoft.Extensions.Logging;
 using System.Threading;
 using System.Threading.Tasks;
@@ -25,14 +26,17 @@ namespace Kaponata.iOS.DiagnosticsRelay
         /// The <see cref="DeviceContext"/> which contains information about the device with which
         /// we are interacting.
         /// </param>
+        /// <param name="propertyListProtocolFactory">
+        /// A <see cref="PropertyListProtocolFactory"/> which can be used to create new instances of the <see cref="PropertyListProtocol"/> class.
+        /// </param>
         /// <param name="lockdownClientFactory">
         /// A <see cref="LockdownClientFactory"/> which can create a connection to lockdown.
         /// </param>
         /// <param name="logger">
         /// A <see cref="ILogger"/> which can be used when logging.
         /// </param>
-        public DiagnosticsRelayClientFactory(MuxerClient muxer, DeviceContext context, ClientFactory<LockdownClient> lockdownClientFactory, ILogger<DiagnosticsRelayClient> logger)
-            : base(muxer, context, lockdownClientFactory, logger)
+        public DiagnosticsRelayClientFactory(MuxerClient muxer, DeviceContext context, PropertyListProtocolFactory propertyListProtocolFactory, ClientFactory<LockdownClient> lockdownClientFactory, ILogger<DiagnosticsRelayClient> logger)
+            : base(muxer, context, propertyListProtocolFactory, lockdownClientFactory, logger)
         {
         }
 
@@ -43,8 +47,8 @@ namespace Kaponata.iOS.DiagnosticsRelay
         /// <inheritdoc/>
         public override async Task<DiagnosticsRelayClient> CreateAsync(string serviceName, CancellationToken cancellationToken)
         {
-            var serviceStream = await this.StartServiceAsync(serviceName, cancellationToken);
-            return new DiagnosticsRelayClient(serviceStream, this.Logger);
+            var protocol = await this.StartServiceAsync(serviceName, startSession: true, cancellationToken);
+            return new DiagnosticsRelayClient(protocol);
         }
     }
 }

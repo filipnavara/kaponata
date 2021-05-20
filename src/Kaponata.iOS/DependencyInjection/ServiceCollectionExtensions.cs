@@ -3,8 +3,10 @@
 // </copyright>
 
 using Kaponata.iOS.Lockdown;
+using Kaponata.iOS.MobileImageMounter;
 using Kaponata.iOS.Muxer;
 using Kaponata.iOS.NotificationProxy;
+using Kaponata.iOS.PropertyLists;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Kaponata.iOS.DependencyInjection
@@ -32,6 +34,8 @@ namespace Kaponata.iOS.DependencyInjection
 
             services.AddTransient<ClientFactory<LockdownClient>, LockdownClientFactory>();
             services.AddTransient<ClientFactory<NotificationProxyClient>, NotificationProxyClientFactory>();
+            services.AddTransient<ClientFactory<MobileImageMounterClient>, MobileImageMounterClientFactory>();
+            services.AddTransient<PropertyListProtocolFactory>();
 
             return services;
         }
