@@ -26,7 +26,7 @@ namespace Kaponata.iOS.MobileImageMounter
         /// <param name="detailedError">
         /// The detailed error of the <see cref="MobileImageMounterResponse"/>.
         /// </param>
-        public MobileImageMounterException(string message, string status, string error, string detailedError)
+        public MobileImageMounterException(string message, MobileImageMounterStatus? status, MobileImageMounterError? error, string detailedError)
             : base(message)
         {
             this.Status = status;
@@ -37,7 +37,7 @@ namespace Kaponata.iOS.MobileImageMounter
         /// <summary>
         /// Gets or sets the status of the <see cref="MobileImageMounterResponse"/>.
         /// </summary>
-        public string Status
+        public MobileImageMounterStatus? Status
         {
             get;
             set;
@@ -46,7 +46,7 @@ namespace Kaponata.iOS.MobileImageMounter
         /// <summary>
         /// Gets or sets the error of the <see cref="MobileImageMounterResponse"/>.
         /// </summary>
-        public string Error
+        public MobileImageMounterError? Error
         {
             get;
             set;

@@ -171,7 +171,7 @@ namespace Kaponata.iOS.Tests.MobileImageMounter
                 .Returns(Task.CompletedTask)
                 .Verifiable();
 
-            var response = new MobileImageMounterResponse() { Status = "Complete" };
+            var response = new MobileImageMounterResponse() { Status = MobileImageMounterStatus.Complete };
 
             protocol
                 .Setup(p => p.ReadMessageAsync<MobileImageMounterResponse>(default))
@@ -207,7 +207,7 @@ namespace Kaponata.iOS.Tests.MobileImageMounter
                 .Returns(Task.CompletedTask)
                 .Verifiable();
 
-            var response = new MobileImageMounterResponse() { Status = "Error" };
+            var response = new MobileImageMounterResponse() { Status = MobileImageMounterStatus.ReceiveBytesAck };
 
             protocol
                 .Setup(p => p.ReadMessageAsync<MobileImageMounterResponse>(default))
@@ -216,8 +216,8 @@ namespace Kaponata.iOS.Tests.MobileImageMounter
             await using (var client = new MobileImageMounterClient(protocol.Object))
             {
                 var ex = await Assert.ThrowsAsync<MobileImageMounterException>(() => client.MountImageAsync(new byte[] { 1, 2, 3, 4 }, "Developer", default));
-                Assert.Equal("Invalid image mounter response. Expected Complete but received the Error status.", ex.Message);
-                Assert.Equal("Error", ex.Status);
+                Assert.Equal("Invalid image mounter response. Expected Complete but received the ReceiveBytesAck status.", ex.Message);
+                Assert.Equal(MobileImageMounterStatus.ReceiveBytesAck, ex.Status);
             }
 
             protocol.Verify();
@@ -243,7 +243,7 @@ namespace Kaponata.iOS.Tests.MobileImageMounter
                 .Returns(Task.CompletedTask)
                 .Verifiable();
 
-            var response = new HangupResponse() { Status = "Complete" };
+            var response = new HangupResponse() { Status = MobileImageMounterStatus.Complete };
 
             protocol
                 .Setup(p => p.ReadMessageAsync<HangupResponse>(default))
@@ -304,8 +304,8 @@ namespace Kaponata.iOS.Tests.MobileImageMounter
                 Queue<MobileImageMounterResponse> responses = new Queue<MobileImageMounterResponse>(
                     new List<MobileImageMounterResponse>()
                     {
-                        new MobileImageMounterResponse() { Status = "ReceiveBytesAck" },
-                        new MobileImageMounterResponse() { Status = "Complete" },
+                        new MobileImageMounterResponse() { Status = MobileImageMounterStatus.ReceiveBytesAck },
+                        new MobileImageMounterResponse() { Status = MobileImageMounterStatus.Complete },
                     });
 
                 protocol
@@ -360,7 +360,7 @@ namespace Kaponata.iOS.Tests.MobileImageMounter
             {
                 var exception = await Assert.ThrowsAsync<MobileImageMounterException>(() => client.UploadImageAsync(Stream.Null, "Developer", new byte[] { 1, 2, 3, 4 }, default)).ConfigureAwait(false);
                 Assert.Equal("Invalid image mounter response: : ImageMountFailed", exception.Message);
-                Assert.Equal("ImageMountFailed", exception.Error);
+                Assert.Equal(MobileImageMounterError.ImageMountFailed, exception.Error);
                 Assert.Null(exception.Status);
                 Assert.NotNull(exception.DetailedError);
             }

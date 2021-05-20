@@ -118,13 +118,13 @@ namespace Kaponata.iOS.MobileImageMounter
                 cancellationToken).ConfigureAwait(false);
 
             var response = await this.protocol.ReadMessageAsync<MobileImageMounterResponse>(cancellationToken).ConfigureAwait(false);
-            this.EnsureValidResponse(response, "ReceiveBytesAck");
+            this.EnsureValidResponse(response, MobileImageMounterStatus.ReceiveBytesAck);
 
             image.Seek(0, SeekOrigin.Begin);
             await image.CopyToAsync(this.protocol.Stream, bufferSize: 0x10_000, cancellationToken).ConfigureAwait(false);
 
             response = await this.protocol.ReadMessageAsync<MobileImageMounterResponse>(cancellationToken).ConfigureAwait(false);
-            this.EnsureValidResponse(response, "Complete");
+            this.EnsureValidResponse(response, MobileImageMounterStatus.Complete);
         }
 
         /// <summary>
@@ -159,7 +159,7 @@ namespace Kaponata.iOS.MobileImageMounter
                 cancellationToken).ConfigureAwait(false);
 
             var response = await this.protocol.ReadMessageAsync<MobileImageMounterResponse>(cancellationToken).ConfigureAwait(false);
-            this.EnsureValidResponse(response, "Complete");
+            this.EnsureValidResponse(response, MobileImageMounterStatus.Complete);
         }
 
         /// <summary>
@@ -200,13 +200,13 @@ namespace Kaponata.iOS.MobileImageMounter
 
         private void EnsureValidResponse(MobileImageMounterResponse response)
         {
-            if (!string.IsNullOrEmpty(response.Error) || !string.IsNullOrEmpty(response.DetailedError))
+            if (response.Error != null)
             {
-                throw new MobileImageMounterException($"Invalid image mounter response: {response.Status}: {response.Error}", response.Status, response.Error, response.DetailedError);
+                throw new MobileImageMounterException($"Invalid image mounter response: {response.Status}: {response.Error}", response.Status, response.Error.Value, response.DetailedError);
             }
         }
 
-        private void EnsureValidResponse(MobileImageMounterResponse response, string expectedStatus)
+        private void EnsureValidResponse(MobileImageMounterResponse response, MobileImageMounterStatus expectedStatus)
         {
             this.EnsureValidResponse(response);
 

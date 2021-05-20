@@ -25,7 +25,7 @@ namespace Kaponata.iOS.Tests.MobileImageMounter
             response.FromDictionary(dict);
 
             Assert.NotNull(response.DetailedError);
-            Assert.Equal("ImageMountFailed", response.Error);
+            Assert.Equal(MobileImageMounterError.ImageMountFailed, response.Error);
             Assert.Null(response.Status);
         }
     }
