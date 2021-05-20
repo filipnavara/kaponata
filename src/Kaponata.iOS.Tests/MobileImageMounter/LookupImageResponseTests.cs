@@ -35,7 +35,7 @@ namespace Kaponata.iOS.Tests.MobileImageMounter
             Assert.Null(response.DetailedError);
             Assert.Null(response.Error);
             Assert.Equal(hasImage, response.ImageSignature != null);
-            Assert.Equal("Complete", response.Status);
+            Assert.Equal(MobileImageMounterStatus.Complete, response.Status);
         }
     }
 }
