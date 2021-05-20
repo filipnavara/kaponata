@@ -15,25 +15,27 @@ namespace Kaponata.iOS.Tests.Lockdown
     public class StartSessionResponseTests
     {
         /// <summary>
-        /// <see cref="StartSessionResponse.Read(NSDictionary)"/> validates its arguments.
+        /// <see cref="StartSessionResponse.FromDictionary(NSDictionary)"/> validates its arguments.
         /// </summary>
         [Fact]
-        public void Read_ValidatesArguments()
+        public void FromDictionary_ValidatesArguments()
         {
-            Assert.Throws<ArgumentNullException>(() => StartSessionResponse.Read(null));
+            var response = new StartSessionResponse();
+            Assert.Throws<ArgumentNullException>(() => response.FromDictionary(null));
         }
 
         /// <summary>
-        /// Tests the <see cref="StartSessionResponse.Read(NSDictionary)"/> method.
+        /// Tests the <see cref="StartSessionResponse.FromDictionary(NSDictionary)"/> method.
         /// </summary>
         [Fact]
-        public void Read_Works()
+        public void FromDictionary_Works()
         {
             var dict = new NSDictionary();
             dict.Add("Request", "StartSession");
             dict.Add("SessionID", "abc");
 
-            var response = StartSessionResponse.Read(dict);
+            var response = new StartSessionResponse();
+            response.FromDictionary(dict);
 
             Assert.Equal("StartSession", response.Request);
             Assert.False(response.EnableSessionSSL);
@@ -42,17 +44,18 @@ namespace Kaponata.iOS.Tests.Lockdown
         }
 
         /// <summary>
-        /// Tests the <see cref="StartSessionResponse.Read(NSDictionary)"/> method.
+        /// Tests the <see cref="StartSessionResponse.FromDictionary(NSDictionary)"/> method.
         /// </summary>
         [Fact]
-        public void Read_WithSSL_Works()
+        public void FromDictionary_WithSSL_Works()
         {
             var dict = new NSDictionary();
             dict.Add("Request", "StartSession");
             dict.Add("EnableSessionSSL", true);
             dict.Add("SessionID", "abc");
 
-            var response = StartSessionResponse.Read(dict);
+            var response = new StartSessionResponse();
+            response.FromDictionary(dict);
 
             Assert.Equal("StartSession", response.Request);
             Assert.True(response.EnableSessionSSL);
@@ -61,19 +64,20 @@ namespace Kaponata.iOS.Tests.Lockdown
         }
 
         /// <summary>
-        /// Tests the <see cref="StartSessionResponse.Read(NSDictionary)"/> method.
+        /// Tests the <see cref="StartSessionResponse.FromDictionary(NSDictionary)"/> method.
         /// </summary>
         [Fact]
-        public void Read_WithError_Works()
+        public void FromDictionary_WithError_Works()
         {
             var dict = new NSDictionary();
             dict.Add("Request", "StartSession");
-            dict.Add("Error", "abc");
+            dict.Add("Error", "SessionInactive");
 
-            var response = StartSessionResponse.Read(dict);
+            var response = new StartSessionResponse();
+            response.FromDictionary(dict);
 
             Assert.Equal("StartSession", response.Request);
-            Assert.Equal("abc", response.Error);
+            Assert.Equal(LockdownError.SessionInactive, response.Error);
         }
     }
 }

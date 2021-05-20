@@ -24,5 +24,17 @@ namespace Kaponata.iOS.Tests.Lockdown
             ex = new LockdownException("Hello");
             Assert.Equal("Hello", ex.Message);
         }
+
+        /// <summary>
+        /// The <see cref="LockdownException.LockdownException(LockdownError)"/> constructor works correctly.
+        /// </summary>
+        [Fact]
+        public void Constructor_WithError_Works()
+        {
+            var ex = new LockdownException(LockdownError.GetProhibited);
+
+            Assert.Equal(LockdownError.GetProhibited, ex.Error);
+            Assert.Equal(LockdownError.GetProhibited, (LockdownError)ex.HResult);
+        }
     }
 }

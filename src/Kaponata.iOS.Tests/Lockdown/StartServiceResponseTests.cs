@@ -15,16 +15,17 @@ namespace Kaponata.iOS.Tests.Lockdown
     public class StartServiceResponseTests
     {
         /// <summary>
-        /// <see cref="StartServiceResponse.Read(NSDictionary)"/> validates its arguments.
+        /// <see cref="StartServiceResponse.FromDictionary(NSDictionary)"/> validates its arguments.
         /// </summary>
         [Fact]
-        public void Read_ValidatesArguments()
+        public void FromDictionary_ValidatesArguments()
         {
-            Assert.Throws<ArgumentNullException>(() => StartServiceResponse.Read(null));
+            var response = new StartServiceResponse();
+            Assert.Throws<ArgumentNullException>(() => response.FromDictionary(null));
         }
 
         /// <summary>
-        /// <see cref="StartServiceResponse.Read(NSDictionary)"/> works correctly.
+        /// <see cref="StartServiceResponse.FromDictionary(NSDictionary)"/> works correctly.
         /// </summary>
         [Fact]
         public void Read_Works()
@@ -35,7 +36,9 @@ namespace Kaponata.iOS.Tests.Lockdown
             dict.Add("Request", "StartService");
             dict.Add("Service", "my-service");
 
-            var response = StartServiceResponse.Read(dict);
+            var response = new StartServiceResponse();
+            response.FromDictionary(dict);
+
             Assert.True(response.EnableServiceSSL);
             Assert.Null(response.Error);
             Assert.Equal(1234, response.Port);

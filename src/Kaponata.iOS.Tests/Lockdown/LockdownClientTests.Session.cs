@@ -38,7 +38,7 @@ namespace Kaponata.iOS.Tests.Lockdown
         [Fact]
         public async Task StartSessionAsync_Works_Async()
         {
-            var protocol = new Mock<LockdownProtocol>();
+            var protocol = new Mock<LockdownProtocol>(MockBehavior.Strict);
 
             protocol
                 .Setup(p => p.WriteMessageAsync(It.IsAny<LockdownMessage>(), default))
@@ -57,6 +57,9 @@ namespace Kaponata.iOS.Tests.Lockdown
             protocol
                 .Setup(p => p.ReadMessageAsync(default))
                 .ReturnsAsync(dict);
+
+            protocol.Setup(p => p.ReadMessageAsync<StartSessionResponse>(default)).CallBase();
+            protocol.Setup(p => p.DisposeAsync()).Returns(ValueTask.CompletedTask);
 
             await using (var client = new LockdownClient(protocol.Object, NullLogger<LockdownClient>.Instance))
             {
@@ -81,7 +84,7 @@ namespace Kaponata.iOS.Tests.Lockdown
         [Fact]
         public async Task StartSessionAsync_ThrowsOnError_Async()
         {
-            var protocol = new Mock<LockdownProtocol>();
+            var protocol = new Mock<LockdownProtocol>(MockBehavior.Strict);
 
             protocol
                 .Setup(p => p.WriteMessageAsync(It.IsAny<LockdownMessage>(), default))
@@ -96,10 +99,13 @@ namespace Kaponata.iOS.Tests.Lockdown
                 .Returns(Task.CompletedTask);
 
             var response = new NSDictionary();
-            response.Add("Error", "error");
+            response.Add("Error", nameof(LockdownError.InvalidHostBuid));
             protocol
                 .Setup(p => p.ReadMessageAsync(default))
                 .ReturnsAsync(response);
+
+            protocol.Setup(p => p.ReadMessageAsync<StartSessionResponse>(default)).CallBase();
+            protocol.Setup(p => p.DisposeAsync()).Returns(ValueTask.CompletedTask);
 
             await using (var client = new LockdownClient(protocol.Object, NullLogger<LockdownClient>.Instance))
             {
@@ -136,6 +142,8 @@ namespace Kaponata.iOS.Tests.Lockdown
                 .Setup(p => p.ReadMessageAsync(default))
                 .ReturnsAsync(response);
 
+            protocol.Setup(p => p.ReadMessageAsync<LockdownResponse>(default)).CallBase();
+
             protocol
                 .Setup(p => p.EnableSslAsync(pairingRecord, default))
                 .Returns(Task.CompletedTask)
@@ -170,7 +178,7 @@ namespace Kaponata.iOS.Tests.Lockdown
         [Fact]
         public async Task StopSessionAsync_ThrowsOnError_Async()
         {
-            var protocol = new Mock<LockdownProtocol>();
+            var protocol = new Mock<LockdownProtocol>(MockBehavior.Strict);
 
             protocol
                 .Setup(p => p.WriteMessageAsync(It.IsAny<LockdownMessage>(), default))
@@ -184,12 +192,13 @@ namespace Kaponata.iOS.Tests.Lockdown
                 .Returns(Task.CompletedTask);
 
             var response = new NSDictionary();
-            response.Add("Error", "error");
+            response.Add("Error", nameof(LockdownError.SessionInactive));
             protocol
                 .Setup(p => p.ReadMessageAsync(default))
                 .ReturnsAsync(response);
 
-            protocol.Setup(p => p.ReadMessageAsync<LockdownResponse<string>>(default)).CallBase();
+            protocol.Setup(p => p.ReadMessageAsync<LockdownResponse>(default)).CallBase();
+            protocol.Setup(p => p.DisposeAsync()).Returns(ValueTask.CompletedTask);
 
             await using (var client = new LockdownClient(protocol.Object, NullLogger<LockdownClient>.Instance))
             {
@@ -227,7 +236,7 @@ namespace Kaponata.iOS.Tests.Lockdown
                 .Setup(p => p.ReadMessageAsync(default))
                 .ReturnsAsync(response);
 
-            protocol.Setup(p => p.ReadMessageAsync<LockdownResponse<string>>(default)).CallBase();
+            protocol.Setup(p => p.ReadMessageAsync<LockdownResponse>(default)).CallBase();
             protocol.Setup(p => p.DisposeAsync()).Returns(ValueTask.CompletedTask);
 
             await using (var client = new LockdownClient(protocol.Object, NullLogger<LockdownClient>.Instance))

@@ -20,17 +20,17 @@ namespace Kaponata.iOS.Lockdown
         /// <summary>
         /// The user denied the pairing request.
         /// </summary>
-        UserDeniedPairing,
+        UserDeniedPairing = LockdownError.UserDeniedPairing,
 
         /// <summary>
         /// A pairing dialog is being displayed on the device, and the lockdown service
         /// is waiting for the server to accept or deny the pairing request.
         /// </summary>
-        PairingDialogResponsePending,
+        PairingDialogResponsePending = LockdownError.PairingDialogResponsePending,
 
         /// <summary>
         /// An inavlid pair record was presented to the device.
         /// </summary>
-        InvalidPairRecord,
+        InvalidPairRecord = LockdownError.InvalidPairRecord,
     }
 }

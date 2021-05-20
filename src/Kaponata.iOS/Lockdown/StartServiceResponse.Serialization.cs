@@ -3,7 +3,6 @@
 // </copyright>
 
 using Claunia.PropertyList;
-using System;
 
 namespace Kaponata.iOS.Lockdown
 {
@@ -12,30 +11,15 @@ namespace Kaponata.iOS.Lockdown
     /// </content>
     public partial class StartServiceResponse
     {
-        /// <summary>
-        /// Deserializes a <see cref="StartServiceResponse"/> from a <see cref="NSDictionary"/>.
-        /// </summary>
-        /// <param name="dict">
-        /// A dictionary which represents the response.
-        /// </param>
-        /// <returns>
-        /// A <see cref="StartServiceResponse"/> object which represents the response.
-        /// </returns>
-        public static StartServiceResponse Read(NSDictionary dict)
+        /// <inheritdoc/>
+        public override void FromDictionary(NSDictionary data)
         {
-            if (dict == null)
-            {
-                throw new ArgumentNullException(nameof(dict));
-            }
+            base.FromDictionary(data);
 
-            return new StartServiceResponse()
-            {
-                EnableServiceSSL = dict.GetNullableBoolean(nameof(EnableServiceSSL)) ?? false,
-                Error = dict.GetString(nameof(Error)),
-                Port = dict.GetNullableInt32(nameof(Port)) ?? 0,
-                Request = dict.GetString(nameof(Request)),
-                Service = dict.GetString(nameof(Service)),
-            };
+            this.EnableServiceSSL = data.GetNullableBoolean(nameof(this.EnableServiceSSL)) ?? false;
+
+            this.Port = data.GetNullableInt32(nameof(this.Port)) ?? 0;
+            this.Service = data.GetString(nameof(this.Service));
         }
     }
 }

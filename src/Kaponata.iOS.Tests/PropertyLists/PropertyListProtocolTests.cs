@@ -121,7 +121,7 @@ namespace Kaponata.iOS.Tests.PropertyLists
                 // Let's pretend the last 4 bytes are missing.
                 stream.SetLength(stream.Length - 4);
 
-                Assert.Null(await protocol.ReadMessageAsync<LockdownResponse<object>>(default));
+                Assert.Null(await protocol.ReadMessageAsync<GetValueResponse<object>>(default));
             }
         }
 
@@ -135,7 +135,7 @@ namespace Kaponata.iOS.Tests.PropertyLists
         {
             await using (var protocol = new PropertyListProtocol(Stream.Null, false, NullLogger<PropertyListProtocol>.Instance))
             {
-                Assert.Null(await protocol.ReadMessageAsync<LockdownResponse<object>>(default).ConfigureAwait(false));
+                Assert.Null(await protocol.ReadMessageAsync<GetValueResponse<object>>(default).ConfigureAwait(false));
             }
         }
 
@@ -150,7 +150,7 @@ namespace Kaponata.iOS.Tests.PropertyLists
             await using (Stream stream = File.OpenRead("PropertyLists/message.bin"))
             await using (var protocol = new PropertyListProtocol(stream, false, NullLogger<PropertyListProtocol>.Instance))
             {
-                var message = await protocol.ReadMessageAsync<LockdownResponse<object>>(default);
+                var message = await protocol.ReadMessageAsync<GetValueResponse<object>>(default);
 
                 Assert.NotNull(message);
                 Assert.Equal("QueryType", message.Request);
@@ -250,7 +250,7 @@ namespace Kaponata.iOS.Tests.PropertyLists
             await Assert.ThrowsAsync<ObjectDisposedException>(() => protocol.DisableSslAsync(default)).ConfigureAwait(false);
             await Assert.ThrowsAsync<ObjectDisposedException>(() => protocol.EnableSslAsync(null, default)).ConfigureAwait(false);
             await Assert.ThrowsAsync<ObjectDisposedException>(() => protocol.ReadMessageAsync(default)).ConfigureAwait(false);
-            await Assert.ThrowsAsync<ObjectDisposedException>(() => protocol.ReadMessageAsync<LockdownResponse<string>>(default)).ConfigureAwait(false);
+            await Assert.ThrowsAsync<ObjectDisposedException>(() => protocol.ReadMessageAsync<GetValueResponse<string>>(default)).ConfigureAwait(false);
             await Assert.ThrowsAsync<ObjectDisposedException>(() => protocol.WriteMessageAsync((IPropertyList)null, default)).ConfigureAwait(false);
             await Assert.ThrowsAsync<ObjectDisposedException>(() => protocol.WriteMessageAsync((NSDictionary)null, default)).ConfigureAwait(false);
         }
@@ -273,7 +273,7 @@ namespace Kaponata.iOS.Tests.PropertyLists
             await Assert.ThrowsAsync<ObjectDisposedException>(() => protocol.DisableSslAsync(default)).ConfigureAwait(false);
             await Assert.ThrowsAsync<ObjectDisposedException>(() => protocol.EnableSslAsync(null, default)).ConfigureAwait(false);
             await Assert.ThrowsAsync<ObjectDisposedException>(() => protocol.ReadMessageAsync(default)).ConfigureAwait(false);
-            await Assert.ThrowsAsync<ObjectDisposedException>(() => protocol.ReadMessageAsync<LockdownResponse<string>>(default)).ConfigureAwait(false);
+            await Assert.ThrowsAsync<ObjectDisposedException>(() => protocol.ReadMessageAsync<GetValueResponse<string>>(default)).ConfigureAwait(false);
             await Assert.ThrowsAsync<ObjectDisposedException>(() => protocol.WriteMessageAsync((IPropertyList)null, default)).ConfigureAwait(false);
             await Assert.ThrowsAsync<ObjectDisposedException>(() => protocol.WriteMessageAsync((NSDictionary)null, default)).ConfigureAwait(false);
         }
