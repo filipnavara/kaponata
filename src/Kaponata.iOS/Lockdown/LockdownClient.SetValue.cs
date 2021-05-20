@@ -42,7 +42,7 @@ namespace Kaponata.iOS.Lockdown
                 },
                 cancellationToken).ConfigureAwait(false);
 
-            var response = await this.protocol.ReadMessageAsync<LockdownResponse<string>>(cancellationToken).ConfigureAwait(false);
+            var response = await this.protocol.ReadMessageAsync<GetValueResponse<string>>(cancellationToken).ConfigureAwait(false);
 
             this.EnsureSuccess(response);
         }

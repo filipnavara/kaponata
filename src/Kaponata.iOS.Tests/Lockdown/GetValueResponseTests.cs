@@ -1,4 +1,4 @@
-﻿// <copyright file="LockdownResponseTests.cs" company="Quamotion bv">
+﻿// <copyright file="GetValueResponseTests.cs" company="Quamotion bv">
 // Copyright (c) Quamotion bv. All rights reserved.
 // </copyright>
 
@@ -10,22 +10,22 @@ using Xunit;
 namespace Kaponata.iOS.Tests.Lockdown
 {
     /// <summary>
-    /// Tests the <see cref="LockdownResponse{T}"/> class.
+    /// Tests the <see cref="GetValueResponse{T}"/> class.
     /// </summary>
-    public class LockdownResponseTests
+    public class GetValueResponseTests
     {
         /// <summary>
-        /// <see cref="LockdownResponse{T}.FromDictionary(NSDictionary)"/> validates its arguments.
+        /// <see cref="GetValueResponse{T}.FromDictionary(NSDictionary)"/> validates its arguments.
         /// </summary>
         [Fact]
         public void Read_ValidatesArguments()
         {
-            var response = new LockdownResponse<string>();
+            var response = new GetValueResponse<string>();
             Assert.Throws<ArgumentNullException>(() => response.FromDictionary(null));
         }
 
         /// <summary>
-        /// Tests the <see cref="LockdownResponse{T}.FromDictionary(NSDictionary)"/> method.
+        /// Tests the <see cref="GetValueResponse{T}.FromDictionary(NSDictionary)"/> method.
         /// </summary>
         [Fact]
         public void Read_Works()
@@ -35,7 +35,7 @@ namespace Kaponata.iOS.Tests.Lockdown
             dict.Add("Result", "Success");
             dict.Add("Type", "com.apple.mobile.lockdown");
 
-            var response = new LockdownResponse<string>();
+            var response = new GetValueResponse<string>();
             response.FromDictionary(dict);
 
             Assert.Equal("QueryType", response.Request);

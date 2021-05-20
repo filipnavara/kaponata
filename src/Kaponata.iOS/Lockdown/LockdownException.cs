@@ -20,6 +20,20 @@ namespace Kaponata.iOS.Lockdown
         }
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="LockdownException"/> class, using a
+        /// <see cref="LockdownError"/> code.
+        /// </summary>
+        /// <param name="error">
+        /// A <see cref="LockdownError"/> code which describes the error.
+        /// </param>
+        public LockdownException(LockdownError error)
+            : this($"An unexpected lockdown error occurred: {error}")
+        {
+            this.HResult = (int)error;
+            this.Error = error;
+        }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="LockdownException"/> class with a specified error
         /// message.
         /// </summary>
@@ -30,5 +44,10 @@ namespace Kaponata.iOS.Lockdown
             : base(message)
         {
         }
+
+        /// <summary>
+        /// Gets the <see cref="LockdownError"/> returned by the lockdown daemon.
+        /// </summary>
+        public LockdownError Error { get; private set; }
     }
 }

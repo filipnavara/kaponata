@@ -99,7 +99,7 @@ namespace Kaponata.iOS.Lockdown
                 },
                 cancellationToken).ConfigureAwait(false);
 
-            var response = await this.protocol.ReadMessageAsync<LockdownResponse<string>>(cancellationToken).ConfigureAwait(false);
+            var response = await this.protocol.ReadMessageAsync<GetValueResponse<string>>(cancellationToken).ConfigureAwait(false);
             return response.Type;
         }
 
@@ -117,15 +117,12 @@ namespace Kaponata.iOS.Lockdown
         }
 
         /// <summary>
-        /// Throws an exception when a <see cref="LockdownResponse{T}"/> indicates an error.
+        /// Throws an exception when a <see cref="LockdownResponse"/> indicates an error.
         /// </summary>
-        /// <typeparam name="T">
-        /// The result type.
-        /// </typeparam>
         /// <param name="response">
         /// The response from the server.
         /// </param>
-        protected void EnsureSuccess<T>(LockdownResponse<T> response)
+        protected void EnsureSuccess(LockdownResponse response)
         {
             if (response.Error != null)
             {

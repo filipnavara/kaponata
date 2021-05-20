@@ -97,7 +97,7 @@ namespace Kaponata.iOS.Lockdown
                 pairRequest,
                 cancellationToken).ConfigureAwait(false);
 
-            var message = await this.protocol.ReadMessageAsync(
+            var message = await this.protocol.ReadMessageAsync<PairResponse>(
                 cancellationToken);
 
             if (message == null)
@@ -105,26 +105,24 @@ namespace Kaponata.iOS.Lockdown
                 return null;
             }
 
-            var response = PairResponse.Read(message);
-
-            if (response.Error == null)
+            if (message.Error == null)
             {
                 return new PairingResult()
                 {
                     Status = PairingStatus.Success,
-                    EscrowBag = response.EscrowBag,
+                    EscrowBag = message.EscrowBag,
                 };
             }
-            else if (Enum.TryParse(response.Error, out PairingStatus status))
+            else if (Enum.IsDefined((PairingStatus)message.Error.Value))
             {
                 return new PairingResult()
                 {
-                    Status = status,
+                    Status = (PairingStatus)message.Error.Value,
                 };
             }
             else
             {
-                throw new LockdownException(response.Error);
+                throw new LockdownException(message.Error.Value);
             }
         }
     }

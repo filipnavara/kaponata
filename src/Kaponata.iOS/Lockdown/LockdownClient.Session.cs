@@ -42,8 +42,7 @@ namespace Kaponata.iOS.Lockdown
                 },
                 cancellationToken).ConfigureAwait(false);
 
-            var response = await this.protocol.ReadMessageAsync(cancellationToken).ConfigureAwait(false);
-            var message = StartSessionResponse.Read(response);
+            var message = await this.protocol.ReadMessageAsync<StartSessionResponse>(cancellationToken).ConfigureAwait(false);
 
             if (message.EnableSessionSSL)
             {
@@ -69,10 +68,7 @@ namespace Kaponata.iOS.Lockdown
         {
             var message = await this.TryStartSessionAsync(pairingRecord, cancellationToken).ConfigureAwait(false);
 
-            if (message.Error != null)
-            {
-                throw new LockdownException(message.Error);
-            }
+            this.EnsureSuccess(message);
 
             return message;
         }
@@ -105,12 +101,8 @@ namespace Kaponata.iOS.Lockdown
                 },
                 cancellationToken).ConfigureAwait(false);
 
-            var response = await this.protocol.ReadMessageAsync<LockdownResponse<string>>(cancellationToken).ConfigureAwait(false);
-
-            if (response.Error != null)
-            {
-                throw new LockdownException(response.Error);
-            }
+            var response = await this.protocol.ReadMessageAsync<LockdownResponse>(cancellationToken).ConfigureAwait(false);
+            this.EnsureSuccess(response);
 
             if (this.protocol.SslEnabled)
             {

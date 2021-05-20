@@ -7,7 +7,7 @@ namespace Kaponata.iOS.Lockdown
     /// <summary>
     /// Represents a response to the <see cref="StartServiceRequest"/> request.
     /// </summary>
-    public partial class StartServiceResponse
+    public partial class StartServiceResponse : LockdownResponse
     {
         /// <summary>
         /// Gets or sets the port at which the service is listening.
@@ -22,25 +22,6 @@ namespace Kaponata.iOS.Lockdown
         /// Gets or sets the name of the service which was started.
         /// </summary>
         public string Service
-        {
-            get;
-            set;
-        }
-
-        /// <summary>
-        /// Gets or sets the name of the request which was received by the device.
-        /// </summary>
-        public string Request
-        {
-            get;
-            set;
-        }
-
-        /// <summary>
-        /// Gets or sets an error message which describes the error which ocurred,
-        /// if any.
-        /// </summary>
-        public string Error
         {
             get;
             set;

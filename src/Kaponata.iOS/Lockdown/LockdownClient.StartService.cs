@@ -42,24 +42,19 @@ namespace Kaponata.iOS.Lockdown
                 },
                 cancellationToken).ConfigureAwait(false);
 
-            var response = await this.protocol.ReadMessageAsync(cancellationToken).ConfigureAwait(false);
+            var response = await this.protocol.ReadMessageAsync<StartServiceResponse>(cancellationToken).ConfigureAwait(false);
 
             if (response == null)
             {
                 return null;
             }
 
-            var message = StartServiceResponse.Read(response);
-
-            if (message.Error != null)
-            {
-                throw new LockdownException(message.Error);
-            }
+            this.EnsureSuccess(response);
 
             return new ServiceDescriptor()
             {
-                Port = unchecked((ushort)message.Port),
-                EnableServiceSSL = message.EnableServiceSSL,
+                Port = unchecked((ushort)response.Port),
+                EnableServiceSSL = response.EnableServiceSSL,
                 ServiceName = serviceName,
             };
         }

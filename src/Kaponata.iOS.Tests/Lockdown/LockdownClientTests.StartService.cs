@@ -39,7 +39,7 @@ namespace Kaponata.iOS.Tests.Lockdown
         [Fact]
         public async Task StartServiceAsync_Works_Async()
         {
-            var protocol = new Mock<LockdownProtocol>();
+            var protocol = new Mock<LockdownProtocol>(MockBehavior.Strict);
 
             protocol
                 .Setup(p => p.WriteMessageAsync(It.IsAny<LockdownMessage>(), default))
@@ -58,6 +58,9 @@ namespace Kaponata.iOS.Tests.Lockdown
             protocol
                 .Setup(p => p.ReadMessageAsync(default))
                 .ReturnsAsync(dict);
+
+            protocol.Setup(p => p.ReadMessageAsync<StartServiceResponse>(default)).CallBase();
+            protocol.Setup(p => p.DisposeAsync()).Returns(ValueTask.CompletedTask);
 
             await using (var lockdown = new LockdownClient(protocol.Object, NullLogger<LockdownClient>.Instance))
             {
@@ -109,7 +112,7 @@ namespace Kaponata.iOS.Tests.Lockdown
         [Fact]
         public async Task StartServiceAsync_ThrowsOnError_Async()
         {
-            var protocol = new Mock<LockdownProtocol>();
+            var protocol = new Mock<LockdownProtocol>(MockBehavior.Strict);
 
             protocol
                 .Setup(p => p.WriteMessageAsync(It.IsAny<LockdownMessage>(), default))
@@ -123,11 +126,14 @@ namespace Kaponata.iOS.Tests.Lockdown
                 .Returns(Task.CompletedTask);
 
             NSDictionary dict = new NSDictionary();
-            dict.Add("Error", "Foo");
+            dict.Add("Error", nameof(LockdownError.SessionInactive));
 
             protocol
                 .Setup(p => p.ReadMessageAsync(default))
                 .ReturnsAsync(dict);
+
+            protocol.Setup(p => p.ReadMessageAsync<StartServiceResponse>(default)).CallBase();
+            protocol.Setup(p => p.DisposeAsync()).Returns(ValueTask.CompletedTask);
 
             await using (var lockdown = new LockdownClient(protocol.Object, NullLogger<LockdownClient>.Instance))
             {
