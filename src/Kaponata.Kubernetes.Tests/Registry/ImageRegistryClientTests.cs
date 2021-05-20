@@ -362,7 +362,7 @@ namespace Kaponata.Kubernetes.Tests.Registry
             handler
                 .Expect(HttpMethod.Get, "http://localhost:5000/v2/registry/manifests/my-tag")
                 .With((request) => request.Headers.Accept.Any(h => h.MediaType == "application/vnd.oci.image.manifest.v1+json"))
-                .Respond(HttpStatusCode.NotFound);
+                .Respond(HttpStatusCode.BadRequest);
 
             var httpClient = handler.ToHttpClient();
             httpClient.BaseAddress = new Uri("http://localhost:5000");
@@ -370,6 +370,31 @@ namespace Kaponata.Kubernetes.Tests.Registry
             var client = new ImageRegistryClient(httpClient);
 
             await Assert.ThrowsAsync<ImageRegistryException>(() => client.GetManifestAsync("registry", "my-tag", default)).ConfigureAwait(false);
+
+            handler.VerifyNoOutstandingExpectation();
+        }
+
+        /// <summary>
+        /// <see cref="ImageRegistryClient.GetManifestAsync(string, string, CancellationToken)"/> returns <see langword="null"/>
+        /// when the requested manifest could not be found.
+        /// </summary>
+        /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
+        [Fact]
+        public async Task GetManifestAsync_RetursNullWhenNotFound_Async()
+        {
+            var handler = new MockHttpMessageHandler();
+
+            handler
+                .Expect(HttpMethod.Get, "http://localhost:5000/v2/registry/manifests/my-tag")
+                .With((request) => request.Headers.Accept.Any(h => h.MediaType == "application/vnd.oci.image.manifest.v1+json"))
+                .Respond(HttpStatusCode.NotFound);
+
+            var httpClient = handler.ToHttpClient();
+            httpClient.BaseAddress = new Uri("http://localhost:5000");
+
+            var client = new ImageRegistryClient(httpClient);
+
+            Assert.Null(await client.GetManifestAsync("registry", "my-tag", default).ConfigureAwait(false));
 
             handler.VerifyNoOutstandingExpectation();
         }
