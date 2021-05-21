@@ -49,6 +49,16 @@ namespace Kaponata.iOS.MobileImageMounter
             this.protocol = protocol ?? throw new ArgumentNullException(nameof(protocol));
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MobileImageMounterClient"/> class.
+        /// </summary>
+        /// <remarks>
+        /// Intended for mocking purposes only.
+        /// </remarks>
+        protected MobileImageMounterClient()
+        {
+        }
+
         /// <inheritdoc/>
         public bool IsDisposed { get; private set; }
 
@@ -64,7 +74,7 @@ namespace Kaponata.iOS.MobileImageMounter
         /// <returns>
         /// A image status of the device.
         /// </returns>
-        public async Task<LookupImageResponse> LookupImageAsync(string imageType, CancellationToken cancellationToken)
+        public virtual async Task<LookupImageResponse> LookupImageAsync(string imageType, CancellationToken cancellationToken)
         {
             Verify.NotDisposed(this);
             Requires.NotNull(imageType, nameof(imageType));
@@ -100,7 +110,7 @@ namespace Kaponata.iOS.MobileImageMounter
         /// <returns>
         /// A <see cref="Task"/> representing the asynchronous operation.
         /// </returns>
-        public async Task UploadImageAsync(Stream image, string imageType, byte[] signature, CancellationToken cancellationToken)
+        public virtual async Task UploadImageAsync(Stream image, string imageType, byte[] signature, CancellationToken cancellationToken)
         {
             Verify.NotDisposed(this);
 
@@ -142,7 +152,7 @@ namespace Kaponata.iOS.MobileImageMounter
         /// <returns>
         /// A <see cref="Task"/> representing the asynchronous operation.
         /// </returns>
-        public async Task MountImageAsync(byte[] signature, string imageType, CancellationToken cancellationToken)
+        public virtual async Task MountImageAsync(byte[] signature, string imageType, CancellationToken cancellationToken)
         {
             Verify.NotDisposed(this);
 
@@ -171,7 +181,7 @@ namespace Kaponata.iOS.MobileImageMounter
         /// <returns>
         /// A <see cref="Task"/> which represents the asynchronous operation.
         /// </returns>
-        public async Task HangupAsync(CancellationToken cancellationToken)
+        public virtual async Task HangupAsync(CancellationToken cancellationToken)
         {
             Verify.NotDisposed(this);
 
@@ -187,7 +197,7 @@ namespace Kaponata.iOS.MobileImageMounter
         {
             this.IsDisposed = true;
 
-            return this.protocol.DisposeAsync();
+            return this.protocol == null ? ValueTask.CompletedTask : this.protocol.DisposeAsync();
         }
 
         /// <inheritdoc/>
@@ -195,7 +205,7 @@ namespace Kaponata.iOS.MobileImageMounter
         {
             this.IsDisposed = true;
 
-            this.protocol.Dispose();
+            this.protocol?.Dispose();
         }
 
         private void EnsureValidResponse(MobileImageMounterResponse response)

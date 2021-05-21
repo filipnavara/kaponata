@@ -69,7 +69,7 @@ namespace Kaponata.iOS.DependencyInjection
         /// <inheritdoc/>
         public void Dispose()
         {
-            this.scope.Dispose();
+            this.scope?.Dispose();
         }
     }
 }
