@@ -1,13 +1,13 @@
 <Project>
   <ItemGroup>
-    <PackageReference Include="Nerdbank.GitVersioning" Version="3.4.194" PrivateAssets="all" />
+    <PackageReference Include="Nerdbank.GitVersioning" Version="3.4.231" PrivateAssets="all" />
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="all"/>
     <PackageReference Include="StyleCop.Analyzers" Version="1.1.118" PrivateAssets="all" />
     <AdditionalFiles Include="$(MSBuildThisFileDirectory)\stylecop.json" />
 
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="5.0.0" />
-    <PackageReference Include="NerdBank.Streams" Version="2.8.4-alpha" />
-    <PackageReference Include="Microsoft.VisualStudio.Validation" Version="16.9.32" />
+    <PackageReference Include="NerdBank.Streams" Version="2.8.46" />
+    <PackageReference Include="Microsoft.VisualStudio.Validation" Version="16.10.26" />
   </ItemGroup>
 
   <ItemGroup Condition="$(MSBuildProjectName.EndsWith('.Tests'))">

@@ -10,7 +10,7 @@
 
   <ItemGroup>
     <PackageReference Include="Kaponata.FileFormats.NativeDependencies" Version="0.3.12" />
-    <PackageReference Include="DiscUtils.Core" Version="0.16.6" />
+    <PackageReference Include="DiscUtils.Core" Version="0.16.4" />
     <PackageReference Include="plist-cil" Version="2.1.0" />
   </ItemGroup>
 </Project>
