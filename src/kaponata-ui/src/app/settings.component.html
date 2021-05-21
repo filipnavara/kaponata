@@ -1,5 +1,12 @@
-<h1>Settings</h1>
-<h4>iOS Provisioning Profiles</h4>
+<h1 id="title">Settings</h1>
+
+<h3>iOS Provisioning Profiles</h3>
+
+<p>
+  A provisioning profile is a file issued by Apple which allows you to deploy applications signed using your identity to
+  devices. It also grants specific permissions (entitlements) to those applications. 
+  A provisionig profile usually has the <code>.mobileprovision</code> extension.
+</p>
 
 <table class="table table-condensed">
   <thead>
@@ -23,7 +30,7 @@
       </td>
       <td>
         <ng-template #devicesContent>
-          <dl><dd *ngFor="let device of profile.provisionedDevices">{{device}}</dd></dl>
+          <dl><dd ngbDropdownItem *ngFor="let device of profile.provisionedDevices">{{device}}</dd></dl>
         </ng-template>
         <a href="javascript:void(0)" [ngbPopover]="devicesContent" placement="bottom" container="body">{{profile.provisionedDevices.length}} devices</a>
       </td>

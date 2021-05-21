@@ -1,0 +1,35 @@
+name: e2e-test
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  frontend:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Test ui
+        run: |
+          npm install
+          sudo npm run e2e
+        working-directory: src/kaponata-ui/
+
+      - name: Upload UI Test Results
+        uses: actions/upload-artifact@v2
+        if: always()
+        with:
+          name: ui-e2e-test
+          path: |
+            ${{ github.workspace }}/src/kaponata-ui/TestResults/
+
+      - name: Publish Test Results
+        uses: EnricoMi/publish-unit-test-result-action@v1.7
+        if: always()
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          files: "src/kaponata-ui/TestResults/*.xml"
