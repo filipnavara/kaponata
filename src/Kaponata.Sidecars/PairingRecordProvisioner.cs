@@ -25,7 +25,7 @@ namespace Kaponata.Sidecars
         private readonly MuxerClient muxerClient;
         private readonly ILogger<PairingRecordProvisioner> logger;
         private readonly KubernetesPairingRecordStore kubernetesPairingRecordStore;
-        private readonly IServiceProvider serviceProvider;
+        private readonly DeviceServiceProvider serviceProvider;
         private readonly Dictionary<string, Task> pairingTasks = new Dictionary<string, Task>();
 
         /// <summary>
@@ -43,7 +43,7 @@ namespace Kaponata.Sidecars
         /// <param name="logger">
         /// A logger which can be used when logging.
         /// </param>
-        public PairingRecordProvisioner(MuxerClient muxerClient, KubernetesPairingRecordStore kubernetesPairingRecordStore, IServiceProvider serviceProvider, ILogger<PairingRecordProvisioner> logger)
+        public PairingRecordProvisioner(MuxerClient muxerClient, KubernetesPairingRecordStore kubernetesPairingRecordStore, DeviceServiceProvider serviceProvider, ILogger<PairingRecordProvisioner> logger)
         {
             this.muxerClient = muxerClient ?? throw new ArgumentNullException(nameof(muxerClient));
             this.kubernetesPairingRecordStore = kubernetesPairingRecordStore ?? throw new ArgumentNullException(nameof(kubernetesPairingRecordStore));

@@ -1,4 +1,4 @@
-﻿// <copyright file="ServiceProviderExtensions.cs" company="Quamotion bv">
+﻿// <copyright file="DeviceServiceProvider.cs" company="Quamotion bv">
 // Copyright (c) Quamotion bv. All rights reserved.
 // </copyright>
 
@@ -12,16 +12,37 @@ using System.Threading.Tasks;
 namespace Kaponata.iOS.DependencyInjection
 {
     /// <summary>
-    /// Provides extension methods for the <see cref="IServiceProvider"/> interface.
+    /// A <see cref="DeviceServiceProvider"/> is a specialized <see cref="IServiceProvider"/>, which allows creating device scopes,
+    /// and connecting to services running on devices.
     /// </summary>
-    public static class ServiceProviderExtensions
+    public class DeviceServiceProvider
     {
+        private readonly IServiceProvider provider;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DeviceServiceProvider"/> class.
+        /// </summary>
+        /// <param name="provider">
+        /// The underlying <see cref="IServiceProvider"/> which provides iOS-related services.
+        /// </param>
+        public DeviceServiceProvider(IServiceProvider provider)
+        {
+            this.provider = provider ?? throw new ArgumentNullException(nameof(provider));
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DeviceServiceProvider"/> class.
+        /// </summary>
+        /// <remarks>
+        /// Intended for mocking purposes only.
+        /// </remarks>
+        protected DeviceServiceProvider()
+        {
+        }
+
         /// <summary>
         /// Asynchronously create a device scope, which can be used to interact with services running on the iOS device.
         /// </summary>
-        /// <param name="provider">
-        /// The <see cref="IServiceProvider"/> which provides the required services.
-        /// </param>
         /// <param name="udid">
         /// The UDID of the device to which to connect.
         /// </param>
@@ -32,9 +53,9 @@ namespace Kaponata.iOS.DependencyInjection
         /// A <see cref="Task"/> which represents the asynchronous operation, and returns a <see cref="IServiceScope"/>
         /// from which device services (such as lockdown service clients) can be sourced.
         /// </returns>
-        public static async Task<IServiceScope> CreateDeviceScopeAsync(this IServiceProvider provider, string udid, CancellationToken cancellationToken)
+        public virtual async Task<IServiceScope> CreateDeviceScopeAsync(string udid, CancellationToken cancellationToken)
         {
-            var muxer = provider.GetRequiredService<MuxerClient>();
+            var muxer = this.provider.GetRequiredService<MuxerClient>();
             var allDevices = await muxer.ListDevicesAsync(cancellationToken).ConfigureAwait(false);
 
             // The UDID can be null, in which case we select the first device.
@@ -48,7 +69,7 @@ namespace Kaponata.iOS.DependencyInjection
                 throw new MuxerException($"Could not find the device with udid '{udid}'.");
             }
 
-            var scope = provider.CreateScope();
+            var scope = this.provider.CreateScope();
 
             var context = scope.ServiceProvider.GetRequiredService<DeviceContext>();
             context.Device = devices[0];
@@ -64,9 +85,6 @@ namespace Kaponata.iOS.DependencyInjection
         /// <typeparam name="T">
         /// The type of the service to start.
         /// </typeparam>
-        /// <param name="provider">
-        /// A <see cref="IServiceProvider"/> from which to source the required services.
-        /// </param>
         /// <param name="udid">
         /// The UDID of the device to which to connect.
         /// </param>
@@ -77,9 +95,9 @@ namespace Kaponata.iOS.DependencyInjection
         /// A <see cref="Task"/> which represents the asynchronous operation, and, when completed,
         /// returns a <see cref="DeviceServiceScope{T}"/> which provides access to the service running on the device.
         /// </returns>
-        public static async Task<DeviceServiceScope<T>> StartServiceAsync<T>(this IServiceProvider provider, string udid, CancellationToken cancellationToken)
+        public virtual async Task<DeviceServiceScope<T>> StartServiceAsync<T>(string udid, CancellationToken cancellationToken)
         {
-            var scope = await provider.CreateDeviceScopeAsync(udid, cancellationToken).ConfigureAwait(false);
+            var scope = await this.CreateDeviceScopeAsync(udid, cancellationToken).ConfigureAwait(false);
             var service = await scope.StartServiceAsync<T>(cancellationToken).ConfigureAwait(false);
 
             return new DeviceServiceScope<T>(

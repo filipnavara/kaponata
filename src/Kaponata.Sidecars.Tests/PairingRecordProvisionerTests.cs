@@ -3,6 +3,7 @@
 // </copyright>
 
 using Kaponata.iOS;
+using Kaponata.iOS.DependencyInjection;
 using Kaponata.iOS.Lockdown;
 using Kaponata.iOS.Muxer;
 using Kaponata.iOS.Workers;
@@ -58,6 +59,7 @@ namespace Kaponata.Sidecars.Tests
                 .AddSingleton(lockdownFactoryMock.Object)
                 .AddSingleton<PairingRecordProvisioner>()
                 .AddSingleton<DeviceContext>()
+                .AddSingleton<DeviceServiceProvider>()
                 .BuildServiceProvider();
         }
 
@@ -67,10 +69,10 @@ namespace Kaponata.Sidecars.Tests
         [Fact]
         public void Constructor_ValidatesArguments()
         {
-            Assert.Throws<ArgumentNullException>("muxerClient", () => new PairingRecordProvisioner(null, Mock.Of<KubernetesPairingRecordStore>(), Mock.Of<IServiceProvider>(), NullLogger<PairingRecordProvisioner>.Instance));
-            Assert.Throws<ArgumentNullException>("kubernetesPairingRecordStore", () => new PairingRecordProvisioner(Mock.Of<MuxerClient>(), null, Mock.Of<IServiceProvider>(), NullLogger<PairingRecordProvisioner>.Instance));
+            Assert.Throws<ArgumentNullException>("muxerClient", () => new PairingRecordProvisioner(null, Mock.Of<KubernetesPairingRecordStore>(), Mock.Of<DeviceServiceProvider>(), NullLogger<PairingRecordProvisioner>.Instance));
+            Assert.Throws<ArgumentNullException>("kubernetesPairingRecordStore", () => new PairingRecordProvisioner(Mock.Of<MuxerClient>(), null, Mock.Of<DeviceServiceProvider>(), NullLogger<PairingRecordProvisioner>.Instance));
             Assert.Throws<ArgumentNullException>("serviceProvider", () => new PairingRecordProvisioner(Mock.Of<MuxerClient>(), Mock.Of<KubernetesPairingRecordStore>(), null, NullLogger<PairingRecordProvisioner>.Instance));
-            Assert.Throws<ArgumentNullException>("logger", () => new PairingRecordProvisioner(Mock.Of<MuxerClient>(), Mock.Of<KubernetesPairingRecordStore>(), Mock.Of<IServiceProvider>(), null));
+            Assert.Throws<ArgumentNullException>("logger", () => new PairingRecordProvisioner(Mock.Of<MuxerClient>(), Mock.Of<KubernetesPairingRecordStore>(), Mock.Of<DeviceServiceProvider>(), null));
         }
 
         /// <summary>
