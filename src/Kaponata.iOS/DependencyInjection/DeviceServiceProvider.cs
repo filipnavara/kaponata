@@ -53,7 +53,7 @@ namespace Kaponata.iOS.DependencyInjection
         /// A <see cref="Task"/> which represents the asynchronous operation, and returns a <see cref="IServiceScope"/>
         /// from which device services (such as lockdown service clients) can be sourced.
         /// </returns>
-        public virtual async Task<IServiceScope> CreateDeviceScopeAsync(string udid, CancellationToken cancellationToken)
+        public virtual async Task<DeviceServiceScope> CreateDeviceScopeAsync(string udid, CancellationToken cancellationToken)
         {
             var muxer = this.provider.GetRequiredService<MuxerClient>();
             var allDevices = await muxer.ListDevicesAsync(cancellationToken).ConfigureAwait(false);
@@ -76,34 +76,7 @@ namespace Kaponata.iOS.DependencyInjection
 
             context.PairingRecord = await muxer.ReadPairingRecordAsync(context.Device.Udid, cancellationToken).ConfigureAwait(false);
 
-            return scope;
-        }
-
-        /// <summary>
-        /// Asynchronously creates a device scope and starts a service on a device.
-        /// </summary>
-        /// <typeparam name="T">
-        /// The type of the service to start.
-        /// </typeparam>
-        /// <param name="udid">
-        /// The UDID of the device to which to connect.
-        /// </param>
-        /// <param name="cancellationToken">
-        /// A <see cref="CancellationToken"/> which can be used to cancel the asynchronous operation.
-        /// </param>
-        /// <returns>
-        /// A <see cref="Task"/> which represents the asynchronous operation, and, when completed,
-        /// returns a <see cref="DeviceServiceScope{T}"/> which provides access to the service running on the device.
-        /// </returns>
-        public virtual async Task<DeviceServiceScope<T>> StartServiceAsync<T>(string udid, CancellationToken cancellationToken)
-        {
-            var scope = await this.CreateDeviceScopeAsync(udid, cancellationToken).ConfigureAwait(false);
-            var service = await scope.StartServiceAsync<T>(cancellationToken).ConfigureAwait(false);
-
-            return new DeviceServiceScope<T>(
-                scope,
-                device: scope.ServiceProvider.GetRequiredService<DeviceContext>().Device,
-                service);
+            return new DeviceServiceScope(scope);
         }
     }
 }

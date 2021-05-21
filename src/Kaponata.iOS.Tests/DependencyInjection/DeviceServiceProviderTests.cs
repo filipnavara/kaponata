@@ -179,44 +179,5 @@ namespace Kaponata.iOS.Tests.DependencyInjection
                 Assert.Same(pairingRecord, context.PairingRecord);
             }
         }
-
-        /// <summary>
-        /// The <see cref="DeviceServiceProvider.StartServiceAsync{T}(string, CancellationToken)"/> method works correctly.
-        /// </summary>
-        /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
-        [Fact]
-        public async Task StartServiceAsync_Works_Async()
-        {
-            var device = new MuxerDevice() { Udid = "2" };
-            var pairingRecord = new PairingRecord();
-
-            var muxer = new Mock<MuxerClient>(MockBehavior.Strict);
-            muxer
-                .Setup(m => m.ListDevicesAsync(default))
-                .ReturnsAsync(new Collection<MuxerDevice>() { device });
-            muxer
-                .Setup(m => m.ReadPairingRecordAsync("2", default))
-                .ReturnsAsync(pairingRecord);
-
-            var client = new Mock<LockdownClient>(MockBehavior.Strict);
-
-            var factory = new Mock<ClientFactory<LockdownClient>>(MockBehavior.Strict);
-            factory.Setup(f => f.CreateAsync(default)).ReturnsAsync(client.Object);
-
-            var provider = new ServiceCollection()
-                .AddSingleton<MuxerClient>(muxer.Object)
-                .AddScoped<DeviceContext>()
-                .AddScoped<ClientFactory<LockdownClient>>((sp) => factory.Object)
-                .BuildServiceProvider();
-
-            var deviceServiceProvider = new DeviceServiceProvider(provider);
-
-            using (var context = await deviceServiceProvider.StartServiceAsync<LockdownClient>("2", default).ConfigureAwait(false))
-            {
-                Assert.Same(device, context.Device);
-                Assert.NotNull(context.Scope);
-                Assert.Same(client.Object, context.Service);
-            }
-        }
     }
 }
