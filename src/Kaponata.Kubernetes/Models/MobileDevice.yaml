@@ -9,7 +9,7 @@ metadata:
     # operator to determine whether the CRD should be reinstalled or not.
     # Use the following command to determine that version:
     # nbgv get-version $(git rev-list -1 HEAD) -v NuGetPackageVersion
-    app.kubernetes.io/version: "0.3.52"
+    app.kubernetes.io/version: "0.3.346"
 spec:
   # group name to use for REST API: /apis/<group>/<version>
   group: kaponata.io
@@ -50,8 +50,64 @@ spec:
                     which allows users to remotely control this device.
                 vncPassword:
                   type: string
+                  format: password
                   description: |
                     When available, a password which can be used to connect to the VNC server at vncHost.
+                conditions:
+                  description: |
+                    Conditions is a list of all conditions this MobileDevice is in.
+                  items:
+                    description: |
+                      MobileDeviceCondition contains details for the current condition of this MobileDevice.
+                    properties:
+                      type:
+                        description: Type of the condition.  The condition type uniquely identifies the condition.
+                        type: string
+                      status:
+                        description: |
+                          Status of the condition, one of ('True', 'False', 'Unknown').
+                        type: string
+                        enum:
+                        - 'True'
+                        - 'False'
+                        - 'Unknown'
+                      reason:
+                        description: |
+                          Reason is the (brief) reason for the condition's last transition.
+                        type: string
+                      message:
+                        description: |
+                          Message is the human readable message indicating details about last transition.
+                        type: string
+                      lastHeartbeatTime:
+                        description: |
+                          LastHeartbeatTime is the timestamp corresponding to the last update of this condition.
+                        format: date-time
+                        type: string
+                      lastTransitionTime:
+                        description: |
+                          LastTransitionTime is the last time the device condition transitioned from one status to another.
+                        format: date-time
+                        type: string
+                    required:
+                    - status
+                    - type
+                    type: object
+                  type: array
+
+                  # These properties are used by Kubernetes strategic merge operations.  They should allows us to
+                  # patch lists (such as status.conditions) by specifying a 'key' (type in this case).
+                  # Unfortunately, Kubernetes does not currently support strategy merges for custom resources:
+                  # 
+                  "x-kubernetes-list-map-keys":
+                    - "type"
+                  "x-kubernetes-list-type": "map"
+            
+          # This section enables the 'status' subresource.  It allows controllers to only patch the status stanza
+          # by posting to /status.
+          subresources:
+            status: {}
+
       # Shown in kubectl get
       additionalPrinterColumns:
       - name: Labels
