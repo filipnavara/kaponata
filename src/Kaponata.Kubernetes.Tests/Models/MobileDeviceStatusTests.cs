@@ -19,7 +19,7 @@ namespace Kaponata.Kubernetes.Tests.Models
         /// properties that property is <see langword="null"/>.
         /// </summary>
         [Fact]
-        public void ConditionsNull_AddsCondition()
+        public void SetCondition_ConditionsNull_AddsCondition()
         {
             var status = new MobileDeviceStatus();
             Assert.True(status.SetCondition(MobileDeviceConditions.DeveloperDiskMounted, ConditionStatus.True, "Reason", "Message"));
@@ -36,7 +36,7 @@ namespace Kaponata.Kubernetes.Tests.Models
         /// if the status has changed.
         /// </summary>
         [Fact]
-        public void Conditions_UpdatesCondition()
+        public void SetCondition_UpdatesCondition()
         {
             var status = new MobileDeviceStatus()
             {
@@ -64,7 +64,7 @@ namespace Kaponata.Kubernetes.Tests.Models
         /// condition is renewed with the same status.
         /// </summary>
         [Fact]
-        public void Conditions_UpdatesTimestamp()
+        public void SetCondition_UpdatesTimestamp()
         {
             var status = new MobileDeviceStatus()
             {
@@ -96,7 +96,7 @@ namespace Kaponata.Kubernetes.Tests.Models
         /// did not change and the heartbeat is recent.
         /// </summary>
         [Fact]
-        public void Conditions_RecentTimestamp_DoesNothing()
+        public void SetCondition_RecentTimestamp_DoesNothing()
         {
             var status = new MobileDeviceStatus()
             {
@@ -121,6 +121,51 @@ namespace Kaponata.Kubernetes.Tests.Models
             Assert.Equal("Reason", condition.Reason);
             Assert.Equal("Message", condition.Message);
             Assert.True(condition.LastHeartbeatTime > DateTimeOffset.Now.AddMinutes(-5));
+        }
+
+        /// <summary>
+        /// <see cref="MobileDeviceStatus.GetConditionStatus(string)"/> returns <see cref="ConditionStatus.Unknown"/>
+        /// when the <see cref="MobileDeviceStatus.Conditions"/> is <see langword="null"/>.
+        /// </summary>
+        [Fact]
+        public void GetCondition_ConditionsNull_ReturnsUnknown()
+        {
+            var status = new MobileDeviceStatus();
+            Assert.Equal(ConditionStatus.Unknown, status.GetConditionStatus(MobileDeviceConditions.DeveloperDiskMounted));
+        }
+
+        /// <summary>
+        /// <see cref="MobileDeviceStatus.GetConditionStatus(string)"/> returns <see cref="ConditionStatus.Unknown"/>
+        /// when the <see cref="MobileDeviceStatus.Conditions"/> is not <see langword="null"/> but does not contain
+        /// the requested condition.
+        /// </summary>
+        [Fact]
+        public void GetCondition_MissingCondition_ReturnsUnknown()
+        {
+            var status = new MobileDeviceStatus() { Conditions = new List<MobileDeviceCondition>() };
+            Assert.Equal(ConditionStatus.Unknown, status.GetConditionStatus(MobileDeviceConditions.DeveloperDiskMounted));
+        }
+
+        /// <summary>
+        /// <see cref="MobileDeviceStatus.GetConditionStatus(string)"/> returns the condition status
+        /// when the <see cref="MobileDeviceStatus.Conditions"/> contains the requested condition.
+        /// </summary>
+        [Fact]
+        public void GetCondition_HasCondition_ReturnsConditionValue()
+        {
+            var status = new MobileDeviceStatus()
+            {
+                Conditions = new List<MobileDeviceCondition>()
+                {
+                    new MobileDeviceCondition()
+                    {
+                        Type = MobileDeviceConditions.DeveloperDiskMounted,
+                        Status = ConditionStatus.True,
+                    },
+                },
+            };
+
+            Assert.Equal(ConditionStatus.True, status.GetConditionStatus(MobileDeviceConditions.DeveloperDiskMounted));
         }
     }
 }
