@@ -6,6 +6,7 @@ using Kaponata.iOS.DependencyInjection;
 using Kaponata.iOS.DeveloperDisks;
 using Kaponata.iOS.Lockdown;
 using Kaponata.iOS.MobileImageMounter;
+using Kaponata.iOS.Muxer;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Threading;
@@ -44,8 +45,8 @@ namespace Kaponata.Sidecars
         /// <summary>
         /// Asynchronously mounts the developer disk on the device.
         /// </summary>
-        /// <param name="udid">
-        /// The UDID of the device on which to mount the developer disk.
+        /// <param name="device">
+        /// The device on which to mount the developer disk.
         /// </param>
         /// <param name="cancellationToken">
         /// A <see cref="CancellationToken"/> which can be used to cancel the asynchronous operation.
@@ -53,9 +54,9 @@ namespace Kaponata.Sidecars
         /// <returns>A <see cref="Task"/> representing the asynchronous operation. The task returns a value indicating whether the developer disk
         /// is mounted on the device or not.
         /// </returns>
-        public virtual async Task<bool> ProvisionDeveloperDiskAsync(string udid, CancellationToken cancellationToken)
+        public virtual async Task<bool> ProvisionDeveloperDiskAsync(MuxerDevice device, CancellationToken cancellationToken)
         {
-            using (var scope = await this.serviceProvider.CreateDeviceScopeAsync(udid, cancellationToken).ConfigureAwait(false))
+            using (var scope = await this.serviceProvider.CreateDeviceScopeAsync(device, cancellationToken).ConfigureAwait(false))
             await using (var lockdown = await scope.StartServiceAsync<LockdownClient>(cancellationToken).ConfigureAwait(false))
             await using (var imageMounterClient = await scope.StartServiceAsync<MobileImageMounterClient>(cancellationToken).ConfigureAwait(false))
             {
@@ -66,7 +67,7 @@ namespace Kaponata.Sidecars
                 {
                     var signature = developerDiskStatus.ImageSignature.Count > 0 ? Convert.ToBase64String(developerDiskStatus.ImageSignature[0]) : string.Empty;
 
-                    this.logger.LogWarning("A developer disk has already been mounted on device {udid}: {signature}", udid, signature);
+                    this.logger.LogWarning("A developer disk has already been mounted on device {udid}: {signature}", device.Udid, signature);
                     return true;
                 }
 
@@ -85,14 +86,14 @@ namespace Kaponata.Sidecars
 
                 if (developerDisk == null)
                 {
-                    this.logger.LogWarning("Could not mount the developer disk on device {udid} because no developer disk is available", udid);
+                    this.logger.LogWarning("Could not mount the developer disk on device {udid} because no developer disk is available", device.Udid);
                     return false;
                 }
 
                 await imageMounterClient.UploadImageAsync(developerDisk.Image, "Developer", developerDisk.Signature, cancellationToken).ConfigureAwait(false);
                 await imageMounterClient.MountImageAsync(developerDisk.Signature, "Developer", cancellationToken).ConfigureAwait(false);
 
-                this.logger.LogInformation("Mounted the developer disk on device {udid}", udid);
+                this.logger.LogInformation("Mounted the developer disk on device {udid}", device.Udid);
 
                 return true;
             }

@@ -6,6 +6,7 @@ using Kaponata.iOS.DependencyInjection;
 using Kaponata.iOS.DeveloperDisks;
 using Kaponata.iOS.Lockdown;
 using Kaponata.iOS.MobileImageMounter;
+using Kaponata.iOS.Muxer;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using System;
@@ -34,7 +35,7 @@ namespace Kaponata.Sidecars.Tests
         }
 
         /// <summary>
-        /// <see cref="DeveloperDiskProvisioner.ProvisionDeveloperDiskAsync(string, CancellationToken)"/> returns <see langword="true"/>
+        /// <see cref="DeveloperDiskProvisioner.ProvisionDeveloperDiskAsync(MuxerDevice, CancellationToken)"/> returns <see langword="true"/>
         /// if a developer disk is already mounted.
         /// </summary>
         /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
@@ -43,10 +44,10 @@ namespace Kaponata.Sidecars.Tests
         {
             var store = new Mock<DeveloperDiskStore>(MockBehavior.Strict);
             var provider = new Mock<DeviceServiceProvider>(MockBehavior.Strict);
-            const string udid = "udid";
+            var device = new MuxerDevice();
 
             var scope = new Mock<DeviceServiceScope>(MockBehavior.Strict);
-            provider.Setup(p => p.CreateDeviceScopeAsync(udid, default)).ReturnsAsync(scope.Object);
+            provider.Setup(p => p.CreateDeviceScopeAsync(device, default)).ReturnsAsync(scope.Object);
 
             var lockdown = new Mock<LockdownClient>(MockBehavior.Strict);
             var mounter = new Mock<MobileImageMounterClient>(MockBehavior.Strict);
@@ -63,11 +64,11 @@ namespace Kaponata.Sidecars.Tests
                     ImageSignature = new List<byte[]>() { Array.Empty<byte>() },
                 });
 
-            Assert.True(await provisioner.ProvisionDeveloperDiskAsync(udid, default).ConfigureAwait(false));
+            Assert.True(await provisioner.ProvisionDeveloperDiskAsync(device, default).ConfigureAwait(false));
         }
 
         /// <summary>
-        /// <see cref="DeveloperDiskProvisioner.ProvisionDeveloperDiskAsync(string, CancellationToken)"/> returns <see langword="false"/>
+        /// <see cref="DeveloperDiskProvisioner.ProvisionDeveloperDiskAsync(MuxerDevice, CancellationToken)"/> returns <see langword="false"/>
         /// if a developer disk is not mounted and no developer disk is available.
         /// </summary>
         /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
@@ -76,10 +77,10 @@ namespace Kaponata.Sidecars.Tests
         {
             var store = new Mock<DeveloperDiskStore>(MockBehavior.Strict);
             var provider = new Mock<DeviceServiceProvider>(MockBehavior.Strict);
-            const string udid = "udid";
+            var device = new MuxerDevice();
 
             var scope = new Mock<DeviceServiceScope>(MockBehavior.Strict);
-            provider.Setup(p => p.CreateDeviceScopeAsync(udid, default)).ReturnsAsync(scope.Object);
+            provider.Setup(p => p.CreateDeviceScopeAsync(device, default)).ReturnsAsync(scope.Object);
 
             var lockdown = new Mock<LockdownClient>(MockBehavior.Strict);
             var mounter = new Mock<MobileImageMounterClient>(MockBehavior.Strict);
@@ -98,11 +99,11 @@ namespace Kaponata.Sidecars.Tests
             store.Setup(s => s.GetAsync(new Version(14, 1), default)).ReturnsAsync((DeveloperDisk)null);
             store.Setup(s => s.GetAsync(new Version(14, 1, 1), default)).ReturnsAsync((DeveloperDisk)null);
 
-            Assert.False(await provisioner.ProvisionDeveloperDiskAsync(udid, default).ConfigureAwait(false));
+            Assert.False(await provisioner.ProvisionDeveloperDiskAsync(device, default).ConfigureAwait(false));
         }
 
         /// <summary>
-        /// <see cref="DeveloperDiskProvisioner.ProvisionDeveloperDiskAsync(string, CancellationToken)"/> returns <see langword="true"/>
+        /// <see cref="DeveloperDiskProvisioner.ProvisionDeveloperDiskAsync(MuxerDevice, CancellationToken)"/> returns <see langword="true"/>
         /// if a developer disk is not mounted, but a matching developer disk can be mounted.
         /// </summary>
         /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
@@ -111,10 +112,10 @@ namespace Kaponata.Sidecars.Tests
         {
             var store = new Mock<DeveloperDiskStore>(MockBehavior.Strict);
             var provider = new Mock<DeviceServiceProvider>(MockBehavior.Strict);
-            const string udid = "udid";
+            var device = new MuxerDevice();
 
             var scope = new Mock<DeviceServiceScope>(MockBehavior.Strict);
-            provider.Setup(p => p.CreateDeviceScopeAsync(udid, default)).ReturnsAsync(scope.Object);
+            provider.Setup(p => p.CreateDeviceScopeAsync(device, default)).ReturnsAsync(scope.Object);
 
             var lockdown = new Mock<LockdownClient>(MockBehavior.Strict);
             var mounter = new Mock<MobileImageMounterClient>(MockBehavior.Strict);
@@ -142,7 +143,7 @@ namespace Kaponata.Sidecars.Tests
             mounter.Setup(s => s.UploadImageAsync(disk.Image, "Developer", disk.Signature, default)).Returns(Task.CompletedTask);
             mounter.Setup(s => s.MountImageAsync(disk.Signature, "Developer", default)).Returns(Task.CompletedTask);
 
-            Assert.True(await provisioner.ProvisionDeveloperDiskAsync(udid, default).ConfigureAwait(false));
+            Assert.True(await provisioner.ProvisionDeveloperDiskAsync(device, default).ConfigureAwait(false));
         }
     }
 }

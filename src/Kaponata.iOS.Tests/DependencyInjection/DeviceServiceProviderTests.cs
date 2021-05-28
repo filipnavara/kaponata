@@ -48,7 +48,7 @@ namespace Kaponata.iOS.Tests.DependencyInjection
 
             var deviceServiceProvider = new DeviceServiceProvider(provider);
 
-            await Assert.ThrowsAsync<MuxerException>(() => deviceServiceProvider.CreateDeviceScopeAsync(null, default)).ConfigureAwait(false);
+            await Assert.ThrowsAsync<MuxerException>(() => deviceServiceProvider.CreateDeviceScopeAsync((string)null, default)).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -75,7 +75,7 @@ namespace Kaponata.iOS.Tests.DependencyInjection
 
             var deviceServiceProvider = new DeviceServiceProvider(provider);
 
-            await Assert.ThrowsAsync<MuxerException>(() => deviceServiceProvider.CreateDeviceScopeAsync(null, default)).ConfigureAwait(false);
+            await Assert.ThrowsAsync<MuxerException>(() => deviceServiceProvider.CreateDeviceScopeAsync((string)null, default)).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -107,7 +107,7 @@ namespace Kaponata.iOS.Tests.DependencyInjection
 
             var deviceServiceProvider = new DeviceServiceProvider(provider);
 
-            using (var scope = await deviceServiceProvider.CreateDeviceScopeAsync(null, default).ConfigureAwait(false))
+            using (var scope = await deviceServiceProvider.CreateDeviceScopeAsync((string)null, default).ConfigureAwait(false))
             {
                 var context = scope.ServiceProvider.GetRequiredService<DeviceContext>();
                 Assert.Same(device, context.Device);
