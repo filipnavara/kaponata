@@ -1,6 +1,7 @@
 registry=quay.io/kaponata
 image=api
 version=$(shell nbgv get-version -v SemVer2)
+CONFIGURATION := "Release"
 
 # Set tags to expire in 2 weeks (duration of a sprint) in quay.io;
 # exception for tags built from release branches, which never expire.
@@ -22,14 +23,15 @@ push: all
 	docker manifest create --amend $(registry)/$(image):$(version) $(registry)/$(image):$(version)-amd64 $(registry)/$(image):$(version)-arm64
 	docker manifest push $(registry)/$(image):$(version)
 
-bin/Release/net5.0/publish/Kaponata.Api.dll: $(shell find . -path ./bin -prune -false -o -path ./obj -prune -false -o -regex '.*\.cs' -type f)
-	dotnet publish -c Release
+bin/$(CONFIGURATION)/net5.0/publish/Kaponata.Api.dll: $(shell find . -path ./bin -prune -false -o -path ./obj -prune -false -o -regex '.*\.cs' -type f)
+	dotnet publish -c $(CONFIGURATION)
 
-.amd64.docker-id: Dockerfile bin/Release/net5.0/publish/Kaponata.Api.dll
+.amd64.docker-id: Dockerfile bin/$(CONFIGURATION)/net5.0/publish/Kaponata.Api.dll
 	docker buildx build \
 		--platform linux/amd64 \
 		--build-arg host= \
 		--build-arg arch= \
+		--build-arg CONFIGURATION="$(CONFIGURATION)" \
 		--build-arg GIT_COMMIT_DATE="$(shell nbgv get-version -v GitCommitDate)" \
 		--build-arg GIT_COMMIT_ID="$(shell nbgv get-version -v GitCommitId)" \
 		--build-arg GIT_REF="$(shell nbgv get-version -v BuildingRef)" \
@@ -40,10 +42,11 @@ bin/Release/net5.0/publish/Kaponata.Api.dll: $(shell find . -path ./bin -prune -
 		-t $(registry)/$(image):$(version)-amd64
 	docker images --no-trunc --quiet $(registry)/$(image):$(version)-amd64 > .amd64.docker-id
 
-.arm64.docker-id: Dockerfile bin/Release/net5.0/publish/Kaponata.Api.dll
+.arm64.docker-id: Dockerfile bin/$(CONFIGURATION)/net5.0/publish/Kaponata.Api.dll
 	docker buildx build --platform linux/arm64 \
 		--build-arg host=aarch64-linux-gnu \
 		--build-arg arch=arm64 \
+		--build-arg CONFIGURATION="$(CONFIGURATION)" \
 		--build-arg GIT_COMMIT_DATE="$(shell nbgv get-version -v GitCommitDate)" \
 		--build-arg GIT_COMMIT_ID="$(shell nbgv get-version -v GitCommitId)" \
 		--build-arg GIT_REF="$(shell nbgv get-version -v BuildingRef)" \

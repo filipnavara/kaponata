@@ -6,6 +6,7 @@ ARG GIT_REF
 ARG GIT_REMOTE
 ARG VERSION
 ARG EXPIRES
+ARG CONFIGURATION
 
 LABEL org.opencontainers.image.title="Kaponata API Server"
 LABEL org.opencontainers.image.description=""
@@ -24,6 +25,6 @@ LABEL quay.expires-after=$EXPIRES
 
 WORKDIR /app
 
-COPY bin/Release/net5.0/publish /app/
+COPY bin/$CONFIGURATION/net5.0/publish /app/
 
 ENTRYPOINT ["dotnet", "/app/Kaponata.Api.dll"]
