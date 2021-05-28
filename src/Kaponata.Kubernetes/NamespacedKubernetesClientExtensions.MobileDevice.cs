@@ -47,6 +47,9 @@ namespace Kaponata.Kubernetes
             Requires.NotNull(device, nameof(device));
             Requires.NotNull(type, nameof(type));
 
+            bool hasStatus = device.Status != null;
+            bool hasConditions = device.Status?.Conditions != null;
+
             if (device.Status == null)
             {
                 device.Status = new MobileDeviceStatus();
@@ -55,7 +58,20 @@ namespace Kaponata.Kubernetes
             if (device.Status.SetCondition(type, status, reason, message))
             {
                 var patch = new JsonPatchDocument<MobileDevice>();
-                patch.Replace(p => p.Status.Conditions, device.Status.Conditions);
+
+                if (!hasStatus)
+                {
+                    patch.Add(p => p.Status, device.Status);
+                }
+                else if (!hasConditions)
+                {
+                    patch.Add(p => p.Status.Conditions, device.Status.Conditions);
+                }
+                else
+                {
+                    patch.Replace(p => p.Status.Conditions, device.Status.Conditions);
+                }
+
                 await client.PatchStatusAsync(device, patch, cancellationToken).ConfigureAwait(false);
             }
         }

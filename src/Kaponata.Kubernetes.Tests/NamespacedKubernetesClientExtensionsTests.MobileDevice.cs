@@ -35,11 +35,11 @@ namespace Kaponata.Kubernetes.Tests
 
         /// <summary>
         /// <see cref="NamespacedKubernetesClientExtensions.SetDeviceConditionAsync(NamespacedKubernetesClient{MobileDevice}, MobileDevice, string, ConditionStatus, string, string, CancellationToken)"/>
-        /// updates the device condition if required.
+        /// adds the status property if required.
         /// </summary>
         /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
         [Fact]
-        public async Task SetDeviceConditionAsync_UpdatesStatusIfRequired_Async()
+        public async Task SetDeviceConditionAsync_AddsStatusIfRequired_Async()
         {
             var clientMock = new Mock<NamespacedKubernetesClient<MobileDevice>>(MockBehavior.Strict);
             var client = clientMock.Object;
@@ -58,11 +58,93 @@ namespace Kaponata.Kubernetes.Tests
 
             Assert.NotNull(patch);
             var patchOperation = Assert.Single(patch.Operations);
-            Assert.Equal(OperationType.Replace, patchOperation.OperationType);
+            Assert.Equal(OperationType.Add, patchOperation.OperationType);
+            Assert.Equal("/status", patchOperation.path);
+
+            var condition = Assert.Single(device.Status.Conditions);
+            Assert.Equal(MobileDeviceConditions.Paired, condition.Type);
+        }
+
+        /// <summary>
+        /// <see cref="NamespacedKubernetesClientExtensions.SetDeviceConditionAsync(NamespacedKubernetesClient{MobileDevice}, MobileDevice, string, ConditionStatus, string, string, CancellationToken)"/>
+        /// adds the device condition if required.
+        /// </summary>
+        /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
+        [Fact]
+        public async Task SetDeviceConditionAsync_AddsConditionIfRequired_Async()
+        {
+            var clientMock = new Mock<NamespacedKubernetesClient<MobileDevice>>(MockBehavior.Strict);
+            var client = clientMock.Object;
+
+            var device = new MobileDevice()
+            {
+                Status = new MobileDeviceStatus(),
+            };
+
+            JsonPatchDocument<MobileDevice> patch = null;
+
+            clientMock
+                .Setup(c => c.PatchStatusAsync(device, It.IsAny<JsonPatchDocument<MobileDevice>>(), default))
+                .Callback<MobileDevice, JsonPatchDocument<MobileDevice>, CancellationToken>((d, p, ct) => { patch = p; })
+                .Returns(Task.FromResult(device)).Verifiable();
+
+            await client.SetDeviceConditionAsync(device, MobileDeviceConditions.Paired, ConditionStatus.True, "reason", "message", default).ConfigureAwait(false);
+
+            clientMock.Verify();
+
+            Assert.NotNull(patch);
+            var patchOperation = Assert.Single(patch.Operations);
+            Assert.Equal(OperationType.Add, patchOperation.OperationType);
             Assert.Equal("/status/conditions", patchOperation.path);
 
             var condition = Assert.Single(device.Status.Conditions);
             Assert.Equal(MobileDeviceConditions.Paired, condition.Type);
+        }
+
+        /// <summary>
+        /// <see cref="NamespacedKubernetesClientExtensions.SetDeviceConditionAsync(NamespacedKubernetesClient{MobileDevice}, MobileDevice, string, ConditionStatus, string, string, CancellationToken)"/>
+        /// updates the device condition if required.
+        /// </summary>
+        /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
+        [Fact]
+        public async Task SetDeviceConditionAsync_UpdatesConditionIfRequired_Async()
+        {
+            var clientMock = new Mock<NamespacedKubernetesClient<MobileDevice>>(MockBehavior.Strict);
+            var client = clientMock.Object;
+
+            var device = new MobileDevice()
+            {
+                Status = new MobileDeviceStatus()
+                {
+                    Conditions = new List<MobileDeviceCondition>()
+                    {
+                        new MobileDeviceCondition()
+                        {
+                            Type = MobileDeviceConditions.DeveloperDiskMounted,
+                            Status = ConditionStatus.False,
+                        },
+                    },
+                },
+            };
+
+            JsonPatchDocument<MobileDevice> patch = null;
+
+            clientMock
+                .Setup(c => c.PatchStatusAsync(device, It.IsAny<JsonPatchDocument<MobileDevice>>(), default))
+                .Callback<MobileDevice, JsonPatchDocument<MobileDevice>, CancellationToken>((d, p, ct) => { patch = p; })
+                .Returns(Task.FromResult(device)).Verifiable();
+
+            await client.SetDeviceConditionAsync(device, MobileDeviceConditions.Paired, ConditionStatus.True, "reason", "message", default).ConfigureAwait(false);
+
+            clientMock.Verify();
+
+            Assert.NotNull(patch);
+            var patchOperation = Assert.Single(patch.Operations);
+            Assert.Equal(OperationType.Replace, patchOperation.OperationType);
+            Assert.Equal("/status/conditions", patchOperation.path);
+
+            Assert.Equal(ConditionStatus.False, device.Status.GetConditionStatus(MobileDeviceConditions.DeveloperDiskMounted));
+            Assert.Equal(ConditionStatus.True, device.Status.GetConditionStatus(MobileDeviceConditions.Paired));
         }
 
         /// <summary>
