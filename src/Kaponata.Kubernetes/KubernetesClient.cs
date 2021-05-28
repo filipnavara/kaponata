@@ -169,8 +169,7 @@ namespace Kaponata.Kubernetes
                     throw;
                 }
 
-                // Once https://github.com/kubernetes-client/csharp/pull/553 is merged, we can pass the inner exception, too.
-                throw new KubernetesException(status);
+                throw new KubernetesException(status, ex);
             }
         }
     }
