@@ -7,7 +7,7 @@ using Kaponata.iOS.Lockdown;
 using Kaponata.iOS.Muxer;
 using Kaponata.Kubernetes;
 using Kaponata.Kubernetes.Models;
-using Kaponata.Kubernetes.PairingRecords;
+using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Rest;
 using Moq;
@@ -35,7 +35,7 @@ namespace Kaponata.Sidecars.Tests
             Assert.Throws<ArgumentNullException>("kubernetes", () => new UsbmuxdSidecar(Mock.Of<MuxerClient>(), null, Mock.Of<PairingRecordProvisioner>(), new UsbmuxdSidecarConfiguration(), NullLogger<UsbmuxdSidecar>.Instance));
             Assert.Throws<ArgumentNullException>("pairingRecordProvisioner", () => new UsbmuxdSidecar(Mock.Of<MuxerClient>(), Mock.Of<KubernetesClient>(), null, new UsbmuxdSidecarConfiguration(), NullLogger<UsbmuxdSidecar>.Instance));
             Assert.Throws<ArgumentNullException>("configuration", () => new UsbmuxdSidecar(Mock.Of<MuxerClient>(), Mock.Of<KubernetesClient>(), Mock.Of<PairingRecordProvisioner>(), null, NullLogger<UsbmuxdSidecar>.Instance));
-            Assert.Throws<ArgumentNullException>("logger", () => new UsbmuxdSidecar(Mock.Of<MuxerClient>(), Mock.Of<KubernetesClient>(), Mock.Of<PairingRecordProvisioner>(), new UsbmuxdSidecarConfiguration(),  null));
+            Assert.Throws<ArgumentNullException>("logger", () => new UsbmuxdSidecar(Mock.Of<MuxerClient>(), Mock.Of<KubernetesClient>(), Mock.Of<PairingRecordProvisioner>(), new UsbmuxdSidecarConfiguration(), null));
         }
 
         /// <summary>
@@ -172,6 +172,15 @@ namespace Kaponata.Sidecars.Tests
                 })
                 .Verifiable();
 
+            deviceClient
+                .Setup(d => d.PatchStatusAsync(It.IsAny<MobileDevice>(), It.IsAny<JsonPatchDocument<MobileDevice>>(), default))
+                .Returns<MobileDevice, JsonPatchDocument<MobileDevice>, CancellationToken>(
+                (d, patch, ct) =>
+                {
+                    Assert.Equal(ConditionStatus.True, d.Status.GetConditionStatus(MobileDeviceConditions.Paired));
+                    return Task.FromResult(d);
+                });
+
             kubernetes.Setup(k => k.GetClient<MobileDevice>()).Returns(deviceClient.Object);
 
             var muxer = new Mock<MuxerClient>(MockBehavior.Strict);
@@ -241,6 +250,23 @@ namespace Kaponata.Sidecars.Tests
                         Items = new List<MobileDevice>(),
                     })
                 .Verifiable();
+
+            deviceClient
+                .Setup(d => d.CreateAsync(It.IsAny<MobileDevice>(), default))
+                .Returns<MobileDevice, CancellationToken>((device, ct) =>
+                {
+                    return Task.FromResult(device);
+                })
+                .Verifiable();
+
+            deviceClient
+                .Setup(d => d.PatchStatusAsync(It.IsAny<MobileDevice>(), It.IsAny<JsonPatchDocument<MobileDevice>>(), default))
+                .Returns<MobileDevice, JsonPatchDocument<MobileDevice>, CancellationToken>(
+                (d, patch, ct) =>
+                {
+                    Assert.Equal(ConditionStatus.False, d.Status.GetConditionStatus(MobileDeviceConditions.Paired));
+                    return Task.FromResult(d);
+                });
 
             kubernetes.Setup(k => k.GetClient<MobileDevice>()).Returns(deviceClient.Object);
 
@@ -372,6 +398,20 @@ namespace Kaponata.Sidecars.Tests
                 Metadata = new V1ObjectMeta()
                 {
                     Name = "my-udid",
+                },
+                Status = new MobileDeviceStatus()
+                {
+                    Conditions = new List<MobileDeviceCondition>()
+                    {
+                        new MobileDeviceCondition()
+                        {
+                            Type = MobileDeviceConditions.Paired,
+                            Status = ConditionStatus.True,
+                            Reason = "Trusted",
+                            Message = "The device has trusted the host.",
+                            LastHeartbeatTime = DateTimeOffset.Now,
+                        },
+                    },
                 },
             };
 
