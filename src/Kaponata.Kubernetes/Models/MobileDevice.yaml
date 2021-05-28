@@ -9,7 +9,7 @@ metadata:
     # operator to determine whether the CRD should be reinstalled or not.
     # Use the following command to determine that version:
     # nbgv get-version $(git rev-list -1 HEAD) -v NuGetPackageVersion
-    app.kubernetes.io/version: "0.3.346"
+    app.kubernetes.io/version: "0.3.348"
 spec:
   # group name to use for REST API: /apis/<group>/<version>
   group: kaponata.io
@@ -103,10 +103,10 @@ spec:
                     - "type"
                   "x-kubernetes-list-type": "map"
             
-          # This section enables the 'status' subresource.  It allows controllers to only patch the status stanza
-          # by posting to /status.
-          subresources:
-            status: {}
+      # This section enables the 'status' subresource.  It allows controllers to only patch the status stanza
+      # by posting to /status.
+      subresources:
+        status: {}
 
       # Shown in kubectl get
       additionalPrinterColumns:

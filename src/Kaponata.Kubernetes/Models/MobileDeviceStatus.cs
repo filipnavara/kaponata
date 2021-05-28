@@ -2,7 +2,7 @@
 // Copyright (c) Quamotion bv. All rights reserved.
 // </copyright>
 
-using Microsoft.AspNetCore.JsonPatch;
+using Microsoft;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -56,9 +56,14 @@ namespace Kaponata.Kubernetes.Models
         /// <see langword="true"/> if the condition has been updated; otherwise,
         /// <see langword="false"/>.
         /// </returns>
-        public bool UpdateCondition(string type, ConditionStatus status, string reason, string message)
+        public bool SetCondition(string type, ConditionStatus status, string reason, string message)
         {
-            var currentCondition = this.Conditions.SingleOrDefault(c => c.Type == type);
+            if (this.Conditions == null)
+            {
+                this.Conditions = new List<MobileDeviceCondition>();
+            }
+
+            var currentCondition = this.Conditions.FirstOrDefault(c => c.Type == type);
 
             if (currentCondition == null)
             {
@@ -75,7 +80,9 @@ namespace Kaponata.Kubernetes.Models
 
                 return true;
             }
-            else if (currentCondition.Status != status)
+            else if (currentCondition.Status != status
+                || currentCondition.Reason != reason
+                || currentCondition.Message != message)
             {
                 currentCondition.LastHeartbeatTime = DateTimeOffset.Now;
                 currentCondition.LastTransitionTime = DateTimeOffset.Now;
@@ -85,7 +92,7 @@ namespace Kaponata.Kubernetes.Models
 
                 return true;
             }
-            else if (currentCondition.LastHeartbeatTime.AddMinutes(5) > DateTimeOffset.Now)
+            else if (currentCondition.LastHeartbeatTime.AddMinutes(5) < DateTimeOffset.Now)
             {
                 currentCondition.LastHeartbeatTime = DateTimeOffset.Now;
 
@@ -95,6 +102,21 @@ namespace Kaponata.Kubernetes.Models
             {
                 return false;
             }
+        }
+
+        /// <summary>
+        /// Gets the status of a condition.
+        /// </summary>
+        /// <param name="type">
+        /// The type of the condition for which to get the status.
+        /// </param>
+        /// <returns>
+        /// The status of the condition.
+        /// </returns>
+        public ConditionStatus GetConditionStatus(string type)
+        {
+            Requires.NotNull(type, nameof(type));
+            return this.Conditions?.FirstOrDefault(c => c.Type == type)?.Status ?? ConditionStatus.Unknown;
         }
     }
 }

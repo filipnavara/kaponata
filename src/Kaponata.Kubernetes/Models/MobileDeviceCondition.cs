@@ -52,5 +52,11 @@ namespace Kaponata.Kubernetes.Models
         /// </summary>
         [JsonProperty("lastTransitionTime")]
         public DateTimeOffset LastTransitionTime { get; set; }
+
+        /// <inheritdoc/>
+        public override string ToString()
+        {
+            return $"{this.Type}: {this.Status} ({this.Reason})";
+        }
     }
 }
