@@ -43,6 +43,13 @@ namespace Kaponata.Sidecars
         }
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="DeveloperDiskProvisioner"/> class. Intended for mocking purposes only.
+        /// </summary>
+        protected DeveloperDiskProvisioner()
+        {
+        }
+
+        /// <summary>
         /// Asynchronously mounts the developer disk on the device.
         /// </summary>
         /// <param name="device">
