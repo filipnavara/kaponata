@@ -110,13 +110,7 @@ namespace Kaponata.Sidecars
                     this.logger.LogInformation("Processing device {device}", muxerDevice.Udid);
                     var kubernetesDevice = kubernetesDevices.Items.SingleOrDefault(d => string.Equals(d.Metadata.Name, muxerDevice.Udid, StringComparison.OrdinalIgnoreCase));
 
-                    var pairingRecord = await this.pairingRecordProvisioner.ProvisionPairingRecordAsync(muxerDevice.Udid, cancellationToken).ConfigureAwait(false);
-
-                    if (pairingRecord == null)
-                    {
-                        this.logger.LogInformation("The host has not paired with device {device}. Not propagating it to the cluster.", muxerDevice.Udid);
-                    }
-                    else if (kubernetesDevice == null)
+                    if (kubernetesDevice == null)
                     {
                         this.logger.LogInformation("Creating a new device {device}", muxerDevice.Udid);
 
@@ -132,8 +126,8 @@ namespace Kaponata.Sidecars
                                     { Annotations.Instance, this.configuration.PodName },
                                 },
                                 Name = muxerDevice.Udid,
-                                NamespaceProperty = parent.Metadata.NamespaceProperty,
-                                OwnerReferences = new V1OwnerReference[]
+                                NamespaceProperty = this.kubernetesClient.Options.Namespace,
+                                OwnerReferences = parent == null ? null : new V1OwnerReference[]
                                 {
                                     parent.AsOwnerReference(blockOwnerDeletion: false, controller: false),
                                 },
@@ -142,9 +136,24 @@ namespace Kaponata.Sidecars
                             {
                                 Owner = this.configuration.PodName,
                             },
+                            Status = new MobileDeviceStatus()
+                            {
+                                Conditions = new List<MobileDeviceCondition>()
+                                {
+                                    new MobileDeviceCondition()
+                                    {
+                                        Type = "Ready",
+                                        Status = ConditionStatus.False,
+                                        LastHeartbeatTime = DateTimeOffset.Now,
+                                        LastTransitionTime = DateTimeOffset.Now,
+                                        Message = "New",
+                                        Reason = "Newly discovered device",
+                                    },
+                                },
+                            },
                         };
 
-                        await this.deviceClient.CreateAsync(kubernetesDevice, cancellationToken).ConfigureAwait(false);
+                        kubernetesDevice = await this.deviceClient.CreateAsync(kubernetesDevice, cancellationToken).ConfigureAwait(false);
                     }
                     else
                     {
@@ -152,6 +161,19 @@ namespace Kaponata.Sidecars
 
                         // Nothing to do; though we could verify the properties.
                         kubernetesDevices.Items.Remove(kubernetesDevice);
+                    }
+
+                    var pairingRecord = await this.pairingRecordProvisioner.ProvisionPairingRecordAsync(muxerDevice.Udid, cancellationToken).ConfigureAwait(false);
+
+                    if (pairingRecord == null)
+                    {
+                        this.logger.LogWarning("The host has not paired with device {device}.", muxerDevice.Udid);
+                        await this.deviceClient.SetDeviceConditionAsync(kubernetesDevice, MobileDeviceConditions.Paired, ConditionStatus.False, "NotTrusted", "The device has not trusted the host.", cancellationToken);
+                    }
+                    else
+                    {
+                        this.logger.LogInformation("The host has paired with device {device}.", muxerDevice.Udid);
+                        await this.deviceClient.SetDeviceConditionAsync(kubernetesDevice, MobileDeviceConditions.Paired, ConditionStatus.True, "Trusted", "The device has trusted the host.", cancellationToken);
                     }
                 }
 
