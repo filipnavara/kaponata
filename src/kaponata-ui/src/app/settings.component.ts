@@ -22,4 +22,18 @@ export class SettingsComponent {
     this.provisioningProfileService.getProvisioningProfiles()
       .subscribe((data: ProvisioningProfile[]) => this.provisioningProfiles = data);
   }
+
+  uploadProvisioningProfile(file: File): void {
+    this.provisioningProfileService.uploadProvisioningProfile(file).subscribe((data: object) =>
+    {
+      this.showProvisioningProfiles();
+    });
+  }
+
+  deleteProvisioningProfile(provisioningProfile: ProvisioningProfile): void{
+    if (provisioningProfile) {
+      const uuid = provisioningProfile?.uuid!;
+      this.provisioningProfileService.deleteProvisioningProfile(uuid).subscribe(() => this.showProvisioningProfiles());
+    }
+  }
 }

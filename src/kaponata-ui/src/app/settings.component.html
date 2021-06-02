@@ -11,11 +11,12 @@
 <table class="table table-condensed">
   <thead>
     <tr>
-      <th >Profile</th>
+      <th>Profile</th>
       <th>Entitlements</th>
       <th>Devices</th>
-      <th >Developers</th>
-      <th >Expires</th>
+      <th>Developers</th>
+      <th>Expires</th>
+      <th></th>
     </tr>
   </thead>
   <tbody>
@@ -43,6 +44,10 @@
       <td>
         {{profile.expirationDate | date: "MMM dd, yyyy": "GMT" }}
       </td>
+      <td>
+        <fa-icon icon="trash" (click)="deleteProvisioningProfile(profile)"></fa-icon>
+      </td>
     </tr>
   </tbody>
 </table>
+<app-file-upload buttonName="Add a provisioning profile." (uploadFile)="uploadProvisioningProfile($event)"></app-file-upload>

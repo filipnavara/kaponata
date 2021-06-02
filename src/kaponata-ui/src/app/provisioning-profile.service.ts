@@ -17,6 +17,30 @@ export class ProvisioningProfileService {
       );
   }
 
+  uploadProvisioningProfile(file: File): Observable<object>
+  {
+    return this.http.post(
+      'http://localhost/api/ios/provisioningProfiles',
+      file,
+      {
+        headers:
+        {
+            'content-type': 'application/octet-stream'
+        },
+      },
+    ).pipe(
+      catchError(this.handleError)
+    );
+  }
+
+  deleteProvisioningProfile(uuid: string): Observable<any>
+  {
+    const url = `http://localhost/api/ios/provisioningProfiles/${ uuid }`;
+    return this.http.delete(url).pipe(
+      catchError(this.handleError)
+    );
+  }
+
   private handleError(error: HttpErrorResponse): Observable<never> {
     if (error.error instanceof ErrorEvent) {
       // A client-side or network error occurred. Handle it accordingly.
