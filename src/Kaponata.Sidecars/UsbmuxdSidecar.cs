@@ -26,6 +26,7 @@ namespace Kaponata.Sidecars
         private readonly NamespacedKubernetesClient<MobileDevice> deviceClient;
         private readonly UsbmuxdSidecarConfiguration configuration;
         private readonly PairingRecordProvisioner pairingRecordProvisioner;
+        private readonly DeveloperDiskProvisioner developerDiskProvisioner;
         private readonly ILogger<UsbmuxdSidecar> logger;
 
         /// <summary>
@@ -40,17 +41,21 @@ namespace Kaponata.Sidecars
         /// <param name="pairingRecordProvisioner">
         /// A <see cref="PairingRecordProvisioner"/> which can be used to retrieve or generate a pairing record.
         /// </param>
+        /// <param name="developerDiskProvisioner">
+        /// A <see cref="DeveloperDiskProvisioner"/> which can be used to mount developer disk images on the device.
+        /// </param>
         /// <param name="configuration">
         /// A <see cref="UsbmuxdSidecarConfiguration"/> which represents the configuration for this sidecar.
         /// </param>
         /// <param name="logger">
         /// A <see cref="ILogger"/> which can be used to log messages.
         /// </param>
-        public UsbmuxdSidecar(MuxerClient muxerClient, KubernetesClient kubernetes, PairingRecordProvisioner pairingRecordProvisioner, UsbmuxdSidecarConfiguration configuration, ILogger<UsbmuxdSidecar> logger)
+        public UsbmuxdSidecar(MuxerClient muxerClient, KubernetesClient kubernetes, PairingRecordProvisioner pairingRecordProvisioner, DeveloperDiskProvisioner developerDiskProvisioner, UsbmuxdSidecarConfiguration configuration, ILogger<UsbmuxdSidecar> logger)
         {
             this.muxerClient = muxerClient ?? throw new ArgumentNullException(nameof(muxerClient));
             this.kubernetesClient = kubernetes ?? throw new ArgumentNullException(nameof(kubernetes));
             this.pairingRecordProvisioner = pairingRecordProvisioner ?? throw new ArgumentNullException(nameof(pairingRecordProvisioner));
+            this.developerDiskProvisioner = developerDiskProvisioner ?? throw new ArgumentNullException(nameof(developerDiskProvisioner));
             this.configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
@@ -174,6 +179,17 @@ namespace Kaponata.Sidecars
                     {
                         this.logger.LogInformation("The host has paired with device {device}.", muxerDevice.Udid);
                         await this.deviceClient.SetDeviceConditionAsync(kubernetesDevice, MobileDeviceConditions.Paired, ConditionStatus.True, "Trusted", "The device has trusted the host.", cancellationToken);
+                    }
+
+                    if (await this.developerDiskProvisioner.ProvisionDeveloperDiskAsync(muxerDevice, cancellationToken).ConfigureAwait(false))
+                    {
+                        this.logger.LogInformation("The developer disk was mounted on device {device}.", muxerDevice.Udid);
+                        await this.deviceClient.SetDeviceConditionAsync(kubernetesDevice, MobileDeviceConditions.DeveloperDiskMounted, ConditionStatus.True, "Mounted", "The developer disk was mounted on the device.", cancellationToken);
+                    }
+                    else
+                    {
+                        this.logger.LogWarning("The developer disk was not mounted on device {device}.", muxerDevice.Udid);
+                        await this.deviceClient.SetDeviceConditionAsync(kubernetesDevice, MobileDeviceConditions.DeveloperDiskMounted, ConditionStatus.False, "NotMounted", "The developer disk was not mounted on the device.", cancellationToken);
                     }
                 }
 

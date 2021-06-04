@@ -70,6 +70,7 @@ namespace Kaponata.Sidecars
                 services.AddAppleServices();
                 services.AddSingleton<KubernetesPairingRecordStore>();
                 services.AddSingleton<PairingRecordProvisioner>();
+                services.AddSingleton<DeveloperDiskProvisioner>();
                 services.AddSingleton<UsbmuxdSidecar>();
                 services.AddSingleton<UsbmuxdSidecarConfiguration>();
             });
@@ -92,7 +93,7 @@ namespace Kaponata.Sidecars
             var configuration = serviceProvider.GetRequiredService<UsbmuxdSidecarConfiguration>();
             configuration.PodName = podName;
 
-            if (configuration.PodName == null)
+            if (string.IsNullOrWhiteSpace(configuration.PodName))
             {
                 configuration.PodName = Environment.MachineName;
             }

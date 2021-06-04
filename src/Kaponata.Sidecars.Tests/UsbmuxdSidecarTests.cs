@@ -31,11 +31,12 @@ namespace Kaponata.Sidecars.Tests
         [Fact]
         public void Constructor_ValidatesArguments()
         {
-            Assert.Throws<ArgumentNullException>("muxerClient", () => new UsbmuxdSidecar(null, Mock.Of<KubernetesClient>(), Mock.Of<PairingRecordProvisioner>(), new UsbmuxdSidecarConfiguration(), NullLogger<UsbmuxdSidecar>.Instance));
-            Assert.Throws<ArgumentNullException>("kubernetes", () => new UsbmuxdSidecar(Mock.Of<MuxerClient>(), null, Mock.Of<PairingRecordProvisioner>(), new UsbmuxdSidecarConfiguration(), NullLogger<UsbmuxdSidecar>.Instance));
-            Assert.Throws<ArgumentNullException>("pairingRecordProvisioner", () => new UsbmuxdSidecar(Mock.Of<MuxerClient>(), Mock.Of<KubernetesClient>(), null, new UsbmuxdSidecarConfiguration(), NullLogger<UsbmuxdSidecar>.Instance));
-            Assert.Throws<ArgumentNullException>("configuration", () => new UsbmuxdSidecar(Mock.Of<MuxerClient>(), Mock.Of<KubernetesClient>(), Mock.Of<PairingRecordProvisioner>(), null, NullLogger<UsbmuxdSidecar>.Instance));
-            Assert.Throws<ArgumentNullException>("logger", () => new UsbmuxdSidecar(Mock.Of<MuxerClient>(), Mock.Of<KubernetesClient>(), Mock.Of<PairingRecordProvisioner>(), new UsbmuxdSidecarConfiguration(), null));
+            Assert.Throws<ArgumentNullException>("muxerClient", () => new UsbmuxdSidecar(null, Mock.Of<KubernetesClient>(), Mock.Of<PairingRecordProvisioner>(), Mock.Of<DeveloperDiskProvisioner>(), new UsbmuxdSidecarConfiguration(), NullLogger<UsbmuxdSidecar>.Instance));
+            Assert.Throws<ArgumentNullException>("kubernetes", () => new UsbmuxdSidecar(Mock.Of<MuxerClient>(), null, Mock.Of<PairingRecordProvisioner>(), Mock.Of<DeveloperDiskProvisioner>(), new UsbmuxdSidecarConfiguration(), NullLogger<UsbmuxdSidecar>.Instance));
+            Assert.Throws<ArgumentNullException>("pairingRecordProvisioner", () => new UsbmuxdSidecar(Mock.Of<MuxerClient>(), Mock.Of<KubernetesClient>(), null, Mock.Of<DeveloperDiskProvisioner>(), new UsbmuxdSidecarConfiguration(), NullLogger<UsbmuxdSidecar>.Instance));
+            Assert.Throws<ArgumentNullException>("developerDiskProvisioner", () => new UsbmuxdSidecar(Mock.Of<MuxerClient>(), Mock.Of<KubernetesClient>(), Mock.Of<PairingRecordProvisioner>(), null, new UsbmuxdSidecarConfiguration(), NullLogger<UsbmuxdSidecar>.Instance));
+            Assert.Throws<ArgumentNullException>("configuration", () => new UsbmuxdSidecar(Mock.Of<MuxerClient>(), Mock.Of<KubernetesClient>(), Mock.Of<PairingRecordProvisioner>(), Mock.Of<DeveloperDiskProvisioner>(), null, NullLogger<UsbmuxdSidecar>.Instance));
+            Assert.Throws<ArgumentNullException>("logger", () => new UsbmuxdSidecar(Mock.Of<MuxerClient>(), Mock.Of<KubernetesClient>(), Mock.Of<PairingRecordProvisioner>(), Mock.Of<DeveloperDiskProvisioner>(), new UsbmuxdSidecarConfiguration(), null));
         }
 
         /// <summary>
@@ -56,7 +57,7 @@ namespace Kaponata.Sidecars.Tests
                 PodName = "my-pod",
             };
 
-            using (var sidecar = new UsbmuxdSidecar(Mock.Of<MuxerClient>(), kubernetes.Object, Mock.Of<PairingRecordProvisioner>(), configuration, NullLogger<UsbmuxdSidecar>.Instance))
+            using (var sidecar = new UsbmuxdSidecar(Mock.Of<MuxerClient>(), kubernetes.Object, Mock.Of<PairingRecordProvisioner>(), Mock.Of<DeveloperDiskProvisioner>(), configuration, NullLogger<UsbmuxdSidecar>.Instance))
             {
                 await Assert.ThrowsAsync<InvalidOperationException>(() => sidecar.ReconcileAsync(default)).ConfigureAwait(false);
             }
@@ -98,7 +99,7 @@ namespace Kaponata.Sidecars.Tests
                 PodName = "my-pod",
             };
 
-            using (var sidecar = new UsbmuxdSidecar(muxer.Object, kubernetes.Object, Mock.Of<PairingRecordProvisioner>(), configuration, NullLogger<UsbmuxdSidecar>.Instance))
+            using (var sidecar = new UsbmuxdSidecar(muxer.Object, kubernetes.Object, Mock.Of<PairingRecordProvisioner>(), Mock.Of<DeveloperDiskProvisioner>(), configuration, NullLogger<UsbmuxdSidecar>.Instance))
             {
                 await sidecar.ReconcileAsync(default).ConfigureAwait(false);
             }
@@ -110,9 +111,18 @@ namespace Kaponata.Sidecars.Tests
         /// <summary>
         /// <see cref="UsbmuxdSidecar.ReconcileAsync(CancellationToken)"/> creates a new device when required.
         /// </summary>
+        /// <param name="canPair">
+        /// A value indicating whether the device can pair with the host.
+        /// </param>
+        /// <param name="canMountDeveloperDisk">
+        /// A value indicating whether the developer disk can be mounted successfully.
+        /// </param>
         /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
-        [Fact]
-        public async Task Reconcile_NewDevice_CreatesDevice_Async()
+        [InlineData(false, false)]
+        [InlineData(true, false)]
+        [InlineData(true, true)]
+        [Theory]
+        public async Task Reconcile_NewDevice_CreatesDevice_Async(bool canPair, bool canMountDeveloperDisk)
         {
             var kubernetes = new Mock<KubernetesClient>(MockBehavior.Strict);
 
@@ -177,23 +187,25 @@ namespace Kaponata.Sidecars.Tests
                 .Returns<MobileDevice, JsonPatchDocument<MobileDevice>, CancellationToken>(
                 (d, patch, ct) =>
                 {
-                    Assert.Equal(ConditionStatus.True, d.Status.GetConditionStatus(MobileDeviceConditions.Paired));
+                    Assert.Equal(canPair ? ConditionStatus.True : ConditionStatus.False, d.Status.GetConditionStatus(MobileDeviceConditions.Paired));
+
+                    if (d.Status.GetConditionStatus(MobileDeviceConditions.DeveloperDiskMounted) != ConditionStatus.Unknown)
+                    {
+                        Assert.Equal(canMountDeveloperDisk ? ConditionStatus.True : ConditionStatus.False, d.Status.GetConditionStatus(MobileDeviceConditions.DeveloperDiskMounted));
+                    }
+
                     return Task.FromResult(d);
                 });
 
             kubernetes.Setup(k => k.GetClient<MobileDevice>()).Returns(deviceClient.Object);
 
             var muxer = new Mock<MuxerClient>(MockBehavior.Strict);
+            var device = new MuxerDevice() { Udid = "my-udid" };
+
             muxer
                 .Setup(m => m.ListDevicesAsync(default))
                 .ReturnsAsync(
-                    new Collection<MuxerDevice>()
-                    {
-                        new MuxerDevice()
-                        {
-                            Udid = "my-udid",
-                        },
-                    })
+                    new Collection<MuxerDevice>() { device })
                 .Verifiable();
             muxer
                 .Setup(m => m.ReadPairingRecordAsync("my-udid", default))
@@ -204,10 +216,13 @@ namespace Kaponata.Sidecars.Tests
                 PodName = "my-pod",
             };
 
-            var provisioner = new Mock<PairingRecordProvisioner>();
-            provisioner.Setup(p => p.ProvisionPairingRecordAsync("my-udid", default)).ReturnsAsync(new PairingRecord()).Verifiable();
+            var pairingRecordProvisioner = new Mock<PairingRecordProvisioner>(MockBehavior.Strict);
+            pairingRecordProvisioner.Setup(p => p.ProvisionPairingRecordAsync("my-udid", default)).ReturnsAsync(canPair ? new PairingRecord() : null).Verifiable();
 
-            using (var sidecar = new UsbmuxdSidecar(muxer.Object, kubernetes.Object, provisioner.Object, configuration, NullLogger<UsbmuxdSidecar>.Instance))
+            var developerDiskProvisioner = new Mock<DeveloperDiskProvisioner>(MockBehavior.Strict);
+            developerDiskProvisioner.Setup(d => d.ProvisionDeveloperDiskAsync(device, default)).ReturnsAsync(canMountDeveloperDisk);
+
+            using (var sidecar = new UsbmuxdSidecar(muxer.Object, kubernetes.Object, pairingRecordProvisioner.Object, developerDiskProvisioner.Object, configuration, NullLogger<UsbmuxdSidecar>.Instance))
             {
                 await sidecar.ReconcileAsync(default).ConfigureAwait(false);
             }
@@ -291,7 +306,7 @@ namespace Kaponata.Sidecars.Tests
             var provisioner = new Mock<PairingRecordProvisioner>();
             provisioner.Setup(p => p.ProvisionPairingRecordAsync("my-udid", default)).ReturnsAsync((PairingRecord)null).Verifiable();
 
-            using (var sidecar = new UsbmuxdSidecar(muxer.Object, kubernetes.Object, provisioner.Object, configuration, NullLogger<UsbmuxdSidecar>.Instance))
+            using (var sidecar = new UsbmuxdSidecar(muxer.Object, kubernetes.Object, provisioner.Object, Mock.Of<DeveloperDiskProvisioner>(), configuration, NullLogger<UsbmuxdSidecar>.Instance))
             {
                 await sidecar.ReconcileAsync(default).ConfigureAwait(false);
             }
@@ -359,7 +374,7 @@ namespace Kaponata.Sidecars.Tests
                 PodName = "my-pod",
             };
 
-            using (var sidecar = new UsbmuxdSidecar(muxer.Object, kubernetes.Object, Mock.Of<PairingRecordProvisioner>(), configuration, NullLogger<UsbmuxdSidecar>.Instance))
+            using (var sidecar = new UsbmuxdSidecar(muxer.Object, kubernetes.Object, Mock.Of<PairingRecordProvisioner>(), Mock.Of<DeveloperDiskProvisioner>(), configuration, NullLogger<UsbmuxdSidecar>.Instance))
             {
                 await sidecar.ReconcileAsync(default).ConfigureAwait(false);
             }
@@ -416,6 +431,7 @@ namespace Kaponata.Sidecars.Tests
             };
 
             var deviceClient = new Mock<NamespacedKubernetesClient<MobileDevice>>(MockBehavior.Strict);
+            deviceClient.Setup(p => p.PatchStatusAsync(kubernetesDevice, It.IsAny<JsonPatchDocument<MobileDevice>>(), default)).ReturnsAsync(kubernetesDevice);
             deviceClient
                 .Setup(d => d.ListAsync(null, null, "kubernetes.io/os=ios,app.kubernetes.io/managed-by=UsbmuxdSidecar,app.kubernetes.io/instance=my-pod", null, default))
                 .ReturnsAsync(
@@ -451,7 +467,7 @@ namespace Kaponata.Sidecars.Tests
             var provisioner = new Mock<PairingRecordProvisioner>();
             provisioner.Setup(p => p.ProvisionPairingRecordAsync("my-udid", default)).ReturnsAsync(new PairingRecord()).Verifiable();
 
-            using (var sidecar = new UsbmuxdSidecar(muxer.Object, kubernetes.Object, provisioner.Object, configuration, NullLogger<UsbmuxdSidecar>.Instance))
+            using (var sidecar = new UsbmuxdSidecar(muxer.Object, kubernetes.Object, provisioner.Object, Mock.Of<DeveloperDiskProvisioner>(), configuration, NullLogger<UsbmuxdSidecar>.Instance))
             {
                 await sidecar.ReconcileAsync(default).ConfigureAwait(false);
             }
@@ -504,7 +520,7 @@ namespace Kaponata.Sidecars.Tests
                 PodName = "my-pod",
             };
 
-            using (var sidecar = new UsbmuxdSidecar(muxer.Object, kubernetes.Object, Mock.Of<PairingRecordProvisioner>(), configuration, NullLogger<UsbmuxdSidecar>.Instance))
+            using (var sidecar = new UsbmuxdSidecar(muxer.Object, kubernetes.Object, Mock.Of<PairingRecordProvisioner>(), Mock.Of<DeveloperDiskProvisioner>(), configuration, NullLogger<UsbmuxdSidecar>.Instance))
             {
                 await Assert.ThrowsAsync<HttpOperationException>(() => sidecar.ReconcileAsync(default)).ConfigureAwait(false);
             }
@@ -555,7 +571,7 @@ namespace Kaponata.Sidecars.Tests
 
             var mre = new AutoResetEvent(false);
 
-            var sidecarMock = new Mock<UsbmuxdSidecar>(muxer.Object, kubernetes.Object, Mock.Of<PairingRecordProvisioner>(), configuration, NullLogger<UsbmuxdSidecar>.Instance);
+            var sidecarMock = new Mock<UsbmuxdSidecar>(muxer.Object, kubernetes.Object, Mock.Of<PairingRecordProvisioner>(), Mock.Of<DeveloperDiskProvisioner>(), configuration, NullLogger<UsbmuxdSidecar>.Instance);
             sidecarMock.CallBase = true;
             sidecarMock
                 .Setup(s => s.ReconcileAsync(It.IsAny<CancellationToken>()))
