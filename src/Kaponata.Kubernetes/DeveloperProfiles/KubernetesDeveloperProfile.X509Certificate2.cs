@@ -30,7 +30,7 @@ namespace Kaponata.Kubernetes.DeveloperProfiles
         /// A <see cref="CancellationToken"/> which can be used to cancel the asynchronous operation.
         /// </param>
         /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-        public async Task<IList<X509Certificate2>> GetCertificatesAsync(CancellationToken cancellationToken)
+        public virtual async Task<IList<X509Certificate2>> GetCertificatesAsync(CancellationToken cancellationToken)
         {
             var response = await this.secretClient.ListAsync(
                 labelSelector: DeveloperIdentityLabelSelector,
@@ -49,7 +49,7 @@ namespace Kaponata.Kubernetes.DeveloperProfiles
         /// A <see cref="CancellationToken"/> which can be used to cancel the asynchronous operation.
         /// </param>
         /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-        public async Task<X509Certificate2?> GetCertificateAsync(string thumbprint, CancellationToken cancellationToken)
+        public async virtual Task<X509Certificate2?> GetCertificateAsync(string thumbprint, CancellationToken cancellationToken)
         {
             var secret = await this.secretClient.TryReadAsync(thumbprint, DeveloperIdentityLabelSelector, cancellationToken).ConfigureAwait(false);
 
@@ -71,7 +71,7 @@ namespace Kaponata.Kubernetes.DeveloperProfiles
         /// A <see cref="CancellationToken"/> which can be used to cancel the asynchronous operation.
         /// </param>
         /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-        public async Task AddCertificateAsync(X509Certificate2 certificate, CancellationToken cancellationToken)
+        public async virtual Task AddCertificateAsync(X509Certificate2 certificate, CancellationToken cancellationToken)
         {
             if (certificate == null)
             {
@@ -94,7 +94,7 @@ namespace Kaponata.Kubernetes.DeveloperProfiles
         /// A <see cref="CancellationToken"/> which can be used to cancel the asynchronous operation.
         /// </param>
         /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-        public async Task DeleteCertificateAsync(string thumbprint, CancellationToken cancellationToken)
+        public virtual async Task DeleteCertificateAsync(string thumbprint, CancellationToken cancellationToken)
         {
             if (thumbprint == null)
             {
