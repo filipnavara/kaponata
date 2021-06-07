@@ -6,6 +6,7 @@ using k8s;
 using Kaponata.iOS.DeveloperDisks;
 using Kaponata.Kubernetes.DeveloperDisks;
 using Kaponata.Kubernetes.DeveloperProfiles;
+using Kaponata.Kubernetes.Licensing;
 using Kaponata.Kubernetes.Polyfill;
 using Kaponata.Kubernetes.Registry;
 using Microsoft.Extensions.DependencyInjection;
@@ -51,6 +52,7 @@ namespace Kaponata.Kubernetes
             services.AddScoped<ImageRegistryClientFactory>();
             services.AddSingleton<DeveloperDiskFactory>();
             services.AddScoped<DeveloperDiskStore, RegistryDeveloperDiskStore>();
+            services.AddScoped<LicenseStore>();
 
             services.AddOptions<KubernetesOptions>().Configure(c => c.Namespace = @namespace);
             return services;
