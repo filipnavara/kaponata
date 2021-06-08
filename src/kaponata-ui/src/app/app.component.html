@@ -16,6 +16,18 @@
       </div>
     </div>
   </nav>
+  <nav class="navbar navbar-error" *ngIf="errorService.errors.length > 0">
+    <div class="container">
+        <div class="navbar-header">
+          <ul>
+            <li *ngFor="let error of errorService.errors">{{error}}</li>
+          </ul>
+        </div>
+        <div class="mh-100 align-top">
+          <fa-icon class="align-top" icon="window-close" (click)="errorService.clearErrors()"></fa-icon>
+        </div>
+    </div>
+  </nav>
 
   <div class="container">
     <div class="row">

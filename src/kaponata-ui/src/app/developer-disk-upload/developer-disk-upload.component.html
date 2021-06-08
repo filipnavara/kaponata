@@ -1,0 +1,35 @@
+<div class="file btn btn-outline-secondary" (click)="openModal(contentModal)">Import a developer profile</div>
+<ng-template #contentModal let-c="close" let-d="dismiss">
+    <div class="modal-header">
+        <h4 class="modal-title" id="myModalLabel">Import Developer Disk</h4>
+    </div>
+    <div class="modal-body">
+        <p>
+            A developer disk is an image (<code>.dmg</code> file) which is mounted on an iOS device, and enables you
+            to automate tests on that device.
+        </p>
+        <p class="help-block">The <b>developer disk</b> you want to upload. This file is named <code>DeveloperDiskImage.dmg</code>.
+        </p>
+        <div class="input-group">
+            <div  class="custom-file">
+                <input type="file" class="custom-file-input" required #developerDiskInput id="importDeveloperDiskFile" formControlName="importDeveloperDiskFile" (change)="onDeveloperDiskFileChange(developerDiskInput.files!)">
+                <label class="custom-file-label" #labelImport for="importDeveloperDiskFile"><fa-icon icon="search"></fa-icon> {{developerDiskToUpload?developerDiskToUpload.name:"Select a developer disk file"}}</label>
+            </div>
+        </div>
+        <BR/>
+        <p class="help-block">The <b>signature file</b> for the developer disk you want to upload. This file is named <code>DeveloperDiskImage.dmg.signature</code>.</p>
+        <div class="input-group">
+            <div class="custom-file">
+                <input type="file" class="custom-file-input" required #developerDiskSignatureInput id="importDeveloperDiskSignatureFile" formControlName="importDeveloperDiskSignatureFile" (change)="onDeveloperDiskSignatureFileChange(developerDiskSignatureInput.files!)">
+                <label class="custom-file-label" #labelImport for="importDeveloperDiskSignatureFile"><fa-icon icon="search"></fa-icon> {{developerDiskSignatureToUpload?developerDiskSignatureToUpload.name:"Select a developer disk signature file"}}</label>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-footer">
+        <div class="form-group" (click)="import()">
+            <button class="btn btn-outline-secondary" type="button">
+                <fa-icon icon="file-import"></fa-icon>Import</button>
+        </div>
+    </div>
+</ng-template>

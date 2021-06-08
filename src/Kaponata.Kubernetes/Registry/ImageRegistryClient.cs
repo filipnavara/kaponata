@@ -193,7 +193,26 @@ namespace Kaponata.Kubernetes.Registry
                 throw new ArgumentNullException(nameof(repository));
             }
 
+            var catalogResult = await this.httpClient.GetAsync($"/v2/_catalog", cancellationToken).ConfigureAwait(false);
+
+            if (catalogResult.StatusCode != HttpStatusCode.OK)
+            {
+                throw await ImageRegistryException.FromResponseAsync(catalogResult, cancellationToken).ConfigureAwait(false);
+            }
+
+            var catalog = await catalogResult.Content.ReadFromJsonAsync<RepositoryCatalog>(null, cancellationToken).ConfigureAwait(false);
+
+            if (!catalog!.Repositories!.Contains(repository))
+            {
+                return new List<string>();
+            }
+
             var result = await this.httpClient.GetAsync($"/v2/{repository}/tags/list", cancellationToken).ConfigureAwait(false);
+
+            if (result.StatusCode == HttpStatusCode.NotFound)
+            {
+                return new List<string>();
+            }
 
             if (result.StatusCode != HttpStatusCode.OK)
             {

@@ -1,53 +1,83 @@
 <h1 id="title">Settings</h1>
 
-<h3>iOS Provisioning Profiles</h3>
+<div class="container">
+  <div class="row">
+    <div class="col">
+      <h3>iOS Provisioning Profiles</h3>
 
-<p>
-  A provisioning profile is a file issued by Apple which allows you to deploy applications signed using your identity to
-  devices. It also grants specific permissions (entitlements) to those applications. 
-  A provisionig profile usually has the <code>.mobileprovision</code> extension.
-</p>
+      <p>
+        A provisioning profile is a file issued by Apple which allows you to deploy applications signed using your
+        identity to
+        devices. It also grants specific permissions (entitlements) to those applications.
+        A provisionig profile usually has the <code>.mobileprovision</code> extension.
+      </p>
 
-<table class="table table-condensed">
-  <thead>
-    <tr>
-      <th>Profile</th>
-      <th>Entitlements</th>
-      <th>Devices</th>
-      <th>Developers</th>
-      <th>Expires</th>
-      <th></th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr *ngFor="let profile of provisioningProfiles">
-      <td>
-        {{profile.name}}
-      </td>
-      <td>
-        <dl>
-          <dt>{{profile.entitlements?.applicationIdentifier}}</dt>
-        </dl>
-      </td>
-      <td>
-        <ng-template #devicesContent>
-          <dl><dd ngbDropdownItem *ngFor="let device of profile.provisionedDevices">{{device}}</dd></dl>
-        </ng-template>
-        <a href="javascript:void(0)" [ngbPopover]="devicesContent" placement="bottom" container="body">{{profile.provisionedDevices.length}} devices</a>
-      </td>
-      <td>
-        <ng-template #developersContent>
-          <dl><dd ngbDropdownItem *ngFor="let certificate of profile.developerCertificates">{{certificate.name}} ({{certificate.type}})</dd></dl>
-        </ng-template>
-        <a href="javascript:void(0)" [ngbPopover]="developersContent" placement="bottom" container="body">{{profile.developerCertificates.length}} identities</a>
-      </td>
-      <td>
-        {{profile.expirationDate | date: "MMM dd, yyyy": "GMT" }}
-      </td>
-      <td>
-        <fa-icon icon="trash" (click)="deleteProvisioningProfile(profile)"></fa-icon>
-      </td>
-    </tr>
-  </tbody>
-</table>
-<app-file-upload buttonName="Add a provisioning profile." (uploadFile)="uploadProvisioningProfile($event)"></app-file-upload>
+      <table class="table table-condensed">
+        <thead>
+          <tr>
+            <th>Profile</th>
+            <th>Entitlements</th>
+            <th>Devices</th>
+            <th>Developers</th>
+            <th>Expires</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let profile of provisioningProfiles">
+            <td>
+              {{profile.name}}
+            </td>
+            <td>
+              <dl>
+                <dt>{{profile.entitlements?.applicationIdentifier}}</dt>
+              </dl>
+            </td>
+            <td>
+              <ng-template #devicesContent>
+                <dl>
+                  <dd ngbDropdownItem *ngFor="let device of profile.provisionedDevices">{{device}}</dd>
+                </dl>
+              </ng-template>
+              <a href="javascript:void(0)" [ngbPopover]="devicesContent" placement="bottom"
+                container="body">{{profile.provisionedDevices.length}} devices</a>
+            </td>
+            <td>
+              <ng-template #developersContent>
+                <dl>
+                  <dd ngbDropdownItem *ngFor="let certificate of profile.developerCertificates">{{certificate.name}}
+                    ({{certificate.type}})</dd>
+                </dl>
+              </ng-template>
+              <a href="javascript:void(0)" [ngbPopover]="developersContent" placement="bottom"
+                container="body">{{profile.developerCertificates.length}} identities</a>
+            </td>
+            <td>
+              {{profile.expirationDate | date: "MMM dd, yyyy": "GMT" }}
+            </td>
+            <td>
+              <fa-icon icon="trash" (click)="deleteProvisioningProfile(profile)"></fa-icon>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <app-file-upload buttonName="Add a provisioning profile." (uploadFile)="uploadProvisioningProfile($event)">
+      </app-file-upload>
+    </div>
+  </div>
+  <BR/>
+  <div class="row">
+    <div class="col">
+      <h3>iOS Developer Disks</h3>
+      <p>Quamotion uses the iOS Developer Disks to test on iOS devices.</p>
+      <p>
+        Developer disks for the following versions of iOS are installed on your computer:
+      </p>
+      <ul class="list-group">
+        <li class="list-group-item" *ngFor="let developerDisk of developerDisks">{{developerDisk}}</li>
+      </ul>
+      <BR/>
+      <developer-disk-upload (refeshDeveloperDisks)="showDeveloperDisks()"></developer-disk-upload>
+    </div>
+  </div>
+</div>
