@@ -22,4 +22,10 @@
     <None Update="**/*.mobileprovision" CopyToOutputDirectory="PreserveNewest" />
     <None Update="**/*.plist" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
+
+  <ItemGroup>
+    <None Update="DeveloperProfiles\developer.zip">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
 </Project>
