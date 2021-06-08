@@ -18,8 +18,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="E7P4EE896K.cer" CopyToOutputDirectory="PreserveNewest"/>
-    <None Update="test.mobileprovision" CopyToOutputDirectory="PreserveNewest"/>
+    <None Update="developer.zip">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="E7P4EE896K.cer" CopyToOutputDirectory="PreserveNewest" />
+    <None Update="test.mobileprovision" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>
