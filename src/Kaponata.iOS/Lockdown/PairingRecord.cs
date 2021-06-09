@@ -159,7 +159,7 @@ namespace Kaponata.iOS.Lockdown
         /// <inheritdoc/>
         public override string ToString()
         {
-            return $"HostId: {this.HostId}, SystemBUID: {this.SystemBUID}, Host certificate: {this.HostCertificate?.Thumbprint} (expires: {this.HostCertificate?.NotAfter.ToUniversalTime():u})";
+            return $"HostId: {this.HostId}, SystemBUID: {this.SystemBUID}, Host certificate: {this.HostCertificate?.Thumbprint} (expires: {this.HostCertificate?.NotAfter:u})";
         }
 
         /// <inheritdoc/>

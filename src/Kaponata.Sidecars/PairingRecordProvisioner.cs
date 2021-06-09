@@ -74,8 +74,14 @@ namespace Kaponata.Sidecars
         {
             // Pairing records can be stored at both the cluster level and locally. Use the first pairing record which is valid, and make sure the cluster
             // and local records are in sync.
+            this.logger.LogInformation("Provisioning a pairing record for device {udid}", udid);
+
             var usbmuxdPairingRecord = await this.muxerClient.ReadPairingRecordAsync(udid, cancellationToken).ConfigureAwait(false);
             var kubernetesPairingRecord = await this.kubernetesPairingRecordStore.ReadAsync(udid, cancellationToken).ConfigureAwait(false);
+
+            this.logger.LogInformation("Found pairing record {usbmuxdPairingRecord} in usbmuxd", usbmuxdPairingRecord);
+            this.logger.LogInformation("Found pairing record {kubernetesPairingRecord} in Kubernetes", kubernetesPairingRecord);
+
             PairingRecord pairingRecord = null;
 
             using (var context = await this.serviceProvider.CreateDeviceScopeAsync(udid, cancellationToken).ConfigureAwait(false))
@@ -83,19 +89,27 @@ namespace Kaponata.Sidecars
             {
                 if (usbmuxdPairingRecord != null && await lockdown.ValidatePairAsync(usbmuxdPairingRecord, cancellationToken).ConfigureAwait(false))
                 {
+                    this.logger.LogInformation("The pairing record stored in usbmuxd is valid.");
                     pairingRecord = usbmuxdPairingRecord;
                 }
                 else if (kubernetesPairingRecord != null && await lockdown.ValidatePairAsync(kubernetesPairingRecord, cancellationToken).ConfigureAwait(false))
                 {
+                    this.logger.LogInformation("The pairing record stored in Kubernetes is valid.");
                     pairingRecord = kubernetesPairingRecord;
                 }
                 else
                 {
+                    this.logger.LogInformation("No valid pairing record could be found.");
+
                     if (!this.pairingTasks.ContainsKey(udid) || this.pairingTasks[udid].IsCompleted)
                     {
+                        this.logger.LogInformation("Starting a new pairing task");
                         var worker = context.ServiceProvider.GetRequiredService<PairingWorker>();
                         this.pairingTasks[udid] = worker.PairAsync(cancellationToken);
                     }
+
+                    this.logger.LogInformation("A pairing task is running. Returning null and waiting for the device to pair with the host.");
+                    return null;
                 }
             }
 
