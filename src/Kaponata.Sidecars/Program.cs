@@ -33,8 +33,13 @@ namespace Kaponata.Sidecars
         /// <returns>
         /// A <see cref="Task"/> representing the asynchronous operation.
         /// </returns>
-        public static async Task Main(string[] args) => await BuildCommandLine()
+        public static Task Main(string[] args)
+        {
+            Console.WriteLine($"{ThisAssembly.AssemblyTitle} version {ThisAssembly.AssemblyInformationalVersion}");
+
+            return BuildCommandLine()
             .InvokeAsync(args);
+        }
 
         /// <summary>
         /// Builds the command-line interface.
