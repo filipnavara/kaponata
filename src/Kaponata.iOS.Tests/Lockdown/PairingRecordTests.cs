@@ -140,5 +140,29 @@ namespace Kaponata.iOS.Tests.Lockdown
 
             Assert.Equal(sameHashCode, record.GetHashCode() == other.GetHashCode());
         }
+
+        /// <summary>
+        /// <see cref="PairingRecord.ToString"/> works for a pairing record which is empty.
+        /// </summary>
+        [Fact]
+        public void ToString_EmptyPairingRecord()
+        {
+            var record = new PairingRecord();
+            Assert.Equal("HostId: , SystemBUID: , Host certificate:  (expires: )", record.ToString());
+        }
+
+        /// <summary>
+        /// <see cref="PairingRecord.ToString"/> works for a regular pairing record.
+        /// </summary>
+        [Fact]
+        public void ToString_ValidPairingRecord()
+        {
+            var raw = File.ReadAllText("Lockdown/0123456789abcdef0123456789abcdef01234567.plist");
+            var dict = (NSDictionary)XmlPropertyListParser.ParseString(raw);
+
+            var pairingRecord = PairingRecord.Read(dict);
+
+            Assert.Equal("HostId: 01234567-012345678901234567, SystemBUID: 01234567890123456789012345, Host certificate: EE63391AA1FBA937E2784CC7DAAA9C22BA223B54 (expires: 2026-11-28 11:20:17Z)", pairingRecord.ToString());
+        }
     }
 }

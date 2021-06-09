@@ -345,7 +345,7 @@ namespace Kaponata.iOS.Tests.Lockdown
                 .Returns(false);
 
             var dict = new NSDictionary();
-            dict.Add("Error", "InvalidHostBuid");
+            dict.Add("Error", "InvalidHostID");
 
             protocol
                 .Setup(p => p.ReadMessageAsync(default))

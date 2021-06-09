@@ -157,6 +157,12 @@ namespace Kaponata.iOS.Lockdown
         }
 
         /// <inheritdoc/>
+        public override string ToString()
+        {
+            return $"HostId: {this.HostId}, SystemBUID: {this.SystemBUID}, Host certificate: {this.HostCertificate?.Thumbprint} (expires: {this.HostCertificate?.NotAfter:u})";
+        }
+
+        /// <inheritdoc/>
         public override bool Equals(object obj)
         {
             var other = obj as PairingRecord;

@@ -25,9 +25,9 @@ namespace Kaponata.iOS.Lockdown
         GetProhibited,
 
         /// <summary>
-        /// The host BUID is invalid.
+        /// The host ID is invalid.
         /// </summary>
-        InvalidHostBuid,
+        InvalidHostID,
 
         /// <summary>
         /// The user denied the pairing request.
