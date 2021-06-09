@@ -51,6 +51,8 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.name
+        - name: USBMUXD_SOCKET_ADDRESS
+          value: 127.0.0.1:27015
 
       # Required volumes
       volumes:
