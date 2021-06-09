@@ -99,7 +99,7 @@ namespace Kaponata.iOS.Tests.Lockdown
                 .Returns(Task.CompletedTask);
 
             var response = new NSDictionary();
-            response.Add("Error", nameof(LockdownError.InvalidHostBuid));
+            response.Add("Error", nameof(LockdownError.InvalidHostID));
             protocol
                 .Setup(p => p.ReadMessageAsync(default))
                 .ReturnsAsync(response);
