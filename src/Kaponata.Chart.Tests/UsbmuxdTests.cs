@@ -75,7 +75,7 @@ namespace Kaponata.Chart.Tests
 
                 // We can connect to port 27015 and retrieve an empty device list
                 var locator = new KubernetesMuxerSocketLocator(kubernetes, pod, this.loggerFactory.CreateLogger<KubernetesMuxerSocketLocator>(), this.loggerFactory);
-                var muxerClient = new MuxerClient(this.loggerFactory.CreateLogger<MuxerClient>(), this.loggerFactory, locator);
+                var muxerClient = new MuxerClient(locator, this.loggerFactory.CreateLogger<MuxerClient>(), this.loggerFactory);
 
                 var devices = await muxerClient.ListDevicesAsync(default).ConfigureAwait(false);
                 Assert.Empty(devices);
@@ -120,7 +120,7 @@ namespace Kaponata.Chart.Tests
                 // We can fetch the system buid, and the system buid reported by usbmuxd is the system buid stored in the SystemConfiguration.plist
                 // value in the usbmuxd configmap
                 var locator = new KubernetesMuxerSocketLocator(kubernetes, pod, this.loggerFactory.CreateLogger<KubernetesMuxerSocketLocator>(), this.loggerFactory);
-                var muxerClient = new MuxerClient(this.loggerFactory.CreateLogger<MuxerClient>(), this.loggerFactory, locator);
+                var muxerClient = new MuxerClient(locator, this.loggerFactory.CreateLogger<MuxerClient>(), this.loggerFactory);
                 var systemBuid = await muxerClient.ReadBuidAsync(default).ConfigureAwait(false);
 
                 var configMaps = await kubernetes.ListNamespacedConfigMapAsync(config.Namespace, labelSelector: "app.kubernetes.io/component=usbmuxd");
@@ -170,7 +170,7 @@ namespace Kaponata.Chart.Tests
                 // We can fetch the system buid, and the system buid reported by usbmuxd is the system buid stored in the SystemConfiguration.plist
                 // value in the usbmuxd configmap
                 var locator = new KubernetesMuxerSocketLocator(kubernetes, pod, this.loggerFactory.CreateLogger<KubernetesMuxerSocketLocator>(), this.loggerFactory);
-                var muxerClient = new MuxerClient(this.loggerFactory.CreateLogger<MuxerClient>(), this.loggerFactory, locator);
+                var muxerClient = new MuxerClient(locator, this.loggerFactory.CreateLogger<MuxerClient>(), this.loggerFactory);
 
                 var udid = Guid.NewGuid().ToString();
                 var systemBuid = Guid.NewGuid().ToString();

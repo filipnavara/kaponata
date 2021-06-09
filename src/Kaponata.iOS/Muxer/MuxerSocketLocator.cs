@@ -2,6 +2,7 @@
 // Copyright (c) Quamotion bv. All rights reserved.
 // </copyright>
 
+using Microsoft.Extensions.Logging;
 using System;
 using System.IO;
 using System.Net;
@@ -39,14 +40,36 @@ namespace Kaponata.iOS.Muxer
         public const string MuxerSocket = "/var/run/usbmuxd";
 
         private readonly Lazy<bool> isWindowsSubsystemForLinux;
+        private readonly ILogger<MuxerSocketLocator> logger;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="MuxerSocketLocator"/> class.
         /// </summary>
-        public MuxerSocketLocator()
+        /// <param name="logger">
+        /// A logger to use when logging.
+        /// </param>
+        public MuxerSocketLocator(ILogger<MuxerSocketLocator> logger)
         {
+            this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
             this.isWindowsSubsystemForLinux = new Lazy<bool>(this.GetIsWindowsSubsystemForLinux);
         }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MuxerSocketLocator"/> class.
+        /// </summary>
+        /// <remarks>
+        /// Intended for mocking purposes only.
+        /// </remarks>
+#nullable disable
+        protected MuxerSocketLocator()
+        {
+        }
+#nullable restore
+
+        /// <summary>
+        /// Gets the logger to use when logging.
+        /// </summary>
+        protected ILogger Logger => this.logger;
 
         /// <summary>
         /// Gets a <see cref="Stream"/> which represents a connection to the usbmuxd daemon.
@@ -63,6 +86,7 @@ namespace Kaponata.iOS.Muxer
 
             if (socket == null)
             {
+                this.logger.LogWarning($"Could not connect to the muxer socket.");
                 return null;
             }
 
@@ -87,11 +111,15 @@ namespace Kaponata.iOS.Muxer
 
             if (socketAddress != null && socketAddress.StartsWith("UNIX:", StringComparison.OrdinalIgnoreCase))
             {
+                string socketName = socketAddress.Substring(5);
+
+                this.logger.LogDebug("Connecting to Unix socket {socketName}, set using the " + SocketAddressEnvironmentVariable + " environment variable.", socketName);
                 socket = new Socket(AddressFamily.Unix, SocketType.Stream, ProtocolType.Unspecified);
-                endPoint = new UnixDomainSocketEndPoint(socketAddress.Substring(5));
+                endPoint = new UnixDomainSocketEndPoint(socketName);
             }
             else if (socketAddress != null)
             {
+                this.logger.LogDebug("Connecting to TCP socket {address}, set using the " + SocketAddressEnvironmentVariable + " environment variable.", socketAddress);
                 var separator = socketAddress.IndexOf(':');
                 var host = IPAddress.Parse(socketAddress.Substring(0, separator));
                 var port = int.Parse(socketAddress.Substring(separator + 1));
@@ -102,6 +130,7 @@ namespace Kaponata.iOS.Muxer
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
                 || this.isWindowsSubsystemForLinux.Value)
             {
+                this.logger.LogDebug("Connecting to the default Windows socket.");
                 socket = new Socket(SocketType.Stream, ProtocolType.Tcp);
                 endPoint = new IPEndPoint(DefaultMuxerHost, DefaultMuxerPort);
             }
@@ -109,13 +138,16 @@ namespace Kaponata.iOS.Muxer
             {
                 if (!File.Exists(MuxerSocket))
                 {
+                    this.logger.LogWarning("The file " + MuxerSocket + " does not exist.");
                     return (null, null);
                 }
 
+                this.logger.LogDebug("Connecting to the default Unix socket.");
                 socket = new Socket(AddressFamily.Unix, SocketType.Stream, ProtocolType.Unspecified);
                 endPoint = new UnixDomainSocketEndPoint(MuxerSocket);
             }
 
+            this.logger.LogInformation("Connecting to {endPoint}", endPoint);
             return (socket, endPoint);
         }
 

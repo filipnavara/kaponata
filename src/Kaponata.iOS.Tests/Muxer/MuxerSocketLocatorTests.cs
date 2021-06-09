@@ -3,7 +3,9 @@
 // </copyright>
 
 using Kaponata.iOS.Muxer;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
+using System;
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
@@ -18,12 +20,21 @@ namespace Kaponata.iOS.Tests.Muxer
     public class MuxerSocketLocatorTests
     {
         /// <summary>
+        /// The <see cref="MuxerSocketLocator"/> constructor validates its arguments.
+        /// </summary>
+        [Fact]
+        public void Constructor_ValidatesArguments()
+        {
+            Assert.Throws<ArgumentNullException>(() => new MuxerSocketLocator(null));
+        }
+
+        /// <summary>
         /// Tests the default values for the <see cref="MuxerSocketLocator.GetMuxerSocket"/> class.
         /// </summary>
         [Fact]
         public void GetMuxerSocket_DefaultValues()
         {
-            var locator = new MuxerSocketLocator();
+            var locator = new MuxerSocketLocator(NullLogger<MuxerSocketLocator>.Instance);
 
             (Socket socket, EndPoint endPoint) = locator.GetMuxerSocket();
 
@@ -62,7 +73,7 @@ namespace Kaponata.iOS.Tests.Muxer
         [Fact]
         public void GetMuxerSocket_ForceUnix()
         {
-            var locator = new Mock<MuxerSocketLocator>()
+            var locator = new Mock<MuxerSocketLocator>(NullLogger<MuxerSocketLocator>.Instance)
             {
                 CallBase = true,
             };
@@ -85,7 +96,7 @@ namespace Kaponata.iOS.Tests.Muxer
         [Fact]
         public void GetMuxerSocket_ForceTcp()
         {
-            var locator = new Mock<MuxerSocketLocator>()
+            var locator = new Mock<MuxerSocketLocator>(NullLogger<MuxerSocketLocator>.Instance)
             {
                 CallBase = true,
             };

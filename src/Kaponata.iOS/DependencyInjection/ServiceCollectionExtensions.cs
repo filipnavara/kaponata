@@ -7,6 +7,7 @@ using Kaponata.iOS.MobileImageMounter;
 using Kaponata.iOS.Muxer;
 using Kaponata.iOS.NotificationProxy;
 using Kaponata.iOS.PropertyLists;
+using Kaponata.iOS.Workers;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Kaponata.iOS.DependencyInjection
@@ -27,11 +28,13 @@ namespace Kaponata.iOS.DependencyInjection
         /// </returns>
         public static IServiceCollection AddAppleServices(this IServiceCollection services)
         {
+            services.AddSingleton<MuxerSocketLocator>();
             services.AddSingleton<MuxerClient>();
             services.AddSingleton<PairingRecordGenerator>();
             services.AddSingleton<DeviceServiceProvider>();
 
             services.AddScoped<DeviceContext>();
+            services.AddScoped<PairingWorker>();
 
             services.AddTransient<ClientFactory<LockdownClient>, LockdownClientFactory>();
             services.AddTransient<ClientFactory<NotificationProxyClient>, NotificationProxyClientFactory>();

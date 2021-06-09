@@ -22,7 +22,6 @@ namespace Kaponata.Operator.Kubernetes
     /// </summary>
     public class KubernetesMuxerSocketLocator : MuxerSocketLocator
     {
-        private readonly ILogger<KubernetesMuxerSocketLocator> logger;
         private readonly ILoggerFactory loggerFactory;
         private readonly IKubernetes kubernetes;
         private readonly V1Pod pod;
@@ -45,19 +44,19 @@ namespace Kaponata.Operator.Kubernetes
         public KubernetesMuxerSocketLocator(
             IKubernetes kubernetes,
             V1Pod pod,
-            ILogger<KubernetesMuxerSocketLocator> logger,
+            ILogger<MuxerSocketLocator> logger,
             ILoggerFactory loggerFactory)
+            : base(logger)
         {
             this.kubernetes = kubernetes ?? throw new ArgumentNullException(nameof(kubernetes));
             this.pod = pod ?? throw new ArgumentNullException(nameof(pod));
-            this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
             this.loggerFactory = loggerFactory ?? throw new ArgumentNullException(nameof(loggerFactory));
         }
 
         /// <inheritdoc/>
         public override async Task<Stream> ConnectToMuxerAsync(CancellationToken cancellationToken)
         {
-            this.logger.LogInformation("Connecting to port {port} on pod {pod}", DefaultMuxerPort, this.pod.Metadata.Name);
+            this.Logger.LogInformation("Connecting to port {port} on pod {pod}", DefaultMuxerPort, this.pod.Metadata.Name);
 
             var webSocket = await this.kubernetes.WebSocketNamespacedPodPortForwardAsync(
                 this.pod.Metadata.Name,
@@ -65,7 +64,7 @@ namespace Kaponata.Operator.Kubernetes
                 new int[] { DefaultMuxerPort },
                 cancellationToken: cancellationToken).ConfigureAwait(false);
 
-            this.logger.LogInformation("Connected to port {port} on pod {pod}", DefaultMuxerPort, this.pod.Metadata.Name);
+            this.Logger.LogInformation("Connected to port {port} on pod {pod}", DefaultMuxerPort, this.pod.Metadata.Name);
             return new PortForwardStream(webSocket, this.loggerFactory.CreateLogger<PortForwardStream>());
         }
 
