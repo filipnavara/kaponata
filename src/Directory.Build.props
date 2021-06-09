@@ -28,6 +28,7 @@
     <PackageProjectUrl>https://www.kaponata.io</PackageProjectUrl>
     <Copyright>Quamotion bv</Copyright>
     <Authors>Quamotion bv</Authors>
+    <Product>Kaponata</Product>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>

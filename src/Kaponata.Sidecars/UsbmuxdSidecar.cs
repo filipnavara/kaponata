@@ -99,12 +99,13 @@ namespace Kaponata.Sidecars
                     labelSelector: LabelSelector.Create(
                         new Dictionary<string, string>()
                         {
+                            // Do not filter on 'instance': devices may move from one host to another,
+                            // and the instance ID will change for the same host if the pod is recreated.
                             { Annotations.Os, Annotations.OperatingSystem.iOS },
                             { Annotations.ManagedBy, nameof(UsbmuxdSidecar) },
-                            { Annotations.Instance, this.configuration.PodName },
                         }),
                     cancellationToken: cancellationToken);
-                this.logger.LogInformation("Found {count} devices", kubernetesDevices.Items.Count);
+                this.logger.LogInformation("Found {count} Kubernetes devices", kubernetesDevices.Items.Count);
 
                 this.logger.LogInformation("Listing all usbmuxd devices");
                 var muxerDevices = await this.muxerClient.ListDevicesAsync(cancellationToken).ConfigureAwait(false);
@@ -213,26 +214,38 @@ namespace Kaponata.Sidecars
         {
             await this.ReconcileAsync(stoppingToken);
 
-            await this.muxerClient.ListenAsync(
-                async (attached, ct) =>
-                {
-                    this.logger.LogInformation("Got an attached message for device {deviceId} ({udid}). Starting reconcilation.", attached.DeviceID, attached.Properties.SerialNumber);
-                    await this.ReconcileAsync(stoppingToken);
-                    return MuxerListenAction.ContinueListening;
-                },
-                async (detached, ct) =>
-                {
-                    this.logger.LogInformation("Got a detached message for device {deviceId}. Starting reconcilation.", detached.DeviceID);
-                    await this.ReconcileAsync(stoppingToken);
-                    return MuxerListenAction.ContinueListening;
-                },
-                async (trusted, ct) =>
-                {
-                    this.logger.LogInformation("Got a trusted message for device {deviceId} ({udid}). Starting reconcilation.", trusted.DeviceID);
-                    await this.ReconcileAsync(stoppingToken);
-                    return MuxerListenAction.ContinueListening;
-                },
-                stoppingToken).ConfigureAwait(false);
+            this.logger.LogInformation("Listening for new device events.");
+
+            try
+            {
+                var result = await this.muxerClient.ListenAsync(
+                    async (attached, ct) =>
+                    {
+                        this.logger.LogInformation("Got an attached message for device {deviceId} ({udid}). Starting reconcilation.", attached.DeviceID, attached.Properties.SerialNumber);
+                        await this.ReconcileAsync(stoppingToken);
+                        return MuxerListenAction.ContinueListening;
+                    },
+                    async (detached, ct) =>
+                    {
+                        this.logger.LogInformation("Got a detached message for device {deviceId}. Starting reconcilation.", detached.DeviceID);
+                        await this.ReconcileAsync(stoppingToken);
+                        return MuxerListenAction.ContinueListening;
+                    },
+                    async (trusted, ct) =>
+                    {
+                        this.logger.LogInformation("Got a trusted message for device {deviceId} ({udid}). Starting reconcilation.", trusted.DeviceID);
+                        await this.ReconcileAsync(stoppingToken);
+                        return MuxerListenAction.ContinueListening;
+                    },
+                    stoppingToken).ConfigureAwait(false);
+
+                this.logger.LogInformation("Stopped listening. The {reason} closed the connection.", result ? "client" : "server");
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError(ex, "An error occurred while listening for device events: {message}", ex.Message);
+                throw;
+            }
         }
     }
 }

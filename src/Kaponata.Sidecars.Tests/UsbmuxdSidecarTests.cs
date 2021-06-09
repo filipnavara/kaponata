@@ -79,7 +79,7 @@ namespace Kaponata.Sidecars.Tests
 
             var deviceClient = new Mock<NamespacedKubernetesClient<MobileDevice>>(MockBehavior.Strict);
             deviceClient
-                .Setup(d => d.ListAsync(null, null, "kubernetes.io/os=ios,app.kubernetes.io/managed-by=UsbmuxdSidecar,app.kubernetes.io/instance=my-pod", null, default))
+                .Setup(d => d.ListAsync(null, null, "kubernetes.io/os=ios,app.kubernetes.io/managed-by=UsbmuxdSidecar", null, default))
                 .ReturnsAsync(
                     new ItemList<MobileDevice>()
                     {
@@ -143,7 +143,7 @@ namespace Kaponata.Sidecars.Tests
 
             var deviceClient = new Mock<NamespacedKubernetesClient<MobileDevice>>(MockBehavior.Strict);
             deviceClient
-                .Setup(d => d.ListAsync(null, null, "kubernetes.io/os=ios,app.kubernetes.io/managed-by=UsbmuxdSidecar,app.kubernetes.io/instance=my-pod", null, default))
+                .Setup(d => d.ListAsync(null, null, "kubernetes.io/os=ios,app.kubernetes.io/managed-by=UsbmuxdSidecar", null, default))
                 .ReturnsAsync(
                     new ItemList<MobileDevice>()
                     {
@@ -258,7 +258,7 @@ namespace Kaponata.Sidecars.Tests
 
             var deviceClient = new Mock<NamespacedKubernetesClient<MobileDevice>>(MockBehavior.Strict);
             deviceClient
-                .Setup(d => d.ListAsync(null, null, "kubernetes.io/os=ios,app.kubernetes.io/managed-by=UsbmuxdSidecar,app.kubernetes.io/instance=my-pod", null, default))
+                .Setup(d => d.ListAsync(null, null, "kubernetes.io/os=ios,app.kubernetes.io/managed-by=UsbmuxdSidecar", null, default))
                 .ReturnsAsync(
                     new ItemList<MobileDevice>()
                     {
@@ -349,7 +349,7 @@ namespace Kaponata.Sidecars.Tests
 
             var deviceClient = new Mock<NamespacedKubernetesClient<MobileDevice>>(MockBehavior.Strict);
             deviceClient
-                .Setup(d => d.ListAsync(null, null, "kubernetes.io/os=ios,app.kubernetes.io/managed-by=UsbmuxdSidecar,app.kubernetes.io/instance=my-pod", null, default))
+                .Setup(d => d.ListAsync(null, null, "kubernetes.io/os=ios,app.kubernetes.io/managed-by=UsbmuxdSidecar", null, default))
                 .ReturnsAsync(
                     new ItemList<MobileDevice>()
                     {
@@ -433,7 +433,7 @@ namespace Kaponata.Sidecars.Tests
             var deviceClient = new Mock<NamespacedKubernetesClient<MobileDevice>>(MockBehavior.Strict);
             deviceClient.Setup(p => p.PatchStatusAsync(kubernetesDevice, It.IsAny<JsonPatchDocument<MobileDevice>>(), default)).ReturnsAsync(kubernetesDevice);
             deviceClient
-                .Setup(d => d.ListAsync(null, null, "kubernetes.io/os=ios,app.kubernetes.io/managed-by=UsbmuxdSidecar,app.kubernetes.io/instance=my-pod", null, default))
+                .Setup(d => d.ListAsync(null, null, "kubernetes.io/os=ios,app.kubernetes.io/managed-by=UsbmuxdSidecar", null, default))
                 .ReturnsAsync(
                     new ItemList<MobileDevice>()
                     {
