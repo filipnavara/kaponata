@@ -3,8 +3,15 @@
 <div class="container">
   <div class="row">
     <div class="col">
+      <h3>License</h3>
+      <p *ngIf="license">{{license}}</p>
+      <p *ngIf="!license">There was no license found, please upload a valid license.</p>
+      <app-file-upload buttonName="Upload license" (uploadFile)="uploadLicense($event)"></app-file-upload>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col">
       <h3>iOS Provisioning Profiles</h3>
-
       <p>
         A provisioning profile is a file issued by Apple which allows you to deploy applications signed using your
         identity to
@@ -61,11 +68,10 @@
           </tr>
         </tbody>
       </table>
-      <app-file-upload buttonName="Add a provisioning profile." (uploadFile)="uploadProvisioningProfile($event)">
+      <app-file-upload buttonName="Add a provisioning profile" (uploadFile)="uploadProvisioningProfile($event)">
       </app-file-upload>
     </div>
   </div>
-  <BR/>
   <div class="row">
     <div class="col">
       <h3>iOS Developer Disks</h3>
@@ -76,7 +82,6 @@
       <ul class="list-group">
         <li class="list-group-item" *ngFor="let developerDisk of developerDisks">{{developerDisk}}</li>
       </ul>
-      <BR/>
       <developer-disk-upload (refeshDeveloperDisks)="showDeveloperDisks()"></developer-disk-upload>
     </div>
   </div>

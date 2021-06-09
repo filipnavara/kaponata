@@ -14,6 +14,7 @@ import { SettingsComponent } from './settings.component';
 
 import { ProvisioningProfileService } from './provisioning-profile.service';
 import { DeveloperDiskService } from './developer-disk-service';
+import { LicenseService } from './license.service';
 
 import { FontAwesomeModule, FaIconLibrary } from '@fortawesome/angular-fontawesome';
 import { faTrash, faSearch, faFileImport, faWindowClose } from '@fortawesome/free-solid-svg-icons';
@@ -37,7 +38,8 @@ import { ErrorService } from './error.service';
   providers: [
     ProvisioningProfileService,
     DeveloperDiskService,
-    ErrorService
+    ErrorService,
+    LicenseService
   ],
   bootstrap: [AppComponent]
 })
