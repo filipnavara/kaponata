@@ -27,12 +27,9 @@ namespace Kaponata.iOS.Tests.Muxer
         [Fact]
         public void Constructor_ValidatesArguments()
         {
-            Assert.Throws<ArgumentNullException>("logger", () => new MuxerClient(null, NullLoggerFactory.Instance));
-            Assert.Throws<ArgumentNullException>("loggerFactory", () => new MuxerClient(NullLogger<MuxerClient>.Instance, null));
-
-            Assert.Throws<ArgumentNullException>("logger", () => new MuxerClient(null, NullLoggerFactory.Instance, new MuxerSocketLocator()));
-            Assert.Throws<ArgumentNullException>("loggerFactory", () => new MuxerClient(NullLogger<MuxerClient>.Instance, null, new MuxerSocketLocator()));
-            Assert.Throws<ArgumentNullException>("socketLocator", () => new MuxerClient(NullLogger<MuxerClient>.Instance, NullLoggerFactory.Instance, null));
+            Assert.Throws<ArgumentNullException>("logger", () => new MuxerClient(new MuxerSocketLocator(NullLogger<MuxerSocketLocator>.Instance), null, NullLoggerFactory.Instance));
+            Assert.Throws<ArgumentNullException>("loggerFactory", () => new MuxerClient(new MuxerSocketLocator(NullLogger<MuxerSocketLocator>.Instance), NullLogger<MuxerClient>.Instance, null));
+            Assert.Throws<ArgumentNullException>("socketLocator", () => new MuxerClient(null, NullLogger<MuxerClient>.Instance, NullLoggerFactory.Instance));
         }
 
         /// <summary>
@@ -45,10 +42,10 @@ namespace Kaponata.iOS.Tests.Muxer
         [Fact]
         public async Task TryConnectToMuxerAsync_ReturnsNull_Async()
         {
-            var locator = new Mock<MuxerSocketLocator>();
+            var locator = new Mock<MuxerSocketLocator>(NullLogger<MuxerSocketLocator>.Instance);
             locator.Setup(l => l.ConnectToMuxerAsync(default)).ReturnsAsync((Stream)null);
 
-            var client = new MuxerClient(NullLogger<MuxerClient>.Instance, NullLoggerFactory.Instance, locator.Object);
+            var client = new MuxerClient(locator.Object, NullLogger<MuxerClient>.Instance, NullLoggerFactory.Instance);
             Assert.Null(await client.TryConnectToMuxerAsync(default).ConfigureAwait(false));
         }
 
@@ -64,10 +61,10 @@ namespace Kaponata.iOS.Tests.Muxer
         {
             var muxerStream = Mock.Of<Stream>();
 
-            var locator = new Mock<MuxerSocketLocator>();
+            var locator = new Mock<MuxerSocketLocator>(NullLogger<MuxerSocketLocator>.Instance);
             locator.Setup(l => l.ConnectToMuxerAsync(default)).ReturnsAsync(muxerStream);
 
-            var client = new MuxerClient(NullLogger<MuxerClient>.Instance, NullLoggerFactory.Instance, locator.Object);
+            var client = new MuxerClient(locator.Object, NullLogger<MuxerClient>.Instance, NullLoggerFactory.Instance);
             var protocol = await client.TryConnectToMuxerAsync(default).ConfigureAwait(false);
             Assert.NotNull(protocol);
         }
@@ -82,10 +79,10 @@ namespace Kaponata.iOS.Tests.Muxer
         [Fact]
         public async Task ListDevicesAsync_NoSocket_ReturnsEmptyList_Async()
         {
-            var locator = new Mock<MuxerSocketLocator>();
+            var locator = new Mock<MuxerSocketLocator>(NullLogger<MuxerSocketLocator>.Instance);
             locator.Setup(l => l.ConnectToMuxerAsync(default)).ReturnsAsync((Stream)null);
 
-            var client = new MuxerClient(NullLogger<MuxerClient>.Instance, NullLoggerFactory.Instance, locator.Object);
+            var client = new MuxerClient(locator.Object, NullLogger<MuxerClient>.Instance, NullLoggerFactory.Instance);
             var result = await client.ListDevicesAsync(default).ConfigureAwait(false);
             Assert.Empty(result);
         }
@@ -121,7 +118,7 @@ namespace Kaponata.iOS.Tests.Muxer
                     DeviceListMessage.Read(
                         (NSDictionary)PropertyListParser.Parse("Muxer/devicelist-wifi.xml")));
 
-            var clientMock = new Mock<MuxerClient>(NullLogger<MuxerClient>.Instance, NullLoggerFactory.Instance)
+            var clientMock = new Mock<MuxerClient>(Mock.Of<MuxerSocketLocator>(), NullLogger<MuxerClient>.Instance, NullLoggerFactory.Instance)
             {
                 CallBase = true,
             };
@@ -173,7 +170,7 @@ namespace Kaponata.iOS.Tests.Muxer
                     DeviceListMessage.Read(
                         (NSDictionary)PropertyListParser.Parse("Muxer/devicelist.xml")));
 
-            var clientMock = new Mock<MuxerClient>(NullLogger<MuxerClient>.Instance, NullLoggerFactory.Instance)
+            var clientMock = new Mock<MuxerClient>(Mock.Of<MuxerSocketLocator>(), NullLogger<MuxerClient>.Instance, NullLoggerFactory.Instance)
             {
                 CallBase = true,
             };
@@ -230,7 +227,7 @@ namespace Kaponata.iOS.Tests.Muxer
                     DeviceListMessage.Read(
                         (NSDictionary)PropertyListParser.Parse("Muxer/devicelist-udid2.xml")));
 
-            var clientMock = new Mock<MuxerClient>(NullLogger<MuxerClient>.Instance, NullLoggerFactory.Instance)
+            var clientMock = new Mock<MuxerClient>(Mock.Of<MuxerSocketLocator>(), NullLogger<MuxerClient>.Instance, NullLoggerFactory.Instance)
             {
                 CallBase = true,
             };
@@ -259,7 +256,7 @@ namespace Kaponata.iOS.Tests.Muxer
         [Fact]
         public async Task ListenAsync_NoMuxer_ReturnsFalse_Async()
         {
-            var clientMock = new Mock<MuxerClient>(NullLogger<MuxerClient>.Instance, NullLoggerFactory.Instance)
+            var clientMock = new Mock<MuxerClient>()
             {
                 CallBase = true,
             };
@@ -293,7 +290,7 @@ namespace Kaponata.iOS.Tests.Muxer
                 .Setup(p => p.ReadMessageAsync(default))
                 .ReturnsAsync((MuxerMessage)null);
 
-            var clientMock = new Mock<MuxerClient>(NullLogger<MuxerClient>.Instance, NullLoggerFactory.Instance)
+            var clientMock = new Mock<MuxerClient>(Mock.Of<MuxerSocketLocator>(), NullLogger<MuxerClient>.Instance, NullLoggerFactory.Instance)
             {
                 CallBase = true,
             };
@@ -328,7 +325,7 @@ namespace Kaponata.iOS.Tests.Muxer
                 .Setup(p => p.ReadMessageAsync(default))
                 .ReturnsAsync(new ResultMessage() { Number = MuxerError.BadCommand });
 
-            var clientMock = new Mock<MuxerClient>(NullLogger<MuxerClient>.Instance, NullLoggerFactory.Instance)
+            var clientMock = new Mock<MuxerClient>(Mock.Of<MuxerSocketLocator>(), NullLogger<MuxerClient>.Instance, NullLoggerFactory.Instance)
             {
                 CallBase = true,
             };
@@ -376,7 +373,7 @@ namespace Kaponata.iOS.Tests.Muxer
                 .Setup(p => p.ReadMessageAsync(default))
                 .ReturnsAsync(queue.Dequeue);
 
-            var clientMock = new Mock<MuxerClient>(NullLogger<MuxerClient>.Instance, NullLoggerFactory.Instance)
+            var clientMock = new Mock<MuxerClient>(Mock.Of<MuxerSocketLocator>(), NullLogger<MuxerClient>.Instance, NullLoggerFactory.Instance)
             {
                 CallBase = true,
             };
@@ -430,7 +427,7 @@ namespace Kaponata.iOS.Tests.Muxer
                 .Setup(p => p.ReadMessageAsync(default))
                 .ReturnsAsync(queue.Dequeue);
 
-            var clientMock = new Mock<MuxerClient>(NullLogger<MuxerClient>.Instance, NullLoggerFactory.Instance)
+            var clientMock = new Mock<MuxerClient>(Mock.Of<MuxerSocketLocator>(), NullLogger<MuxerClient>.Instance, NullLoggerFactory.Instance)
             {
                 CallBase = true,
             };
@@ -484,7 +481,7 @@ namespace Kaponata.iOS.Tests.Muxer
                 .Setup(p => p.ReadMessageAsync(default))
                 .ReturnsAsync(queue.Dequeue);
 
-            var clientMock = new Mock<MuxerClient>(NullLogger<MuxerClient>.Instance, NullLoggerFactory.Instance)
+            var clientMock = new Mock<MuxerClient>(Mock.Of<MuxerSocketLocator>(), NullLogger<MuxerClient>.Instance, NullLoggerFactory.Instance)
             {
                 CallBase = true,
             };
@@ -538,7 +535,7 @@ namespace Kaponata.iOS.Tests.Muxer
                 .Setup(p => p.ReadMessageAsync(default))
                 .ReturnsAsync(queue.Dequeue);
 
-            var clientMock = new Mock<MuxerClient>(NullLogger<MuxerClient>.Instance, NullLoggerFactory.Instance)
+            var clientMock = new Mock<MuxerClient>(Mock.Of<MuxerSocketLocator>(), NullLogger<MuxerClient>.Instance, NullLoggerFactory.Instance)
             {
                 CallBase = true,
             };
@@ -587,7 +584,7 @@ namespace Kaponata.iOS.Tests.Muxer
                 .Setup(p => p.ReadMessageAsync(default))
                 .ReturnsAsync(queue.Dequeue);
 
-            var clientMock = new Mock<MuxerClient>(NullLogger<MuxerClient>.Instance, NullLoggerFactory.Instance)
+            var clientMock = new Mock<MuxerClient>(Mock.Of<MuxerSocketLocator>(), NullLogger<MuxerClient>.Instance, NullLoggerFactory.Instance)
             {
                 CallBase = true,
             };

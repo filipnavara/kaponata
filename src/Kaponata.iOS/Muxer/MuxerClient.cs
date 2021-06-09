@@ -17,35 +17,21 @@ namespace Kaponata.iOS.Muxer
     {
         private readonly ILogger<MuxerClient> logger;
         private readonly ILoggerFactory loggerFactory;
-        private readonly MuxerSocketLocator socketLocator = new MuxerSocketLocator();
+        private readonly MuxerSocketLocator socketLocator;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="MuxerClient"/> class.
         /// </summary>
-        /// <param name="logger">
-        /// The logger to use when logging.
-        /// </param>
-        /// <param name="loggerFactory">
-        /// A <see cref="ILoggerFactory"/> which can be used to initialise new loggers.
-        /// </param>
-        public MuxerClient(ILogger<MuxerClient> logger, ILoggerFactory loggerFactory)
-            : this(logger, loggerFactory, new MuxerSocketLocator())
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="MuxerClient"/> class.
-        /// </summary>
-        /// <param name="logger">
-        /// The logger to use when logging.
-        /// </param>
-        /// <param name="loggerFactory">
-        /// A <see cref="ILoggerFactory"/> which can be used to initialise new loggers.
-        /// </param>
         /// <param name="socketLocator">
         /// A <see cref="MuxerSocketLocator"/> which is used to locate the usbmuxd socket.
         /// </param>
-        public MuxerClient(ILogger<MuxerClient> logger, ILoggerFactory loggerFactory, MuxerSocketLocator socketLocator)
+        /// <param name="logger">
+        /// The logger to use when logging.
+        /// </param>
+        /// <param name="loggerFactory">
+        /// A <see cref="ILoggerFactory"/> which can be used to initialise new loggers.
+        /// </param>
+        public MuxerClient(MuxerSocketLocator socketLocator, ILogger<MuxerClient> logger, ILoggerFactory loggerFactory)
         {
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
             this.loggerFactory = loggerFactory ?? throw new ArgumentNullException(nameof(loggerFactory));
