@@ -104,7 +104,7 @@ namespace Kaponata.Operator.Tests.Operators
         }
 
         /// <summary>
-        /// Configures the <see cref="KubernetesClient.WatchPodAsync(string, string, string, WatchEventDelegate{V1Pod}, CancellationToken)"/> method
+        /// Configures the <see cref="KubernetesClient.WatchPodAsync(string, string, string, string, WatchEventDelegate{V1Pod}, CancellationToken)"/> method
         /// on the mock.
         /// </summary>
         /// <param name="client">
@@ -125,6 +125,7 @@ namespace Kaponata.Operator.Tests.Operators
                     null /* fieldSelector */,
                     labelSelector /* labelSelector */,
                     null /* resourceVersion */,
+                    null /* resourceVersionMatch */,
                     It.IsAny<WatchEventDelegate<V1Pod>>(),
                     It.IsAny<CancellationToken>()))
                 .Callback<string, string, string, WatchEventDelegate<V1Pod>, CancellationToken>(

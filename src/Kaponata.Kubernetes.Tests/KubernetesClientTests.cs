@@ -812,13 +812,13 @@ namespace Kaponata.Kubernetes.Tests
 
             var protocol = new Mock<IKubernetesProtocol>(MockBehavior.Strict);
             protocol
-                .Setup(p => p.WatchNamespacedObjectAsync("default", "fieldSelector", "labelSelector", "resourceVersion", protocol.Object.ListNamespacedPodWithHttpMessagesAsync, eventHandler, default))
+                .Setup(p => p.WatchNamespacedObjectAsync("default", "fieldSelector", "labelSelector", "resourceVersion", "resourceVersionMatch", protocol.Object.ListNamespacedPodWithHttpMessagesAsync, eventHandler, default))
                 .Returns(tcs.Task);
             protocol.Setup(p => p.Dispose()).Verifiable();
 
             using (var client = new KubernetesClient(protocol.Object, KubernetesOptions.Default, NullLogger<KubernetesClient>.Instance, NullLoggerFactory.Instance))
             {
-                Assert.Same(tcs.Task, client.WatchPodAsync("fieldSelector", "labelSelector", "resourceVersion", eventHandler, default));
+                Assert.Same(tcs.Task, client.WatchPodAsync("fieldSelector", "labelSelector", "resourceVersion", "resourceVersionMatch", eventHandler, default));
             }
 
             protocol.Verify();

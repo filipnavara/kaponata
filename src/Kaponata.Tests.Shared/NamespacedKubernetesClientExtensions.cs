@@ -133,7 +133,7 @@ namespace Kaponata.Tests.Shared
         }
 
         /// <summary>
-        /// Configures the <see cref="NamespacedKubernetesClient{T}.WatchAsync(string, string, string, WatchEventDelegate{T}, CancellationToken)"/> method
+        /// Configures the <see cref="NamespacedKubernetesClient{T}.WatchAsync(string, string, string, string, WatchEventDelegate{T}, CancellationToken)"/> method
         /// on the mock.
         /// </summary>
         /// <param name="client">
@@ -161,10 +161,11 @@ namespace Kaponata.Tests.Shared
                     fieldSelector /* fieldSelector */,
                     labelSelector /* labelSelector */,
                     null /* resourceVersion */,
+                    null /* resourceVersionMatch */,
                     It.IsAny<WatchEventDelegate<T>>(),
                     It.IsAny<CancellationToken>()))
-                .Callback<string, string, string, WatchEventDelegate<T>, CancellationToken>(
-                (fieldSelector, labelSelector, resourceVersion, eventHandler, cancellationToken) =>
+                .Callback<string, string, string, string, WatchEventDelegate<T>, CancellationToken>(
+                (fieldSelector, labelSelector, resourceVersion, resourceVersionMatch, eventHandler, cancellationToken) =>
                 {
                     cancellationToken.Register(watchClient.TaskCompletionSource.SetCanceled);
                     watchClient.ClientRegistered.SetResult(eventHandler);
