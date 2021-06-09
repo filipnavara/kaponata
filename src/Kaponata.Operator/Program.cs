@@ -6,6 +6,7 @@ using Kaponata.Kubernetes;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using System;
 using System.CommandLine;
 using System.CommandLine.Builder;
 using System.CommandLine.Hosting;
@@ -45,6 +46,8 @@ namespace Kaponata.Operator
         /// </returns>
         public static Task<int> Main(string[] args)
         {
+            Console.WriteLine($"{ThisAssembly.AssemblyTitle} version {ThisAssembly.AssemblyInformationalVersion}");
+
             var program = new Program();
             return program.MainAsync(args);
         }
