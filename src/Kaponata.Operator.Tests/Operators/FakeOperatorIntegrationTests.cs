@@ -83,7 +83,8 @@ namespace Kaponata.Operator.Tests.Operators
             var sessionWatcher = sessionClient.WatchAsync(
                 $"metadata.name={name}",
                 null,
-                null,
+                resourceVersion: null,
+                resourceVersionMatch: null,
                 (eventType, session) =>
                 {
                     if (session.Metadata.Name != name)
@@ -197,7 +198,8 @@ namespace Kaponata.Operator.Tests.Operators
             var sessionWatcher = sessionClient.WatchAsync(
                 $"metadata.name={name}",
                 null,
-                null,
+                resourceVersion: null,
+                resourceVersionMatch: null,
                 (eventType, session) =>
                 {
                     if (session.Metadata.Name != name)

@@ -342,6 +342,12 @@ namespace Kaponata.Kubernetes
         /// served from. See <see href="https://kubernetes.io/docs/reference/using-api/api-concepts/#resource-versions"/>
         /// for details. Defaults to unset.
         /// </param>
+        /// <param name="resourceVersionMatch">
+        /// <paramref name="resourceVersionMatch"/> determines how <paramref name="resourceVersion"/> is applied to list calls.
+        /// It is highly recommended that <paramref name="resourceVersionMatch"/> be set for list calls where
+        /// <paramref name="resourceVersion"/> is set. See <see href="https://kubernetes.io/docs/reference/using-api/api-concepts/#resource-versions"/>
+        /// for details. Defaults to <see langword="null"/>.
+        /// </param>
         /// <param name="eventHandler">
         /// An handler which processes a watch event, and lets the watcher know whether
         /// to continue watching or not.
@@ -360,6 +366,7 @@ namespace Kaponata.Kubernetes
             string fieldSelector,
             string labelSelector,
             string resourceVersion,
+            string resourceVersionMatch,
             WatchEventDelegate<T> eventHandler,
             CancellationToken cancellationToken)
         {
@@ -386,6 +393,7 @@ namespace Kaponata.Kubernetes
                     fieldSelector,
                     labelSelector,
                     currentResourceVersion,
+                    resourceVersionMatch,
                     this.ListAsync,
                     innerHandler,
                     cancellationToken).ConfigureAwait(false) != WatchExitReason.ClientDisconnected)

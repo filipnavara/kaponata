@@ -84,6 +84,7 @@ namespace Kaponata.Kubernetes.Polyfill
                 fieldSelector: $"metadata.name={value.Metadata.Name}",
                 labelSelector: null,
                 resourceVersion: value.Metadata.ResourceVersion,
+                resourceVersionMatch: null,
                 listOperation,
                 eventHandler,
                 cancellationToken);
@@ -95,6 +96,7 @@ namespace Kaponata.Kubernetes.Polyfill
             string? fieldSelector,
             string? labelSelector,
             string? resourceVersion,
+            string? resourceVersionMatch,
             ListNamespacedObjectWithHttpMessagesAsync<TObject, TList> listOperation,
             WatchEventDelegate<TObject> eventHandler,
             CancellationToken cancellationToken)
@@ -122,6 +124,7 @@ namespace Kaponata.Kubernetes.Polyfill
                 fieldSelector: fieldSelector,
                 labelSelector: labelSelector,
                 resourceVersion: resourceVersion,
+                resourceVersionMatch: resourceVersionMatch,
                 watch: true,
                 cancellationToken: cancellationToken).ConfigureAwait(false))
             {

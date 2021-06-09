@@ -93,7 +93,8 @@ namespace Kaponata.Operator.Tests.Operators
                 podClient.WatchAsync(
                     fieldSelector: null,
                     labelSelector: $"{Annotations.ManagedBy}={name}",
-                    null,
+                    resourceVersion: null,
+                    resourceVersionMatch: null,
                     (eventType, pod) =>
                     {
                         logger.LogInformation($"Got an added {eventType}  event for pod {pod}", eventType, pod.Metadata.Name);

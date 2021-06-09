@@ -453,7 +453,8 @@ namespace Kaponata.Operator.Operators
             var sourceWatch = this.parentClient.WatchAsync(
                 fieldSelector: null,
                 this.configuration.ParentLabelSelector,
-                null,
+                resourceVersion: null,
+                resourceVersionMatch: null,
                 (eventType, value) =>
                 {
                     this.logger.LogInformation("Operator {operator} got an {eventType} event for {value}", this.configuration.OperatorName, eventType, value?.Metadata?.Name);
@@ -465,7 +466,8 @@ namespace Kaponata.Operator.Operators
             var targetWatch = this.childClient.WatchAsync(
                 fieldSelector: null,
                 Selector.Create(this.configuration.ChildLabels),
-                null,
+                resourceVersion: null,
+                resourceVersionMatch: null,
                 (eventType, value) =>
                 {
                     this.logger.LogInformation("Operator {operator} got an {eventType} event for {value}", this.configuration.OperatorName, eventType, value?.Metadata?.Name);

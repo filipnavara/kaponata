@@ -66,9 +66,9 @@ namespace Kaponata.Kubernetes.Tests.Polyfill
             await Assert.ThrowsAsync<ArgumentNullException>("listOperation", () => protocol.WatchNamespacedObjectAsync<V1Pod, V1PodList>(pod, null, (eventType, result) => Task.FromResult(WatchResult.Continue), default)).ConfigureAwait(false);
             await Assert.ThrowsAsync<ArgumentNullException>("eventHandler", () => protocol.WatchNamespacedObjectAsync<V1Pod, V1PodList>(pod, protocol.ListNamespacedPodWithHttpMessagesAsync, null, default)).ConfigureAwait(false);
 
-            await Assert.ThrowsAsync<ArgumentNullException>("namespace", () => protocol.WatchNamespacedObjectAsync<V1Pod, V1PodList>(null, string.Empty, string.Empty, string.Empty, protocol.ListNamespacedPodWithHttpMessagesAsync, (eventType, result) => Task.FromResult(WatchResult.Continue), default)).ConfigureAwait(false);
-            await Assert.ThrowsAsync<ArgumentNullException>("listOperation", () => protocol.WatchNamespacedObjectAsync<V1Pod, V1PodList>("default", null, null, null, null, (eventType, result) => Task.FromResult(WatchResult.Continue), default)).ConfigureAwait(false);
-            await Assert.ThrowsAsync<ArgumentNullException>("eventHandler", () => protocol.WatchNamespacedObjectAsync<V1Pod, V1PodList>("default", null, null, null, protocol.ListNamespacedPodWithHttpMessagesAsync, null, default)).ConfigureAwait(false);
+            await Assert.ThrowsAsync<ArgumentNullException>("namespace", () => protocol.WatchNamespacedObjectAsync<V1Pod, V1PodList>(null, string.Empty, string.Empty, string.Empty, null, protocol.ListNamespacedPodWithHttpMessagesAsync, (eventType, result) => Task.FromResult(WatchResult.Continue), default)).ConfigureAwait(false);
+            await Assert.ThrowsAsync<ArgumentNullException>("listOperation", () => protocol.WatchNamespacedObjectAsync<V1Pod, V1PodList>("default", null, null, null, null, null, (eventType, result) => Task.FromResult(WatchResult.Continue), default)).ConfigureAwait(false);
+            await Assert.ThrowsAsync<ArgumentNullException>("eventHandler", () => protocol.WatchNamespacedObjectAsync<V1Pod, V1PodList>("default", null, null, null, null, protocol.ListNamespacedPodWithHttpMessagesAsync, null, default)).ConfigureAwait(false);
         }
 
         /// <summary>

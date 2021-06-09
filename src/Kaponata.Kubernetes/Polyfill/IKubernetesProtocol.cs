@@ -98,9 +98,15 @@ namespace Kaponata.Kubernetes.Polyfill
         /// to everything.
         /// </param>
         /// <param name="resourceVersion">
-        /// resourceVersion sets a constraint on what resource versions a request may be
+        /// <paramref name="resourceVersion"/> sets a constraint on what resource versions a request may be
         /// served from. See <see href="https://kubernetes.io/docs/reference/using-api/api-concepts/#resource-versions"/>
-        /// for details. Defaults to unset.
+        /// for details. Defaults to <see langword="null"/>.
+        /// </param>
+        /// <param name="resourceVersionMatch">
+        /// <paramref name="resourceVersionMatch"/> determines how <paramref name="resourceVersion"/> is applied to list calls.
+        /// It is highly recommended that <paramref name="resourceVersionMatch"/> be set for list calls where
+        /// <paramref name="resourceVersion"/> is set. See <see href="https://kubernetes.io/docs/reference/using-api/api-concepts/#resource-versions"/>
+        /// for details. Defaults to <see langword="null"/>.
         /// </param>
         /// <param name="listOperation">
         /// A delegate which lists all objects.
@@ -124,6 +130,7 @@ namespace Kaponata.Kubernetes.Polyfill
             string fieldSelector,
             string labelSelector,
             string resourceVersion,
+            string resourceVersionMatch,
             ListNamespacedObjectWithHttpMessagesAsync<TObject, TList> listOperation,
             WatchEventDelegate<TObject> eventHandler,
             CancellationToken cancellationToken)
