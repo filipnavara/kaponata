@@ -208,39 +208,6 @@ jobs:
           --wait
           kaponata
           ${{ github.workspace }}/bin/charts/kaponata-${{ steps.nbgv.outputs.SemVer2 }}.tgz || kubectl get pods
-      
-      - name: Redroid - Install the Android kernel modules
-        run: |
-          kernel=$(uname -r)
-
-          # install required packages
-          sudo apt-get install -y kmod make gcc linux-headers-$kernel
-
-          git clone https://github.com/remote-android/redroid-modules.git
-
-          cd redroid-modules
-          make
-          sudo make install
-
-      - name: Redroid - Check Android kernel module status
-        run: |
-          echo "Listing Android kernel modules. This should include 'ashmem_linux' and 'binder_linux'."
-          lsmod | grep -e ashmem_linux -e binder_linux
-
-          echo "Listing the binder file system. This should include 'nodev	binder'."
-          cat /proc/filesystems | grep binder
-
-          echo "Listing miscellaneous drivers registered on the miscellaneous major device. This should include '56 ashmem'."
-          cat /proc/misc | grep ashmem
-
-      - name: Redroid - Creating the Android pod
-        run: |
-          kubectl create -f ci/redroid.yaml
-          kubectl wait --for=condition=ready --timeout=180s pod redroid || kubectl describe pod redroid
-
-      - name: Redroid - Dump logcat output
-        if: always()
-        run: kubectl exec redroid -- logcat -d
 
       - name: Run chart tests and integration tests
         run: >
