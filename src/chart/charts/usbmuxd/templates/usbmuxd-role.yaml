@@ -8,6 +8,12 @@ rules:
 - apiGroups: [ "" ]
   resources: [ "pods" ]
   verbs: [ "get", "list" ]
+
 - apiGroups: [ "kaponata.io" ]
   resources: [ "mobiledevices" ]
-  verbs: [ "get", "list", "create", "delete" ]
+  verbs: [ "get", "list", "create", "delete", "watch", "patch" ]
+
+# pairing records are stored as secrets
+- apiGroups: [ "" ]
+  resources: [ "secrets" ]
+  verbs: [ "get", "list", "create", "delete", "watch", "patch" ]
