@@ -13,6 +13,10 @@ rules:
   resources: [ "mobiledevices" ]
   verbs: [ "get", "list", "create", "delete", "watch", "patch" ]
 
+- apiGroups: [ "kaponata.io" ]
+  resources: [ "mobiledevices/status" ]
+  verbs: ["patch"]
+
 # pairing records are stored as secrets
 - apiGroups: [ "" ]
   resources: [ "secrets" ]
