@@ -293,13 +293,13 @@ namespace Kaponata.Kubernetes.Tests.Registry
         /// </summary>
         /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
         [Fact]
-        public async Task ListTagsAsync_NotFound_Throws_Async()
+        public async Task ListTagsAsync_BadRequest_Throws_Async()
         {
             var handler = new MockHttpMessageHandler();
 
             handler
                 .Expect(HttpMethod.Get, "http://localhost:5000/v2/invalid-registry/tags/list")
-                .Respond(HttpStatusCode.NotFound, new StringContent("{\"errors\":[{\"code\":\"NAME_UNKNOWN\",\"message\":\"repository name not known to registry\",\"detail\":{\"name\":\"invalid-registry\"}}]}\n", Encoding.UTF8, "application/json"));
+                .Respond(HttpStatusCode.BadRequest);
 
             var httpClient = handler.ToHttpClient();
             httpClient.BaseAddress = new Uri("http://localhost:5000");
@@ -307,6 +307,30 @@ namespace Kaponata.Kubernetes.Tests.Registry
             var client = new ImageRegistryClient(httpClient);
 
             await Assert.ThrowsAsync<ImageRegistryException>(() => client.ListTagsAsync("invalid-registry", default)).ConfigureAwait(false);
+
+            handler.VerifyNoOutstandingExpectation();
+        }
+
+        /// <summary>
+        /// <see cref="ImageRegistryClient.ListTagsAsync(string, CancellationToken)"/> throws on errors.
+        /// </summary>
+        /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
+        [Fact]
+        public async Task ListTagsAsync_NotFound_Throws_Async()
+        {
+            var handler = new MockHttpMessageHandler();
+
+            handler
+                .Expect(HttpMethod.Get, "http://localhost:5000/v2/registry/tags/list")
+                .Respond(HttpStatusCode.NotFound, new StringContent("{\"errors\":[{\"code\":\"NAME_UNKNOWN\",\"message\":\"repository name not known to registry\",\"detail\":{\"name\":\"registry\"}}]}\n", Encoding.UTF8, "application/json"));
+
+            var httpClient = handler.ToHttpClient();
+            httpClient.BaseAddress = new Uri("http://localhost:5000");
+
+            var client = new ImageRegistryClient(httpClient);
+
+            var tags = await client.ListTagsAsync("registry", default).ConfigureAwait(false);
+            Assert.Empty(tags);
 
             handler.VerifyNoOutstandingExpectation();
         }
