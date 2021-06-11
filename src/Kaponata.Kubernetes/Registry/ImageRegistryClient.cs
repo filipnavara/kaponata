@@ -195,6 +195,11 @@ namespace Kaponata.Kubernetes.Registry
 
             var result = await this.httpClient.GetAsync($"/v2/{repository}/tags/list", cancellationToken).ConfigureAwait(false);
 
+            if (result.StatusCode == HttpStatusCode.NotFound)
+            {
+                return new List<string>();
+            }
+
             if (result.StatusCode != HttpStatusCode.OK)
             {
                 throw await ImageRegistryException.FromResponseAsync(result, cancellationToken).ConfigureAwait(false);
