@@ -12,3 +12,7 @@ rules:
 - apiGroups: [ "" ]
   resources: [ "secrets" ]
   verbs: [ "get", "list", "create", "delete", "watch" ]
+
+- apiGroups: [ "" ]
+  resources: [ "configmaps" ]
+  verbs: [ "get", "list", "create", "delete", "watch" , "patch"]
