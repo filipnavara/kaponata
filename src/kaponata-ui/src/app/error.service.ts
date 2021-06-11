@@ -27,7 +27,7 @@ export class ErrorService {
     }
     else if (error.error instanceof ProgressEvent)
     {
-      message = error.statusText;
+      message = error.message;
     }
     else {
       message = error.error;
