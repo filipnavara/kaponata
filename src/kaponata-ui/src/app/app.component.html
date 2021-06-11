@@ -2,7 +2,7 @@
   <!-- Fixed navbar -->
   <nav class="navbar navbar-inverse navbar-custom">
     <div class="container">
-      <div class="navbar-header">
+    <div class="navbar-header">
         <a class="navbar-brand" href="#">
           <img alt="Quamotion" src="/assets/quamotion-white.png">
         </a>
@@ -14,6 +14,18 @@
           <li><a routerLink="/settings" routerLinkActive="active">Settings</a></li>
         </ul>
       </div>
+    </div>
+  </nav>
+  <nav class="navbar navbar-error" *ngIf="errorService.errors.length > 0">
+    <div class="container">
+        <div class="navbar-header">
+          <ul>
+            <li *ngFor="let error of errorService.errors">{{error}}</li>
+          </ul>
+        </div>
+        <div class="mh-100 align-top">
+          <fa-icon class="align-top" icon="window-close" (click)="errorService.clearErrors()"></fa-icon>
+        </div>
     </div>
   </nav>
 
