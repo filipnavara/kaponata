@@ -11,6 +11,6 @@ export class ProvisioningProfileService {
   constructor(public http: HttpClient) { }
 
   getProvisioningProfiles(): Observable<ProvisioningProfile[]> {
-    return this.http.get<ProvisioningProfile[]>('http://localhost/api/ios/provisioningProfiles');
+    return this.http.get<ProvisioningProfile[]>('/api/ios/provisioningProfiles');
   }
 }
