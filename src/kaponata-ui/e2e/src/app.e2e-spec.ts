@@ -24,13 +24,25 @@ describe('workspace-project App', () => {
     const text = await page.getTitleText();
 
     expect(text).toEqual('Settings');
-  });
 
-  afterEach(async () => {
     // Assert that there are no errors emitted from the browser
     const logs = await browser.manage().logs().get(logging.Type.BROWSER);
     expect(logs).not.toContain(jasmine.objectContaining({
       level: logging.Level.SEVERE,
     } as logging.Entry));
+  });
+
+  it('should show a message when a http error occurs', async () => {
+    const scope = nock('http://localhost:9999')
+    .get('/api/ios/provisioningProfiles')
+    .reply(404, 'test');
+
+    await page.navigateTo();
+    const text = await page.getErrorItems();
+    console.log(text);
+    expect(text).toEqual(['test']);
+  });
+
+  afterEach(async () => {
   });
 });

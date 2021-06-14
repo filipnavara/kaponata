@@ -19,7 +19,7 @@
   <nav class="navbar navbar-error" *ngIf="errorService.errors.length > 0">
     <div class="container">
         <div class="navbar-header">
-          <ul>
+          <ul id="errorlist">
             <li *ngFor="let error of errorService.errors">{{error}}</li>
           </ul>
         </div>
