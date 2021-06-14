@@ -10,16 +10,21 @@ import { ProvisioningProfileService } from './provisioning-profile.service';
 
 import { AppComponent } from './app.component';
 import { SettingsComponent } from './settings.component';
+import { FileUploadComponent } from './file-upload/file-upload.component';
+import { DeveloperDiskUploadComponent } from './developer-disk-upload/developer-disk-upload.component';
 import { PageNotFoundComponent } from './page-not-found.component';
 
 import { AppRoutingModule } from './app-routing.module';
 import { httpInterceptorProviders } from './http-interceptors';
+import { DeveloperDiskService } from './developer-disk-service';
 
 @NgModule({
   declarations: [
     AppComponent,
     SettingsComponent,
     PageNotFoundComponent,
+    FileUploadComponent,
+    DeveloperDiskUploadComponent,
   ],
   imports: [
     BrowserModule,
@@ -31,6 +36,7 @@ import { httpInterceptorProviders } from './http-interceptors';
   providers: [
     ErrorService,
     ProvisioningProfileService,
+    DeveloperDiskService,
     httpInterceptorProviders
   ],
   bootstrap: [AppComponent]

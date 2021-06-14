@@ -50,6 +50,8 @@ namespace Kaponata.Api
             app.UseCors(o =>
             {
                 o.AllowAnyOrigin();
+                o.AllowAnyHeader();
+                o.AllowAnyMethod();
             });
             #endif
 

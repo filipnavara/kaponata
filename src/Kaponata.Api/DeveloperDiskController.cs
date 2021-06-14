@@ -109,7 +109,7 @@ namespace Kaponata.Api
         /// A <see cref="CancellationToken"/> which can be used to cancel the asynchronous operation.
         /// </param>
         /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-        [Route("api/ios/developerDisk/")]
+        [Route("api/ios/developerDisks")]
         public async Task<JsonResult> ListDeveloperDisksAsync(CancellationToken cancellationToken)
         {
             var versions = await this.store.ListAsync(cancellationToken).ConfigureAwait(false);

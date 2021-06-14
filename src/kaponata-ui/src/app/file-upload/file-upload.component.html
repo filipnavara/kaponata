@@ -1,0 +1,5 @@
+<div class="file btn btn-outline-secondary">
+    {{buttonName}}
+    <span class="spinner-border spinner-border-sm" role="status" *ngIf="uploading"></span>
+    <input type="file" name="file" #fileInput (change)="onFileSelect(fileInput)"/>
+</div>
