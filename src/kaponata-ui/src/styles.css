@@ -22,10 +22,10 @@ body {
     padding-left: 0px;
 }
 
-    .navbar-brand img {
-        height: 40px;
-        padding-left: 20px;
-    }
+.navbar-brand img {
+    height: 40px;
+    padding-left: 20px;
+}
 
 .navbar-items > ul > li > a {
     font-weight: 600;
@@ -58,9 +58,16 @@ body {
 
 .navbar-custom {
     background-color: #e06e50;
-    border-width: 0;
-    border-radius: 0;
-    height: 65px;
+    height: 80px;
+}
+
+.navbar-error {
+    background-color:seashell;
+}
+
+.navbar-error > .container {
+    padding-top: 7px;
+    padding-left: 20px;
 }
 
 .navbar-custom .navbar-nav > li > a {
@@ -77,4 +84,8 @@ color: white;
 
 .popover{
     max-width: 100%; /* Max Width of the popover (depending on the container!) */
+}
+
+.row {
+    padding-bottom: 40px;
 }
