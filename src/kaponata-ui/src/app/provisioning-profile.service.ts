@@ -13,4 +13,24 @@ export class ProvisioningProfileService {
   getProvisioningProfiles(): Observable<ProvisioningProfile[]> {
     return this.http.get<ProvisioningProfile[]>('/api/ios/provisioningProfiles');
   }
+
+  uploadProvisioningProfile(file: File): Observable<object>
+  {
+    return this.http.post(
+      'http://localhost/api/ios/provisioningProfiles',
+      file,
+      {
+        headers:
+        {
+            'content-type': 'application/octet-stream'
+        },
+      },
+    );
+  }
+
+  deleteProvisioningProfile(uuid: string): Observable<any>
+  {
+    const url = `http://localhost/api/ios/provisioningProfiles/${ uuid }`;
+    return this.http.delete(url);
+  }
 }
