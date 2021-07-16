@@ -17,6 +17,10 @@ import { PageNotFoundComponent } from './page-not-found.component';
 import { AppRoutingModule } from './app-routing.module';
 import { httpInterceptorProviders } from './http-interceptors';
 import { DeveloperDiskService } from './developer-disk-service';
+import { DeveloperCertificateService } from './developer-certificate.service';
+import { DeveloperCertificateUploadComponent } from './developer-certificate-upload/developer-certificate-upload';
+import { DeveloperProfileService } from './developer-profile-service';
+import { DeveloperProfileUploadComponent } from './developer-profile-upload/developer-profile-upload';
 
 @NgModule({
   declarations: [
@@ -25,6 +29,8 @@ import { DeveloperDiskService } from './developer-disk-service';
     PageNotFoundComponent,
     FileUploadComponent,
     DeveloperDiskUploadComponent,
+    DeveloperCertificateUploadComponent,
+    DeveloperProfileUploadComponent,
   ],
   imports: [
     BrowserModule,
@@ -37,6 +43,8 @@ import { DeveloperDiskService } from './developer-disk-service';
     ErrorService,
     ProvisioningProfileService,
     DeveloperDiskService,
+    DeveloperCertificateService,
+    DeveloperProfileService,
     httpInterceptorProviders
   ],
   bootstrap: [AppComponent]

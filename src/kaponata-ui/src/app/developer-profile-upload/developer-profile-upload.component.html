@@ -1,0 +1,33 @@
+<div class="file btn btn-outline-secondary" (click)="openModal(contentModal)">Upload a Developer Profile</div>
+<ng-template #contentModal let-c="close" let-d="dismiss">
+    <div class="modal-header">
+        <h4 class="modal-title" id="myModalLabel">Upload a Developer Profile</h4>
+    </div>
+    <div class="modal-body">
+        <p>
+            A developer profile contains certificates, private keys for certificates and provisioning profiles Kaponata can use when resigning your application.
+            Select the developer profile you want to upload, and the password used to protect the developer profile
+        </p>
+        <p>
+            You can create a Developer Profile by exporting it from Xcode. A developer profile has a .developerprofile extension.
+        </p>
+        <div class="input-group">
+            <div  class="custom-file">
+                <input type="file" class="custom-file-input" required #file id="uploadFile" formControlName="uploadFile" (change)="onFileChange(file.files!)"/>
+                <label class="custom-file-label" #labelImport for="uploadFile"><fa-icon icon="search"></fa-icon> {{developerProfileFile?developerProfileFile.name:"Select a '.developerprofile' file"}}</label>
+            </div>
+        </div>
+        <BR/>
+        <div class="form-group">
+            <label for="password">Password</label>
+            <input type="password" class="form-control" formControlName="uploadFile" (keyup)="onKey($event)"/>
+        </div>
+    </div>
+
+    <div class="modal-footer">
+        <div class="form-group" (click)="upload()">
+            <button class="btn btn-outline-secondary" type="button">
+                <fa-icon icon="file-import"></fa-icon>Upload</button>
+        </div>
+    </div>
+</ng-template>
