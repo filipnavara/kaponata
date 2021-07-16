@@ -17,6 +17,8 @@
         "build": {
           "builder": "@angular-devkit/build-angular:browser",
           "options": {
+            "optimization": false,
+            "sourceMap": true,
             "outputPath": "dist/kaponata-ui",
             "index": "src/index.html",
             "main": "src/main.ts",
