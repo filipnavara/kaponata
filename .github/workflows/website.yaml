@@ -47,7 +47,7 @@ jobs:
         path: ${{ github.workspace }}/bin/${{ github.ref }}/website/
 
     - name: Publish website to CI storage
-      uses: bacongobbler/azure-blob-storage-upload@v1.1.1
+      uses: bacongobbler/azure-blob-storage-upload@v1.2.0
       with:
         source_dir: ${{ github.workspace }}/bin/
         container_name: '$web'
@@ -73,7 +73,7 @@ jobs:
 
     - name: Publish Website
       if: github.ref == 'refs/heads/main'
-      uses: bacongobbler/azure-blob-storage-upload@v1.1.1
+      uses: bacongobbler/azure-blob-storage-upload@v1.2.0
       with:
         source_dir: ${{ github.workspace }}/bin/${{ github.ref }}/website/
         container_name: '$web'
