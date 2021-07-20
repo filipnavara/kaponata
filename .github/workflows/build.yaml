@@ -78,7 +78,7 @@ jobs:
           path: ${{ github.workspace }}/bin/${{ github.ref }}/Kaponata.coveragereport
 
       - name: Publish Operator Coverage Summary to CI website
-        uses: bacongobbler/azure-blob-storage-upload@v1.1.1
+        uses: bacongobbler/azure-blob-storage-upload@v1.2.0
         with:
           source_dir: ${{ github.workspace }}/bin/Kaponata.coveragereport/
           container_name: '$web'
@@ -274,7 +274,7 @@ jobs:
 
       - name: Publish chart CI website
         if: github.ref == 'refs/heads/main'
-        uses: bacongobbler/azure-blob-storage-upload@v1.1.1
+        uses: bacongobbler/azure-blob-storage-upload@v1.2.0
         with:
           source_dir: ${{ github.workspace }}/bin/charts/
           container_name: '$web'
