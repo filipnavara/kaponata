@@ -32,7 +32,6 @@ jobs:
           ansible-galaxy install andrewrothstein.k3d
           ansible-galaxy install andrewrothstein.kubectl
           ansible-galaxy install andrewrothstein.kubernetes-helm
-          ansible-galaxy install andrewrothstein.yq
 
           # Delete files which may cause conflicts
           sudo rm /usr/local/bin/kubectl
