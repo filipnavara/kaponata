@@ -1,0 +1,33 @@
+<div class="file btn btn-outline-secondary" (click)="openModal(contentModal)">Add a developer identity</div>
+<ng-template #contentModal let-c="close" let-d="dismiss">
+    <div class="modal-header">
+        <h4 class="modal-title" id="myModalLabel">Add a developer identity</h4>
+    </div>
+    <div class="modal-body">
+        <p>
+            A developer identity is a certificate combined with its private key. It is usually a file with the <code>.p12</code> or <code>.pfx</code>
+            extension. Select the developer identity you want to upload, and the password used to protect
+            the developer identity.
+        </p>
+        <p class="help-block">You can create a Developer Identity by exporting it from Xcode. A developer profile has a <code>.p12</code> or <code>.pfx</code> extension.</p>
+                    <p class="help-block">You cannot upload files with the <code>.cer</code> extension because they do not include the private key required to sign iOS applications.</p>
+        <div class="input-group">
+            <div  class="custom-file">
+                <input type="file" class="custom-file-input" required #file id="uploadFile" formControlName="uploadFile" (change)="onFileChange(file.files!)"/>
+                <label class="custom-file-label" #labelImport for="uploadFile"><fa-icon icon="search"></fa-icon> {{developerCertificateFile?developerCertificateFile.name:"Select a certificate file"}}</label>
+            </div>
+        </div>
+        <BR/>
+        <div class="form-group">
+            <label for="password">Password</label>
+            <input type="password" class="form-control" formControlName="uploadFile" (keyup)="onKey($event)"/>
+        </div>
+    </div>
+
+    <div class="modal-footer">
+        <div class="form-group" (click)="upload()">
+            <button class="btn btn-outline-secondary" type="button">
+                <fa-icon icon="file-import"></fa-icon>Upload</button>
+        </div>
+    </div>
+</ng-template>

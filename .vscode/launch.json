@@ -2,6 +2,15 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Launch e2e Tests",
+            "type": "node",
+            "request": "launch",
+            "program": "${workspaceRoot}/src/kaponata-ui/node_modules/protractor/bin/protractor",
+            "args": [
+                "${workspaceRoot}/src/kaponata-ui/e2e/protractor.conf.js"
+            ],
+        },
+        {
             "type": "pwa-chrome",
             "request": "launch",
             "name": "Launch chrome (kaponata-ui)",

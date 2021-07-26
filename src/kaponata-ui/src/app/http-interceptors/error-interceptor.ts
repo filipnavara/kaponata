@@ -16,7 +16,7 @@ export class ErrorInterceptor implements HttpInterceptor {
         return next.handle(req).pipe(catchError((error) => this.handleError(error, this.errorService)));
     }
 
-    public handleError(error: HttpErrorResponse, errorService: ErrorService): Observable<never> {
+    public handleError(error: HttpErrorResponse, errorService: ErrorService): Observable<any> {
         let message: string;
         if (error.error instanceof ErrorEvent) {
             message = error.error.message;
@@ -29,6 +29,6 @@ export class ErrorInterceptor implements HttpInterceptor {
         }
         errorService.addError(message);
 
-        return throwError(message);
+        return throwError(error);
     }
 }

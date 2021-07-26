@@ -55,7 +55,7 @@ namespace Kaponata.Api
         /// <returns>
         /// A <see cref="ActionResult"/> describing the status of the operation.
         /// </returns>
-        [Route("kaponata/ios/identities")]
+        [Route("api/ios/identities")]
         [HttpPost]
         public async Task<ActionResult> AddCertificateAsync([FromForm] IFormFile certificate, [FromForm] string password, CancellationToken cancellationToken)
         {
@@ -87,7 +87,7 @@ namespace Kaponata.Api
         /// <returns>
         /// A list of POCOs with information of the certificates.
         /// </returns>
-        [Route("kaponata/ios/identities")]
+        [Route("api/ios/identities")]
         public async Task<ActionResult> GetCertificatesAsync(CancellationToken cancellationToken)
         {
             var certificates = await this.developerProfile.GetCertificatesAsync(cancellationToken).ConfigureAwait(false);
@@ -108,7 +108,7 @@ namespace Kaponata.Api
         /// <returns>
         /// The certificate as a <c>.cer</c> file.
         /// </returns>
-        [Route("kaponata/ios/identities/{thumbprint}")]
+        [Route("api/ios/identities/{thumbprint}")]
         public async Task<ActionResult> GetCertificateAsync(string thumbprint, CancellationToken cancellationToken)
         {
             var certificate = await this.developerProfile.GetCertificateAsync(thumbprint, cancellationToken).ConfigureAwait(false);
@@ -138,7 +138,7 @@ namespace Kaponata.Api
         /// <returns>
         /// A <see cref="ActionResult"/> describing the status of the operation.
         /// </returns>
-        [Route("kaponata/ios/identities/{thumbprint}")]
+        [Route("api/ios/identities/{thumbprint}")]
         [HttpDelete]
         public async Task<ActionResult> DeleteCertificateAsync(string thumbprint, CancellationToken cancellationToken)
         {

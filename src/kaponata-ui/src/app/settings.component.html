@@ -3,73 +3,119 @@
 <div class="container">
   <div class="row">
     <div class="col">
-      <h3>iOS Provisioning Profiles</h3>
+      <h2>iOS signing settings</h2>
       <p>
-        A provisioning profile is a file issued by Apple which allows you to deploy applications signed using your
-        identity to
-        devices. It also grants specific permissions (entitlements) to those applications.
-        A provisionig profile usually has the <code>.mobileprovision</code> extension.
+        An iOS application needs to be signed with a developer certificate issued by Apple before it can be installed on an iOS device, such as an iPhone or an iPad.
       </p>
-
-      <table class="table table-condensed">
-        <thead>
-          <tr>
-            <th>Profile</th>
-            <th>Entitlements</th>
-            <th>Devices</th>
-            <th>Developers</th>
-            <th>Expires</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody id="provisioning-profile-table-body">
-          <tr *ngFor="let profile of provisioningProfiles">
-            <td>
-              {{profile.name}}
-            </td>
-            <td>
-              <dl>
-                <dt>{{profile.entitlements?.applicationIdentifier}}</dt>
-              </dl>
-            </td>
-            <td>
-              <ng-template #devicesContent>
-                <dl>
-                  <dd ngbDropdownItem *ngFor="let device of profile.provisionedDevices">{{device}}</dd>
-                </dl>
-              </ng-template>
-              <a href="javascript:void(0)" [ngbPopover]="devicesContent" placement="bottom"
-                container="body">{{profile.provisionedDevices.length}} devices</a>
-            </td>
-            <td>
-              <ng-template #developersContent>
-                <dl>
-                  <dd ngbDropdownItem *ngFor="let certificate of profile.developerCertificates">{{certificate.name}}
-                    ({{certificate.type}})</dd>
-                </dl>
-              </ng-template>
-              <a href="javascript:void(0)" [ngbPopover]="developersContent" placement="bottom"
-                container="body">{{profile.developerCertificates.length}} identities</a>
-            </td>
-            <td>
-              {{profile.expirationDate | date: "MMM dd, yyyy": "GMT" }}
-            </td>
-            <td>
-              <fa-icon icon="trash" (click)="deleteProvisioningProfile(profile)"></fa-icon>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-      <app-file-upload buttonName="Add a provisioning profile" (uploadFile)="uploadProvisioningProfile($event)">
-      </app-file-upload>
+      <developer-profile-upload refeshDeveloperCertificates="showDeveloperCertificates()" refeshProvisioningProfiles="showProvisioningProfiles()">
+      </developer-profile-upload>
+      <br/>
+      <br/>
+      <ul ngbNav #nav="ngbNav" class="nav-tabs">
+        <li ngbNavItem>
+          <a ngbNavLink>Provisioning Profiles</a>
+          <ng-template ngbNavContent>
+            <div>
+              <p>
+                A provisioning profile is a file issued by Apple which allows you to deploy applications signed using your
+                identity to devices. It also grants specific permissions (entitlements) to those applications.
+                A provisionig profile usually has the <code>.mobileprovision</code> extension.
+              </p>
+    
+              <table class="table table-condensed">
+                <thead>
+                  <tr>
+                    <th>Profile</th>
+                    <th>Entitlements</th>
+                    <th>Devices</th>
+                    <th>Developers</th>
+                    <th>Expires</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody id="provisioning-profile-table-body">
+                  <tr *ngFor="let profile of provisioningProfiles">
+                    <td>
+                      {{profile.name}}
+                    </td>
+                    <td>
+                      <dl>
+                        <dt>{{profile.entitlements?.applicationIdentifier}}</dt>
+                      </dl>
+                    </td>
+                    <td>
+                      <ng-template #devicesContent>
+                        <dl>
+                          <dd ngbDropdownItem *ngFor="let device of profile.provisionedDevices">{{device}}</dd>
+                        </dl>
+                      </ng-template>
+                      <a href="javascript:void(0)" [ngbPopover]="devicesContent" placement="bottom"
+                        container="body">{{profile.provisionedDevices.length}} devices</a>
+                    </td>
+                    <td>
+                      <ng-template #developersContent>
+                        <dl>
+                          <dd ngbDropdownItem *ngFor="let certificate of profile.developerCertificates">{{certificate.name}}
+                            ({{certificate.type}})</dd>
+                        </dl>
+                      </ng-template>
+                      <a href="javascript:void(0)" [ngbPopover]="developersContent" placement="bottom"
+                        container="body">{{profile.developerCertificates.length}} identities</a>
+                    </td>
+                    <td>
+                      {{profile.expirationDate | date: "MMM dd, yyyy": "GMT" }}
+                    </td>
+                    <td>
+                      <fa-icon icon="trash" (click)="deleteProvisioningProfile(profile)"></fa-icon>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+              <app-file-upload buttonName="Add a provisioning profile" (uploadFile)="uploadProvisioningProfile($event)">
+              </app-file-upload>
+            </div>
+          </ng-template>
+        </li>
+        <li ngbNavItem>
+          <a ngbNavLink>Identities</a>
+          <ng-template ngbNavContent>
+            <div>
+              <p>
+                The following identities are available to Kaponata
+              </p>
+              <table class="table table-condensed">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Thumbprint</th>
+                    <th>Expires</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody id="identities-table-body">
+                  <tr *ngFor="let certificate of developerCertificates">
+                    <td>{{certificate.commonName}}</td>
+                    <td>{{certificate.type}}</td>
+                    <td>{{certificate.thumbprint}}</td>
+                    <td>{{certificate.notAfter | date: "MMM dd, yyyy": "GMT" }}</td>
+                    <td><fa-icon icon="trash" (click)="deleteDeveloperCertificate(certificate)"></fa-icon></td>
+                  </tr>
+                </tbody>
+              </table>
+              <developer-certificate-upload refeshDeveloperCertificates="showDeveloperCertificates()"></developer-certificate-upload>
+            </div>
+          </ng-template>
+        </li>
+      </ul>
+      <div [ngbNavOutlet]="nav"></div>
     </div>
   </div>
   <div class="row">
     <div class="col">
       <h3>iOS Developer Disks</h3>
-      <p>Quamotion uses the iOS Developer Disks to test on iOS devices.</p>
       <p>
-        Developer disks for the following versions of iOS are installed available to Kaponata:
+        Developer disks for the following versions of iOS are available to Kaponata:
       </p>
       <ul id="developer-disk-list" class="list-group">
         <li class="list-group-item" *ngFor="let developerDisk of developerDisks">{{developerDisk}}</li>

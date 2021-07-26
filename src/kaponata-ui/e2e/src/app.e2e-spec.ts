@@ -22,7 +22,9 @@ describe('workspace-project App', () => {
     .get('/api/ios/provisioningProfiles')
     .reply(200, provisioningProfiles)
     .get('/api/ios/developerDisks')
-    .reply(200, developerDisks);
+    .reply(200, developerDisks)
+    .get('/api/ios/identities')
+    .reply(200, []);
 
     await page.navigateTo();
     const text = await page.getTitleText();
@@ -53,7 +55,9 @@ describe('workspace-project App', () => {
       .get('/api/ios/provisioningProfiles')
       .reply(200, provisioningProfiles)
       .get('/api/ios/developerDisks')
-      .reply(200, developerDisks);
+      .reply(200, developerDisks)
+      .get('/api/ios/identities')
+      .reply(200, []);
 
     await page.navigateTo();
     const provisioningProfilesElements = await page.getProvisioningProfiles();
@@ -72,7 +76,9 @@ describe('workspace-project App', () => {
       .get('/api/ios/provisioningProfiles')
       .reply(200, provisioningProfiles)
       .get('/api/ios/developerDisks')
-      .reply(200, developerDisks);
+      .reply(200, developerDisks)
+      .get('/api/ios/identities')
+      .reply(200, []);
 
     await page.navigateTo();
     const developerDisksElements = await page.getDeveloperDisks();
@@ -87,7 +93,9 @@ describe('workspace-project App', () => {
     .get('/api/ios/provisioningProfiles')
     .reply(404, 'test')
     .get('/api/ios/developerDisks')
-    .reply(200, developerDisks);
+    .reply(200, developerDisks)
+    .get('/api/ios/identities')
+    .reply(200, []);
 
     await page.navigateTo();
     const errors = await page.getErrorItems();
