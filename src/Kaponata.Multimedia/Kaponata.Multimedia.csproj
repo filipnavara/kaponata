@@ -1,10 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Nullable>enable</Nullable>
+    <Description>A light-weight C# library which wraps FFmpeg APIs.</Description>
+    <PackageTags>ffmpeg</PackageTags>
   </PropertyGroup>
   
   <ItemGroup>
