@@ -6,6 +6,8 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Copyright>Kenneth Bell, Quamotion bv</Copyright>
     <Authors>Kenneth Bell, Quamotion bv</Authors>
+    <Description>Supports reading popular file format commonly found in Apple environments, such as HFS+ file systems, CPIO, DMG, XAR, TAR or XIP archives, as well as LZFSE and LZMA compression.</Description>
+    <PackageTags>cpio;dmg;hfsplus;lzfse;lzma;tar;xar;xip</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>
