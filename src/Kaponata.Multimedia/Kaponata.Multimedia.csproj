@@ -9,7 +9,7 @@
   
   <ItemGroup>
     <PackageReference Include="FFmpeg.AutoGen" Version="4.3.1" />
-    <PackageReference Include="FFmpeg.Native" Version="4.3.1-ci-20201215.3" />
+    <PackageReference Include="FFmpeg.Native" Version="4.3.1.2383" />
   </ItemGroup>
   
   <ItemGroup>
